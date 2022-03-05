@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler.Parsing.AST;
-namespace Backlang_Compiler.Parsing.AST;
+﻿namespace Backlang_Compiler.Parsing.AST;
 
 public class Block : SyntaxNode
 {

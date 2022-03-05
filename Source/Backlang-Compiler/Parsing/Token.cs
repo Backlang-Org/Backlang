@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler.Parsing;
-namespace Backlang_Compiler.Parsing;
+﻿namespace Backlang_Compiler.Parsing;
 
 public class Token
 {

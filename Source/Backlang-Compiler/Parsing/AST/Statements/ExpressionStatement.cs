@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler.Parsing.AST.Statements;
-namespace Backlang_Compiler.Parsing.AST.Statements;
+﻿namespace Backlang_Compiler.Parsing.AST.Statements;
 
 public class ExpressionStatement : Statement
 {
