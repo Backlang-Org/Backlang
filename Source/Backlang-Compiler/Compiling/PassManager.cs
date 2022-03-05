@@ -1,5 +1,4 @@
 ﻿using Backlang_Compiler.Parsing.AST;
-using Backlang_Compiler.Compiling;
 
 namespace Backlang_Compiler.Compiling;
 
@@ -13,18 +12,21 @@ public class PassManager
         Passes.Add(new T());
     }
 
-    public CompilationUnit Process(CompilationUnit obj)
+    public SyntaxNode Process(SyntaxNode obj)
     {
         var result = new Block();
 
-        foreach (var t in obj.Body.Body)
+        if (obj is Block body)
         {
-            if (t is Block blk) result.Body.Add(ProcessBlock(blk));
+            foreach (var t in body.Body)
+            {
+                if (t is Block blk) result.Body.Add(ProcessBlock(blk));
 
-            Process(result, t);
+                Process(result, t);
+            }
+
+            body.Body = result.Body;
         }
-
-        obj.Body = result;
 
         return obj;
     }
@@ -47,7 +49,7 @@ public class PassManager
         return result;
     }
 
-    private void Process(Block result, CompilationUnit t)
+    private void Process(Block result, SyntaxNode t)
     {
         foreach (var pass in Passes)
         {

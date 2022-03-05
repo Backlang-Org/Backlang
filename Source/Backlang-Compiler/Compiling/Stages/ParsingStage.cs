@@ -1,4 +1,5 @@
-﻿using Flo;
+﻿using Backlang_Compiler.Parsing.AST;
+using Flo;
 
 namespace Backlang_Compiler.Compiling.Stages
 {
@@ -11,7 +12,7 @@ namespace Backlang_Compiler.Compiling.Stages
             {
                 if (File.Exists(filename))
                 {
-                    var tree = OodParser.ParseFile(filename);
+                    var tree = CompilationUnit.FromFile(filename);
 
                     context.Trees.Add(tree);
                 }

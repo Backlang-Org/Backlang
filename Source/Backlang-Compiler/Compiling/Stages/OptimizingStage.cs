@@ -1,11 +1,13 @@
-﻿using Flo;
-using Backlang_Compiler.Compiling.Passes;
+﻿using Backlang_Compiler.Compiling.Passes;
+using Backlang_Compiler.Parsing.AST;
+using Flo;
 
 namespace Backlang_Compiler.Compiling.Stages
 {
     public class OptimizingStage : IHandler<CompilerContext, CompilerContext>
     {
         private PassManager _optimization = new();
+
         public OptimizingStage()
         {
             _optimization.AddPass<ConstantFoldingPass>();
@@ -15,7 +17,7 @@ namespace Backlang_Compiler.Compiling.Stages
         {
             for (int i = 0; i < context.Trees.Count; i++)
             {
-                context.Trees[i] = _optimization.Process(context.Trees[i]);
+                context.Trees[i].Body = (Block)_optimization.Process(context.Trees[i]);
             }
 
             return await next.Invoke(context);

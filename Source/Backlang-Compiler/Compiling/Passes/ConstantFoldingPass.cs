@@ -6,7 +6,7 @@ namespace Backlang_Compiler.Compiling.Passes;
 
 public class ConstantFoldingPass : IPass
 {
-    public CompilationUnit Process(CompilationUnit obj, PassManager passManager)
+    public SyntaxNode Process(SyntaxNode obj, PassManager passManager)
     {
         if (obj is Expression expr)
             return new LiteralNode(Evaluate(expr));
