@@ -14,6 +14,15 @@ public class CompilationUnit : SyntaxNode
         return (CompilationUnit)result.Tree;
     }
 
+    public static CompilationUnit FromText(string text)
+    {
+        var document = new SourceDocument("inline.txt", text);
+
+        var result = Parser.Parse(document);
+
+        return (CompilationUnit)result.Tree;
+    }
+
     public override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.Visit(this);

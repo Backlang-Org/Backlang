@@ -1,6 +1,4 @@
-﻿using Backlang_Compiler.Compiling.Passes;
-using Backlang_Compiler.Parsing.AST;
-using Flo;
+﻿using Flo;
 
 namespace Backlang_Compiler.Compiling.Stages
 {
@@ -10,14 +8,14 @@ namespace Backlang_Compiler.Compiling.Stages
 
         public OptimizingStage()
         {
-            _optimization.AddPass<ConstantFoldingPass>();
+            //_optimization.AddPass<ConstantFoldingPass>();
         }
 
         public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
         {
             for (int i = 0; i < context.Trees.Count; i++)
             {
-                context.Trees[i].Body = (Block)_optimization.Process(context.Trees[i]);
+                context.Trees[i] = _optimization.Process(context.Trees[i]);
             }
 
             return await next.Invoke(context);

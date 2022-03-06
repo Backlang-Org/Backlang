@@ -1,41 +1,101 @@
 ﻿using Backlang_Compiler.Parsing;
 using Backlang_Compiler.Parsing.AST;
 using Backlang_Compiler.Parsing.AST.Expressions;
+using Backlang_Compiler.Parsing.AST.Statements;
 
 namespace Backlang_Compiler.Compiling.Passes;
 
-public class ConstantFoldingPass : IPass
+public class ConstantFoldingPass : IVisitor<object>
 {
-    public SyntaxNode Process(SyntaxNode obj, PassManager passManager)
+    public object Visit(InvalidNode invalidNode)
     {
-        if (obj is Expression expr)
-            return new LiteralNode(Evaluate(expr));
-
-        return obj;
+        throw new NotImplementedException();
     }
 
-    private int Evaluate(Expression tree)
+    public object Visit(LiteralNode literal)
     {
-        if (tree is BinaryExpression expr)
-            switch (expr.OperatorToken.Text)
-            {
-                case "+":
-                    return Evaluate(expr.Left) + Evaluate(expr.Right);
+        return literal.Value;
+    }
 
-                case "-":
-                    return Evaluate(expr.Left) - Evaluate(expr.Right);
+    public object Visit(ExpressionStatement expressionStatement)
+    {
+        return expressionStatement.Expression.Accept(this);
+    }
 
-                case "*":
-                    return Evaluate(expr.Left) * Evaluate(expr.Right);
+    public object Visit(CompilationUnit compilationUnit)
+    {
+        return compilationUnit.Body.Accept(this);
+    }
 
-                case "/":
-                    return Evaluate(expr.Left) / Evaluate(expr.Right);
-            }
-        else if (tree is LiteralNode lit)
+    public object Visit(AssignmentStatement assignmentStatement)
+    {
+        return null;
+    }
+
+    public object Visit(BinaryExpression binaryExpression)
+    {
+        var lhs = (dynamic)binaryExpression.Left.Accept(this);
+        var rhs = (dynamic)binaryExpression.Right.Accept(this);
+
+        switch (binaryExpression.OperatorToken.Type)
         {
-            return (int)lit.Value;
+            case TokenType.Plus:
+                return lhs + rhs;
+
+            case TokenType.Minus:
+                return lhs - rhs;
+
+            case TokenType.Star:
+                return lhs * rhs;
+
+            case TokenType.Slash:
+                return lhs / rhs;
         }
 
-        return 0;
+        return null;
+    }
+
+    public object Visit(UnaryExpression unaryExpression)
+    {
+        switch (unaryExpression.OperatorToken.Type)
+        {
+            case TokenType.Minus:
+                return -((dynamic)unaryExpression.Expression.Accept(this));
+
+            case TokenType.Exclamation:
+                return !((dynamic)unaryExpression.Expression.Accept(this));
+        }
+
+        return null;
+    }
+
+    public object Visit(GroupExpression groupExpression)
+    {
+        return groupExpression.Inner.Accept(this);
+    }
+
+    public object Visit(Block block)
+    {
+        return block.Body.FirstOrDefault().Accept(this);
+    }
+
+    public object Visit(InvalidExpr invalidExpr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object Visit(NameExpression nameExpression)
+    {
+        return null;
+    }
+
+    public object Visit(CallExpr callExpr)
+    {
+        return null;
+    }
+
+    public object Visit(Expression expression)
+    {
+        return null;
     }
 }

@@ -1,0 +1,4 @@
+﻿declare a = 12;
+declare b : i32 = 42;
+
+a <-> b;
