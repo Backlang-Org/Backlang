@@ -15,11 +15,14 @@ public enum TokenType
     Star,
     OpenParen,
     CloseParen,
-    Not,
+    Exclamation,
     Colon,
 
     TrueLiteral,
     FalseLiteral,
 
     Comma,
+    EqualsEquals,
+    EqualsToken,
+    SwapOperator,
 }

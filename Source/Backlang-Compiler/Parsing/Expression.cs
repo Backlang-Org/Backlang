@@ -12,7 +12,7 @@ public class Expression : SyntaxNode
     {
         //Unary Operators
         Operators.Add(new OperatorInfo(TokenType.Minus, 6, true, false));
-        Operators.Add(new OperatorInfo(TokenType.Not, 6, true, false));
+        Operators.Add(new OperatorInfo(TokenType.Exclamation, 6, true, false));
 
         //Binary Operators
         Operators.Add(new OperatorInfo(TokenType.Star, 5, false, false));

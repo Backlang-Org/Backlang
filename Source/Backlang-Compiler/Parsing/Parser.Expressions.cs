@@ -15,7 +15,8 @@ public partial class Parser
             TokenType.Number => ParseNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
-            _ => Invalid("Unknown Expression. Expected String, Group, Number, Boolean, Day, DayOfWeek, Now, Time or Identifier"),
+            TokenType.Identifier => ParseNameExpression(),
+            _ => Invalid("Unknown Expression. Expected String, Group, Number, Boolean or Identifier"),
         };
     }
 
@@ -24,11 +25,6 @@ public partial class Parser
         Messages.Add(Message.Error(message, Current.Line, Current.Column));
 
         return new InvalidExpr();
-    }
-
-    private UnaryExpression ParseAt()
-    {
-        return new UnaryExpression(NextToken(), Expression.Parse(this), false);
     }
 
     private Expression ParseBooleanLiteral(bool value)
@@ -47,6 +43,12 @@ public partial class Parser
         Match(TokenType.CloseParen);
 
         return new GroupExpression(expr);
+    }
+
+    private Expression ParseNameExpression()
+    {
+        var token = NextToken();
+        return new NameExpression(token.Text, token.Line, token.Column);
     }
 
     private Expression ParseNumber()
