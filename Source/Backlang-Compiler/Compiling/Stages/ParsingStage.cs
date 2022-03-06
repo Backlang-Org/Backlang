@@ -1,35 +1,34 @@
 ﻿using Backlang_Compiler.Parsing.AST;
 using Flo;
 
-namespace Backlang_Compiler.Compiling.Stages
+namespace Backlang_Compiler.Compiling.Stages;
+
+public class ParsingStage : IHandler<CompilerContext, CompilerContext>
 {
-    public class ParsingStage : IHandler<CompilerContext, CompilerContext>
+    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+        bool hasError = false;
+        foreach (var filename in context.InputFiles)
         {
-            bool hasError = false;
-            foreach (var filename in context.InputFiles)
+            if (File.Exists(filename))
             {
-                if (File.Exists(filename))
-                {
-                    var tree = CompilationUnit.FromFile(filename);
+                var tree = CompilationUnit.FromFile(filename);
 
-                    context.Trees.Add(tree);
-                }
-                else
-                {
-                    hasError = true;
-                }
-            }
-
-            if (!hasError)
-            {
-                return await next.Invoke(context);
+                context.Trees.Add(tree);
             }
             else
             {
-                return context;
+                hasError = true;
             }
+        }
+
+        if (!hasError)
+        {
+            return await next.Invoke(context);
+        }
+        else
+        {
+            return context;
         }
     }
 }
