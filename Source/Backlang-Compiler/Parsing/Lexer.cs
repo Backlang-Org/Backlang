@@ -18,6 +18,7 @@ public class Lexer : BaseLexer
         [":"] = TokenType.Colon,
         ["!"] = TokenType.Exclamation,
         [","] = TokenType.Comma,
+        [";"] = TokenType.Semicolon,
 
         ["<->"] = TokenType.SwapOperator,
         ["=="] = TokenType.EqualsEquals,

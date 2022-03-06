@@ -17,23 +17,14 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         {
             var keyword = Current;
 
-            /*if (keyword.Type == TokenType.Set)
+            if (keyword.Type == TokenType.Declare)
             {
-                cu.Body.Body.Add(ParseVariableAssignment());
-            }
-            else if (keyword.Type == TokenType.Call)
-            {
-                NextToken();
-
-                cu.Body.Body.Add(ParseIdentifierListOrCall());
-
-                Match(TokenType.Dot);
+                cu.Body.Body.Add(ParseVariableDeclaration());
             }
             else
             {
                 cu.Body.Body.Add(ParseExpressionStatement());
             }
-            */
         }
 
         cu.Messages = Messages;
@@ -45,8 +36,35 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
     {
         var expr = Expression.Parse(this);
 
-        Match(TokenType.Dot);
+        Match(TokenType.Semicolon);
 
         return new ExpressionStatement(expr);
+    }
+
+    private SyntaxNode ParseVariableDeclaration()
+    {
+        NextToken();
+
+        var nameToken = Match(TokenType.Identifier);
+        Token? typeToken = null;
+        Expression? value = null;
+
+        if (Current.Type == TokenType.Colon)
+        {
+            NextToken();
+
+            typeToken = NextToken();
+        }
+
+        if (Current.Type == TokenType.EqualsToken)
+        {
+            NextToken();
+
+            value = Expression.Parse(this);
+        }
+
+        Match(TokenType.Semicolon);
+
+        return new VariableDeclarationStatement(nameToken, typeToken, value);
     }
 }

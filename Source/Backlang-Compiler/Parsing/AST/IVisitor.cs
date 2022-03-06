@@ -6,7 +6,7 @@ namespace Backlang_Compiler.Parsing.AST;
 public interface IVisitor<T>
 {
     T Visit(InvalidNode invalidNode);
-
+    T Visit(VariableDeclarationStatement variableDeclarationStatement);
     T Visit(LiteralNode literal);
 
     T Visit(ExpressionStatement expressionStatement);

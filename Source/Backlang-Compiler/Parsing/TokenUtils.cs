@@ -6,9 +6,10 @@ public static class TokenUtils
     {
         return name switch
         {
-            "negate" => TokenType.Minus,
             "true" => TokenType.TrueLiteral,
             "false" => TokenType.FalseLiteral,
+
+            "declare" => TokenType.Declare,
 
             _ => TokenType.Identifier,
         };

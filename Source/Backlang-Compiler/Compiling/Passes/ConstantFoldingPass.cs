@@ -98,4 +98,9 @@ public class ConstantFoldingPass : IVisitor<object>
     {
         return null;
     }
+
+    public object Visit(VariableDeclarationStatement variableDeclarationStatement)
+    {
+        throw new NotImplementedException();
+    }
 }

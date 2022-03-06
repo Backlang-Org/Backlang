@@ -25,4 +25,6 @@ public enum TokenType
     EqualsEquals,
     EqualsToken,
     SwapOperator,
+    Declare,
+    Semicolon,
 }
