@@ -1,6 +1,7 @@
 ﻿using Backlang_Compiler.Core;
 using Backlang_Compiler.Parsing.AST;
 using Backlang_Compiler.Parsing.AST.Expressions;
+using System.Reflection;
 
 namespace Backlang_Compiler.Parsing;
 
@@ -10,18 +11,20 @@ public class Expression : SyntaxNode
 
     static Expression()
     {
-        //Unary Operators
-        Operators.Add(new OperatorInfo(TokenType.Minus, 6, true, false));
-        Operators.Add(new OperatorInfo(TokenType.Exclamation, 6, true, false));
+        var typeValues = (TokenType[])Enum.GetValues(typeof(TokenType));
 
-        //Binary Operators
-        Operators.Add(new OperatorInfo(TokenType.Star, 5, false, false));
-        Operators.Add(new OperatorInfo(TokenType.Slash, 5, false, false));
+        foreach (var op in typeValues)
+        {
+            var attributes = op.GetType().GetField(Enum.GetName<TokenType>(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
 
-        Operators.Add(new OperatorInfo(TokenType.Plus, 4, false, false));
-        Operators.Add(new OperatorInfo(TokenType.Minus, 4, false, false));
-
-        Operators.Add(new OperatorInfo(TokenType.Comma, 2, false, false));
+            if (attributes != null && attributes.Any())
+            {
+                foreach (var attribute in attributes)
+                {
+                    Operators.Add(new OperatorInfo(op, attribute.Precedence, attribute.IsUnary, attribute.IsPostUnary));
+                }
+            }
+        }
     }
 
     public static Expression Parse<TNode, TLexer, TParser>(BaseParser<TNode, TLexer, TParser> parser, int parentPrecedence = 0)
