@@ -53,7 +53,16 @@ public partial class Parser
 
     private Expression ParseNumber()
     {
-        return new LiteralNode(double.Parse(NextToken().Text, CultureInfo.InvariantCulture));
+        var valueToken = NextToken();
+
+        object value = int.Parse(valueToken.Text, CultureInfo.InvariantCulture);
+
+        if (value == null)
+        {
+            value = double.Parse(valueToken.Text, CultureInfo.InvariantCulture);
+        }
+
+        return new LiteralNode(value);
     }
 
     private Expression ParseString()
