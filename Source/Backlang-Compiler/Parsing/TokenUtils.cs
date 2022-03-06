@@ -1,17 +1,37 @@
-﻿namespace Backlang_Compiler.Parsing;
+﻿using Backlang_Compiler.Core;
+using System.Reflection;
+
+namespace Backlang_Compiler.Parsing;
 
 public static class TokenUtils
 {
-    public static TokenType GetTokenType(string name)
+    private static readonly Dictionary<string, TokenType> TokenTypeRepresentations = new Dictionary<string, TokenType>();
+
+    static TokenUtils()
     {
-        return name switch
+        var typeValues = (TokenType[])Enum.GetValues(typeof(TokenType));
+
+        foreach (var keyword in typeValues)
         {
-            "true" => TokenType.TrueLiteral,
-            "false" => TokenType.FalseLiteral,
+            var attributes = keyword.GetType().GetField(Enum.GetName<TokenType>(keyword)).GetCustomAttributes<KeywordAttribute>(true);
 
-            "declare" => TokenType.Declare,
+            if (attributes != null && attributes.Any())
+            {
+                foreach (var attribute in attributes)
+                {
+                    TokenTypeRepresentations.Add(attribute.Keyword, keyword);
+                }
+            }
+        }
+    }
 
-            _ => TokenType.Identifier,
-        };
+    public static TokenType GetTokenType(string text)
+    {
+        if (TokenTypeRepresentations.ContainsKey(text))
+        {
+            return TokenTypeRepresentations[text];
+        }
+
+        return TokenType.Identifier;
     }
 }

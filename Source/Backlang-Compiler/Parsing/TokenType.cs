@@ -33,7 +33,10 @@ public enum TokenType
 
     Colon,
 
+    [Keyword("true")]
     TrueLiteral,
+
+    [Keyword("false")]
     FalseLiteral,
 
     [BinaryOperatorInfo(2)]
@@ -42,6 +45,9 @@ public enum TokenType
     EqualsEquals,
     EqualsToken,
     SwapOperator,
+
+    [Keyword("declare")]
     Declare,
+
     Semicolon,
 }
