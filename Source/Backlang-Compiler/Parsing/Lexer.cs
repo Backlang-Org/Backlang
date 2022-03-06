@@ -1,33 +1,30 @@
 ﻿using Backlang_Compiler.Core;
+using System.Reflection;
 
 namespace Backlang_Compiler.Parsing;
 
 public class Lexer : BaseLexer
 {
-    private readonly Dictionary<string, TokenType> _symbolTokens = new()
+    private static readonly Dictionary<string, TokenType> _symbolTokens = new();
+
+    static Lexer()
     {
-        ["."] = TokenType.Dot,
-        ["-"] = TokenType.Minus,
-        ["+"] = TokenType.Plus,
-        ["*"] = TokenType.Star,
-        ["/"] = TokenType.Slash,
+        var typeValues = (TokenType[])Enum.GetValues(typeof(TokenType));
 
-        ["("] = TokenType.OpenParen,
-        [")"] = TokenType.CloseParen,
+        foreach (var op in typeValues)
+        {
+            var attributes = op.GetType()
+                        .GetField(Enum.GetName(op)).GetCustomAttributes<LexemeAttribute>(true);
 
-        [":"] = TokenType.Colon,
-        ["!"] = TokenType.Exclamation,
-        [","] = TokenType.Comma,
-        [";"] = TokenType.Semicolon,
+            if (attributes != null && attributes.Any())
+            {
+                foreach (var attribute in attributes)
+                {
+                    _symbolTokens.Add(attribute.Lexeme, op);
+                }
+            }
+        }
 
-        ["<->"] = TokenType.SwapOperator,
-        ["=="] = TokenType.EqualsEquals,
-
-        ["="] = TokenType.EqualsToken,
-    };
-
-    public Lexer()
-    {
         _symbolTokens = new(_symbolTokens.OrderByDescending(_ => _.Key.Length));
     }
 

@@ -10,27 +10,37 @@ public enum TokenType
     StringLiteral,
     Number,
 
+    [Lexeme(".")]
     Dot,
 
     [BinaryOperatorInfo(4)]
+    [Lexeme("+")]
     Plus,
 
     [PreUnaryOperatorInfo(6)]
     [BinaryOperatorInfo(4)]
+    [Lexeme("-")]
     Minus,
 
     [BinaryOperatorInfo(5)]
+    [Lexeme("/")]
     Slash,
 
     [BinaryOperatorInfo(5)]
+    [Lexeme("*")]
     Star,
 
+    [Lexeme("(")]
     OpenParen,
+
+    [Lexeme(")")]
     CloseParen,
 
     [PreUnaryOperatorInfo(6)]
+    [Lexeme("!")]
     Exclamation,
 
+    [Lexeme(":")]
     Colon,
 
     [Keyword("true")]
@@ -40,14 +50,21 @@ public enum TokenType
     FalseLiteral,
 
     [BinaryOperatorInfo(2)]
+    [Lexeme(",")]
     Comma,
 
+    [Lexeme("==")]
     EqualsEquals,
+
+    [Lexeme("=")]
     EqualsToken,
+
+    [Lexeme("<->")]
     SwapOperator,
 
     [Keyword("declare")]
     Declare,
 
+    [Lexeme(";")]
     Semicolon,
 }
