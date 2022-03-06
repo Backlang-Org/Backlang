@@ -19,10 +19,16 @@ public class Lexer : BaseLexer
         ["!"] = TokenType.Exclamation,
         [","] = TokenType.Comma,
 
-        ["="] = TokenType.EqualsToken,
-
         ["<->"] = TokenType.SwapOperator,
+        ["=="] = TokenType.EqualsEquals,
+
+        ["="] = TokenType.EqualsToken,
     };
+
+    public Lexer()
+    {
+        _symbolTokens = new(_symbolTokens.OrderByDescending(_ => _.Key.Length));
+    }
 
     protected override Token NextToken()
     {
@@ -31,15 +37,6 @@ public class Lexer : BaseLexer
         if (_position >= _source.Length)
         {
             return new Token(TokenType.EOF, "\0", _position, _position, _line, _column);
-        }
-        else if (Current() == '=' && Peek(1) == '=')
-        {
-            Advance();
-            Advance();
-
-            _column += 2;
-
-            return new Token(TokenType.EqualsEquals, "==", _position - 2, _position, _line, _column);
         }
         else if (_symbolTokens.ContainsKey(Current().ToString()))
         {
