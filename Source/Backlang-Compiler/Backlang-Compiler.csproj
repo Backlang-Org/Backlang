@@ -16,4 +16,10 @@
 	<ItemGroup>
 	  <Folder Include="Compiling\Passes\Lowerer\" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="test.back">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

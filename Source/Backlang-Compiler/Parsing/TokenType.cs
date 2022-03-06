@@ -30,6 +30,10 @@ public enum TokenType
     [Lexeme("*")]
     Star,
 
+    [BinaryOperatorInfo(5)]
+    [Lexeme("%")]
+    Percent,
+
     [Lexeme("(")]
     OpenParen,
 

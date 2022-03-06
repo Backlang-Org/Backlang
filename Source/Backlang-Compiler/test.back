@@ -2,3 +2,5 @@
 declare b : i32 = 42;
 
 a <-> b;
+
+a = b % 3;
