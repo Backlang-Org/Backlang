@@ -1,5 +1,6 @@
-using Backlang_Compiler.Parsing.AST;
-using Backlang_Compiler.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1
@@ -8,6 +9,20 @@ namespace TestProject1
     public class VariableTests : ParserTestBase
     {
         [TestMethod]
+        public void VariableAssignment_Should_Pass()
+        {
+            var src = "hello = 42;";
+            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var expr = (BinaryExpression)statement.Expression;
+
+            Assert.AreEqual(expr.OperatorToken.Text, "=");
+            Assert.IsInstanceOfType(expr.Left, typeof(NameExpression));
+
+            Assert.AreEqual(((NameExpression)expr.Left).Name, "hello");
+            Assert.AreEqual(((LiteralNode)expr.Right).Value, 42);
+        }
+
+        [TestMethod]
         public void VariableDeclaration_Full_BoolValue_Should_Pass()
         {
             var src = "declare hello : bool = true;";
@@ -15,10 +30,10 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(statement.TypeToken.Text, "i32");
+            Assert.AreEqual(statement.TypeToken.Text, "bool");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
-            Assert.AreEqual(((LiteralNode)statement.Value).Value, 42);
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, true);
         }
 
         [TestMethod]
@@ -43,10 +58,10 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(statement.TypeToken.Text, "i32");
+            Assert.AreEqual(statement.TypeToken.Text, "bool");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
-            Assert.AreEqual(((LiteralNode)statement.Value).Value, 42);
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, "true");
         }
 
         [TestMethod]

@@ -1,7 +1,7 @@
-﻿using Backlang_Compiler.Parsing;
-using Backlang_Compiler.Parsing.AST;
-using Backlang_Compiler.Parsing.AST.Expressions;
-using Backlang_Compiler.Parsing.AST.Statements;
+﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing;
 
 namespace Backlang_Compiler.Compiling.Passes;
 

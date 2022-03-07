@@ -18,6 +18,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Update="test.back">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
