@@ -34,8 +34,6 @@ public partial class Parser
         var valueToken = NextToken();
         var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
 
-        //10101
-
         int result = 0;
         for (int i = 0; i < valueToken.Text.Length; i++)
         {

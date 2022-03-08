@@ -89,13 +89,13 @@ public class Lexer : BaseLexer
             var oldpos = _position;
             var oldcolumn = _column;
 
-            while (IsHex(Current()))
+            while (IsHex(Current()) || Current() == '_')
             {
                 Advance();
                 _column++;
             }
 
-            return new Token(TokenType.HexNumber, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+            return new Token(TokenType.HexNumber, _source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
         }
         else if (IsMatch("0b"))
         {
@@ -105,13 +105,13 @@ public class Lexer : BaseLexer
             var oldpos = _position;
             var oldcolumn = _column;
 
-            while (IsBinaryDigit(Current()))
+            while (IsBinaryDigit(Current()) || Current() == '_')
             {
                 Advance();
                 _column++;
             }
 
-            return new Token(TokenType.BinNumber, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+            return new Token(TokenType.BinNumber, _source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
         }
         else if (char.IsDigit(Current()))
         {
