@@ -101,6 +101,16 @@ namespace TestProject1
         }
 
         [TestMethod]
+        public void VariableDeclarationWithBinary_Should_Pass()
+        {
+            var src = "declare hello = 0b10101;";
+            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+
+            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, 0b10101);
+        }
+
+        [TestMethod]
         public void VariableDeclarationWithHex_Should_Pass()
         {
             var src = "declare hello = 0xc0ffee;";

@@ -32,14 +32,16 @@ public partial class Parser
     private Expression ParseBinNumber()
     {
         var valueToken = NextToken();
+        var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
+
+        //10101
 
         int result = 0;
-        for (int i = valueToken.Text.Length; i < 0; i--)
+        for (int i = 0; i < valueToken.Text.Length; i++)
         {
-            if (valueToken.Text[i] == '1')
-            {
-                result += (int)Math.Pow(2, i);
-            }
+            if (chars[i] == '0') { continue; }
+
+            result += (int)Math.Pow(2, i);
         }
 
         return new LiteralNode(result);
