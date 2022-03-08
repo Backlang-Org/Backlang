@@ -7,6 +7,18 @@ namespace TestProject1
     public class LexerTests
     {
         [TestMethod]
+        public void Lexer_BinNumber_Should_Pass()
+        {
+            var src = "0x1011011110110110";
+            var lexer = new Lexer();
+            var tokens = lexer.Tokenize(src);
+
+            Assert.AreEqual(tokens.Count, 2);
+            Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
+            Assert.AreEqual(tokens[0].Text, "1011011110110110");
+        }
+
+        [TestMethod]
         public void Lexer_HexNumber_Should_Pass()
         {
             var src = "0xc0ffee";
@@ -15,7 +27,7 @@ namespace TestProject1
 
             Assert.AreEqual(tokens.Count, 2);
             Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
-            Assert.AreEqual(tokens[0].Text, "0xc0ffee");
+            Assert.AreEqual(tokens[0].Text, "c0ffee");
         }
 
         [TestMethod]

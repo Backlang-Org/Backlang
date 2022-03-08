@@ -73,4 +73,5 @@ public enum TokenType
     [Lexeme(";")]
     Semicolon,
     HexNumber,
+    BinNumber,
 }

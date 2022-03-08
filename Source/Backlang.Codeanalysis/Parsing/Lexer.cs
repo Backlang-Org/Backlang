@@ -97,6 +97,22 @@ public class Lexer : BaseLexer
 
             return new Token(TokenType.HexNumber, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
         }
+        else if (IsMatch("0b"))
+        {
+            _position += 2;
+            _column += 2;
+
+            var oldpos = _position;
+            var oldcolumn = _column;
+
+            while (IsBinaryDigit(Current()))
+            {
+                Advance();
+                _column++;
+            }
+
+            return new Token(TokenType.BinNumber, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+        }
         else if (char.IsDigit(Current()))
         {
             var oldpos = _position;
@@ -158,6 +174,11 @@ public class Lexer : BaseLexer
         }
 
         return Token.Invalid;
+    }
+
+    private bool IsBinaryDigit(char c)
+    {
+        return c == '0' || c == '1';
     }
 
     private bool IsHex(char c)
