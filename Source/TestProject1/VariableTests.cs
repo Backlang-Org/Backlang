@@ -9,6 +9,16 @@ namespace TestProject1
     public class VariableTests : ParserTestBase
     {
         [TestMethod]
+        public void VariableAssignment_Multiple_Should_Pass()
+        {
+            var src = "a = b = c = 5;";
+            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var expr = (BinaryExpression)statement.Expression;
+
+            Assert.IsInstanceOfType(expr.Right, typeof(LiteralNode));
+        }
+
+        [TestMethod]
         public void VariableAssignment_Should_Pass()
         {
             var src = "hello = 42;";
