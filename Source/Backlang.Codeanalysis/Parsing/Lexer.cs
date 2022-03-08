@@ -37,10 +37,6 @@ public class Lexer : BaseLexer
         {
             return new Token(TokenType.EOF, "\0", _position, _position, _line, _column);
         }
-        else if (_symbolTokens.ContainsKey(Current().ToString()))
-        {
-            return new Token(_symbolTokens[Current().ToString()], Current().ToString(), Advance(), _position, _line, _column++);
-        }
         else if (Current() == '\'')
         {
             var oldpos = ++_position;
