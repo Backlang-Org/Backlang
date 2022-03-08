@@ -99,5 +99,13 @@ namespace TestProject1
             Assert.AreEqual(statement.TypeToken.Text, "i32");
             Assert.IsNull(statement.Value);
         }
+
+        [TestMethod]
+        public void VariableDeclarationWithHex_Should_Pass()
+        {
+            var src = "declare hello = 0xc0ffee;";
+            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var expr = statement.Expression;
+        }
     }
 }

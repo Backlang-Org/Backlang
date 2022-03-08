@@ -1,7 +1,6 @@
-﻿using System.Reflection;
+﻿using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
-using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Parsing;
+using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -82,6 +81,22 @@ public class Lexer : BaseLexer
 
             return new Token(TokenType.StringLiteral, _source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
         }
+        else if (IsMatch("0x"))
+        {
+            _position += 2;
+            _column += 2;
+
+            var oldpos = _position;
+            var oldcolumn = _column;
+
+            while (IsHex(Current()))
+            {
+                Advance();
+                _column++;
+            }
+
+            return new Token(TokenType.HexNumber, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+        }
         else if (char.IsDigit(Current()))
         {
             var oldpos = _position;
@@ -107,12 +122,12 @@ public class Lexer : BaseLexer
 
             return new Token(TokenType.Number, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
         }
-        else if (char.IsLetter(Current()))
+        else if (IsIdentifierStartDigit())
         {
             var oldpos = _position;
 
             var oldcolumn = _column;
-            while (char.IsLetterOrDigit(Peek(0)))
+            while (IsIdentifierDigit())
             {
                 Advance();
                 _column++;
@@ -128,7 +143,7 @@ public class Lexer : BaseLexer
             {
                 if (IsMatch(symbol.Key))
                 {
-                    int oldpos = _position;
+                    var oldpos = _position;
 
                     _position += symbol.Key.Length;
                     _column += symbol.Key.Length;
@@ -143,6 +158,21 @@ public class Lexer : BaseLexer
         }
 
         return Token.Invalid;
+    }
+
+    private bool IsHex(char c)
+    {
+        return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F';
+    }
+
+    private bool IsIdentifierDigit()
+    {
+        return char.IsLetterOrDigit(Current()) || Current() == '_';
+    }
+
+    private bool IsIdentifierStartDigit()
+    {
+        return char.IsLetter(Current()) || Current() == '_';
     }
 
     private bool IsMatch(string token)
