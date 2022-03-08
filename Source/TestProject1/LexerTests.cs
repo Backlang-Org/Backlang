@@ -19,9 +19,33 @@ namespace TestProject1
         }
 
         [TestMethod]
+        public void Lexer_BinNumber_With_Seperator_Should_Pass()
+        {
+            var src = "0x1011_0111_1011_0110";
+            var lexer = new Lexer();
+            var tokens = lexer.Tokenize(src);
+
+            Assert.AreEqual(tokens.Count, 2);
+            Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
+            Assert.AreEqual(tokens[0].Text, "1011011110110110");
+        }
+
+        [TestMethod]
         public void Lexer_HexNumber_Should_Pass()
         {
             var src = "0xc0ffee";
+            var lexer = new Lexer();
+            var tokens = lexer.Tokenize(src);
+
+            Assert.AreEqual(tokens.Count, 2);
+            Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
+            Assert.AreEqual(tokens[0].Text, "c0ffee");
+        }
+
+        [TestMethod]
+        public void Lexer_HexNumber_With_Seperator_Should_Pass()
+        {
+            var src = "0xc0_ff_ee";
             var lexer = new Lexer();
             var tokens = lexer.Tokenize(src);
 

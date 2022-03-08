@@ -104,8 +104,10 @@ namespace TestProject1
         public void VariableDeclarationWithHex_Should_Pass()
         {
             var src = "declare hello = 0xc0ffee;";
-            var statement = ParseAndGetNode<ExpressionStatement>(src);
-            var expr = statement.Expression;
+            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+
+            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, 0xc0ffee);
         }
     }
 }

@@ -1,7 +1,6 @@
-﻿using System.Globalization;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing;
+using System.Globalization;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -14,6 +13,8 @@ public partial class Parser
             TokenType.StringLiteral => ParseString(),
             TokenType.OpenParen => ParseGroup(),
             TokenType.Number => ParseNumber(),
+            TokenType.HexNumber => ParseHexNumber(),
+            TokenType.BinNumber => ParseBinNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
             TokenType.Identifier => ParseNameExpression(),
@@ -26,6 +27,22 @@ public partial class Parser
         Messages.Add(Message.Error(message, Current.Line, Current.Column));
 
         return new InvalidExpr();
+    }
+
+    private Expression ParseBinNumber()
+    {
+        var valueToken = NextToken();
+
+        int result = 0;
+        for (int i = valueToken.Text.Length; i < 0; i--)
+        {
+            if (valueToken.Text[i] == '1')
+            {
+                result += (int)Math.Pow(2, i);
+            }
+        }
+
+        return new LiteralNode(result);
     }
 
     private Expression ParseBooleanLiteral(bool value)
@@ -44,6 +61,13 @@ public partial class Parser
         Match(TokenType.CloseParen);
 
         return new GroupExpression(expr);
+    }
+
+    private Expression ParseHexNumber()
+    {
+        var valueToken = NextToken();
+
+        return new LiteralNode(int.Parse(valueToken.Text, NumberStyles.HexNumber));
     }
 
     private Expression ParseNameExpression()
