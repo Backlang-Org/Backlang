@@ -10,6 +10,7 @@ fn doSomething() {
 
 declare a = 12;
 declare b : i32 = 42;
+delcare c = &a;
 
 a <-> b;
 

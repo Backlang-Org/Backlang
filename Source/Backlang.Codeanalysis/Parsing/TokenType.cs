@@ -22,6 +22,10 @@ public enum TokenType
     [Lexeme("-")]
     Minus,
 
+    [PreUnaryOperatorInfo(9)]
+    [Lexeme("&")]
+    Ampersand,
+
     [BinaryOperatorInfo(5)]
     [Lexeme("/")]
     Slash,

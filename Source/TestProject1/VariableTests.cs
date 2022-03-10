@@ -34,6 +34,21 @@ namespace TestProject1
         }
 
         [TestMethod]
+        public void VariableAssignment_With_Adress_Operator_Should_Pass()
+        {
+            var src = "a = &b;";
+            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var expr = (BinaryExpression)statement.Expression;
+
+            Assert.IsInstanceOfType(expr.Right, typeof(UnaryExpression));
+
+            var right = (UnaryExpression)expr.Right;
+
+            Assert.AreEqual(right.OperatorToken.Text, "&");
+            Assert.IsInstanceOfType(right.Expression, typeof(NameExpression));
+        }
+
+        [TestMethod]
         public void VariableDeclaration_Full_BoolValue_Should_Pass()
         {
             var src = "declare hello : bool = true;";

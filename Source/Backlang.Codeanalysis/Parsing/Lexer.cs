@@ -172,12 +172,12 @@ public class Lexer : BaseLexer
         return Token.Invalid;
     }
 
-    private bool IsBinaryDigit(char c)
+    private static bool IsBinaryDigit(char c)
     {
         return c == '0' || c == '1';
     }
 
-    private bool IsHex(char c)
+    private static bool IsHex(char c)
     {
         return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F';
     }
@@ -194,10 +194,14 @@ public class Lexer : BaseLexer
 
     private bool IsMatch(string token)
     {
-        bool result = false;
-        for (int i = 0; i < token.Length; i++)
+        bool result = Peek(0) == token[0];
+
+        for (int i = 1; i < token.Length; i++)
         {
-            result = Peek(i) == token[i];
+            if (result)
+            {
+                result = result && Peek(i) == token[i];
+            }
         }
 
         return result;
