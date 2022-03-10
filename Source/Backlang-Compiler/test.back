@@ -8,6 +8,22 @@ fn doSomething() {
 	print("Hello World");
 }
 
+enum Colors {
+	Red = 0xFF0000,
+	Green = 0x00FF00,
+	Blue = 0x0000FF
+}
+
+enum Instructions {
+	Invalid,
+	Move = 1 << 12,
+	Pop,
+}
+
+declare kkk = sizeof(Colors);
+declare mm : i32 = default;
+declare mn = default(i32);
+
 declare a = 12;
 declare b : i32 = 42;
 delcare c = &a;
@@ -15,3 +31,14 @@ delcare c = &a;
 a <-> b;
 
 a = b % 3;
+
+if a <= 12 and a >= 13 {
+
+}
+else {
+	
+}
+
+declare result = match a with
+	12 => 13,
+	_ => 0;
