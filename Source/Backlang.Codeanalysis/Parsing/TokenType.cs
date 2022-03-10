@@ -91,4 +91,10 @@ public enum TokenType
 
     HexNumber,
     BinNumber,
+
+    [Lexeme("[")]
+    OpenSquare,
+
+    [Lexeme("]")]
+    CloseSquare,
 }
