@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
-namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
 public class AssignmentStatement : Statement
 {

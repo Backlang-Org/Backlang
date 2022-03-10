@@ -1,7 +1,7 @@
 ﻿using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Backlang.Codeanalysis.Parsing.AST.Statements;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -22,6 +22,10 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
             {
                 cu.Body.Body.Add(ParseVariableDeclaration());
             }
+            else if (keyword.Type == TokenType.Function)
+            {
+                cu.Body.Body.Add(ParseFunctionDeclaration());
+            }
             else
             {
                 cu.Body.Body.Add(ParseExpressionStatement());
@@ -40,6 +44,93 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         Match(TokenType.Semicolon);
 
         return new ExpressionStatement(expr);
+    }
+
+    private SyntaxNode ParseFunctionDeclaration()
+    {
+        NextToken();
+
+        var name = Match(TokenType.Identifier);
+        Token returnTypeToken = null;
+
+        Match(TokenType.OpenParen);
+
+        var parameters = ParseParameterDeclarations();
+
+        Match(TokenType.CloseParen);
+
+        if (Current.Type == TokenType.Arrow)
+        {
+            NextToken();
+
+            returnTypeToken = Match(TokenType.Identifier);
+        }
+
+        Match(TokenType.OpenCurly);
+
+        var body = new Block();
+        while (Current.Type != (TokenType.CloseCurly))
+        {
+            var keyword = Current;
+
+            if (keyword.Type == TokenType.Declare)
+            {
+                body.Body.Add(ParseVariableDeclaration());
+            }
+            else
+            {
+                body.Body.Add(ParseExpressionStatement());
+            }
+        }
+
+        Match(TokenType.CloseCurly);
+
+        return new FunctionDeclaration(name, returnTypeToken, parameters, body);
+    }
+
+    private ParameterDeclaration ParseParameterDeclaration()
+    {
+        var name = Match(TokenType.Identifier);
+
+        Match(TokenType.Colon);
+
+        var type = Match(TokenType.Identifier);
+
+        Expression? defaultValue = null;
+
+        if (Current.Type == TokenType.EqualsToken)
+        {
+            NextToken();
+
+            defaultValue = Expression.Parse(this);
+        }
+
+        return new ParameterDeclaration(name, type, defaultValue);
+    }
+
+    private List<ParameterDeclaration> ParseParameterDeclarations()
+    {
+        var parameters = new List<ParameterDeclaration>();
+        while (Current.Type != TokenType.CloseParen)
+        {
+            // (id : type)
+            // ()
+            // (id : type = defaultvalue)
+
+            while (Current.Type != TokenType.Comma && Current.Type != TokenType.CloseParen)
+            {
+                var parameter = ParseParameterDeclaration();
+
+                if (Current.Type == TokenType.Comma)
+                {
+                    NextToken();
+                }
+
+                parameters.Add(parameter);
+            }
+        }
+
+        return parameters;
     }
 
     private SyntaxNode ParseVariableDeclaration()

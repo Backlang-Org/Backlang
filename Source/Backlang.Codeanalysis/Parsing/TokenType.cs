@@ -40,6 +40,12 @@ public enum TokenType
     [Lexeme(")")]
     CloseParen,
 
+    [Lexeme("{")]
+    OpenCurly,
+
+    [Lexeme("}")]
+    CloseCurly,
+
     [PreUnaryOperatorInfo(6)]
     [Lexeme("!")]
     Exclamation,
@@ -47,11 +53,17 @@ public enum TokenType
     [Lexeme(":")]
     Colon,
 
+    [Lexeme("->")]
+    Arrow,
+
     [Keyword("true")]
     TrueLiteral,
 
     [Keyword("false")]
     FalseLiteral,
+
+    [Keyword("fn")]
+    Function,
 
     [BinaryOperatorInfo(2)]
     [Lexeme(",")]
@@ -72,6 +84,7 @@ public enum TokenType
 
     [Lexeme(";")]
     Semicolon,
+
     HexNumber,
     BinNumber,
 }

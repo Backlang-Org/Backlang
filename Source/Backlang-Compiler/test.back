@@ -1,4 +1,13 @@
-﻿declare a = 12;
+﻿fn main() -> i32 {
+	doSomething();
+	0;
+}
+
+fn doSomething() {
+	print("Hello World");
+}
+
+declare a = 12;
 declare b : i32 = 42;
 
 a <-> b;

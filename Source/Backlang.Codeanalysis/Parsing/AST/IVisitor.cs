@@ -1,6 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
@@ -19,7 +20,7 @@ public interface IVisitor<T>
     T Visit(BinaryExpression binaryExpression);
 
     T Visit(UnaryExpression unaryExpression);
-
+    T Visit(FunctionDeclaration functionDeclaration);
     T Visit(GroupExpression groupExpression);
 
     T Visit(Block block);
@@ -31,4 +32,5 @@ public interface IVisitor<T>
     T Visit(CallExpr callExpr);
 
     T Visit(Expression expression);
+    T Visit(ParameterDeclaration parameterDeclaration);
 }

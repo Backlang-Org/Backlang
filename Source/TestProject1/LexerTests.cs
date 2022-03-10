@@ -7,6 +7,17 @@ namespace TestProject1
     public class LexerTests
     {
         [TestMethod]
+        public void Lexer_Arrow_Should_Pass()
+        {
+            var src = "a -> b";
+            var lexer = new Lexer();
+            var tokens = lexer.Tokenize(src);
+
+            Assert.AreEqual(4, tokens.Count);
+            Assert.AreEqual(tokens[1].Type, TokenType.Arrow);
+        }
+
+        [TestMethod]
         public void Lexer_BinNumber_Should_Pass()
         {
             var src = "0x1011011110110110";

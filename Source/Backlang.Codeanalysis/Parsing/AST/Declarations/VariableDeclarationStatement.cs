@@ -1,4 +1,5 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class VariableDeclarationStatement : Statement
 {
