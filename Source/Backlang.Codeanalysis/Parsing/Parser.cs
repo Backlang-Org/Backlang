@@ -14,9 +14,9 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
     protected override SyntaxNode Start()
     {
         var cu = new CompilationUnit();
-        while (Current.Type != (TokenType.EOF))
+        while (Iterator.Current.Type != (TokenType.EOF))
         {
-            var keyword = Current;
+            var keyword = Iterator.Current;
 
             if (keyword.Type == TokenType.Declare)
             {
@@ -41,37 +41,37 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
     {
         var expr = Expression.Parse(this);
 
-        Match(TokenType.Semicolon);
+        Iterator.Match(TokenType.Semicolon);
 
         return new ExpressionStatement(expr);
     }
 
     private SyntaxNode ParseFunctionDeclaration()
     {
-        NextToken();
+        Iterator.NextToken();
 
-        var name = Match(TokenType.Identifier);
+        var name = Iterator.Match(TokenType.Identifier);
         Token returnTypeToken = null;
 
-        Match(TokenType.OpenParen);
+        Iterator.Match(TokenType.OpenParen);
 
         var parameters = ParseParameterDeclarations();
 
-        Match(TokenType.CloseParen);
+        Iterator.Match(TokenType.CloseParen);
 
-        if (Current.Type == TokenType.Arrow)
+        if (Iterator.Current.Type == TokenType.Arrow)
         {
-            NextToken();
+            Iterator.NextToken();
 
-            returnTypeToken = Match(TokenType.Identifier);
+            returnTypeToken = Iterator.Match(TokenType.Identifier);
         }
 
-        Match(TokenType.OpenCurly);
+        Iterator.Match(TokenType.OpenCurly);
 
         var body = new Block();
-        while (Current.Type != (TokenType.CloseCurly))
+        while (Iterator.Current.Type != (TokenType.CloseCurly))
         {
-            var keyword = Current;
+            var keyword = Iterator.Current;
 
             if (keyword.Type == TokenType.Declare)
             {
@@ -83,24 +83,24 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
             }
         }
 
-        Match(TokenType.CloseCurly);
+        Iterator.Match(TokenType.CloseCurly);
 
         return new FunctionDeclaration(name, returnTypeToken, parameters, body);
     }
 
     private ParameterDeclaration ParseParameterDeclaration()
     {
-        var name = Match(TokenType.Identifier);
+        var name = Iterator.Match(TokenType.Identifier);
 
-        Match(TokenType.Colon);
+        Iterator.Match(TokenType.Colon);
 
-        var type = Match(TokenType.Identifier);
+        var type = Iterator.Match(TokenType.Identifier);
 
         Expression? defaultValue = null;
 
-        if (Current.Type == TokenType.EqualsToken)
+        if (Iterator.Current.Type == TokenType.EqualsToken)
         {
-            NextToken();
+            Iterator.NextToken();
 
             defaultValue = Expression.Parse(this);
         }
@@ -111,19 +111,15 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
     private List<ParameterDeclaration> ParseParameterDeclarations()
     {
         var parameters = new List<ParameterDeclaration>();
-        while (Current.Type != TokenType.CloseParen)
+        while (Iterator.Current.Type != TokenType.CloseParen)
         {
-            // (id : type)
-            // ()
-            // (id : type = defaultvalue)
-
-            while (Current.Type != TokenType.Comma && Current.Type != TokenType.CloseParen)
+            while (Iterator.Current.Type != TokenType.Comma && Iterator.Current.Type != TokenType.CloseParen)
             {
                 var parameter = ParseParameterDeclaration();
 
-                if (Current.Type == TokenType.Comma)
+                if (Iterator.Current.Type == TokenType.Comma)
                 {
-                    NextToken();
+                    Iterator.NextToken();
                 }
 
                 parameters.Add(parameter);
@@ -135,27 +131,27 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 
     private SyntaxNode ParseVariableDeclaration()
     {
-        NextToken();
+        Iterator.NextToken();
 
-        var nameToken = Match(TokenType.Identifier);
+        var nameToken = Iterator.Match(TokenType.Identifier);
         Token? typeToken = null;
         Expression? value = null;
 
-        if (Current.Type == TokenType.Colon)
+        if (Iterator.Current.Type == TokenType.Colon)
         {
-            NextToken();
+            Iterator.NextToken();
 
-            typeToken = NextToken();
+            typeToken = Iterator.NextToken();
         }
 
-        if (Current.Type == TokenType.EqualsToken)
+        if (Iterator.Current.Type == TokenType.EqualsToken)
         {
-            NextToken();
+            Iterator.NextToken();
 
             value = Expression.Parse(this);
         }
 
-        Match(TokenType.Semicolon);
+        Iterator.Match(TokenType.Semicolon);
 
         return new VariableDeclarationStatement(nameToken, typeToken, value);
     }

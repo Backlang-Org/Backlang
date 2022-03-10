@@ -114,4 +114,9 @@ public class ConstantFoldingPass : IVisitor<object>
     {
         throw new NotImplementedException();
     }
+
+    public object Visit(TypeLiteral typeLiteral)
+    {
+        throw new NotImplementedException();
+    }
 }

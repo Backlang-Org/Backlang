@@ -1,4 +1,5 @@
 ﻿fn main() -> i32 {
+	declare something : int* = 12;
 	doSomething();
 	0;
 }

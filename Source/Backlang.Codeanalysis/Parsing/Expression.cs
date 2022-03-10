@@ -1,9 +1,8 @@
-﻿using System.Reflection;
+﻿using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
-using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -34,11 +33,11 @@ public class Expression : SyntaxNode
         where TLexer : BaseLexer, new()
     {
         Expression left;
-        var unaryOperatorPrecedence = GetUnaryOperatorPrecedence(parser.Current.Type);
+        var unaryOperatorPrecedence = GetUnaryOperatorPrecedence(parser.Iterator.Current.Type);
 
         if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
-            Token? operatorToken = parser.NextToken();
+            Token? operatorToken = parser.Iterator.NextToken();
             Expression? operand = Parse(parser, unaryOperatorPrecedence + 1);
 
             left = new UnaryExpression(operatorToken, operand, false);
@@ -47,9 +46,9 @@ public class Expression : SyntaxNode
         {
             left = parser.ParsePrimary();
 
-            if (IsPostUnary(parser.Current.Type))
+            if (IsPostUnary(parser.Iterator.Current.Type))
             {
-                Token? operatorToken = parser.NextToken();
+                Token? operatorToken = parser.Iterator.NextToken();
 
                 left = new UnaryExpression(operatorToken, left, true);
             }
@@ -57,11 +56,11 @@ public class Expression : SyntaxNode
 
         while (true)
         {
-            var precedence = GetBinaryOperatorPrecedence(parser.Current.Type);
+            var precedence = GetBinaryOperatorPrecedence(parser.Iterator.Current.Type);
             if (precedence == 0 || precedence <= parentPrecedence)
                 break;
 
-            var operatorToken = parser.NextToken();
+            var operatorToken = parser.Iterator.NextToken();
             var right = Parse(parser, precedence);
 
             left = new BinaryExpression(left, operatorToken, right);

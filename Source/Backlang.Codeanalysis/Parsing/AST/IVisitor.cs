@@ -33,4 +33,5 @@ public interface IVisitor<T>
 
     T Visit(Expression expression);
     T Visit(ParameterDeclaration parameterDeclaration);
+    T Visit(TypeLiteral typeLiteral);
 }

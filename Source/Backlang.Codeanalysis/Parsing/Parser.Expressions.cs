@@ -8,7 +8,7 @@ public partial class Parser
 {
     internal override Expression ParsePrimary()
     {
-        return Current.Type switch
+        return Iterator.Current.Type switch
         {
             TokenType.StringLiteral => ParseString(),
             TokenType.OpenParen => ParseGroup(),
@@ -24,14 +24,14 @@ public partial class Parser
 
     private Expression Invalid(string message)
     {
-        Messages.Add(Message.Error(message, Current.Line, Current.Column));
+        Messages.Add(Message.Error(message, Iterator.Current.Line, Iterator.Current.Column));
 
         return new InvalidExpr();
     }
 
     private Expression ParseBinNumber()
     {
-        var valueToken = NextToken();
+        var valueToken = Iterator.NextToken();
         var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
 
         int result = 0;
@@ -47,38 +47,38 @@ public partial class Parser
 
     private Expression ParseBooleanLiteral(bool value)
     {
-        NextToken();
+        Iterator.NextToken();
 
         return new LiteralNode(value);
     }
 
     private Expression ParseGroup()
     {
-        Match(TokenType.OpenParen);
+        Iterator.Match(TokenType.OpenParen);
 
         var expr = Expression.Parse(this);
 
-        Match(TokenType.CloseParen);
+        Iterator.Match(TokenType.CloseParen);
 
         return new GroupExpression(expr);
     }
 
     private Expression ParseHexNumber()
     {
-        var valueToken = NextToken();
+        var valueToken = Iterator.NextToken();
 
         return new LiteralNode(int.Parse(valueToken.Text, NumberStyles.HexNumber));
     }
 
     private Expression ParseNameExpression()
     {
-        var token = NextToken();
+        var token = Iterator.NextToken();
         return new NameExpression(token.Text, token.Line, token.Column);
     }
 
     private Expression ParseNumber()
     {
-        var valueToken = NextToken();
+        var valueToken = Iterator.NextToken();
 
         object value = int.Parse(valueToken.Text, CultureInfo.InvariantCulture);
 
@@ -92,6 +92,6 @@ public partial class Parser
 
     private Expression ParseString()
     {
-        return new LiteralNode(NextToken().Text);
+        return new LiteralNode(Iterator.NextToken().Text);
     }
 }
