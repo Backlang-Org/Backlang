@@ -1,17 +1,18 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class VariableDeclarationStatement : Statement
 {
-    public VariableDeclarationStatement(Token nameToken, Token? typeToken, Expression? value)
+    public VariableDeclarationStatement(Token nameToken, TypeLiteral? type, Expression? value)
     {
         NameToken = nameToken;
-        TypeToken = typeToken;
+        Type = type;
         Value = value;
     }
 
     public Token NameToken { get; }
-    public Token? TypeToken { get; }
+    public TypeLiteral? Type { get; }
     public Expression? Value { get; }
 
     public override T Accept<T>(IVisitor<T> visitor)

@@ -41,7 +41,7 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(statement.TypeToken.Text, "bool");
+            Assert.AreEqual(statement.Type.Typename, "bool");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
             Assert.AreEqual(((LiteralNode)statement.Value).Value, true);
@@ -55,7 +55,7 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(statement.TypeToken.Text, "i32");
+            Assert.AreEqual(statement.Type.Typename, "i32");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 42);
@@ -69,7 +69,7 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(statement.TypeToken.Text, "bool");
+            Assert.AreEqual(statement.Type.Typename, "bool");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
             Assert.AreEqual(((LiteralNode)statement.Value).Value, "true");
@@ -83,7 +83,7 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.IsNull(statement.TypeToken);
+            Assert.IsNull(statement.Type);
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 42);
@@ -97,7 +97,7 @@ namespace TestProject1
             var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(statement.TypeToken.Text, "i32");
+            Assert.AreEqual(statement.Type.Typename, "i32");
             Assert.IsNull(statement.Value);
         }
 

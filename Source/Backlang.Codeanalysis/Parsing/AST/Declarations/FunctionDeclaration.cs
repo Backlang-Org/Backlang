@@ -4,10 +4,10 @@ namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class FunctionDeclaration : Statement
 {
-    public FunctionDeclaration(Token name, Token returnTypeToken, List<ParameterDeclaration> parameters, Block body)
+    public FunctionDeclaration(Token name, TypeLiteral returnType, List<ParameterDeclaration> parameters, Block body)
     {
         Name = name;
-        ReturnTypeToken = returnTypeToken;
+        ReturnType = returnType;
         Parameters = parameters;
         Body = body;
     }
@@ -15,7 +15,7 @@ public class FunctionDeclaration : Statement
     public Block Body { get; }
     public Token Name { get; }
     public List<ParameterDeclaration> Parameters { get; }
-    public Token ReturnTypeToken { get; }
+    public TypeLiteral ReturnType { get; }
 
     public override T Accept<T>(IVisitor<T> visitor)
     {

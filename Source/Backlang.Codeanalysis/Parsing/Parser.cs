@@ -51,7 +51,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         Iterator.NextToken();
 
         var name = Iterator.Match(TokenType.Identifier);
-        Token returnTypeToken = null;
+        TypeLiteral returnType = null;
 
         Iterator.Match(TokenType.OpenParen);
 
@@ -63,7 +63,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         {
             Iterator.NextToken();
 
-            returnTypeToken = Iterator.Match(TokenType.Identifier);
+            returnType = TypeLiteral.Parse(Iterator);
         }
 
         Iterator.Match(TokenType.OpenCurly);
@@ -85,7 +85,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 
         Iterator.Match(TokenType.CloseCurly);
 
-        return new FunctionDeclaration(name, returnTypeToken, parameters, body);
+        return new FunctionDeclaration(name, returnType, parameters, body);
     }
 
     private ParameterDeclaration ParseParameterDeclaration()
@@ -94,7 +94,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 
         Iterator.Match(TokenType.Colon);
 
-        var type = Iterator.Match(TokenType.Identifier);
+        var type = TypeLiteral.Parse(Iterator);
 
         Expression? defaultValue = null;
 
@@ -134,14 +134,14 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         Iterator.NextToken();
 
         var nameToken = Iterator.Match(TokenType.Identifier);
-        Token? typeToken = null;
+        TypeLiteral? type = null;
         Expression? value = null;
 
         if (Iterator.Current.Type == TokenType.Colon)
         {
             Iterator.NextToken();
 
-            typeToken = Iterator.NextToken();
+            type = TypeLiteral.Parse(Iterator);
         }
 
         if (Iterator.Current.Type == TokenType.EqualsToken)
@@ -153,6 +153,6 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 
         Iterator.Match(TokenType.Semicolon);
 
-        return new VariableDeclarationStatement(nameToken, typeToken, value);
+        return new VariableDeclarationStatement(nameToken, type, value);
     }
 }

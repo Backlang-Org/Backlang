@@ -2,7 +2,7 @@
 
 public class ParameterDeclaration : SyntaxNode
 {
-    public ParameterDeclaration(Token name, Token type, Expression? defaultValue)
+    public ParameterDeclaration(Token name, TypeLiteral type, Expression? defaultValue)
     {
         Name = name;
         Type = type;
@@ -11,7 +11,7 @@ public class ParameterDeclaration : SyntaxNode
 
     public Expression? DefaultValue { get; }
     public Token Name { get; }
-    public Token Type { get; }
+    public TypeLiteral Type { get; }
 
     public override T Accept<T>(IVisitor<T> visitor)
     {

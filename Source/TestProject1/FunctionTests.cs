@@ -13,7 +13,7 @@ public class FunctionTests : ParserTestBase
         var statement = ParseAndGetNode<FunctionDeclaration>(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
-        Assert.AreEqual(statement.ReturnTypeToken.Text, "i32");
+        Assert.AreEqual(statement.ReturnType.Typename, "i32");
         Assert.AreEqual(statement.Parameters.Count, 2);
     }
 
@@ -24,7 +24,7 @@ public class FunctionTests : ParserTestBase
         var statement = ParseAndGetNode<FunctionDeclaration>(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
-        Assert.AreEqual(statement.ReturnTypeToken.Text, "i32");
+        Assert.AreEqual(statement.ReturnType.Typename, "i32");
         Assert.AreEqual(statement.Parameters.Count, 2);
     }
 
@@ -35,7 +35,7 @@ public class FunctionTests : ParserTestBase
         var statement = ParseAndGetNode<FunctionDeclaration>(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
-        Assert.AreEqual(statement.ReturnTypeToken.Text, "i32");
+        Assert.AreEqual(statement.ReturnType.Typename, "i32");
         Assert.AreEqual(statement.Parameters.Count, 2);
     }
 
@@ -46,7 +46,7 @@ public class FunctionTests : ParserTestBase
         var statement = ParseAndGetNode<FunctionDeclaration>(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
-        Assert.AreEqual(statement.ReturnTypeToken.Text, "i32");
+        Assert.AreEqual(statement.ReturnType.Typename, "i32");
         Assert.AreEqual(statement.Parameters.Count, 1);
     }
 
@@ -57,7 +57,7 @@ public class FunctionTests : ParserTestBase
         var statement = ParseAndGetNode<FunctionDeclaration>(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
-        Assert.AreEqual(statement.ReturnTypeToken.Text, "i32");
+        Assert.AreEqual(statement.ReturnType.Typename, "i32");
         Assert.AreEqual(statement.Parameters.Count, 1);
     }
 
@@ -68,7 +68,7 @@ public class FunctionTests : ParserTestBase
         var statement = ParseAndGetNode<FunctionDeclaration>(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
-        Assert.AreEqual(statement.ReturnTypeToken.Text, "i32");
+        Assert.AreEqual(statement.ReturnType.Typename, "i32");
         Assert.AreEqual(statement.Parameters.Count, 0);
     }
 }
