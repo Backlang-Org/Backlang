@@ -1,8 +1,6 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
-
-public class FunctionDeclaration : Statement
+public class FunctionDeclaration : SyntaxNode
 {
     public FunctionDeclaration(Token name, TypeLiteral returnType, List<ParameterDeclaration> parameters, Block body)
     {
