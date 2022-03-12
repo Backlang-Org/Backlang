@@ -20,25 +20,29 @@ enum Instructions {
 	Pop,
 }
 
-declare kkk = sizeof(Colors);
-declare mm : i32 = default;
-declare mn = default<i32>;
+fn tests() {
 
-declare a = 12;
-declare b : i32 = 42;
-delcare c = &a;
+	declare kkk = sizeof(Colors);
+	declare mm : i32 = default;
+	declare mn = default<i32>;
 
-a <-> b;
+	declare a = 12;
+	declare b : i32 = 42;
+	delcare c = &a;
 
-a = b % 3;
+	a <-> b;
 
-if a <= 12 and a >= 13 {
+	a = b % 3;
 
-}
-else {
+	if a <= 12 and a >= 13 {
+
+	}
+	else {
 	
-}
+	}
 
-declare result = match a with
-	12 => 13,
-	_ => 0;
+	declare result = match a with
+		12 => 13,
+		_ => 0;
+
+}

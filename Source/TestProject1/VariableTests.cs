@@ -13,7 +13,7 @@ namespace TestProject1
         public void VariableAssignment_Multiple_Should_Pass()
         {
             var src = "a = b = c = 5;";
-            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var statement = ParseAndGetNodeInFunction<ExpressionStatement>(src);
             var expr = (BinaryExpression)statement.Expression;
 
             Assert.IsInstanceOfType(expr.Right, typeof(LiteralNode));
@@ -23,7 +23,7 @@ namespace TestProject1
         public void VariableAssignment_Should_Pass()
         {
             var src = "hello = 42;";
-            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var statement = ParseAndGetNodeInFunction<ExpressionStatement>(src);
             var expr = (BinaryExpression)statement.Expression;
 
             Assert.AreEqual(expr.OperatorToken.Text, "=");
@@ -37,7 +37,7 @@ namespace TestProject1
         public void VariableAssignment_With_Adress_Operator_Should_Pass()
         {
             var src = "a = &b;";
-            var statement = ParseAndGetNode<ExpressionStatement>(src);
+            var statement = ParseAndGetNodeInFunction<ExpressionStatement>(src);
             var expr = (BinaryExpression)statement.Expression;
 
             Assert.IsInstanceOfType(expr.Right, typeof(UnaryExpression));

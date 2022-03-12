@@ -1,7 +1,6 @@
 ﻿using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
-using Backlang.Codeanalysis.Parsing.AST.Statements;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -16,19 +15,18 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         var cu = new CompilationUnit();
         while (Iterator.Current.Type != (TokenType.EOF))
         {
-            var keyword = Iterator.Current;
-
-            if (keyword.Type == TokenType.Function)
+            if (Iterator.Current.Type == TokenType.Function)
             {
                 cu.Body.Body.Add(FunctionDeclaration.Parse(Iterator, this));
             }
-            else if (keyword.Type == TokenType.Enum)
+            else if (Iterator.Current.Type == TokenType.Enum)
             {
                 cu.Body.Body.Add(EnumDeclaration.Parse(Iterator, this));
             }
             else
             {
-                cu.Body.Body.Add(ExpressionStatement.Parse(Iterator, this));
+                Messages.Add(Message.Error($"Expected 'fn' or 'enum', got '{Iterator.Current.Type}'", Iterator.Current.Line, Iterator.Current.Column));
+                Iterator.NextToken();
             }
         }
 
