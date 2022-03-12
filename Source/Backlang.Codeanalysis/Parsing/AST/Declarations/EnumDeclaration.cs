@@ -29,7 +29,10 @@ public class EnumDeclaration : SyntaxNode
                 member.Value = parser.ParsePrimary();
             }
 
-            iterator.Match(TokenType.Comma);
+            if (iterator.Current.Type != TokenType.CloseCurly)
+            {
+                iterator.Match(TokenType.Comma);
+            }
 
             declaration.Members.Add(member);
         }

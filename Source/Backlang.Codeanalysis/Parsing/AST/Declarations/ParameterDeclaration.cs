@@ -13,6 +13,26 @@ public class ParameterDeclaration : SyntaxNode
     public Token Name { get; }
     public TypeLiteral Type { get; }
 
+    public static ParameterDeclaration Parse(TokenIterator iterator, Parser parser)
+    {
+        var name = iterator.Match(TokenType.Identifier);
+
+        iterator.Match(TokenType.Colon);
+
+        var type = TypeLiteral.Parse(iterator);
+
+        Expression? defaultValue = null;
+
+        if (iterator.Current.Type == TokenType.EqualsToken)
+        {
+            iterator.NextToken();
+
+            defaultValue = Expression.Parse(parser);
+        }
+
+        return new ParameterDeclaration(name, type, defaultValue);
+    }
+
     public override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.Visit(this);

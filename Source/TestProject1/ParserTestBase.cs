@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using Backlang.Codeanalysis.Parsing.AST;
 
 namespace TestProject1
 {
@@ -13,6 +13,7 @@ namespace TestProject1
             var node = ast.Body.Body.OfType<T>().FirstOrDefault();
 
             Assert.IsNotNull(node);
+            Assert.AreEqual(ast.Messages.Count, 0);
 
             return node;
         }
