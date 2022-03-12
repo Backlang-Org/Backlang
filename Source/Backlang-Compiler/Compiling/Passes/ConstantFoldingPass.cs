@@ -2,6 +2,7 @@
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
 
 namespace Backlang_Compiler.Compiling.Passes;
@@ -126,6 +127,11 @@ public class ConstantFoldingPass : IVisitor<object>
     }
 
     public object Visit(EnumMemberDeclaration enumMemberDeclaration)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object Visit(MatchExpression expression)
     {
         throw new NotImplementedException();
     }

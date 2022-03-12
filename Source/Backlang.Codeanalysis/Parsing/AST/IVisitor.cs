@@ -1,27 +1,34 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
 public interface IVisitor<T>
 {
     T Visit(InvalidNode invalidNode);
+
     T Visit(VariableDeclarationStatement variableDeclarationStatement);
+
     T Visit(LiteralNode literal);
 
     T Visit(ExpressionStatement expressionStatement);
 
     T Visit(CompilationUnit compilationUnit);
+
     T Visit(EnumDeclaration enumDeclaration);
+
     T Visit(AssignmentStatement assignmentStatement);
 
     T Visit(BinaryExpression binaryExpression);
 
     T Visit(UnaryExpression unaryExpression);
+
     T Visit(FunctionDeclaration functionDeclaration);
+
     T Visit(EnumMemberDeclaration enumMemberDeclaration);
+
     T Visit(GroupExpression groupExpression);
 
     T Visit(Block block);
@@ -32,7 +39,11 @@ public interface IVisitor<T>
 
     T Visit(CallExpr callExpr);
 
+    T Visit(MatchExpression expression);
+
     T Visit(Expression expression);
+
     T Visit(ParameterDeclaration parameterDeclaration);
+
     T Visit(TypeLiteral typeLiteral);
 }

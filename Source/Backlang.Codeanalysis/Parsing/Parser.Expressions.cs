@@ -1,5 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using System.Globalization;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -18,6 +19,7 @@ public partial class Parser
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
             TokenType.Identifier => ParseNameExpression(),
+            TokenType.Match => MatchExpression.Parse(Iterator, this),
             _ => Invalid("Unknown Expression. Expected String, Group, Number, Boolean or Identifier"),
         };
     }

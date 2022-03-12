@@ -60,6 +60,9 @@ public enum TokenType
     [Lexeme("->")]
     Arrow,
 
+    [Lexeme("=>")]
+    GoesTo,
+
     [Keyword("true")]
     TrueLiteral,
 
@@ -69,7 +72,6 @@ public enum TokenType
     [Keyword("fn")]
     Function,
 
-    [BinaryOperatorInfo(2)]
     [Lexeme(",")]
     Comma,
 
@@ -100,4 +102,13 @@ public enum TokenType
 
     [Keyword("enum")]
     Enum,
+
+    [Keyword("with")]
+    With,
+
+    [Lexeme("_")]
+    Underscore,
+
+    [Keyword("match")]
+    Match,
 }
