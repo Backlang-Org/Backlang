@@ -18,11 +18,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         {
             var keyword = Iterator.Current;
 
-            if (keyword.Type == TokenType.Declare)
-            {
-                cu.Body.Body.Add(VariableDeclarationStatement.Parse(Iterator, this));
-            }
-            else if (keyword.Type == TokenType.Function)
+            if (keyword.Type == TokenType.Function)
             {
                 cu.Body.Body.Add(FunctionDeclaration.Parse(Iterator, this));
             }

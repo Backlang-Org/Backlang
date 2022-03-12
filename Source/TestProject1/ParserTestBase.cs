@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
@@ -16,6 +17,13 @@ namespace TestProject1
             Assert.AreEqual(ast.Messages.Count, 0);
 
             return node;
+        }
+
+        protected static T ParseAndGetNodeInFunction<T>(string source)
+        {
+            var tree = ParseAndGetNode<FunctionDeclaration>("fn main() {" + source + "}");
+
+            return tree.Body.Body.OfType<T>().FirstOrDefault();
         }
     }
 }

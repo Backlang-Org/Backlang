@@ -53,7 +53,7 @@ namespace TestProject1
         {
             var src = "declare hello : bool = true;";
 
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
@@ -67,7 +67,7 @@ namespace TestProject1
         {
             var src = "declare hello : i32 = 42;";
 
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "i32");
@@ -81,7 +81,7 @@ namespace TestProject1
         {
             var src = "declare hello : bool = 'true';";
 
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
@@ -95,7 +95,7 @@ namespace TestProject1
         {
             var src = "declare hello = 42;";
 
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.IsNull(statement.Type);
@@ -109,7 +109,7 @@ namespace TestProject1
         {
             var src = "declare hello : i32;";
 
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "i32");
@@ -120,7 +120,7 @@ namespace TestProject1
         public void VariableDeclarationWithBinary_Should_Pass()
         {
             var src = "declare hello = 0b10101;";
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 0b10101);
@@ -130,7 +130,7 @@ namespace TestProject1
         public void VariableDeclarationWithHex_Should_Pass()
         {
             var src = "declare hello = 0xc0ffee;";
-            var statement = ParseAndGetNode<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 0xc0ffee);
