@@ -26,6 +26,10 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
             {
                 cu.Body.Body.Add(ParseFunctionDeclaration());
             }
+            else if (keyword.Type == TokenType.Enum)
+            {
+                cu.Body.Body.Add(ParseEnumDeclaration());
+            }
             else
             {
                 cu.Body.Body.Add(ParseExpressionStatement());
@@ -35,6 +39,11 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         cu.Messages = Messages;
 
         return cu;
+    }
+
+    private SyntaxNode ParseEnumDeclaration()
+    {
+        return EnumDeclaration.Parse(Iterator, this);
     }
 
     private SyntaxNode ParseExpressionStatement()

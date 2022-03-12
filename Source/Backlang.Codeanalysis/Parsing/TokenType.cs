@@ -97,4 +97,7 @@ public enum TokenType
 
     [Lexeme("]")]
     CloseSquare,
+
+    [Keyword("enum")]
+    Enum,
 }

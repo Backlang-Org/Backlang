@@ -22,7 +22,7 @@ enum Instructions {
 
 declare kkk = sizeof(Colors);
 declare mm : i32 = default;
-declare mn = default(i32);
+declare mn = default<i32>;
 
 declare a = 12;
 declare b : i32 = 42;

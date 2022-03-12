@@ -14,6 +14,8 @@ public class TokenIterator
 
     public Token Current => Peek(0);
 
+    public object Parser { get; internal set; }
+
     public Token Match(TokenType kind)
     {
         if (Current.Type == kind)

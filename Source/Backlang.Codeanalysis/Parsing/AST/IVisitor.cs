@@ -14,13 +14,14 @@ public interface IVisitor<T>
     T Visit(ExpressionStatement expressionStatement);
 
     T Visit(CompilationUnit compilationUnit);
-
+    T Visit(EnumDeclaration enumDeclaration);
     T Visit(AssignmentStatement assignmentStatement);
 
     T Visit(BinaryExpression binaryExpression);
 
     T Visit(UnaryExpression unaryExpression);
     T Visit(FunctionDeclaration functionDeclaration);
+    T Visit(EnumMemberDeclaration enumMemberDeclaration);
     T Visit(GroupExpression groupExpression);
 
     T Visit(Block block);

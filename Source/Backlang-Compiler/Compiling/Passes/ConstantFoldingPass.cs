@@ -119,4 +119,14 @@ public class ConstantFoldingPass : IVisitor<object>
     {
         throw new NotImplementedException();
     }
+
+    public object Visit(EnumDeclaration enumDeclaration)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object Visit(EnumMemberDeclaration enumMemberDeclaration)
+    {
+        throw new NotImplementedException();
+    }
 }
