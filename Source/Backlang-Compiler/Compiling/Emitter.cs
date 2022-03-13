@@ -1,4 +1,5 @@
-﻿using Address = System.UInt32;
+﻿using Backlang_Compiler.TypeSystem;
+using Address = System.UInt32;
 using Instruction = System.UInt64;
 using Register = System.Byte;
 
@@ -61,6 +62,60 @@ public class Emitter
     public void EmitHalt()
     {
         writer.Write(0x0006_0000_0000_0000);
+    }
+
+    public void EmitLiteral(bool value)
+    {
+        writer.Write(0x0000_0000_0000_0000
+            | ((byte)PrimitiveObjectID.Bool) << 60);
+        writer.Write(0x0000_0000_0000_0000
+            | (value ? 1 : 0));
+    }
+
+    public void EmitLiteral(byte value)
+    {
+        writer.Write(0x0000_0000_0000_0000
+            | ((byte)PrimitiveObjectID.I8) << 60);
+        writer.Write(0x0000_0000_0000_0000
+            | value);
+    }
+
+    public void EmitLiteral(short value)
+    {
+        writer.Write(0x0000_0000_0000_0000
+            | ((byte)PrimitiveObjectID.I16) << 60);
+        writer.Write(0x0000_0000_0000_0000
+            | value);
+    }
+
+    public void EmitLiteral(int value)
+    {
+        writer.Write(0x0000_0000_0000_0000
+            | ((byte)PrimitiveObjectID.I32) << 60);
+        writer.Write(0x0000_0000_0000_0000
+            | value);
+    }
+
+    public void EmitLiteral(long value)
+    {
+        writer.Write(0x0000_0000_0000_0000
+            | ((byte)PrimitiveObjectID.I64) << 60);
+        writer.Write(0x0000_0000_0000_0000
+            | value);
+    }
+
+    public void EmitLiteral(string value)
+    {
+        writer.Write(0x0000_0000_0000_0000
+            | ((byte)PrimitiveObjectID.String) << 60
+            | value.Length << 32);
+        writer.Write(System.Text.Encoding.ASCII.GetBytes(value));
+    }
+
+    public void EmitNoneLiteral()
+    {
+        writer.Write(0x0000_0000_0000_0000);
+        writer.Write(0x0000_0000_0000_0000);
     }
 
     public void LeftShift(Register target, Register lhs, Register rhs)

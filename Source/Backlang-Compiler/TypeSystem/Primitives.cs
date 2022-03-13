@@ -2,9 +2,9 @@
 
 public static class Primitives
 {
-    public static Primitive Bool = new Primitive("i8");
-    public static Primitive Int = new Primitive("i32");
-    public static Primitive Long = new Primitive("i64");
-    public static Primitive Float = new Primitive("f32");
-    public static Primitive Double = new Primitive("f64");
+    public static Primitive Bool = new Primitive("bool", PrimitiveObjectID.Bool);
+    public static Primitive I32 = new Primitive("i32", PrimitiveObjectID.I32);
+    public static Primitive I64 = new Primitive("i64", PrimitiveObjectID.I64);
+    public static Primitive None = new Primitive("none", PrimitiveObjectID.None);
+    public static Primitive String = new Primitive("string", PrimitiveObjectID.String);
 }
