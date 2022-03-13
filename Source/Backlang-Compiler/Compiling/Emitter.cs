@@ -25,7 +25,7 @@ public class Emitter
             | (Instruction)value);
     }
 
-    public void add_target_lhs_rhs(Register target, Register lhs, Register rhs)
+    public void AddTarget(Register target, Register lhs, Register rhs)
     {
         writer.Write(0x0007_0000_0000_0000
             | ((Instruction)target) << 40
@@ -133,7 +133,7 @@ public class Emitter
         writer.Write(0x0015_0000_0000_0000 | ((Instruction)register) << 40);
     }
 
-    public void right_shift_target_lhs_rhs(Register target, Register lhs, Register rhs)
+    public void RightShift(Register target, Register lhs, Register rhs)
     {
         writer.Write(0x0011_0000_0000_0000
             | ((Instruction)target) << 40
@@ -149,7 +149,7 @@ public class Emitter
             | (Instruction)value);
     }
 
-    public void subtract_target_lhs_rhs(Register target, Register lhs, Register rhs)
+    public void SubtractTarget(Register target, Register lhs, Register rhs)
     {
         writer.Write(0x0008_0000_0000_0000
         | ((Instruction)target) << 40
