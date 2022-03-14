@@ -135,6 +135,13 @@ public class Emitter
         writer.Write(0x0031_0000_0000_0000);
     }
 
+    public void GetKeyState(Register target, Register keycode)
+    {
+        writer.Write(0x0032_0000_0000_0000
+            | ((Instruction)target) << 40
+            | ((Instruction)keycode) << 32);
+    }
+
     public void LeftShift(Register target, Register lhs, Register rhs)
     {
         writer.Write(0x0010_0000_0000_0000
