@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class ExpressionStatement : Statement
+public class ExpressionStatement : Statement, IParsePoint<SyntaxNode>
 {
     public ExpressionStatement(Expression expression)
     {

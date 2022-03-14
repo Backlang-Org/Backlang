@@ -1,11 +1,11 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 
-public class MatchExpression : Expression
+public class MatchExpression : Expression, IParsePoint<Expression>
 {
     /*
 	 * match a with
 		12 => 13,
-        i32 num => num + 2,
+		i32 num => num + 2,
 		_ => 0 + 4;
 	*/
 

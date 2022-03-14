@@ -1,11 +1,11 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class EnumDeclaration : SyntaxNode
+public class EnumDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public List<EnumMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }
 
-    public static EnumDeclaration Parse(TokenIterator iterator, Parser parser)
+    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
     {
         var declaration = new EnumDeclaration();
 

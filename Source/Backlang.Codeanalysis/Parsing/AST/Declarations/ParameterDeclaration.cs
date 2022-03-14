@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class ParameterDeclaration : SyntaxNode
+public class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public ParameterDeclaration(Token name, TypeLiteral type, Expression? defaultValue)
     {
@@ -13,7 +13,7 @@ public class ParameterDeclaration : SyntaxNode
     public Token Name { get; }
     public TypeLiteral Type { get; }
 
-    public static ParameterDeclaration Parse(TokenIterator iterator, Parser parser)
+    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
     {
         var name = iterator.Match(TokenType.Identifier);
 

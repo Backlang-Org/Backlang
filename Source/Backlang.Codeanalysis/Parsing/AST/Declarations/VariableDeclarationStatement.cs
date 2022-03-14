@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class VariableDeclarationStatement : Statement
+public class VariableDeclarationStatement : Statement, IParsePoint<SyntaxNode>
 {
     public VariableDeclarationStatement(Token nameToken, TypeLiteral? type, Expression? value)
     {

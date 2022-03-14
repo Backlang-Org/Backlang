@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class FunctionDeclaration : SyntaxNode
+public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public FunctionDeclaration(Token name, TypeLiteral returnType, List<ParameterDeclaration> parameters, Block body)
     {
