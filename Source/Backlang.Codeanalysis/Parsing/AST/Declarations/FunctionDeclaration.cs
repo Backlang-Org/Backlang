@@ -38,8 +38,6 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         var body = new Block();
         while (iterator.Current.Type != (TokenType.CloseCurly))
         {
-            var keyword = iterator.Current;
-
             body.Body.Add(parser.InvokeStatementParsePoint());
         }
 

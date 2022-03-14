@@ -1,6 +1,7 @@
 ﻿using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -16,6 +17,8 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
+
+        AddExpressionParsePoint<MatchExpression>(TokenType.Match);
 
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
     }
