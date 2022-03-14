@@ -75,7 +75,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
             }
             else
             {
-                Messages.Add(Message.Error($"Expected {string.Join(" or ", _declarationParsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+                Messages.Add(Message.Error($"Expected {string.Join(",", _declarationParsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
                 Iterator.NextToken();
             }
         }
