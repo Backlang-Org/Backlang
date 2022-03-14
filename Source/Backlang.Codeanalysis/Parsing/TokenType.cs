@@ -89,8 +89,13 @@ public enum TokenType
     [Lexeme("<->")]
     SwapOperator,
 
+    [Keyword("let")]
     [Keyword("declare")]
     Declare,
+
+    [Keyword("mut")]
+    [Keyword("mutable")]
+    Mutable,
 
     [Lexeme(";")]
     Semicolon,

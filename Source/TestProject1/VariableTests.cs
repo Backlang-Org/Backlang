@@ -91,6 +91,21 @@ namespace TestProject1
         }
 
         [TestMethod]
+        public void VariableDeclaration_Mutable_Full_BoolValue_Should_Pass()
+        {
+            var src = "let mut hello : bool = true;";
+
+            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+
+            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Type.Typename, "bool");
+            Assert.IsTrue(statement.IsMutable);
+
+            Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, true);
+        }
+
+        [TestMethod]
         public void VariableDeclaration_Without_Type_Should_Pass()
         {
             var src = "declare hello = 42;";
