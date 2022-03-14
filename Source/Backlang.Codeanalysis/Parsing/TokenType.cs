@@ -9,6 +9,8 @@ public enum TokenType
     Identifier,
     StringLiteral,
     Number,
+    HexNumber,
+    BinNumber,
 
     [Lexeme(".")]
     Dot,
@@ -42,6 +44,17 @@ public enum TokenType
     [Lexeme("%")]
     Percent,
 
+    [PreUnaryOperatorInfo(6)]
+    [Lexeme("!")]
+    Exclamation,
+
+    [Lexeme("=")]
+    [BinaryOperatorInfo(8)]
+    EqualsToken,
+
+    [Lexeme(":")]
+    Colon,
+
     [Lexeme("(")]
     OpenParen,
 
@@ -54,18 +67,32 @@ public enum TokenType
     [Lexeme("}")]
     CloseCurly,
 
-    [PreUnaryOperatorInfo(6)]
-    [Lexeme("!")]
-    Exclamation,
-
-    [Lexeme(":")]
-    Colon,
-
     [Lexeme("->")]
     Arrow,
 
     [Lexeme("=>")]
     GoesTo,
+
+    [Lexeme(",")]
+    Comma,
+
+    [Lexeme("==")]
+    EqualsEquals,
+
+    [Lexeme("<->")]
+    SwapOperator,
+
+    [Lexeme("_")]
+    Underscore,
+
+    [Lexeme(";")]
+    Semicolon,
+
+    [Lexeme("[")]
+    OpenSquare,
+
+    [Lexeme("]")]
+    CloseSquare,
 
     [Keyword("true")]
     TrueLiteral,
@@ -76,19 +103,6 @@ public enum TokenType
     [Keyword("fn")]
     Function,
 
-    [Lexeme(",")]
-    Comma,
-
-    [Lexeme("==")]
-    EqualsEquals,
-
-    [Lexeme("=")]
-    [BinaryOperatorInfo(8)]
-    EqualsToken,
-
-    [Lexeme("<->")]
-    SwapOperator,
-
     [Keyword("let")]
     [Keyword("declare")]
     Declare,
@@ -97,26 +111,11 @@ public enum TokenType
     [Keyword("mutable")]
     Mutable,
 
-    [Lexeme(";")]
-    Semicolon,
-
-    HexNumber,
-    BinNumber,
-
-    [Lexeme("[")]
-    OpenSquare,
-
-    [Lexeme("]")]
-    CloseSquare,
-
     [Keyword("enum")]
     Enum,
 
     [Keyword("with")]
     With,
-
-    [Lexeme("_")]
-    Underscore,
 
     [Keyword("match")]
     Match,

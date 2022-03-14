@@ -138,7 +138,7 @@ namespace TestProject1
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
             Assert.AreEqual(statement.NameToken.Text, "hello");
-            Assert.AreEqual(((LiteralNode)statement.Value).Value, 0b10101);
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, 0b10101L);
         }
 
         [TestMethod]
