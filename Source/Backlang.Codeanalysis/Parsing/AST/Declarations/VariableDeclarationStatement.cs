@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class VariableDeclarationStatement : Statement, IParsePoint<SyntaxNode>
+public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
 {
     public VariableDeclarationStatement(Token nameToken, TypeLiteral? type, Expression? value)
     {
@@ -15,10 +15,8 @@ public class VariableDeclarationStatement : Statement, IParsePoint<SyntaxNode>
     public TypeLiteral? Type { get; }
     public Expression? Value { get; }
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static Statement Parse(TokenIterator iterator, Parser parser)
     {
-        iterator.NextToken();
-
         var nameToken = iterator.Match(TokenType.Identifier);
         TypeLiteral? type = null;
         Expression? value = null;

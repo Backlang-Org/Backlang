@@ -1,6 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
-
-namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
@@ -42,14 +40,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         {
             var keyword = iterator.Current;
 
-            if (keyword.Type == TokenType.Declare)
-            {
-                body.Body.Add(VariableDeclarationStatement.Parse(iterator, parser));
-            }
-            else
-            {
-                body.Body.Add(ExpressionStatement.Parse(iterator, parser));
-            }
+            body.Body.Add(parser.InvokeStatementParsePoint());
         }
 
         iterator.Match(TokenType.CloseCurly);

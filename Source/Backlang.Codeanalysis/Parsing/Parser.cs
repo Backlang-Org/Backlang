@@ -16,6 +16,8 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
+
+        AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)
@@ -30,10 +32,26 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         _expressionParsePoints.Add(type, T.Parse);
     }
 
-    public void AddParsePoint<T>(TokenType type)
+    public void AddStatementParsePoint<T>(TokenType type)
         where T : IParsePoint<Statement>
     {
         _statementParsePoints.Add(type, T.Parse);
+    }
+
+    public Statement InvokeStatementParsePoint()
+    {
+        var type = Iterator.Current.Type;
+
+        if (_statementParsePoints.ContainsKey(type))
+        {
+            Iterator.NextToken();
+
+            return _statementParsePoints[type](Iterator, this);
+        }
+        else
+        {
+            return ExpressionStatement.Parse(Iterator, this);
+        }
     }
 
     protected override SyntaxNode Start()
@@ -47,9 +65,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
             {
                 Iterator.NextToken();
 
-                var parseMethod = _declarationParsePoints[type](Iterator, this);
-
-                cu.Body.Body.Add(parseMethod);
+                cu.Body.Body.Add(_declarationParsePoints[type](Iterator, this));
             }
             else
             {

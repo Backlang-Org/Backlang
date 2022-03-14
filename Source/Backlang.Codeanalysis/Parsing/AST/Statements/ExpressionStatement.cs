@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class ExpressionStatement : Statement, IParsePoint<SyntaxNode>
+public class ExpressionStatement : Statement, IParsePoint<Statement>
 {
     public ExpressionStatement(Expression expression)
     {
@@ -9,7 +9,7 @@ public class ExpressionStatement : Statement, IParsePoint<SyntaxNode>
 
     public Expression Expression { get; set; }
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static Statement Parse(TokenIterator iterator, Parser parser)
     {
         var expr = Expression.Parse(parser);
 
