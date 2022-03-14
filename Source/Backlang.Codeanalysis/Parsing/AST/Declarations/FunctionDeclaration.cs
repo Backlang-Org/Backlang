@@ -19,8 +19,6 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 
     public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
     {
-        iterator.NextToken();
-
         var name = iterator.Match(TokenType.Identifier);
         TypeLiteral returnType = null;
 
@@ -78,7 +76,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
                     iterator.NextToken();
                 }
 
-                parameters.Add(parameter);
+                parameters.Add((ParameterDeclaration)parameter);
             }
         }
 

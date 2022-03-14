@@ -111,4 +111,7 @@ public enum TokenType
 
     [Keyword("match")]
     Match,
+
+    [Keyword("struct")]
+    Struct,
 }

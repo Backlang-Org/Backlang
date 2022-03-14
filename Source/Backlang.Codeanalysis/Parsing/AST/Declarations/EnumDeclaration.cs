@@ -9,7 +9,6 @@ public class EnumDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
     {
         var declaration = new EnumDeclaration();
 
-        iterator.NextToken();
         var nameToken = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.OpenCurly);

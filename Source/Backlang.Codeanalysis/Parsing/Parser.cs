@@ -1,13 +1,39 @@
 ﻿using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Backlang.Codeanalysis.Parsing.AST.Statements;
 
 namespace Backlang.Codeanalysis.Parsing;
 
 public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 {
+    private readonly Dictionary<TokenType, Func<TokenIterator, Parser, SyntaxNode>> _declarationParsePoints = new();
+    private readonly Dictionary<TokenType, Func<TokenIterator, Parser, Expression>> _expressionParsePoints = new();
+    private readonly Dictionary<TokenType, Func<TokenIterator, Parser, Statement>> _statementParsePoints = new();
+
     public Parser(SourceDocument document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
     {
+        AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
+        AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
+        AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
+    }
+
+    public void AddDeclarationParsePoint<T>(TokenType type)
+            where T : IParsePoint<SyntaxNode>
+    {
+        _declarationParsePoints.Add(type, T.Parse);
+    }
+
+    public void AddExpressionParsePoint<T>(TokenType type)
+            where T : IParsePoint<Expression>
+    {
+        _expressionParsePoints.Add(type, T.Parse);
+    }
+
+    public void AddParsePoint<T>(TokenType type)
+        where T : IParsePoint<Statement>
+    {
+        _statementParsePoints.Add(type, T.Parse);
     }
 
     protected override SyntaxNode Start()
@@ -15,17 +41,19 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         var cu = new CompilationUnit();
         while (Iterator.Current.Type != (TokenType.EOF))
         {
-            if (Iterator.Current.Type == TokenType.Function)
+            var type = Iterator.Current.Type;
+
+            if (_declarationParsePoints.ContainsKey(type))
             {
-                cu.Body.Body.Add(FunctionDeclaration.Parse(Iterator, this));
-            }
-            else if (Iterator.Current.Type == TokenType.Enum)
-            {
-                cu.Body.Body.Add(EnumDeclaration.Parse(Iterator, this));
+                Iterator.NextToken();
+
+                var parseMethod = _declarationParsePoints[type](Iterator, this);
+
+                cu.Body.Body.Add(parseMethod);
             }
             else
             {
-                Messages.Add(Message.Error($"Expected 'fn' or 'enum', got '{Iterator.Current.Type}'", Iterator.Current.Line, Iterator.Current.Column));
+                Messages.Add(Message.Error($"Expected {string.Join(" or ", _declarationParsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
                 Iterator.NextToken();
             }
         }
