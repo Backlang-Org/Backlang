@@ -17,6 +17,10 @@ public enum TokenType
     [Lexeme("+")]
     Plus,
 
+    [BinaryOperatorInfo(4)]
+    [Lexeme("..")]
+    RangeOperator,
+
     [PreUnaryOperatorInfo(6)]
     [BinaryOperatorInfo(4)]
     [Lexeme("-")]
