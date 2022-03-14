@@ -11,13 +11,11 @@ public partial class Parser
         return Iterator.Current.Type switch
         {
             TokenType.StringLiteral => ParseString(),
-            TokenType.OpenParen => ParseGroup(),
             TokenType.Number => ParseNumber(),
             TokenType.HexNumber => ParseHexNumber(),
             TokenType.BinNumber => ParseBinNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
-            TokenType.Identifier => ParseNameExpression(),
             _ => InvokeExpressionParsePoint(),
         };
     }
@@ -40,7 +38,7 @@ public partial class Parser
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Group, Number, Boolean, Identifier, {string.Join(",", _expressionParsePoints.Keys)}");
+            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", _expressionParsePoints.Keys)}");
         }
     }
 
@@ -49,7 +47,7 @@ public partial class Parser
         var valueToken = Iterator.NextToken();
         var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
 
-        int result = 0;
+        long result = 0;
         for (int i = 0; i < valueToken.Text.Length; i++)
         {
             if (chars[i] == '0') { continue; }
@@ -67,17 +65,6 @@ public partial class Parser
         return new LiteralNode(value);
     }
 
-    private Expression ParseGroup()
-    {
-        Iterator.Match(TokenType.OpenParen);
-
-        var expr = Expression.Parse(this);
-
-        Iterator.Match(TokenType.CloseParen);
-
-        return new GroupExpression(expr);
-    }
-
     private Expression ParseHexNumber()
     {
         var valueToken = Iterator.NextToken();
@@ -85,17 +72,11 @@ public partial class Parser
         return new LiteralNode(int.Parse(valueToken.Text, NumberStyles.HexNumber));
     }
 
-    private Expression ParseNameExpression()
-    {
-        var token = Iterator.NextToken();
-        return new NameExpression(token.Text, token.Line, token.Column);
-    }
-
     private Expression ParseNumber()
     {
         var valueToken = Iterator.NextToken();
 
-        object value = int.Parse(valueToken.Text, CultureInfo.InvariantCulture);
+        object value = long.Parse(valueToken.Text, CultureInfo.InvariantCulture);
 
         if (value == null)
         {

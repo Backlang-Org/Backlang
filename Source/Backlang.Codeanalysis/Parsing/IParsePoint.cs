@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing;
 
-public interface IParsePoint<TSelf>
+public interface IParsePoint<T>
 {
-    static abstract TSelf Parse(TokenIterator iterator, Parser parser);
+    static abstract T Parse(TokenIterator iterator, Parser parser);
 }

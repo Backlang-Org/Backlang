@@ -30,7 +30,7 @@ namespace TestProject1
             Assert.IsInstanceOfType(expr.Left, typeof(NameExpression));
 
             Assert.AreEqual(((NameExpression)expr.Left).Name, "hello");
-            Assert.AreEqual(((LiteralNode)expr.Right).Value, 42);
+            Assert.AreEqual(((LiteralNode)expr.Right).Value, 42L);
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace TestProject1
             Assert.AreEqual(statement.Type.Typename, "i32");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
-            Assert.AreEqual(((LiteralNode)statement.Value).Value, 42);
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, 42L);
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace TestProject1
             Assert.IsNull(statement.Type);
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
-            Assert.AreEqual(((LiteralNode)statement.Value).Value, 42);
+            Assert.AreEqual(((LiteralNode)statement.Value).Value, 42L);
         }
 
         [TestMethod]
