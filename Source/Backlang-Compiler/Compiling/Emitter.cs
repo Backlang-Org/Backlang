@@ -64,6 +64,18 @@ public class Emitter
         writer.Write(0x0006_0000_0000_0000);
     }
 
+    public void EmitJump(Register register)
+    {
+        writer.Write(0x001A_0000_0000_0000
+            | ((Instruction)register) << 40);
+    }
+
+    public void EmitJump(Address register)
+    {
+        writer.Write(0x0019_0000_0000_0000
+            | ((Instruction)register) << 40);
+    }
+
     public void EmitLiteral(bool value)
     {
         writer.Write(0x0000_0000_0000_0000
@@ -116,6 +128,11 @@ public class Emitter
     {
         writer.Write(0x0000_0000_0000_0000);
         writer.Write(0x0000_0000_0000_0000);
+    }
+
+    public void EmitNoOp()
+    {
+        writer.Write(0x0031_0000_0000_0000);
     }
 
     public void LeftShift(Register target, Register lhs, Register rhs)
