@@ -19,10 +19,14 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
+        AddDeclarationParsePoint<RegisterDeclaration>(TokenType.Register);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
+        AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
+        AddExpressionParsePoint<SizeOfExpression>(TokenType.SizeOf);
+        AddExpressionParsePoint<NoneExpression>(TokenType.None);
 
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
     }
