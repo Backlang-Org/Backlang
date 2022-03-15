@@ -44,6 +44,16 @@ public enum TokenType
     [Lexeme("%")]
     Percent,
 
+    [BinaryOperatorInfo(4)]
+    [Lexeme("and")]
+    [Lexeme("&&")]
+    And,
+
+    [BinaryOperatorInfo(5)]
+    [Lexeme("or")]
+    [Lexeme("||")]
+    Or,
+
     [PreUnaryOperatorInfo(6)]
     [Lexeme("!")]
     Exclamation,
@@ -51,6 +61,18 @@ public enum TokenType
     [Lexeme("=")]
     [BinaryOperatorInfo(8)]
     EqualsToken,
+
+    [Lexeme("#")]
+    [PreUnaryOperatorInfo(10)]
+    Hash,
+
+    [Lexeme("<")]
+    [BinaryOperatorInfo(5)]
+    LessThan,
+
+    [Lexeme(">")]
+    [BinaryOperatorInfo(5)]
+    GreaterThan,
 
     [Lexeme(":")]
     Colon,
@@ -125,4 +147,16 @@ public enum TokenType
 
     [Keyword("bitfield")]
     Bitfield,
+
+    [Keyword("register")]
+    Register,
+
+    [Keyword("default")]
+    Default,
+
+    [Keyword("sizeof")]
+    SizeOf,
+
+    [Keyword("none")]
+    None,
 }

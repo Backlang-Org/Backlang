@@ -155,4 +155,14 @@ public class ConstantFoldingPass : IVisitor<object>
     {
         throw new NotImplementedException();
     }
+
+    public object Visit(RegisterDeclaration registerDeclaration)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object Visit(DefaultExpression expression)
+    {
+        throw new NotImplementedException();
+    }
 }
