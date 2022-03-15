@@ -12,7 +12,7 @@ public interface IVisitor<T>
     T Visit(VariableDeclarationStatement variableDeclarationStatement);
 
     T Visit(LiteralNode literal);
-
+    T Visit(StructDeclaration structDeclaration);
     T Visit(ExpressionStatement expressionStatement);
 
     T Visit(CompilationUnit compilationUnit);
@@ -22,7 +22,7 @@ public interface IVisitor<T>
     T Visit(AssignmentStatement assignmentStatement);
 
     T Visit(BinaryExpression binaryExpression);
-
+    T Visit(StructMemberDeclaration structMemberDeclaration);
     T Visit(UnaryExpression unaryExpression);
 
     T Visit(FunctionDeclaration functionDeclaration);

@@ -135,4 +135,14 @@ public class ConstantFoldingPass : IVisitor<object>
     {
         throw new NotImplementedException();
     }
+
+    public object Visit(StructDeclaration structDeclaration)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object Visit(StructMemberDeclaration structMemberDeclaration)
+    {
+        throw new NotImplementedException();
+    }
 }
