@@ -13,10 +13,11 @@ public interface IVisitor<T>
 
     T Visit(LiteralNode literal);
     T Visit(StructDeclaration structDeclaration);
+    T Visit(BitFieldDeclaration bitFieldDeclaration);
     T Visit(ExpressionStatement expressionStatement);
 
     T Visit(CompilationUnit compilationUnit);
-
+    T Visit(BitFieldMemberDeclaration bitFieldMemberDeclaration);
     T Visit(EnumDeclaration enumDeclaration);
 
     T Visit(AssignmentStatement assignmentStatement);

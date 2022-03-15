@@ -122,4 +122,7 @@ public enum TokenType
 
     [Keyword("struct")]
     Struct,
+
+    [Keyword("bitfield")]
+    Bitfield,
 }
