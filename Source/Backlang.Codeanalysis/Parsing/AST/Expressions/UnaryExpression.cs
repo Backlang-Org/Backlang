@@ -22,11 +22,11 @@ public class UnaryExpression : Expression
     {
         if (!IsPostUnary)
         {
-            return $"{OperatorToken.Text} {Expression}";
+            return $"{OperatorToken.Text}{Expression}";
         }
         else
         {
-            return $"{Expression} {OperatorToken.Text}";
+            return $"{Expression}{OperatorToken.Text}";
         }
     }
 }
