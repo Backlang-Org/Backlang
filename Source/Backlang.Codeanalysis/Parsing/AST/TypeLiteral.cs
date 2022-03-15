@@ -2,7 +2,7 @@
 
 public class TypeLiteral : SyntaxNode
 {
-    public string[] Arguments { get; set; }
+    public List<string> Arguments { get; set; } = new();
     public int Dimensions { get; set; }
     public bool IsArrayType => Dimensions > 0;
     public bool IsPointer { get; set; }
@@ -35,6 +35,22 @@ public class TypeLiteral : SyntaxNode
             }
 
             iterator.Match(TokenType.CloseSquare);
+        }
+        else if (iterator.Current.Type == TokenType.LessThan)
+        {
+            iterator.NextToken();
+
+            while (iterator.Current.Type != TokenType.GreaterThan)
+            {
+                literal.Arguments.Add(iterator.NextToken().Text);
+
+                if (iterator.Current.Type != TokenType.GreaterThan)
+                {
+                    iterator.Match(TokenType.Comma);
+                }
+            }
+
+            iterator.Match(TokenType.GreaterThan);
         }
 
         return literal;
