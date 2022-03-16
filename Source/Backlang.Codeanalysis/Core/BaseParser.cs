@@ -42,7 +42,7 @@ public abstract class BaseParser<TNode, TLexer, TParser>
         return node;
     }
 
-    internal abstract Expression ParsePrimary();
+    internal abstract Expression ParsePrimary(ParsePoints<Expression> parsePoints = null);
 
     protected abstract TNode Start();
 }

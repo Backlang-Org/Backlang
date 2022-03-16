@@ -6,8 +6,13 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public partial class Parser
 {
-    internal override Expression ParsePrimary()
+    internal override Expression ParsePrimary(ParsePoints<Expression> parsePoints = null)
     {
+        if (parsePoints == null)
+        {
+            parsePoints = ExpressionParsePoints;
+        }
+
         return Iterator.Current.Type switch
         {
             TokenType.StringLiteral => ParseString(),
@@ -16,7 +21,7 @@ public partial class Parser
             TokenType.BinNumber => ParseBinNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
-            _ => InvokeExpressionParsePoint(),
+            _ => InvokeExpressionParsePoint(parsePoints),
         };
     }
 
@@ -27,18 +32,18 @@ public partial class Parser
         return new InvalidExpr();
     }
 
-    private Expression InvokeExpressionParsePoint()
+    private Expression InvokeExpressionParsePoint(ParsePoints<Expression> parsePoints)
     {
         var type = Iterator.Current.Type;
-        if (ExpressionParsePoints.ContainsKey(type))
+        if (parsePoints.ContainsKey(type))
         {
             Iterator.NextToken();
 
-            return ExpressionParsePoints[type](Iterator, this);
+            return parsePoints[type](Iterator, this);
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", ExpressionParsePoints.Keys)}");
+            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", parsePoints.Keys)}");
         }
     }
 
