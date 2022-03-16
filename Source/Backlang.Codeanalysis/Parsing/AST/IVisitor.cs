@@ -53,6 +53,8 @@ public interface IVisitor<T>
 
     T Visit(DefaultExpression expression);
 
+    T Visit(InitializerListExpression expression);
+
     T Visit(Expression expression);
 
     T Visit(ParameterDeclaration parameterDeclaration);

@@ -27,6 +27,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
         AddExpressionParsePoint<SizeOfExpression>(TokenType.SizeOf);
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
+        AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
     }
