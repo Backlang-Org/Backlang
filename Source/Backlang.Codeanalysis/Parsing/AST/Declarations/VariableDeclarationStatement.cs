@@ -36,7 +36,7 @@ public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
         {
             iterator.NextToken();
 
-            type = TypeLiteral.Parse(iterator);
+            type = TypeLiteral.Parse(iterator, parser);
         }
 
         if (iterator.Current.Type == TokenType.EqualsToken)

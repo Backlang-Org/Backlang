@@ -14,7 +14,7 @@ public class DefaultExpression : Expression, IParsePoint<Expression>
         {
             iterator.NextToken();
 
-            expr.Type = TypeLiteral.Parse(iterator);
+            expr.Type = TypeLiteral.Parse(iterator, parser);
 
             iterator.Match(TokenType.GreaterThan);
         }

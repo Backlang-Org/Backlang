@@ -30,7 +30,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         {
             iterator.NextToken();
 
-            returnType = TypeLiteral.Parse(iterator);
+            returnType = TypeLiteral.Parse(iterator, parser);
         }
 
         iterator.Match(TokenType.OpenCurly);

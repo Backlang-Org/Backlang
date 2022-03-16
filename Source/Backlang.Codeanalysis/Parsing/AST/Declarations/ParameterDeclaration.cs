@@ -19,7 +19,7 @@ public class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 
         iterator.Match(TokenType.Colon);
 
-        var type = TypeLiteral.Parse(iterator);
+        var type = TypeLiteral.Parse(iterator, parser);
 
         Expression? defaultValue = null;
 

@@ -20,7 +20,7 @@ public class StructMemberDeclaration : SyntaxNode
 
         iterator.Match(TokenType.Colon);
 
-        member.Type = TypeLiteral.Parse(iterator);
+        member.Type = TypeLiteral.Parse(iterator, parser);
 
         if (iterator.Current.Type == TokenType.EqualsToken)
         {

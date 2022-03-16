@@ -11,7 +11,7 @@ public class SizeOfExpression : Expression, IParsePoint<Expression>
 
         iterator.Match(TokenType.LessThan);
 
-        expr.Type = TypeLiteral.Parse(iterator);
+        expr.Type = TypeLiteral.Parse(iterator, parser);
 
         iterator.Match(TokenType.GreaterThan);
 

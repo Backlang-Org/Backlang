@@ -41,6 +41,8 @@ fn tests() {
 
 	declare d : list<i32> = [];
 
+	declare e  = list<list<i32>> = [];
+
 	a <-> b;
 
 	a = b % 3;
