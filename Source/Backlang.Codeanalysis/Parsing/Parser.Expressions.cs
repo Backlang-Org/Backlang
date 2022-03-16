@@ -30,15 +30,15 @@ public partial class Parser
     private Expression InvokeExpressionParsePoint()
     {
         var type = Iterator.Current.Type;
-        if (_expressionParsePoints.ContainsKey(type))
+        if (ExpressionParsePoints.ContainsKey(type))
         {
             Iterator.NextToken();
 
-            return _expressionParsePoints[type](Iterator, this);
+            return ExpressionParsePoints[type](Iterator, this);
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", _expressionParsePoints.Keys)}");
+            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", ExpressionParsePoints.Keys)}");
         }
     }
 

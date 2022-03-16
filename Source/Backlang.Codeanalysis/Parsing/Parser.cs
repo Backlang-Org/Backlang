@@ -4,14 +4,16 @@ using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
 namespace Backlang.Codeanalysis.Parsing;
 
 public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 {
-    private readonly Dictionary<TokenType, Func<TokenIterator, Parser, SyntaxNode>> _declarationParsePoints = new();
-    private readonly Dictionary<TokenType, Func<TokenIterator, Parser, Expression>> _expressionParsePoints = new();
-    private readonly Dictionary<TokenType, Func<TokenIterator, Parser, Statement>> _statementParsePoints = new();
+    public readonly ParsePoints<AssemblerBodyNode> AssemblerParsePoints = new();
+    public readonly ParsePoints<SyntaxNode> DeclarationParsePoints = new();
+    public readonly ParsePoints<Expression> ExpressionParsePoints = new();
+    public readonly ParsePoints<Statement> StatementParsePoints = new();
 
     public Parser(SourceDocument document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
     {
@@ -32,33 +34,58 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
     }
 
-    public void AddDeclarationParsePoint<T>(TokenType type)
-            where T : IParsePoint<SyntaxNode>
+    public void AddAssemblerParsePoint<T>(TokenType type)
+            where T : IParsePoint<AssemblerBodyNode>
     {
-        _declarationParsePoints.Add(type, T.Parse);
+        AssemblerParsePoints.Add(type, T.Parse);
+    }
+
+    public void AddDeclarationParsePoint<T>(TokenType type)
+                where T : IParsePoint<SyntaxNode>
+    {
+        DeclarationParsePoints.Add(type, T.Parse);
     }
 
     public void AddExpressionParsePoint<T>(TokenType type)
             where T : IParsePoint<Expression>
     {
-        _expressionParsePoints.Add(type, T.Parse);
+        ExpressionParsePoints.Add(type, T.Parse);
     }
 
     public void AddStatementParsePoint<T>(TokenType type)
         where T : IParsePoint<Statement>
     {
-        _statementParsePoints.Add(type, T.Parse);
+        StatementParsePoints.Add(type, T.Parse);
+    }
+
+    public T InvokeParsePoint<T>(ParsePoints<T> parsePoints)
+    {
+        var type = Iterator.Current.Type;
+
+        if (parsePoints.ContainsKey(type))
+        {
+            Iterator.NextToken();
+
+            return parsePoints[type](Iterator, this);
+        }
+        else
+        {
+            Messages.Add(Message.Error($"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+            Iterator.NextToken();
+
+            return default;
+        }
     }
 
     public Statement InvokeStatementParsePoint()
     {
         var type = Iterator.Current.Type;
 
-        if (_statementParsePoints.ContainsKey(type))
+        if (StatementParsePoints.ContainsKey(type))
         {
             Iterator.NextToken();
 
-            return _statementParsePoints[type](Iterator, this);
+            return StatementParsePoints[type](Iterator, this);
         }
         else
         {
@@ -71,19 +98,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         var cu = new CompilationUnit();
         while (Iterator.Current.Type != (TokenType.EOF))
         {
-            var type = Iterator.Current.Type;
-
-            if (_declarationParsePoints.ContainsKey(type))
-            {
-                Iterator.NextToken();
-
-                cu.Body.Body.Add(_declarationParsePoints[type](Iterator, this));
-            }
-            else
-            {
-                Messages.Add(Message.Error($"Expected {string.Join(",", _declarationParsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
-                Iterator.NextToken();
-            }
+            cu.Body.Body.Add(InvokeParsePoint(DeclarationParsePoints));
         }
 
         cu.Messages = Messages.Concat(Iterator.Messages).ToList();

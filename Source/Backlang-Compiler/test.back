@@ -1,13 +1,26 @@
 ﻿register EAX = 0;
 
+type int = i32;
+
+
 fn main() -> i32 {
-	declare something : int* = 12;
+	let something : int* = 12;
 	doSomething();
 	0;
 }
 
 fn doSomething() {
 	print("Hello World");
+
+	asm {
+		mov EAX, 12;
+		something {
+			xor EAX, EAX, EAX;
+		}
+
+		move &[0xFF + 4], 42
+		jmp $something;
+	}
 
 	print(#EAX); // load value from register EAX (0) as argument
 }
@@ -31,17 +44,17 @@ enum Instructions {
 
 fn tests() {
 
-	declare kkk = sizeof<Colors>;
-	declare mm : i32 = default;
-	declare mn = default<i32>;
+	let kkk = sizeof<Colors>;
+	let mm : i32 = default;
+	let mn = default<i32>;
 
-	declare a = 12;
-	declare b : i32 = 42;
-	delcare c = &a;
+	let a = 12;
+	let mut b : i32 = 42;
+	let c = &a;
 
-	declare d : list<i32> = [];
+	let d : list<i32> = [];
 
-	declare e  = list<list<i32>> = [];
+	let e = list<list<i32>> = [];
 
 	a <-> b;
 
@@ -54,7 +67,7 @@ fn tests() {
 	
 	}
 
-	declare result = match a with
+	let result = match a with
 		12 => 13,
 		_ => 0;
 
