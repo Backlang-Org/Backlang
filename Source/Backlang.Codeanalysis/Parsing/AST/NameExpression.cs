@@ -24,17 +24,7 @@ public class NameExpression : Expression, IParsePoint<Expression>
             var arrayAccess = new ArrayAccessExpression();
             arrayAccess.Name = nameExpression;
 
-            while (iterator.Current.Type != TokenType.CloseSquare)
-            {
-                arrayAccess.Indices.Add(Expression.Parse(parser));
-
-                if (iterator.Current.Type != TokenType.CloseSquare)
-                {
-                    iterator.Match(TokenType.Comma);
-                }
-            }
-
-            iterator.Match(TokenType.CloseSquare);
+            arrayAccess.Indices.AddRange(Expression.ParseList(parser, TokenType.CloseSquare));
 
             return arrayAccess;
         }

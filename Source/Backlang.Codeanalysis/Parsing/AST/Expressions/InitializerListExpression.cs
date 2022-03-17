@@ -15,7 +15,7 @@ public class InitializerListExpression : Expression, IParsePoint<Expression>
                 break;
             }
 
-            node.Elements.Add(Parse(parser));
+            node.Elements.Add(Expression.Parse(parser));
 
             if (iterator.Current.Type != TokenType.CloseSquare)
             {

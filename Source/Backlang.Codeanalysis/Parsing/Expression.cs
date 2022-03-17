@@ -73,6 +73,28 @@ public class Expression : SyntaxNode
         return left;
     }
 
+    public static List<Expression> ParseList<TNode, TLexer, TParser>(BaseParser<TNode, TLexer, TParser> parser, TokenType terminator,
+            ParsePoints<Expression> parsePoints = null)
+
+        where TParser : BaseParser<TNode, TLexer, TParser>
+        where TLexer : BaseLexer, new()
+    {
+        var list = new List<Expression>();
+        while (parser.Iterator.Current.Type != terminator)
+        {
+            list.Add(Expression.Parse(parser));
+
+            if (parser.Iterator.Current.Type != terminator)
+            {
+                parser.Iterator.Match(TokenType.Comma);
+            }
+        }
+
+        parser.Iterator.Match(terminator);
+
+        return list;
+    }
+
     public override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.Visit(this);
