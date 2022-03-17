@@ -29,6 +29,7 @@ public enum TokenType
     Minus,
 
     [Lexeme("&")]
+    [PreUnaryOperatorInfo(9)]
     Ampersand,
 
     [BinaryOperatorInfo(5)]
@@ -161,4 +162,7 @@ public enum TokenType
 
     [Keyword("none")]
     None,
+
+    [Keyword("type")]
+    Type,
 }

@@ -20,6 +20,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
         AddDeclarationParsePoint<RegisterDeclaration>(TokenType.Register);
+        AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Type);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
