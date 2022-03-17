@@ -4,13 +4,11 @@ using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
-using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
 namespace Backlang.Codeanalysis.Parsing;
 
 public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 {
-    public readonly ParsePoints<AssemblerBodyNode> AssemblerParsePoints = new();
     public readonly ParsePoints<SyntaxNode> DeclarationParsePoints = new();
     public readonly ParsePoints<Expression> ExpressionParsePoints = new();
     public readonly ParsePoints<Statement> StatementParsePoints = new();
@@ -32,12 +30,6 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
-    }
-
-    public void AddAssemblerParsePoint<T>(TokenType type)
-            where T : IParsePoint<AssemblerBodyNode>
-    {
-        AssemblerParsePoints.Add(type, T.Parse);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)

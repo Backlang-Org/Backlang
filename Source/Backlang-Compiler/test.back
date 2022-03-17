@@ -18,7 +18,7 @@ fn doSomething() {
 			xor EAX, EAX, EAX;
 		}
 
-		move &[0xFF + 4], 42
+		move &[0xFF + 4], 42;
 		jmp $something;
 	}
 

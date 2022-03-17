@@ -16,7 +16,7 @@ public class MatchExpression : Expression, IParsePoint<Expression>
     public static Expression Parse(TokenIterator iterator, Parser parser)
     {
         MatchExpression result = new MatchExpression();
-        result.MatchArgument = Expression.Parse(parser);
+        result.MatchArgument = Parse(parser);
 
         iterator.Match(TokenType.With);
 

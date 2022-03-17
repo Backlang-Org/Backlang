@@ -28,7 +28,11 @@ public class Expression : SyntaxNode
         }
     }
 
-    public static Expression Parse<TNode, TLexer, TParser>(BaseParser<TNode, TLexer, TParser> parser, int parentPrecedence = 0)
+    public static Expression Parse<TNode, TLexer, TParser>(
+        BaseParser<TNode, TLexer, TParser> parser,
+        ParsePoints<Expression> parsePoints = null,
+        int parentPrecedence = 0)
+
         where TParser : BaseParser<TNode, TLexer, TParser>
         where TLexer : BaseLexer, new()
     {
@@ -38,13 +42,13 @@ public class Expression : SyntaxNode
         if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
             Token? operatorToken = parser.Iterator.NextToken();
-            Expression? operand = Parse(parser, unaryOperatorPrecedence + 1);
+            Expression? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
             left = new UnaryExpression(operatorToken, operand, false);
         }
         else
         {
-            left = parser.ParsePrimary();
+            left = parser.ParsePrimary(parsePoints);
 
             if (IsPostUnary(parser.Iterator.Current.Type))
             {
@@ -61,7 +65,7 @@ public class Expression : SyntaxNode
                 break;
 
             var operatorToken = parser.Iterator.NextToken();
-            var right = Parse(parser, precedence);
+            var right = Parse(parser, parsePoints, precedence);
 
             left = new BinaryExpression(left, operatorToken, right);
         }

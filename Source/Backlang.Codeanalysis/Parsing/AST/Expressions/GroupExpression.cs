@@ -11,7 +11,7 @@ public class GroupExpression : Expression, IParsePoint<Expression>
 
     public static Expression Parse(TokenIterator iterator, Parser parser)
     {
-        var expr = Expression.Parse(parser);
+        var expr = Parse(parser);
 
         iterator.Match(TokenType.CloseParen);
 
