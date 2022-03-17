@@ -202,6 +202,13 @@ public class Emitter
             | ((Instruction)rhs) << 24);
     }
 
+    public void PollTime(Register high, Register low)
+    {
+        writer.Write(0x0033_0000_0000_0000
+            | ((Instruction)high) << 40
+            | ((Instruction)low << 32));
+    }
+
     public void PopRegister(Register register)
     {
         writer.Write(0x0016_0000_0000_0000 | ((Instruction)register) << 40);

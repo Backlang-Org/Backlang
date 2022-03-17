@@ -1,7 +1,7 @@
 ﻿register EAX = 0;
 
 type int = i32;
-
+const bits = 32;
 
 fn main() -> i32 {
 	let something : int* = 12;
@@ -11,6 +11,9 @@ fn main() -> i32 {
 
 fn doSomething() {
 	print("Hello World");
+	declare arr = [12, 42, 3];
+
+	print(arr[0]);
 
 	asm {
 		mov EAX, 12;
