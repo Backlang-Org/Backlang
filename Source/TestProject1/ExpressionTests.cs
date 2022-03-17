@@ -9,6 +9,48 @@ namespace TestProject1;
 public class ExpressionTests : ParserTestBase
 {
     [TestMethod]
+    public void ArrayAccess_With_Indices_Should_Pass()
+    {
+        var src = "arr[0, 1];";
+        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+
+        Assert.IsInstanceOfType(tree.Expression, typeof(ArrayAccessExpression));
+
+        var arr = (ArrayAccessExpression)tree.Expression;
+
+        Assert.AreEqual(arr.Name.Name, "arr");
+        Assert.AreEqual(arr.Indices.Count, 2);
+    }
+
+    [TestMethod]
+    public void ArrayAccess_With_One_Index_Addition_Should_Pass()
+    {
+        var src = "arr[1+2];";
+        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+
+        Assert.IsInstanceOfType(tree.Expression, typeof(ArrayAccessExpression));
+
+        var arr = (ArrayAccessExpression)tree.Expression;
+
+        Assert.AreEqual(arr.Name.Name, "arr");
+        Assert.AreEqual(arr.Indices.Count, 1);
+    }
+
+    [TestMethod]
+    public void ArrayAccess_With_One_Index_Should_Pass()
+    {
+        var src = "arr[0];";
+        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+
+        Assert.IsInstanceOfType(tree.Expression, typeof(ArrayAccessExpression));
+
+        var arr = (ArrayAccessExpression)tree.Expression;
+
+        Assert.AreEqual(arr.Name.Name, "arr");
+        Assert.AreEqual(arr.Indices.Count, 1);
+    }
+
+    [TestMethod]
     public void Empty_InitializerList_Should_Pass()
     {
         var src = "[];";
