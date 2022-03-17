@@ -28,7 +28,6 @@ public enum TokenType
     [Lexeme("-")]
     Minus,
 
-    [PreUnaryOperatorInfo(9)]
     [Lexeme("&")]
     Ampersand,
 
@@ -97,6 +96,9 @@ public enum TokenType
 
     [Lexeme(",")]
     Comma,
+
+    [Lexeme("$")]
+    Dollar,
 
     [Lexeme("==")]
     EqualsEquals,

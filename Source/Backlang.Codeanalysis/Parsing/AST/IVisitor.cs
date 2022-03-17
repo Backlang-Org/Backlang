@@ -2,19 +2,20 @@
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
 public interface IVisitor<T>
 {
     T Visit(InvalidNode invalidNode);
-
+    T Visit(Instruction instruction);
     T Visit(VariableDeclarationStatement variableDeclarationStatement);
 
     T Visit(LiteralNode literal);
 
     T Visit(StructDeclaration structDeclaration);
-
+    T Visit(AssemblerBlockStatement assemblerBlockStatement);
     T Visit(RegisterDeclaration registerDeclaration);
 
     T Visit(BitFieldDeclaration bitFieldDeclaration);
@@ -60,4 +61,5 @@ public interface IVisitor<T>
     T Visit(ParameterDeclaration parameterDeclaration);
 
     T Visit(TypeLiteral typeLiteral);
+    T Visit(LabelBlockDefinition labelBlockDefinition);
 }
