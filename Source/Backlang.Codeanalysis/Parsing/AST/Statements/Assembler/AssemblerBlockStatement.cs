@@ -6,7 +6,7 @@ public class AssemblerBlockStatement : Statement, IParsePoint<Statement>
 
     static AssemblerBlockStatement()
     {
-        AddAssemblerExpressionParsePoint<AddressOperationExpression>(TokenType.Ampersand);
+        AddAssemblerExpressionParsePoint<AddressOperationExpression>(TokenType.OpenSquare);
         AddAssemblerExpressionParsePoint<LabelReferenceExpression>(TokenType.Dollar);
         AddAssemblerExpressionParsePoint<RegisterReferenceExpression>(TokenType.Identifier);
     }
@@ -42,6 +42,7 @@ public class AssemblerBlockStatement : Statement, IParsePoint<Statement>
                 // opcode arg1, arg2, ... ;
                 var instruction = new Instruction();
 
+                //ToDo: Check is opcode name is valid: Opcode Enum TryParse
                 instruction.OpCode = iterator.NextToken().Text;
 
                 while (iterator.Current.Type != TokenType.Semicolon)

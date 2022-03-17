@@ -20,8 +20,11 @@ public class AssemblerTests
 
         var expr = Expression.Parse(new Parser(null, tokens, lexer.Messages), AssemblerBlockStatement.ExpressionParsePoints);
 
-        Assert.IsInstanceOfType(expr, typeof(AddressOperationExpression));
-        Assert.IsInstanceOfType(((AddressOperationExpression)expr).Expression, typeof(BinaryExpression));
+        Assert.IsInstanceOfType(expr, typeof(UnaryExpression));
+
+        var unary = (UnaryExpression)expr;
+
+        Assert.IsInstanceOfType(((AddressOperationExpression)unary.Expression).Expression, typeof(BinaryExpression));
     }
 
     [TestMethod]
