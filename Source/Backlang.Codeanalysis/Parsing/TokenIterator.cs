@@ -20,6 +20,7 @@ public class TokenIterator
             return NextToken();
 
         Messages.Add(Message.Error($"Expected {kind} but got {Current.Type}", Current.Line, Current.Column));
+        NextToken();
 
         return Token.Invalid;
     }
