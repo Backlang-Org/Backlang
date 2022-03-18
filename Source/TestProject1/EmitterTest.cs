@@ -13,7 +13,7 @@ public class EmitterTests
     public void EmitAddTerminalOutput_Should_Pass()
     {
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize("{ mov 65, A; mov 1, B; add A, A, B; }");
+        var tokens = lexer.Tokenize("{ mov 65, A; mov 1, B; add C, B, A; }");
         var parser = new Parser(null, tokens, lexer.Messages);
 
         var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
@@ -27,7 +27,7 @@ public class EmitterTests
     public void EmitTerminalOutput_Should_Pass()
     {
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize("{ mov 65, A; mov &[2], A; }");
+        var tokens = lexer.Tokenize("{ mov 66, &[0]; mov 65, A; mov A, &[0x4]; mov 67, &[0x8]; hlt; }");
         var parser = new Parser(null, tokens, lexer.Messages);
 
         var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);

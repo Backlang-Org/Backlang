@@ -22,6 +22,14 @@ public class AssemblyEmitter
         return emitter.Result;
     }
 
+    private static uint ConvertAddressNumber(LiteralNode lit)
+    {
+        var literalBytes = BitConverter.GetBytes((int)Convert.ChangeType(lit.Value, typeof(int)));
+
+        var value = BitConverter.ToUInt32(literalBytes.ToArray());
+        return value;
+    }
+
     private static uint ConvertNumber(LiteralNode lit)
     {
         var literalBytes = BitConverter.GetBytes((long)lit.Value);
@@ -36,7 +44,7 @@ public class AssemblyEmitter
         var second = instruction.Arguments[1];
         var third = instruction.Arguments[2];
 
-        if (first is RegisterReferenceExpression target && second is RegisterReferenceExpression source && third is Expression imm)
+        if (first is RegisterReferenceExpression target && second is RegisterReferenceExpression source && third is LiteralNode imm)
         {
             var targetRegister = GetRegisterIndex(target);
             var sourceRegister = GetRegisterIndex(source);
@@ -50,7 +58,7 @@ public class AssemblyEmitter
             var lhsRegister = GetRegisterIndex(lhs);
             var rhsRegsiter = GetRegisterIndex(rhs);
 
-            emitter.Add(targetRegister, lhsRegister, rhsRegsiter);
+            emitter.AddTarget(targetRegister, lhsRegister, rhsRegsiter);
         }
     }
 
@@ -87,6 +95,7 @@ public class AssemblyEmitter
                 break;
 
             case OpCode.Subtract:
+                EmitSubtract(emitter, instruction);
                 break;
 
             case OpCode.Multiply:
@@ -174,13 +183,36 @@ public class AssemblyEmitter
 
             emitter.MoveRegisterImmediate(GetRegisterIndex(reg), value);
         }
-        else if (source is UnaryExpression unary2
+        else if (target is UnaryExpression unary2
             && unary2.OperatorToken.Text == "&"
             && unary2.Expression is AddressOperationExpression addr2
-            && target is RegisterReferenceExpression reg2)
+            && source is RegisterReferenceExpression reg2)
         {
-            //ToDo: Fix
             emitter.MoveAddressRegister(EvaluateExpression(addr2.Expression), GetRegisterIndex(reg2));
+        }
+    }
+
+    private void EmitSubtract(Emitter emitter, Instruction instruction)
+    {
+        var first = instruction.Arguments[0];
+        var second = instruction.Arguments[1];
+        var third = instruction.Arguments[2];
+
+        if (first is RegisterReferenceExpression target && second is RegisterReferenceExpression source && third is Expression imm)
+        {
+            var targetRegister = GetRegisterIndex(target);
+            var sourceRegister = GetRegisterIndex(source);
+            var value = EvaluateExpression(imm);
+
+            emitter.Subtract(targetRegister, sourceRegister, value);
+        }
+        else if (first is RegisterReferenceExpression target2 && second is RegisterReferenceExpression lhs && third is RegisterReferenceExpression rhs)
+        {
+            var targetRegister = GetRegisterIndex(target2);
+            var lhsRegister = GetRegisterIndex(lhs);
+            var rhsRegsiter = GetRegisterIndex(rhs);
+
+            emitter.SubtractTarget(targetRegister, lhsRegister, rhsRegsiter);
         }
     }
 
@@ -188,7 +220,7 @@ public class AssemblyEmitter
     {
         if (expr is LiteralNode lit)
         {
-            return ConvertNumber(lit);
+            return ConvertAddressNumber(lit);
         }
         else if (expr is BinaryExpression binary)
         {
@@ -216,7 +248,12 @@ public class AssemblyEmitter
 
         if (reg.RegisterName == "B")
         {
-            return 1;
+            return 2;
+        }
+
+        if (reg.RegisterName == "C")
+        {
+            return 3;
         }
 
         return 0;

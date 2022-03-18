@@ -9,8 +9,6 @@ public class AddressOperationExpression : Expression, IParsePoint<Expression>
         //[0xFF + 4]
         var node = new AddressOperationExpression();
 
-        iterator.Match(TokenType.OpenSquare);
-
         node.Expression = Expression.Parse(parser);
 
         iterator.Match(TokenType.CloseSquare);
