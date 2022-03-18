@@ -11,6 +11,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Be.IO" Version="1.0.0" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
 		<PackageReference Include="Flo" Version="0.3.0" />
 	</ItemGroup>
