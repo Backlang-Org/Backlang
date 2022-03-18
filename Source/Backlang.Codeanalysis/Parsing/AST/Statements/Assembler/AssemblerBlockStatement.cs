@@ -43,7 +43,12 @@ public class AssemblerBlockStatement : Statement, IParsePoint<Statement>
                 var instruction = new Instruction();
 
                 //ToDo: Check is opcode name is valid: Opcode Enum TryParse
-                instruction.OpCode = iterator.NextToken().Text;
+                var opCodeToken = iterator.NextToken();
+                instruction.OpCode = opCodeToken.Text;
+                if (!Enum.TryParse<OpCode>(instruction.OpCode, true, out var result))
+                {
+                    parser.Messages.Add(Message.Error("Unknown Opcode '{instruction.OpCode}'", opCodeToken.Line, opCodeToken.Column));
+                }
 
                 while (iterator.Current.Type != TokenType.Semicolon)
                 {
