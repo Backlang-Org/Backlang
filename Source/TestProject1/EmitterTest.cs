@@ -36,4 +36,18 @@ public class EmitterTests
 
         File.WriteAllBytes("emitter.backseat", body);
     }
+
+    [TestMethod]
+    public void EmitTerminalWithJumpOutput_Should_Pass()
+    {
+        var lexer = new Lexer();
+        var tokens = lexer.Tokenize("{ mov 65, &[0]; mov &[0], A; add A, A, 1; add B, B, 0x4; hlt; }");
+        var parser = new Parser(null, tokens, lexer.Messages);
+
+        var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
+        var emitter = new AssemblyEmitter();
+        var body = emitter.Emit((AssemblerBlockStatement)node);
+
+        File.WriteAllBytes("emitter.backseat", body);
+    }
 }

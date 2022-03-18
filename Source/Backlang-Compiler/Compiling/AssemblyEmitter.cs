@@ -138,6 +138,7 @@ public class AssemblyEmitter
                 break;
 
             case OpCode.Jmp:
+                EmitJmp(instruction, emitter);
                 break;
 
             case OpCode.Jmpe:
@@ -159,6 +160,21 @@ public class AssemblyEmitter
 
             default:
                 break;
+        }
+    }
+
+    private void EmitJmp(Instruction instruction, Emitter emitter)
+    {
+        var arg = instruction.Arguments[0];
+
+        if (arg is LiteralNode addr)
+        {
+            emitter.MoveRegisterImmediate(0, EvaluateExpression(addr));
+            emitter.EmitJump(0);
+        }
+        else if (arg is RegisterReferenceExpression reg)
+        {
+            emitter.EmitJump(GetRegisterIndex(reg));
         }
     }
 
@@ -189,6 +205,13 @@ public class AssemblyEmitter
             && source is RegisterReferenceExpression reg2)
         {
             emitter.MoveAddressRegister(EvaluateExpression(addr2.Expression), GetRegisterIndex(reg2));
+        }
+        else if (source is UnaryExpression unary3
+            && unary3.OperatorToken.Text == "&"
+            && unary3.Expression is AddressOperationExpression addr3
+            && target is RegisterReferenceExpression reg3)
+        {
+            emitter.MoveRegisterAddress(GetRegisterIndex(reg3), EvaluateExpression(addr3.Expression));
         }
     }
 
