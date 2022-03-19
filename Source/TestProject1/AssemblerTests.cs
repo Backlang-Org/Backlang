@@ -72,4 +72,20 @@ public class AssemblerTests
 
         Assert.AreEqual(((LabelReferenceExpression)expr).Label, "eax");
     }
+
+    [TestMethod]
+    public void PTROperation_Should_Pass()
+    {
+        var src = "&[PTR 0xFF + 4]";
+        var lexer = new Lexer();
+        var tokens = lexer.Tokenize(src);
+
+        var expr = Expression.Parse(new Parser(null, tokens, lexer.Messages), AssemblerBlockStatement.ExpressionParsePoints);
+
+        Assert.IsInstanceOfType(expr, typeof(UnaryExpression));
+
+        var unary = (UnaryExpression)expr;
+
+        Assert.IsInstanceOfType(((AddressOperationExpression)unary.Expression).Expression, typeof(BinaryExpression));
+    }
 }

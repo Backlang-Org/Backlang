@@ -41,7 +41,7 @@ public class EmitterTests
     public void EmitTerminalWithJumpOutput_Should_Pass()
     {
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize("{ mov 65, &[0]; mov &[0], A; add A, A, 1; add B, B, 0x4; hlt; }");
+        var tokens = lexer.Tokenize("{ mov 65, &[0]; mov &[0], A; add A, A, 1; add B, B, 0x4; mov B, &[PTR 0xFF]; jmp 0; hlt; }");
         var parser = new Parser(null, tokens, lexer.Messages);
 
         var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);

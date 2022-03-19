@@ -66,6 +66,10 @@ public enum TokenType
     [PreUnaryOperatorInfo(10)]
     Hash,
 
+    [Keyword("PTR")]
+    [PreUnaryOperatorInfo(1)]
+    PTR,
+
     [Lexeme("<")]
     [BinaryOperatorInfo(5)]
     LessThan,

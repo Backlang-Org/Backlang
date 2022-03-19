@@ -204,14 +204,38 @@ public class AssemblyEmitter
             && unary2.Expression is AddressOperationExpression addr2
             && source is RegisterReferenceExpression reg2)
         {
-            emitter.MoveAddressRegister(EvaluateExpression(addr2.Expression), GetRegisterIndex(reg2));
+            if (addr2.Expression is UnaryExpression ptrUnary)
+            {
+                if (ptrUnary.OperatorToken.Text == "PTR")
+                {
+                    var ptr = EvaluateExpression(ptrUnary.Expression);
+                    emitter.MoveRegisterImmediate(0, ptr);
+                    emitter.MovePointerSource(GetRegisterIndex(reg2), 0);
+                }
+            }
+            else
+            {
+                emitter.MoveAddressRegister(EvaluateExpression(addr2.Expression), GetRegisterIndex(reg2));
+            }
         }
         else if (source is UnaryExpression unary3
             && unary3.OperatorToken.Text == "&"
             && unary3.Expression is AddressOperationExpression addr3
             && target is RegisterReferenceExpression reg3)
         {
-            emitter.MoveRegisterAddress(GetRegisterIndex(reg3), EvaluateExpression(addr3.Expression));
+            if (addr3.Expression is UnaryExpression ptrUnary)
+            {
+                if (ptrUnary.OperatorToken.Text == "PTR")
+                {
+                    var ptr = EvaluateExpression(ptrUnary.Expression);
+                    emitter.MoveRegisterImmediate(0, ptr);
+                    emitter.MovePointerSource(0, GetRegisterIndex(reg3));
+                }
+            }
+            else
+            {
+                emitter.MoveRegisterAddress(GetRegisterIndex(reg3), EvaluateExpression(addr3.Expression));
+            }
         }
     }
 

@@ -16,12 +16,13 @@ fn doSomething() {
 	print(arr[0]);
 
 	asm {
-		mov EAX, 12;
+		mov 12, EAX;
 		something {
 			xor EAX, EAX, EAX;
 		}
 
-		move &[0xFF + 4], 42;
+		move 42, &[0xFF + 4];
+		move &[0xFF + 4], &[PTR 0x4];
 		jmp $something;
 	}
 
