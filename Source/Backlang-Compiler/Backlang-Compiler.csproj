@@ -10,6 +10,14 @@
 	  <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="machineinfo.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="machineinfo.json" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Be.IO" Version="1.0.0" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
@@ -25,6 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="System.Runtime.Experimental" Version="6.0.0" />
 		<PackageReference Include="Tomlyn" Version="0.14.0" />
 	</ItemGroup>

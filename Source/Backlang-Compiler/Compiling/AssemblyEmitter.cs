@@ -7,9 +7,9 @@ namespace Backlang_Compiler.Compiling;
 
 public class AssemblyEmitter
 {
-    public byte[] Emit(AssemblerBlockStatement node)
+    public byte[] Emit(AssemblerBlockStatement node, out Emitter emitter)
     {
-        var emitter = new Emitter();
+        emitter = new Emitter();
 
         foreach (var bodynode in node.Body)
         {
@@ -167,14 +167,13 @@ public class AssemblyEmitter
     {
         var arg = instruction.Arguments[0];
 
-        if (arg is LiteralNode addr)
+        if (arg is RegisterReferenceExpression reg)
         {
-            emitter.MoveRegisterImmediate(0, EvaluateExpression(addr));
-            emitter.EmitJump(0);
+            emitter.EmitJumpRegister(GetRegisterIndex(reg));
         }
-        else if (arg is RegisterReferenceExpression reg)
+        else if (arg is Expression addr)
         {
-            emitter.EmitJump(GetRegisterIndex(reg));
+            emitter.EmitJump(EvaluateExpression(addr));
         }
     }
 

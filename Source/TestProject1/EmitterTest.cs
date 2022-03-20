@@ -13,12 +13,27 @@ public class EmitterTests
     public void EmitAddTerminalOutput_Should_Pass()
     {
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize("{ mov 65, A; mov 1, B; add C, B, A; }");
+        var tokens = lexer.Tokenize("{ mov A, 65; mov &[0], A; hlt;}");
         var parser = new Parser(null, tokens, lexer.Messages);
 
         var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
         var emitter = new AssemblyEmitter();
-        var body = emitter.Emit((AssemblerBlockStatement)node);
+        var body = emitter.Emit((AssemblerBlockStatement)node, out var _);
+
+        File.WriteAllBytes("emitter.backseat", body);
+    }
+
+    [TestMethod]
+    public void EmitCounterTerminalWithJumpOutput_Should_Pass()
+    {
+        var lexer = new Lexer();
+        var tokens = lexer.Tokenize("{ mov 65, &[0]; mov &[0], A; add A, A, 1; mov A, &[0]; jmp 0x81F48 + 16; }");
+        var parser = new Parser(null, tokens, lexer.Messages);
+
+        var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
+        var emitter = new AssemblyEmitter();
+
+        var body = emitter.Emit((AssemblerBlockStatement)node, out var e);
 
         File.WriteAllBytes("emitter.backseat", body);
     }
@@ -32,7 +47,7 @@ public class EmitterTests
 
         var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
         var emitter = new AssemblyEmitter();
-        var body = emitter.Emit((AssemblerBlockStatement)node);
+        var body = emitter.Emit((AssemblerBlockStatement)node, out var _);
 
         File.WriteAllBytes("emitter.backseat", body);
     }
@@ -46,7 +61,7 @@ public class EmitterTests
 
         var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
         var emitter = new AssemblyEmitter();
-        var body = emitter.Emit((AssemblerBlockStatement)node);
+        var body = emitter.Emit((AssemblerBlockStatement)node, out var _);
 
         File.WriteAllBytes("emitter.backseat", body);
     }
