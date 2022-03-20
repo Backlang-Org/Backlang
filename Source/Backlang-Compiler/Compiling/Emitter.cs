@@ -157,6 +157,12 @@ public class Emitter
         _writer.Write(System.Text.Encoding.ASCII.GetBytes(value));
     }
 
+    public void EmitNegate(Register target, Register source)
+    {
+        Not(target, source);
+        Add(target, target, 1);
+    }
+
     public void EmitNoneLiteral()
     {
         _writer.Write(0x0000_0000_0000_0000);
