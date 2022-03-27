@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
@@ -7,6 +7,13 @@ namespace Backlang_Compiler.Compiling;
 
 public class AssemblyEmitter
 {
+    private Dictionary<string, byte> _registers = new();
+
+    public AssemblyEmitter()
+    {
+        InitRegisters();
+    }
+
     public byte[] Emit(AssemblerBlockStatement node, out Emitter emitter)
     {
         emitter = new Emitter();
@@ -287,21 +294,27 @@ public class AssemblyEmitter
 
     private byte GetRegisterIndex(RegisterReferenceExpression reg)
     {
-        if (reg.RegisterName == "A")
+        if (_registers.ContainsKey(reg.RegisterName))
         {
-            return 1;
-        }
-
-        if (reg.RegisterName == "B")
-        {
-            return 2;
-        }
-
-        if (reg.RegisterName == "C")
-        {
-            return 3;
+            return _registers[reg.RegisterName];
         }
 
         return 0;
+    }
+
+    private void InitRegisters()
+    {
+        const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        //A, B, .. Z, AA, AB, AAA, ..
+        for (byte i = 0; i < 251; i++)
+        {
+            _registers.Add(ALPHABET[i % 26] + ((i / 26) == 0 ? "" : ALPHABET[i / 26 - 1].ToString()), i);
+        }
+
+        _registers.Add("CCH", 251); // Cycle Count High
+        _registers.Add("CCL", 252); // Cycle Count Low
+        _registers.Add("FLGS", 253); // Flags
+        _registers.Add("IP", 254); // Instruction Pointer
+        _registers.Add("SP", 255); // Stack Pointer
     }
 }
