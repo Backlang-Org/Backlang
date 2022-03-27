@@ -1,4 +1,6 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
+
+namespace Backlang.Codeanalysis.Parsing.AST;
 
 public class ArrayAccessExpression : Expression
 {

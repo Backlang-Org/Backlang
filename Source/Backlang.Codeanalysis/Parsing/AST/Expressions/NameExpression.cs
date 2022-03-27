@@ -1,4 +1,5 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
 public class NameExpression : Expression, IParsePoint<Expression>
 {
