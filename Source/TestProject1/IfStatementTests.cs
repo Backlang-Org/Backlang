@@ -12,8 +12,6 @@ public class IfStatementTests : ParserTestBase
     {
         var src = "if a < b && c { if !d { 42; } else { 1; } } else { 3; }";
         var tree = ParseAndGetNodeInFunction<IfStatement>(src);
-
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
     }
 
     [TestMethod]
@@ -22,7 +20,6 @@ public class IfStatementTests : ParserTestBase
         var src = "if true { none; } else { 42; }";
         var tree = ParseAndGetNodeInFunction<IfStatement>(src);
 
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
         Assert.IsNotNull(tree.ElseBody);
     }
 
@@ -31,8 +28,6 @@ public class IfStatementTests : ParserTestBase
     {
         var src = "if a < b && c { if !d { 42; } else { 1; } }";
         var tree = ParseAndGetNodeInFunction<IfStatement>(src);
-
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
     }
 
     [TestMethod]
@@ -40,8 +35,6 @@ public class IfStatementTests : ParserTestBase
     {
         var src = "if a < b && c { if !d { 42; } }";
         var tree = ParseAndGetNodeInFunction<IfStatement>(src);
-
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
     }
 
     [TestMethod]
@@ -49,8 +42,6 @@ public class IfStatementTests : ParserTestBase
     {
         var src = "if a < b && c { none; }";
         var tree = ParseAndGetNodeInFunction<IfStatement>(src);
-
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
     }
 
     [TestMethod]

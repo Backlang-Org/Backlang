@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1;
@@ -12,7 +11,5 @@ public class WhileStatementTests : ParserTestBase
     {
         var src = "while a < b && c { if !d { 42; } else { 1; } }";
         var tree = ParseAndGetNodeInFunction<WhileStatement>(src);
-
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
     }
 }

@@ -14,6 +14,6 @@ public class MatchTests : ParserTestBase
         var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
         var matchExpression = (MatchExpression)tree.Expression;
 
-        Assert.AreEqual(matchExpression.Rules.Count, 4);
+        Assert.AreEqual(matchExpression.Rules.Count, 5);
     }
 }

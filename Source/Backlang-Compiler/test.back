@@ -26,6 +26,12 @@ fn doSomething() {
 		jmp $something;
 	}
 
+	/*
+	multi
+	line
+	comment
+	*/
+
 	while true { 
 		doSomething(2);	
 	}
