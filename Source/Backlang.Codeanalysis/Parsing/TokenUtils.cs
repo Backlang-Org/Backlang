@@ -34,4 +34,17 @@ public static class TokenUtils
 
         return TokenType.Identifier;
     }
+
+    public static bool IsOperator(this Token token)
+    {
+        foreach (var opInfo in Expression.Operators)
+        {
+            if (opInfo.TokenType == token.Type)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

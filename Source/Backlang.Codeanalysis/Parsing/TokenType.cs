@@ -169,4 +169,13 @@ public enum TokenType
 
     [Keyword("type")]
     Type,
+
+    [Keyword("if")]
+    If,
+
+    [Keyword("else")]
+    Else,
+
+    [Keyword("while")]
+    While,
 }

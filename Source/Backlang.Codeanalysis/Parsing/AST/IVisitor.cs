@@ -11,6 +11,8 @@ public interface IVisitor<T>
     T Visit(InvalidNode invalidNode);
     T Visit(Instruction instruction);
     T Visit(VariableDeclarationStatement variableDeclarationStatement);
+    T Visit(WhileStatement whileStatement);
+    T Visit(IfStatement ifStatement);
     T Visit(TypeAliasDeclaration typeAliasDeclaration);
     T Visit(LiteralNode literal);
 

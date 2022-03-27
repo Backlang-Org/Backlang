@@ -31,6 +31,21 @@ public class MatchRule
 
             return simpleRule;
         }
+        else if (iterator.Current.IsOperator()) // > 12 => false
+        {
+            var condRule = new ConditionRule();
+
+            condRule.OperatorToken = iterator.Current;
+            iterator.NextToken();
+
+            condRule.Condition = Expression.Parse(parser);
+
+            iterator.Match(TokenType.GoesTo);
+
+            condRule.Result = Expression.Parse(parser);
+
+            return condRule;
+        }
         else if (iterator.Current.Type == TokenType.Identifier && iterator.Peek(1).Type == TokenType.Identifier) //i32 num => num + 2
         {
             var namedRule = new TypeNameRule();

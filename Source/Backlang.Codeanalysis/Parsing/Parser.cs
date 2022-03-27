@@ -31,6 +31,8 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
+        AddStatementParsePoint<IfStatement>(TokenType.If);
+        AddStatementParsePoint<WhileStatement>(TokenType.While);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)

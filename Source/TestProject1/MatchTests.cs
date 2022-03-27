@@ -10,7 +10,7 @@ public class MatchTests : ParserTestBase
     [TestMethod]
     public void All_Rules_Should_Pass()
     {
-        var src = "match input with 12 => 1, i32 => 32, i32 num => num + 2, _ => 3;";
+        var src = "match input with 12 => 1, i32 => 32, i32 num => num + 2, _ => 3, > 12 => 15;";
         var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
         var matchExpression = (MatchExpression)tree.Expression;
 

@@ -102,16 +102,16 @@ public class Expression : SyntaxNode
 
     private static int GetBinaryOperatorPrecedence(TokenType kind)
     {
-        return Operators.FirstOrDefault(_ => _.Token == kind && !_.IsUnary).Precedence;
+        return Operators.FirstOrDefault(_ => _.TokenType == kind && !_.IsUnary).Precedence;
     }
 
     private static int GetUnaryOperatorPrecedence(TokenType kind)
     {
-        return Operators.FirstOrDefault(_ => _.Token == kind && _.IsUnary).Precedence;
+        return Operators.FirstOrDefault(_ => _.TokenType == kind && _.IsUnary).Precedence;
     }
 
     private static bool IsPostUnary(TokenType kind)
     {
-        return Operators.FirstOrDefault(_ => _.Token == kind && _.IsUnary).IsPostUnary;
+        return Operators.FirstOrDefault(_ => _.TokenType == kind && _.IsUnary).IsPostUnary;
     }
 }
