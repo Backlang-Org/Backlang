@@ -1,4 +1,6 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
@@ -33,17 +35,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        iterator.Match(TokenType.OpenCurly);
-
-        var body = new Block();
-        while (iterator.Current.Type != (TokenType.CloseCurly))
-        {
-            body.Body.Add(parser.InvokeStatementParsePoint());
-        }
-
-        iterator.Match(TokenType.CloseCurly);
-
-        return new FunctionDeclaration(name, returnType, parameters, body);
+        return new FunctionDeclaration(name, returnType, parameters, Statement.ParseBlock(parser));
     }
 
     public override T Accept<T>(IVisitor<T> visitor)
