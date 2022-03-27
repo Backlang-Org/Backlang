@@ -214,6 +214,8 @@ public class Lexer : BaseLexer
         {
             Advance();
             Advance();
+            _column++;
+            _column++;
 
             while (Current() != '\n' && Current() != '\r' && Current() != '\0')
             {
@@ -226,6 +228,29 @@ public class Lexer : BaseLexer
                 Advance();
                 _column++;
             }
+        }
+        else if (IsMatch("/*"))
+        {
+            Advance();
+            Advance();
+            _column++;
+            _column++;
+
+            while (!IsMatch("*/"))
+            {
+                Advance();
+            }
+
+            if (IsMatch("*/"))
+            {
+                Advance();
+                _column++;
+
+                Advance();
+                _column++;
+            }
+
+            SkipWhitespaces();
         }
     }
 

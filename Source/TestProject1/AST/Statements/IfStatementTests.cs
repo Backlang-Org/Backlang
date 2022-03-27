@@ -1,7 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestProject1;
 
 namespace TestProject1.AST.Statements;
 
@@ -11,7 +10,7 @@ public class IfStatementTests : ParserTestBase
     [TestMethod]
     public void If_Else_In_If_Else_Should_Pass()
     {
-        var src = "if a < b && c { if !d { 42; } else { 1; } } else { 3; }";
+        var src = "if a < b && c { if !d { 42; } /* else { 1; } */ } else { 3; }";
         var tree = ParseAndGetNodeInFunction<IfStatement>(src);
     }
 
