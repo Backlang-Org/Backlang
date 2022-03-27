@@ -84,8 +84,8 @@ public class AssemblerTests
 
         Assert.IsInstanceOfType(expr, typeof(UnaryExpression));
 
-        var unary = (UnaryExpression)expr;
+        var unary = (UnaryExpression)((AddressOperationExpression)((UnaryExpression)expr).Expression).Expression;
 
-        Assert.IsInstanceOfType(((AddressOperationExpression)unary.Expression).Expression, typeof(BinaryExpression));
+        Assert.IsInstanceOfType(unary.Expression, typeof(BinaryExpression));
     }
 }

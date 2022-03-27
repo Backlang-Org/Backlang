@@ -2,7 +2,7 @@
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace TestProject1;
+namespace TestProject1.AST.Declarations;
 
 [TestClass]
 public class BitFieldTests : ParserTestBase

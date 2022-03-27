@@ -3,6 +3,9 @@
 type int = i32;
 const bits = 32;
 
+global flags : Flags = #EAX;
+global behavior : Flags = &250;
+
 fn main() -> i32 {
 	let something : int* = 12;
 	doSomething();

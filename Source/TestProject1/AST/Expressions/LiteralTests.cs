@@ -1,8 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TestProject1;
 
-namespace TestProject1;
+namespace TestProject1.AST.Expressions;
 
 [TestClass]
 public class LiteralTests

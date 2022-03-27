@@ -1,8 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TestProject1;
 
-namespace TestProject1;
+namespace TestProject1.AST.Statements;
 
 [TestClass]
 public class IfStatementTests : ParserTestBase

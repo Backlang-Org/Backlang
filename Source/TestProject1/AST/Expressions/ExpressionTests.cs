@@ -2,8 +2,9 @@
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TestProject1;
 
-namespace TestProject1;
+namespace TestProject1.AST.Expressions;
 
 [TestClass]
 public class ExpressionTests : ParserTestBase

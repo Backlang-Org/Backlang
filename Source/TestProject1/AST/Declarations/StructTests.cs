@@ -1,7 +1,8 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TestProject1;
 
-namespace TestProject1;
+namespace TestProject1.AST.Declarations;
 
 [TestClass]
 public class StructTests : ParserTestBase
