@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing;
+﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
@@ -69,6 +69,68 @@ public class AssemblyEmitter
         }
     }
 
+    private void EmitAnd(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 3)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var lhsArgument = instruction.Arguments[1];
+            var rhsArgument = instruction.Arguments[2];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && lhsArgument is RegisterReferenceExpression lhsReg
+                && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+
+                emitter.And(targetIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
+    private void EmitCompare(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 3)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var lhsArgument = instruction.Arguments[1];
+            var rhsArgument = instruction.Arguments[2];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && lhsArgument is RegisterReferenceExpression lhsReg
+                && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+
+                emitter.Compare(targetIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
+    private void EmitDivMod(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 4)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var modArgument = instruction.Arguments[1];
+            var lhsArgument = instruction.Arguments[2];
+            var rhsArgument = instruction.Arguments[3];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && modArgument is RegisterReferenceExpression modReg
+                && lhsArgument is RegisterReferenceExpression lhsReg && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var modIndex = GetRegisterIndex(modReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+
+                emitter.DivMod(targetIndex, modIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
     private void EmitGks(Instruction instruction, Emitter emitter)
     {
         var first = instruction.Arguments[0];
@@ -106,36 +168,47 @@ public class AssemblyEmitter
                 break;
 
             case OpCode.Multiply:
+                EmitMultiply(emitter, instruction);
                 break;
 
             case OpCode.Divmod:
+                EmitDivMod(emitter, instruction);
                 break;
 
             case OpCode.And:
+                EmitAnd(emitter, instruction);
                 break;
 
             case OpCode.Or:
+                EmitOr(emitter, instruction);
                 break;
 
             case OpCode.Xor:
+                EmitXOr(emitter, instruction);
                 break;
 
             case OpCode.Not:
+                EmitNot(emitter, instruction);
                 break;
 
             case OpCode.Lsh:
+                EmitLeftShift(emitter, instruction);
                 break;
 
             case OpCode.Rsh:
+                EmitRightShift(emitter, instruction);
                 break;
 
             case OpCode.Cmp:
+                EmitCompare(emitter, instruction);
                 break;
 
             case OpCode.Push:
+                EmitPush(emitter, instruction);
                 break;
 
             case OpCode.Pop:
+                EmitPop(emitter, instruction);
                 break;
 
             case OpCode.Call:
@@ -181,6 +254,26 @@ public class AssemblyEmitter
         else if (arg is Expression addr)
         {
             emitter.EmitJump(EvaluateExpression(addr));
+        }
+    }
+
+    private void EmitLeftShift(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 3)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var lhsArgument = instruction.Arguments[1];
+            var rhsArgument = instruction.Arguments[2];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && lhsArgument is RegisterReferenceExpression lhsReg
+                && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+
+                emitter.LeftShift(targetIndex, lhsIndex, rhsIndex);
+            }
         }
     }
 
@@ -245,6 +338,118 @@ public class AssemblyEmitter
         }
     }
 
+    private void EmitMultiply(Emitter emitter, Instruction instruction)
+    {
+        // high, low, lhs, rhs
+
+        if (instruction.Arguments.Count == 4)
+        {
+            var highArgument = instruction.Arguments[0];
+            var lowArgument = instruction.Arguments[1];
+            var lhsArgument = instruction.Arguments[2];
+            var rhsArgument = instruction.Arguments[3];
+
+            if (highArgument is RegisterReferenceExpression highReg && lowArgument is RegisterReferenceExpression lowReg
+                && lhsArgument is RegisterReferenceExpression lhsReg && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var highIndex = GetRegisterIndex(highReg);
+                var lowIndex = GetRegisterIndex(lowReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+
+                emitter.Multiply(highIndex, lowIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
+    private void EmitNot(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 2)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var sourceArgument = instruction.Arguments[1];
+
+            if (targetArgument is RegisterReferenceExpression targetReg
+                && sourceArgument is RegisterReferenceExpression sourceReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var sourceIndex = GetRegisterIndex(sourceReg);
+
+                emitter.Not(targetIndex, sourceIndex);
+            }
+        }
+    }
+
+    private void EmitOr(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 3)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var lhsArgument = instruction.Arguments[1];
+            var rhsArgument = instruction.Arguments[2];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && lhsArgument is RegisterReferenceExpression lhsReg
+                && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+
+                emitter.Or(targetIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
+    private void EmitPop(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 1)
+        {
+            var targetArgument = instruction.Arguments[0];
+
+            if (targetArgument is RegisterReferenceExpression targetReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+
+                emitter.PopRegister(targetIndex);
+            }
+        }
+    }
+
+    private void EmitPush(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 1)
+        {
+            var targetArgument = instruction.Arguments[0];
+
+            if (targetArgument is RegisterReferenceExpression targetReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+
+                emitter.PushRegister(targetIndex);
+            }
+        }
+    }
+
+    private void EmitRightShift(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 3)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var lhsArgument = instruction.Arguments[1];
+            var rhsArgument = instruction.Arguments[2];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && lhsArgument is RegisterReferenceExpression lhsReg
+                && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+
+                emitter.RightShift(targetIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
     private void EmitSubtract(Emitter emitter, Instruction instruction)
     {
         var first = instruction.Arguments[0];
@@ -266,6 +471,26 @@ public class AssemblyEmitter
             var rhsRegsiter = GetRegisterIndex(rhs);
 
             emitter.SubtractTarget(targetRegister, lhsRegister, rhsRegsiter);
+        }
+    }
+
+    private void EmitXOr(Emitter emitter, Instruction instruction)
+    {
+        if (instruction.Arguments.Count == 3)
+        {
+            var targetArgument = instruction.Arguments[0];
+            var lhsArgument = instruction.Arguments[1];
+            var rhsArgument = instruction.Arguments[2];
+
+            if (targetArgument is RegisterReferenceExpression targetReg && lhsArgument is RegisterReferenceExpression lhsReg
+                && rhsArgument is RegisterReferenceExpression rhsReg)
+            {
+                var targetIndex = GetRegisterIndex(targetReg);
+                var lhsIndex = GetRegisterIndex(lhsReg);
+                var rhsIndex = GetRegisterIndex(rhsReg);
+
+                emitter.Xor(targetIndex, lhsIndex, rhsIndex);
+            }
         }
     }
 
