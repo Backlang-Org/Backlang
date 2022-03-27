@@ -5,6 +5,7 @@ public enum OpCode
     Mov,
     Hlt,
     Add,
+    Addc,
     Subtract,
     Multiply,
     Divmod,

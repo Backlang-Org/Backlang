@@ -1,7 +1,6 @@
 ﻿using Backlang_Compiler.TypeSystem;
 using Be.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Reflection;
 using Address = System.UInt32;
 using Instruction = System.UInt64;
@@ -13,7 +12,7 @@ namespace Backlang_Compiler.Compiling;
 
 public class Emitter
 {
-    private JObject? _machineinfo;
+    private OpcodeMap _machineinfo;
     private MemoryStream _stream;
     private BeBinaryWriter _writer;
 
@@ -25,7 +24,7 @@ public class Emitter
         var jsonStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Backlang_Compiler.machineinfo.json");
         var json = new StreamReader(jsonStream).ReadToEnd();
 
-        _machineinfo = (JObject?)JsonConvert.DeserializeObject(json);
+        _machineinfo = JsonConvert.DeserializeObject<OpcodeMap>(json);
     }
 
     public byte[] Result => _stream.ToArray();
@@ -176,11 +175,6 @@ public class Emitter
         _writer.Write(0x0000_0000_0000_0000 | ((Instruction)opcode) << 48);
     }
 
-    public long GetConstant(string name)
-    {
-        return (long)_machineinfo["constants"][name];
-    }
-
     public void GetKeyState(Register target, Register keycode)
     {
         var opcode = GetOpcodeFor("GetKeyState");
@@ -193,7 +187,7 @@ public class Emitter
 
     public short GetOpcodeFor(string name)
     {
-        return (short)_machineinfo["opcodes"][name]["opcode"];
+        return (short)GetInstructionInfo(name).opcode;
     }
 
     public void LeftShift(Register target, Register lhs, Register rhs)
@@ -357,5 +351,22 @@ public class Emitter
             | ((Instruction)target) << 40
             | ((Instruction)lhs) << 32
             | ((Instruction)rhs) << 24);
+    }
+
+    private InstructionInfo GetInstructionInfo(string name)
+    {
+        return _machineinfo.opcodes[name];
+    }
+
+    public struct InstructionInfo
+    {
+        public short opcode { get; set; }
+        public string opcode_type { get; set; }
+        public string[,] registers { get; set; }
+    }
+
+    private class OpcodeMap
+    {
+        public Dictionary<string, InstructionInfo> opcodes { get; set; } = new();
     }
 }
