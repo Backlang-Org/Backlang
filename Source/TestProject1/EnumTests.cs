@@ -7,6 +7,26 @@ namespace TestProject1;
 public class EnumTests : ParserTestBase
 {
     [TestMethod]
+    public void Enum_With_Int_Values_And_SingleLineComment_At_End_Should_Pass()
+    {
+        var src = "enum Colors { White = 0, Red = 1, Green = 2, Blue = 3, Black = 4 } // something";
+        var declaration = ParseAndGetNode<EnumDeclaration>(src);
+
+        Assert.AreEqual(declaration.Name, "Colors");
+        Assert.AreEqual(declaration.Members.Count, 5);
+    }
+
+    [TestMethod]
+    public void Enum_With_Int_Values_And_SingleLineComment_In_Middle_Should_Pass()
+    {
+        var src = "enum Colors { White = 0, Red = 1, Green = 2 //s \n, Blue = 3, Black = 4 } ";
+        var declaration = ParseAndGetNode<EnumDeclaration>(src);
+
+        Assert.AreEqual(declaration.Name, "Colors");
+        Assert.AreEqual(declaration.Members.Count, 5);
+    }
+
+    [TestMethod]
     public void Enum_With_Int_Values_Should_Pass()
     {
         var src = "enum Colors { White = 0, Red = 1, Green = 2, Blue = 3, Black = 4 }";

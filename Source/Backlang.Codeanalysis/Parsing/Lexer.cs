@@ -32,6 +32,7 @@ public class Lexer : BaseLexer
     protected override Token NextToken()
     {
         SkipWhitespaces();
+        SkipComments();
 
         if (_position >= _source.Length)
         {
@@ -205,6 +206,27 @@ public class Lexer : BaseLexer
         }
 
         return result;
+    }
+
+    private void SkipComments()
+    {
+        if (IsMatch("//"))
+        {
+            Advance();
+            Advance();
+
+            while (Current() != '\n' && Current() != '\r' && Current() != '\0')
+            {
+                Advance();
+                _column++;
+            }
+
+            if (Current() == '\n' || Current() == '\r')
+            {
+                Advance();
+                _column++;
+            }
+        }
     }
 
     private void SkipWhitespaces()
