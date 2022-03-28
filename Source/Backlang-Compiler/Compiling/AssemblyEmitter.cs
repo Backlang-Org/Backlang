@@ -222,9 +222,7 @@ public class AssemblyEmitter
                 break;
 
             case OpCode.Jmpe:
-                break;
-
-            case OpCode.Jmpne:
+                EmitJmpe(instruction, emitter);
                 break;
 
             case OpCode.Nop:
@@ -236,6 +234,7 @@ public class AssemblyEmitter
                 break;
 
             case OpCode.Poll:
+                EmitPoll(instruction, emitter);
                 break;
 
             default:
@@ -244,6 +243,20 @@ public class AssemblyEmitter
     }
 
     private void EmitJmp(Instruction instruction, Emitter emitter)
+    {
+        var arg = instruction.Arguments[0];
+
+        if (arg is RegisterReferenceExpression reg)
+        {
+            emitter.EmitJumpRegister(GetRegisterIndex(reg));
+        }
+        else if (arg is Expression addr)
+        {
+            emitter.EmitJump(EvaluateExpression(addr));
+        }
+    }
+
+    private void EmitJmpe(Instruction instruction, Emitter emitter)
     {
         var arg = instruction.Arguments[0];
 
@@ -396,6 +409,24 @@ public class AssemblyEmitter
                 var rhsIndex = GetRegisterIndex(rhsReg);
 
                 emitter.Or(targetIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
+    private void EmitPoll(Instruction instruction, Emitter emitter)
+    {
+        if (instruction.Arguments.Count == 2)
+        {
+            var highArgument = instruction.Arguments[0];
+            var lowArgument = instruction.Arguments[1];
+
+            if (highArgument is RegisterReferenceExpression highReg
+                && lowArgument is RegisterReferenceExpression lowReg)
+            {
+                var highIndex = GetRegisterIndex(highReg);
+                var lowIndex = GetRegisterIndex(lowReg);
+
+                emitter.PollTime(highIndex, lowIndex);
             }
         }
     }

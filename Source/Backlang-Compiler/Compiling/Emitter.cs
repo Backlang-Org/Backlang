@@ -99,6 +99,13 @@ public class Emitter
         _writer.Write(0x0000_0000_0000_0000 | (Instruction)opcode << 48 | (((Instruction)address)));
     }
 
+    public void EmitJumpIfEqual(Register register, Address address)
+    {
+        var opcode = GetOpcodeFor("JumpAddressIfEqual");
+
+        _writer.Write(0x0000_0000_0000_0000 | (Instruction)opcode << 48 | ((Instruction)register) << 40 | (Instruction)address);
+    }
+
     public void EmitJumpRegister(Register register)
     {
         var opcode = GetOpcodeFor("JumpRegister");
