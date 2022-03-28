@@ -1,4 +1,5 @@
-﻿using Flo;
+﻿using Backlang_Compiler.Compiling.Passes.Lowerer;
+using Flo;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
@@ -8,6 +9,7 @@ public class LowererStage : IHandler<CompilerContext, CompilerContext>
 
     public LowererStage()
     {
+        _optimization.AddPass<ForLowerer>();
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
