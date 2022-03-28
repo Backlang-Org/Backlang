@@ -55,7 +55,7 @@ namespace TestProject1.AST.Statements
 
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
@@ -69,7 +69,7 @@ namespace TestProject1.AST.Statements
 
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "i32");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
@@ -83,7 +83,7 @@ namespace TestProject1.AST.Statements
 
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
@@ -97,7 +97,7 @@ namespace TestProject1.AST.Statements
 
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
             Assert.IsTrue(statement.IsMutable);
 
@@ -112,7 +112,7 @@ namespace TestProject1.AST.Statements
 
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.IsNull(statement.Type);
 
             Assert.IsInstanceOfType(statement.Value, typeof(LiteralNode));
@@ -126,7 +126,7 @@ namespace TestProject1.AST.Statements
 
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(statement.Type.Typename, "i32");
             Assert.IsNull(statement.Value);
         }
@@ -137,7 +137,7 @@ namespace TestProject1.AST.Statements
             var src = "declare hello = 0b10101;";
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 0b10101L);
         }
 
@@ -147,7 +147,7 @@ namespace TestProject1.AST.Statements
             var src = "declare hello = 0xc0ffee;";
             var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
 
-            Assert.AreEqual(statement.NameToken.Text, "hello");
+            Assert.AreEqual(statement.Name.Text, "hello");
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 0xc0ffee);
         }
     }

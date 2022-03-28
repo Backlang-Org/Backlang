@@ -6,7 +6,7 @@ public class PassManager
 {
     private readonly List<IVisitor<SyntaxNode>> Passes = new();
 
-    public void AddPass<T, U>()
+    public void AddPass<T>()
         where T : IVisitor<SyntaxNode>, new()
     {
         Passes.Add(new T());

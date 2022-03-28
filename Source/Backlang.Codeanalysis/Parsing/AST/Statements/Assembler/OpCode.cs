@@ -22,7 +22,6 @@ public enum OpCode
     Ret,
     Jmp,
     Jmpe,
-    Jmpne,
     Nop,
     Gks, //Get Key State
     Poll, //Poll Time

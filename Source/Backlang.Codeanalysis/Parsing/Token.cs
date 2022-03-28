@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
-namespace Backlang.Codeanalysis.Parsing;
+﻿namespace Backlang.Codeanalysis.Parsing;
 
 public class Token
 {
@@ -19,6 +18,12 @@ public class Token
     {
         Type = type;
         Text = String.Empty;
+    }
+
+    public Token(TokenType type, string text)
+    {
+        Type = type;
+        Text = text;
     }
 
     public int Column { get; }
