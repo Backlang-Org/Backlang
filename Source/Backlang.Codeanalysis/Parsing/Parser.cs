@@ -33,6 +33,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
+        AddStatementParsePoint<ForStatement>(TokenType.For);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)

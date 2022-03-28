@@ -231,14 +231,21 @@ public class Lexer : BaseLexer
         }
         else if (IsMatch("/*"))
         {
+            int oldcol = _column;
+
             Advance();
             Advance();
             _column++;
             _column++;
 
-            while (!IsMatch("*/"))
+            while (!IsMatch("*/") && Current() != '\0')
             {
                 Advance();
+            }
+
+            if (Current() == '\0')
+            {
+                Messages.Add(Message.Error("Multiline comment is not closed.", _line, oldcol));
             }
 
             if (IsMatch("*/"))

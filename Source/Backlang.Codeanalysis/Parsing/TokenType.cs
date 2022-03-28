@@ -178,4 +178,10 @@ public enum TokenType
 
     [Keyword("while")]
     While,
+
+    [Keyword("in")]
+    In,
+
+    [Keyword("for")]
+    For,
 }

@@ -39,6 +39,14 @@ fn doSomething() {
 		doSomething(2);	
 	}
 
+	for x : i32 in 1..12 {
+		print(x);
+	}
+
+	for x in arr {
+		print(x);
+	}
+
 	print(#EAX); // load value from register EAX (0) as argument
 }
 
