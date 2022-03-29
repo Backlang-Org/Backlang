@@ -7,6 +7,7 @@ namespace Backlang_Compiler.Compiling;
 
 public class AssemblyEmitter
 {
+    private Dictionary<string, uint> _labels = new();
     private Dictionary<string, byte> _registers = new();
 
     public AssemblyEmitter()
@@ -17,14 +18,7 @@ public class AssemblyEmitter
     public byte[] Emit(AssemblerBlockStatement node, out Emitter emitter)
     {
         emitter = new Emitter();
-
-        foreach (var bodynode in node.Body)
-        {
-            if (bodynode is Instruction instruction)
-            {
-                EmitInstruction(instruction, emitter);
-            }
-        }
+        EmitBlock(node.Body, emitter);
 
         return emitter.Result;
     }
@@ -85,6 +79,22 @@ public class AssemblyEmitter
                 var rhsIndex = GetRegisterIndex(rhsReg);
 
                 emitter.And(targetIndex, lhsIndex, rhsIndex);
+            }
+        }
+    }
+
+    private void EmitBlock(List<AssemblerBodyNode> body, Emitter emitter)
+    {
+        foreach (var bodynode in body)
+        {
+            if (bodynode is Instruction instruction)
+            {
+                EmitInstruction(instruction, emitter);
+            }
+            else if (bodynode is LabelBlockDefinition block)
+            {
+                _labels.Add(block.Name, emitter.Current);
+                EmitBlock(block.Body, emitter);
             }
         }
     }
@@ -543,6 +553,10 @@ public class AssemblyEmitter
                 case "*": return lhs * rhs;
                 case "/": return lhs / rhs;
             }
+        }
+        else if (expr is LabelReferenceExpression label)
+        {
+            return _labels[label.Label]; //ToDo: check if label exists
         }
 
         return 0;

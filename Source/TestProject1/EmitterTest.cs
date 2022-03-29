@@ -65,4 +65,20 @@ public class EmitterTests
 
         File.WriteAllBytes("emitter.backseat", body);
     }
+
+    [TestMethod]
+    public void LabelBlock_Mov_Should_Pass()
+    {
+        var src = "{ mov 65, A; loop { add A, A, 1; mov A, &[0]; jmp $loop; } }";
+
+        var lexer = new Lexer();
+        var tokens = lexer.Tokenize(src);
+        var parser = new Parser(null, tokens, lexer.Messages);
+
+        var node = AssemblerBlockStatement.Parse(parser.Iterator, parser);
+        var emitter = new AssemblyEmitter();
+        var body = emitter.Emit((AssemblerBlockStatement)node, out var _);
+
+        File.WriteAllBytes("emitter.backseat", body);
+    }
 }

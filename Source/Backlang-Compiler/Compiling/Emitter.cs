@@ -27,6 +27,7 @@ public class Emitter
         _machineinfo = JsonConvert.DeserializeObject<OpcodeMap>(json);
     }
 
+    public uint Current => (uint)_stream.Length;
     public byte[] Result => _stream.ToArray();
 
     public void Add(Register target, Register source, Word value)

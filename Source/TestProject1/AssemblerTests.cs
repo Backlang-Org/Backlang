@@ -45,7 +45,7 @@ public class AssemblerTests
     [TestMethod]
     public void LabelBlock_Mov_Should_Pass()
     {
-        var src = "{ loop { mov EAX, 12; jmp $loop; } }";
+        var src = "{ loop { mov A, 65; add A, A, 1; mov A, &[0]; jmp $loop; } }";
 
         var lexer = new Lexer();
         var tokens = lexer.Tokenize(src);
