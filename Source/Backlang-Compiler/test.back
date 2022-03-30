@@ -14,7 +14,7 @@ fn main() -> i32 {
 
 fn doSomething() {
 	print("Hello World");
-	declare arr = [12, 42, 3];
+	let arr = [12, 42, 3];
 
 	print(arr[0]);
 
@@ -26,7 +26,7 @@ fn doSomething() {
 
 		move 42, &[0xFF + 4];
 		move &[0xFF + 4], &[PTR 0x4];
-		jmp $something;
+		jmp $something; // does not work properly
 	}
 
 	/*
@@ -67,7 +67,7 @@ enum Instructions {
 	Pop,
 }
 
-fn tests(something!!) { //check if something is none, if not return none
+fn tests(something : i32) { //check if something is none, if not return none
 
 	let kkk = sizeof<Colors>;
 	let mm : i32 = default;
@@ -96,7 +96,7 @@ fn tests(something!!) { //check if something is none, if not return none
 		12 => 13,
 		> 13 => 15,
 		_ => 0,
-		[1, .. , 3];
+		[1, .. , 3]; // need to be implemented
 
 	none;
 

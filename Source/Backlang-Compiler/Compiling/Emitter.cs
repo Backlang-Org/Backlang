@@ -1,4 +1,4 @@
-using Backlang_Compiler.TypeSystem;
+﻿using Backlang_Compiler.TypeSystem;
 using Be.IO;
 using Newtonsoft.Json;
 using System.Reflection;
@@ -12,7 +12,7 @@ namespace Backlang_Compiler.Compiling;
 
 public class Emitter
 {
-    private OpcodeMap _machineinfo;
+    public OpcodeMap MachineInfo;
     private MemoryStream _stream;
     private BeBinaryWriter _writer;
 
@@ -24,7 +24,7 @@ public class Emitter
         var jsonStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Backlang_Compiler.machineinfo.json");
         var json = new StreamReader(jsonStream).ReadToEnd();
 
-        _machineinfo = JsonConvert.DeserializeObject<OpcodeMap>(json);
+        MachineInfo = JsonConvert.DeserializeObject<OpcodeMap>(json);
     }
 
     public uint Current => (uint)_stream.Length;
@@ -378,7 +378,7 @@ public class Emitter
 
     private InstructionInfo GetInstructionInfo(string name)
     {
-        return _machineinfo.opcodes[name];
+        return MachineInfo.opcodes[name];
     }
 
     public struct InstructionInfo
@@ -388,8 +388,22 @@ public class Emitter
         public string[,] registers { get; set; }
     }
 
-    private class OpcodeMap
+    public class MachineConstants
     {
+        public uint CYCLE_COUNT_HIGH { get; set; }
+        public uint CYCLE_COUNT_LOW { get; set; }
+        public uint ENTRY_POINT { get; set; }
+        public uint FLAGS { get; set; }
+        public uint INSTRUCTION_POINTER { get; set; }
+        public uint NUM_REGISTERS { get; set; }
+        public uint STACK_POINTER { get; set; }
+        public uint STACK_SIZE { get; set; }
+        public uint STACK_START { get; set; }
+    }
+
+    public class OpcodeMap
+    {
+        public MachineConstants constants { get; set; }
         public Dictionary<string, InstructionInfo> opcodes { get; set; } = new();
     }
 }

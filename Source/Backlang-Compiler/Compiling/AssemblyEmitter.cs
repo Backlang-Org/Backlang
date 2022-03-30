@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing;
+﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
@@ -49,7 +49,7 @@ public class AssemblyEmitter
         {
             var targetRegister = GetRegisterIndex(target);
             var sourceRegister = GetRegisterIndex(source);
-            var value = EvaluateExpression(imm);
+            var value = EvaluateExpression(imm, emitter);
 
             emitter.Add(targetRegister, sourceRegister, value);
         }
@@ -260,9 +260,13 @@ public class AssemblyEmitter
         {
             emitter.EmitJumpRegister(GetRegisterIndex(reg));
         }
+        //ToDo: emit jump by address
         else if (arg is Expression addr)
         {
-            emitter.EmitJump(EvaluateExpression(addr));
+            var add = EvaluateExpression(addr, emitter);
+
+            emitter.MoveRegisterImmediate(0, add);
+            emitter.EmitJumpRegister(0);
         }
     }
 
@@ -276,7 +280,7 @@ public class AssemblyEmitter
         }
         else if (arg is Expression addr)
         {
-            emitter.EmitJump(EvaluateExpression(addr));
+            emitter.EmitJump(EvaluateExpression(addr, emitter));
         }
     }
 
@@ -313,31 +317,31 @@ public class AssemblyEmitter
             var value = ConvertNumber(lit);
 
             emitter.MoveRegisterImmediate(0, value);
-            emitter.MoveAddressRegister(EvaluateExpression(addr.Expression), 0);
+            emitter.MoveAddressRegister(EvaluateExpression(addr.Expression, emitter), 0);
         }
-        else if (source is LiteralNode lit2 && target is RegisterReferenceExpression reg)
+        else if (target is LiteralNode lit2 && source is RegisterReferenceExpression reg)
         {
             var value = ConvertNumber(lit2);
 
             emitter.MoveRegisterImmediate(GetRegisterIndex(reg), value);
         }
-        else if (target is UnaryExpression unary2
+        else if (source is UnaryExpression unary2
             && unary2.OperatorToken.Text == "&"
             && unary2.Expression is AddressOperationExpression addr2
-            && source is RegisterReferenceExpression reg2)
+            && target is RegisterReferenceExpression reg2)
         {
             if (addr2.Expression is UnaryExpression ptrUnary)
             {
                 if (ptrUnary.OperatorToken.Text == "PTR")
                 {
-                    var ptr = EvaluateExpression(ptrUnary.Expression);
+                    var ptr = EvaluateExpression(ptrUnary.Expression, emitter);
                     emitter.MoveRegisterImmediate(0, ptr);
                     emitter.MovePointerSource(GetRegisterIndex(reg2), 0);
                 }
             }
             else
             {
-                emitter.MoveAddressRegister(EvaluateExpression(addr2.Expression), GetRegisterIndex(reg2));
+                emitter.MoveAddressRegister(EvaluateExpression(addr2.Expression, emitter), GetRegisterIndex(reg2));
             }
         }
         else if (source is UnaryExpression unary3
@@ -349,14 +353,14 @@ public class AssemblyEmitter
             {
                 if (ptrUnary.OperatorToken.Text == "PTR")
                 {
-                    var ptr = EvaluateExpression(ptrUnary.Expression);
+                    var ptr = EvaluateExpression(ptrUnary.Expression, emitter);
                     emitter.MoveRegisterImmediate(0, ptr);
                     emitter.MovePointerSource(0, GetRegisterIndex(reg3));
                 }
             }
             else
             {
-                emitter.MoveRegisterAddress(GetRegisterIndex(reg3), EvaluateExpression(addr3.Expression));
+                emitter.MoveRegisterAddress(GetRegisterIndex(reg3), EvaluateExpression(addr3.Expression, emitter));
             }
         }
     }
@@ -501,7 +505,7 @@ public class AssemblyEmitter
         {
             var targetRegister = GetRegisterIndex(target);
             var sourceRegister = GetRegisterIndex(source);
-            var value = EvaluateExpression(imm);
+            var value = EvaluateExpression(imm, emitter);
 
             emitter.Subtract(targetRegister, sourceRegister, value);
         }
@@ -535,7 +539,7 @@ public class AssemblyEmitter
         }
     }
 
-    private uint EvaluateExpression(Expression expr)
+    private uint EvaluateExpression(Expression expr, Emitter emitter)
     {
         if (expr is LiteralNode lit)
         {
@@ -543,8 +547,8 @@ public class AssemblyEmitter
         }
         else if (expr is BinaryExpression binary)
         {
-            var lhs = EvaluateExpression(binary.Left);
-            var rhs = EvaluateExpression(binary.Right);
+            var lhs = EvaluateExpression(binary.Left, emitter);
+            var rhs = EvaluateExpression(binary.Right, emitter);
 
             switch (binary.OperatorToken.Text)
             {
@@ -556,7 +560,7 @@ public class AssemblyEmitter
         }
         else if (expr is LabelReferenceExpression label)
         {
-            return _labels[label.Label]; //ToDo: check if label exists
+            return _labels[label.Label] + emitter.MachineInfo.constants.ENTRY_POINT; //ToDo: check if label exists
         }
 
         return 0;
