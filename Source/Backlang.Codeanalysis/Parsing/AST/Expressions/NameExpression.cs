@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
 public class NameExpression : Expression, IParsePoint<Expression>
 {
@@ -28,6 +27,14 @@ public class NameExpression : Expression, IParsePoint<Expression>
             arrayAccess.Indices.AddRange(Expression.ParseList(parser, TokenType.CloseSquare));
 
             return arrayAccess;
+        }
+        else if (iterator.Current.Type == TokenType.OpenParen)
+        {
+            iterator.NextToken();
+
+            var arguments = Expression.ParseList(parser, TokenType.CloseParen);
+
+            return new CallExpression(nameExpression, arguments);
         }
         else
         {
