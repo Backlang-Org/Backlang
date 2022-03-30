@@ -51,7 +51,7 @@ public interface IVisitor<T>
 
     T Visit(NameExpression nameExpression);
 
-    T Visit(CallExpr callExpr);
+    T Visit(CallExpression callExpr);
 
     T Visit(MatchExpression expression);
 
