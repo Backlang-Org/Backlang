@@ -80,7 +80,7 @@ public class Expression : SyntaxNode
         where TLexer : BaseLexer, new()
     {
         var list = new List<Expression>();
-        while (parser.Iterator.Current.Type != terminator)
+        while (parser.Iterator.Current.Type != terminator) //ToDo: implement option to disallow empty list
         {
             list.Add(Expression.Parse(parser));
 

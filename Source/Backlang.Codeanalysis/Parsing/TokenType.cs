@@ -184,4 +184,10 @@ public enum TokenType
 
     [Keyword("for")]
     For,
+
+    [Keyword("const")]
+    Const,
+
+    [Keyword("global")]
+    Global,
 }

@@ -69,7 +69,7 @@ public class EmitterTests
     [TestMethod]
     public void LabelBlock_Mov_Should_Pass()
     {
-        var src = "{ mov 65, A; loop { add A, A, 1; mov A, &[0]; jmp $loop; } }";
+        var src = "{ mov A, 65; mov &[0], A; loop { add A, A, 1; mov &[0], A; jmp $loop; } }";
 
         var lexer = new Lexer();
         var tokens = lexer.Tokenize(src);
