@@ -21,6 +21,8 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
         AddDeclarationParsePoint<RegisterDeclaration>(TokenType.Register);
         AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Type);
+        AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
+        AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
