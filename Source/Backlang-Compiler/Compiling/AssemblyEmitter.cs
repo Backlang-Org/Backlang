@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
@@ -576,7 +576,7 @@ public class AssemblyEmitter
     {
         const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         //A, B, .. Z, AA, AB, AAA, ..
-        for (byte i = 0; i < 251; i++)
+        for (byte i = 5; i < 251; i++)
         {
             _registers.Add(ALPHABET[i % 26] + ((i / 26) == 0 ? "" : ALPHABET[i / 26 - 1].ToString()), i);
         }

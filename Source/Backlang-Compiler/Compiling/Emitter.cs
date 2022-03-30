@@ -1,4 +1,4 @@
-﻿using Backlang_Compiler.TypeSystem;
+using Backlang_Compiler.TypeSystem;
 using Be.IO;
 using Newtonsoft.Json;
 using System.Reflection;
@@ -348,6 +348,21 @@ public class Emitter
             | ((Instruction)target) << 40
             | ((Instruction)lhs) << 32
             | ((Instruction)rhs) << 24);
+    }
+
+    public void Swap(Register left, Register right)
+    {
+        Xor(left, left, right);
+        Xor(right, left, right);
+        Xor(left, left, right);
+    }
+
+    public void SwapAdress(Address left, Address right)
+    {
+        MoveRegisterAddress(0, left);
+        MoveRegisterAddress(1, right);
+
+        Swap(0, 1);
     }
 
     public void Xor(Register target, Register lhs, Register rhs)
