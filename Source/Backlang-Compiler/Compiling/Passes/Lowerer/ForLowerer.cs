@@ -210,4 +210,14 @@ public class ForLowerer : IVisitor<SyntaxNode>
     {
         return labelBlockDefinition;
     }
+
+    public SyntaxNode Visit(GlobalVariableDeclaration globalVariableDeclaration)
+    {
+        return globalVariableDeclaration;
+    }
+
+    public SyntaxNode Visit(ConstVariableDeclaration constVariableDeclaration)
+    {
+        return constVariableDeclaration;
+    }
 }
