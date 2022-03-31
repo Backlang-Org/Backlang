@@ -2,7 +2,7 @@
   "profiles": {
     "Backlang-Compiler": {
       "commandName": "Project",
-      "commandLineArgs": "-i lowerer.back -o lowerer.backseat"
+      "commandLineArgs": "-i video.back -o video.backseat"
     }
   }
 }

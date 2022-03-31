@@ -11,17 +11,20 @@ public class AssemblyEmitter
     private Dictionary<string, uint> _labels = new();
     private Dictionary<string, byte> _registers = new();
 
-    public AssemblyEmitter()
+    public AssemblyEmitter(Emitter emitter)
     {
         InitRegisters();
+
+        Emitter = emitter;
     }
 
-    public byte[] Emit(AssemblerBlockStatement node, out Emitter emitter)
-    {
-        emitter = new Emitter();
-        EmitBlock(node.Body, emitter);
+    public Emitter Emitter { get; init; }
 
-        return emitter.Result;
+    public byte[] Emit(AssemblerBlockStatement node)
+    {
+        EmitBlock(node.Body);
+
+        return Emitter.Result;
     }
 
     private static uint ConvertAddressNumber(LiteralNode lit)
@@ -34,7 +37,7 @@ public class AssemblyEmitter
 
     private static uint ConvertNumber(LiteralNode lit)
     {
-        var literalBytes = BitConverter.GetBytes((long)lit.Value);
+        var literalBytes = BitConverter.GetBytes((long)Convert.ChangeType(lit.Value, typeof(long)));
 
         var value = BitConverter.ToUInt32(literalBytes);
         return value;
@@ -84,18 +87,18 @@ public class AssemblyEmitter
         }
     }
 
-    private void EmitBlock(List<AssemblerBodyNode> body, Emitter emitter)
+    private void EmitBlock(List<AssemblerBodyNode> body)
     {
         foreach (var bodynode in body)
         {
             if (bodynode is Instruction instruction)
             {
-                EmitInstruction(instruction, emitter);
+                EmitInstruction(instruction, Emitter);
             }
             else if (bodynode is LabelBlockDefinition block)
             {
-                _labels.Add(block.Name, emitter.Current);
-                EmitBlock(block.Body, emitter);
+                _labels.Add(block.Name, Emitter.Current);
+                EmitBlock(block.Body);
             }
         }
     }

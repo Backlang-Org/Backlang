@@ -136,7 +136,9 @@ public class ForLowerer : IVisitor<SyntaxNode>
 
     public SyntaxNode Visit(FunctionDeclaration functionDeclaration)
     {
-        return functionDeclaration.Body.Accept(this);
+        functionDeclaration.Body = (Block)functionDeclaration.Body.Accept(this);
+
+        return functionDeclaration;
     }
 
     public SyntaxNode Visit(EnumMemberDeclaration enumMemberDeclaration)
