@@ -236,6 +236,14 @@ public class AssemblyEmitter
                 EmitJmpe(instruction, emitter);
                 break;
 
+            case OpCode.JmpLt:
+                EmitJmpLt(instruction, emitter);
+                break;
+
+            case OpCode.JmpGt:
+                EmitJmpGt(instruction, emitter);
+                break;
+
             case OpCode.Nop:
                 emitter.EmitNoOp();
                 break;
@@ -280,6 +288,40 @@ public class AssemblyEmitter
         else if (arg is Expression addr)
         {
             emitter.EmitJump(EvaluateExpression(addr, emitter));
+        }
+    }
+
+    private void EmitJmpGt(Instruction instruction, Emitter emitter)
+    {
+        if (instruction.Arguments.Count == 2)
+        {
+            var comparisonRegister = instruction.Arguments[0];
+            var address = instruction.Arguments[1];
+
+            if (address is Expression addr && comparisonRegister is RegisterReferenceExpression reg)
+            {
+                var registerIndex = GetRegisterIndex(reg);
+                var add = EvaluateExpression(addr, emitter);
+
+                emitter.EmitJumpIfGreater(registerIndex, add);
+            }
+        }
+    }
+
+    private void EmitJmpLt(Instruction instruction, Emitter emitter)
+    {
+        if (instruction.Arguments.Count == 2)
+        {
+            var comparisonRegister = instruction.Arguments[0];
+            var address = instruction.Arguments[1];
+
+            if (address is Expression addr && comparisonRegister is RegisterReferenceExpression reg)
+            {
+                var registerIndex = GetRegisterIndex(reg);
+                var add = EvaluateExpression(addr, emitter);
+
+                emitter.EmitJumpIfLess(registerIndex, add);
+            }
         }
     }
 

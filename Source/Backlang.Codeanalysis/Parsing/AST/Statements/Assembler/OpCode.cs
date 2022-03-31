@@ -25,4 +25,6 @@ public enum OpCode
     Nop,
     Gks, //Get Key State
     Poll, //Poll Time
+    JmpLt,
+    JmpGt,
 }
