@@ -7,6 +7,7 @@ namespace Backlang_Compiler.Compiling;
 
 public class AssemblyEmitter
 {
+    public List<Message> Messages = new List<Message>();
     private Dictionary<string, uint> _labels = new();
     private Dictionary<string, byte> _registers = new();
 
@@ -260,13 +261,11 @@ public class AssemblyEmitter
         {
             emitter.EmitJumpRegister(GetRegisterIndex(reg));
         }
-        //ToDo: emit jump by address
         else if (arg is Expression addr)
         {
             var add = EvaluateExpression(addr, emitter);
 
-            emitter.MoveRegisterImmediate(0, add);
-            emitter.EmitJumpRegister(0);
+            emitter.EmitJump(add);
         }
     }
 
@@ -560,7 +559,14 @@ public class AssemblyEmitter
         }
         else if (expr is LabelReferenceExpression label)
         {
-            return _labels[label.Label] + emitter.MachineInfo.constants.ENTRY_POINT; //ToDo: check if label exists
+            if (_labels.ContainsKey(label.Label))
+            {
+                return _labels[label.Label] + emitter.MachineInfo.constants.ENTRY_POINT;
+            }
+            else
+            {
+                Messages.Add(Message.Warning($"Label '{label.Label}' does not exists", -1, -1));
+            }
         }
 
         return 0;
@@ -590,5 +596,11 @@ public class AssemblyEmitter
         _registers.Add("FLGS", 253); // Flags
         _registers.Add("IP", 254); // Instruction Pointer
         _registers.Add("SP", 255); // Stack Pointer
+    }
+
+    private uint ReverseAddress(uint address)
+    {
+        var bytes = BitConverter.GetBytes(address);
+        return BitConverter.ToUInt32(bytes.Reverse().ToArray(), 0);
     }
 }
