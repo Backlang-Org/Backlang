@@ -1,50 +1,55 @@
 {
   "opcodes": {
-    "JumpRegisterIfLessThanOrEqual": {
-      "opcode": 42,
+    "SubtractTargetLhsRhs": {
+      "opcode": 8,
       "registers": [
         [
-          "P",
-          "pointer"
+          "T",
+          "target"
         ],
         [
-          "C",
-          "comparison"
+          "L",
+          "lhs"
+        ],
+        [
+          "R",
+          "rhs"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "subtract (without carry) the values in registers L and R, store the result in T, set zero and carry flags appropriately"
+    },
+    "SubtractTargetSourceImmediate": {
+      "opcode": 19,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "S",
+          "source"
+        ]
+      ],
+      "opcode_type": "immediate",
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "subtract the constant CC from the value in register SS and store the result in TT, set zero and carry flags appropriately"
+    },
+    "JumpRegister": {
+      "opcode": 26,
+      "registers": [
+        [
+          "R",
+          "register"
         ]
       ],
       "opcode_type": null,
       "cycles": 1,
       "should_increment": false,
-      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"less than\" or \"equal\""
-    },
-    "JumpAddressIfEqual": {
-      "opcode": 27,
-      "registers": [
-        [
-          "C",
-          "comparison"
-        ]
-      ],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"equality\""
-    },
-    "JumpAddressIfDivideByZero": {
-      "opcode": 36,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the divide by zero flag is set"
-    },
-    "JumpAddressIfCarry": {
-      "opcode": 34,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the carry flag is set"
+      "docstring": "jump to the address stored in register R"
     },
     "MovePointerSource": {
       "opcode": 5,
@@ -82,10 +87,10 @@
       "opcode_type": null,
       "cycles": 1,
       "should_increment": true,
-      "docstring": "subtract (with carry) the values in registers LL and RR, store the result in TT, set zero and carry flags appropriately"
+      "docstring": "subtract (with carry) the values in registers L and R, store the result in T, set zero and carry flags appropriately"
     },
-    "CompareTargetLhsRhs": {
-      "opcode": 20,
+    "AddWithCarryTargetLhsRhs": {
+      "opcode": 52,
       "registers": [
         [
           "T",
@@ -103,10 +108,10 @@
       "opcode_type": null,
       "cycles": 1,
       "should_increment": true,
-      "docstring": "compare the values in registers LL and RR, store the result (Word::MAX, 0, 1) in TT, set zero flag appropriately"
+      "docstring": "add (with carry) the values in registers L and R, store the result in T, set zero and carry flags appropriately"
     },
-    "JumpRegisterIfGreaterThan": {
-      "opcode": 39,
+    "JumpRegisterIfLessThan": {
+      "opcode": 40,
       "registers": [
         [
           "P",
@@ -120,20 +125,7 @@
       "opcode_type": null,
       "cycles": 1,
       "should_increment": false,
-      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"greater than\""
-    },
-    "JumpRegisterIfNotCarry": {
-      "opcode": 46,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the carry flag is not set"
+      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"less than\""
     },
     "JumpRegisterIfNotZero": {
       "opcode": 44,
@@ -148,18 +140,26 @@
       "should_increment": false,
       "docstring": "jump to the address specified in register P if the zero flag is not set"
     },
-    "MoveAddressRegister": {
-      "opcode": 3,
+    "XorTargetLhsRhs": {
+      "opcode": 14,
       "registers": [
         [
+          "T",
+          "target"
+        ],
+        [
+          "L",
+          "lhs"
+        ],
+        [
           "R",
-          "register"
+          "rhs"
         ]
       ],
-      "opcode_type": "address",
+      "opcode_type": null,
       "cycles": 1,
       "should_increment": true,
-      "docstring": "move the contents of register R into memory at address A"
+      "docstring": "xor the values in registers LL and RR, store the result in TT, set zero flag appropriately"
     },
     "MultiplyHighLowLhsRhs": {
       "opcode": 10,
@@ -184,15 +184,302 @@
       "opcode_type": null,
       "cycles": 1,
       "should_increment": true,
-      "docstring": "multiply the values in registers LL and RR, store the low part of the result in TT, the high part in HH, set zero and carry flags appropriately"
+      "docstring": "multiply the values in registers L and R, store the low part of the result in T, the high part in H, set zero and carry flags appropriately"
     },
-    "JumpAddressIfNotZero": {
-      "opcode": 33,
+    "JumpAddressIfEqual": {
+      "opcode": 27,
+      "registers": [
+        [
+          "C",
+          "comparison"
+        ]
+      ],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"equality\""
+    },
+    "NoOp": {
+      "opcode": 49,
+      "registers": [],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "does nothing"
+    },
+    "GetKeyState": {
+      "opcode": 50,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "K",
+          "keycode"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "store the keystate (1 = held down, 0 = not held down) of the key specified by register K into register T and set the zero flag appropriately"
+    },
+    "DivmodTargetModLhsRhs": {
+      "opcode": 11,
+      "registers": [
+        [
+          "D",
+          "result"
+        ],
+        [
+          "M",
+          "remainder"
+        ],
+        [
+          "L",
+          "lhs"
+        ],
+        [
+          "R",
+          "rhs"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "divmod the values in registers L and R, store the result in D and the remainder in M set zero and divide-by-zero flags appropriately"
+    },
+    "PushRegister": {
+      "opcode": 21,
+      "registers": [
+        [
+          "R",
+          "register"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "push the value of register RR onto the stack"
+    },
+    "HaltAndCatchFire": {
+      "opcode": 6,
+      "registers": [],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "halt and catch fire"
+    },
+    "JumpAddressIfZero": {
+      "opcode": 32,
       "registers": [],
       "opcode_type": "address",
       "cycles": 1,
       "should_increment": false,
-      "docstring": "jump to the specified address if the zero flag is not set"
+      "docstring": "jump to the specified address if the zero flag is set"
+    },
+    "JumpRegisterIfGreaterThan": {
+      "opcode": 39,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ],
+        [
+          "C",
+          "comparison"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"greater than\""
+    },
+    "JumpRegisterIfZero": {
+      "opcode": 43,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the zero flag is set"
+    },
+    "JumpAddressIfGreaterThanOrEqual": {
+      "opcode": 30,
+      "registers": [
+        [
+          "C",
+          "comparison"
+        ]
+      ],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"greater than\" or \"equal\""
+    },
+    "Return": {
+      "opcode": 24,
+      "registers": [],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "pop the return address from the stack and jump to it"
+    },
+    "JumpAddressIfLessThan": {
+      "opcode": 29,
+      "registers": [
+        [
+          "C",
+          "comparison"
+        ]
+      ],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"less than\""
+    },
+    "JumpAddressIfNotCarry": {
+      "opcode": 35,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the carry flag is not set"
+    },
+    "RightShiftTargetLhsRhs": {
+      "opcode": 17,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "L",
+          "lhs"
+        ],
+        [
+          "R",
+          "rhs"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "right shift the value in register LL by RR bits, store the result in TT, set zero and carry flags appropriately"
+    },
+    "JumpAddressIfNotDivideByZero": {
+      "opcode": 37,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the divide by zero flag is not set"
+    },
+    "MoveRegisterImmediate": {
+      "opcode": 0,
+      "registers": [
+        [
+          "R",
+          "register"
+        ]
+      ],
+      "opcode_type": "immediate",
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "move the value C into register R"
+    },
+    "LeftShiftTargetLhsRhs": {
+      "opcode": 16,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "L",
+          "lhs"
+        ],
+        [
+          "R",
+          "rhs"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "left shift the value in register LL by RR bits, store the result in TT, set zero and carry flags appropriately"
+    },
+    "MoveTargetPointer": {
+      "opcode": 4,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "P",
+          "pointer"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "move the contents addressed by the value of register P into register T"
+    },
+    "PopRegister": {
+      "opcode": 22,
+      "registers": [
+        [
+          "R",
+          "register"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "pop from the stack and store the value in register RR"
+    },
+    "AddTargetLhsRhs": {
+      "opcode": 7,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "L",
+          "lhs"
+        ],
+        [
+          "R",
+          "rhs"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "add the values in registers L and R, store the result in T, set zero and carry flags appropriately"
+    },
+    "NotTargetSource": {
+      "opcode": 15,
+      "registers": [
+        [
+          "T",
+          "target"
+        ],
+        [
+          "S",
+          "source"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "not the value in register SS, store the result in TT, set zero flag appropriately"
     },
     "OrTargetLhsRhs": {
       "opcode": 13,
@@ -215,26 +502,119 @@
       "should_increment": true,
       "docstring": "or the values in registers LL and RR, store the result in TT, set zero flag appropriately"
     },
-    "LeftShiftTargetLhsRhs": {
-      "opcode": 16,
+    "AddTargetSourceImmediate": {
+      "opcode": 18,
       "registers": [
         [
           "T",
           "target"
         ],
         [
-          "L",
-          "lhs"
+          "S",
+          "source"
+        ]
+      ],
+      "opcode_type": "immediate",
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "add the constant CC to the value in register SS and store the result in TT, set zero and carry flags appropriately"
+    },
+    "CallAddress": {
+      "opcode": 23,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "push the current instruction pointer onto the stack and jump to the specified address"
+    },
+    "JumpAddressIfNotZero": {
+      "opcode": 33,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the zero flag is not set"
+    },
+    "JumpRegisterIfGreaterThanOrEqual": {
+      "opcode": 41,
+      "registers": [
+        [
+          "P",
+          "pointer"
         ],
         [
-          "R",
-          "rhs"
+          "C",
+          "comparison"
         ]
       ],
       "opcode_type": null,
       "cycles": 1,
-      "should_increment": true,
-      "docstring": "left shift the value in register LL by RR bits, store the result in TT, set zero and carry flags appropriately"
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"greater than\" or \"equal\""
+    },
+    "JumpRegisterIfLessThanOrEqual": {
+      "opcode": 42,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ],
+        [
+          "C",
+          "comparison"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"less than\" or \"equal\""
+    },
+    "JumpRegisterIfCarry": {
+      "opcode": 45,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the carry flag is set"
+    },
+    "JumpRegisterIfDivideByZero": {
+      "opcode": 47,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the divide by zero flag is set"
+    },
+    "JumpAddressIfDivideByZero": {
+      "opcode": 36,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the divide by zero flag is set"
+    },
+    "JumpRegisterIfNotDivideByZero": {
+      "opcode": 48,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ]
+      ],
+      "opcode_type": null,
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the address specified in register P if the divide by zero flag is not set"
     },
     "MoveTargetSource": {
       "opcode": 2,
@@ -270,78 +650,6 @@
       "should_increment": true,
       "docstring": "store the number of milliseconds since the UNIX epoch into registers high and low"
     },
-    "PushRegister": {
-      "opcode": 21,
-      "registers": [
-        [
-          "R",
-          "register"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "push the value of register RR onto the stack"
-    },
-    "HaltAndCatchFire": {
-      "opcode": 6,
-      "registers": [],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "halt and catch fire"
-    },
-    "SubtractTargetLhsRhs": {
-      "opcode": 8,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "L",
-          "lhs"
-        ],
-        [
-          "R",
-          "rhs"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "subtract (without carry) the values in registers LL and RR, store the result in TT, set zero and carry flags appropriately"
-    },
-    "JumpAddressIfGreaterThan": {
-      "opcode": 28,
-      "registers": [
-        [
-          "C",
-          "comparison"
-        ]
-      ],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"greater than\""
-    },
-    "JumpRegisterIfGreaterThanOrEqual": {
-      "opcode": 41,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ],
-        [
-          "C",
-          "comparison"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"greater than\" or \"equal\""
-    },
     "JumpRegisterIfEqual": {
       "opcode": 38,
       "registers": [
@@ -359,47 +667,8 @@
       "should_increment": false,
       "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"equality\""
     },
-    "MoveRegisterImmediate": {
-      "opcode": 0,
-      "registers": [
-        [
-          "R",
-          "register"
-        ]
-      ],
-      "opcode_type": "immediate",
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "move the value C into register R"
-    },
-    "JumpRegisterIfDivideByZero": {
-      "opcode": 47,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the divide by zero flag is set"
-    },
-    "PopRegister": {
-      "opcode": 22,
-      "registers": [
-        [
-          "R",
-          "register"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "pop from the stack and store the value in register RR"
-    },
-    "RightShiftTargetLhsRhs": {
-      "opcode": 17,
+    "CompareTargetLhsRhs": {
+      "opcode": 20,
       "registers": [
         [
           "T",
@@ -417,86 +686,7 @@
       "opcode_type": null,
       "cycles": 1,
       "should_increment": true,
-      "docstring": "right shift the value in register LL by RR bits, store the result in TT, set zero and carry flags appropriately"
-    },
-    "MoveRegisterAddress": {
-      "opcode": 1,
-      "registers": [
-        [
-          "R",
-          "register"
-        ]
-      ],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "move the value at address A into register R"
-    },
-    "JumpAddress": {
-      "opcode": 25,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the given address"
-    },
-    "JumpAddressIfZero": {
-      "opcode": 32,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the zero flag is set"
-    },
-    "MoveTargetPointer": {
-      "opcode": 4,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "P",
-          "pointer"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "move the contents addressed by the value of register P into register T"
-    },
-    "NoOp": {
-      "opcode": 49,
-      "registers": [],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "does nothing"
-    },
-    "CallAddress": {
-      "opcode": 23,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "push the current instruction pointer onto the stack and jump to the specified address"
-    },
-    "AddTargetSourceImmediate": {
-      "opcode": 18,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "S",
-          "source"
-        ]
-      ],
-      "opcode_type": "immediate",
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "add the constant CC to the value in register SS and store the result in TT, set zero and carry flags appropriately"
+      "docstring": "compare the values in registers LL and RR, store the result (Word::MAX, 0, 1) in TT, set zero flag appropriately"
     },
     "JumpAddressIfLessThanOrEqual": {
       "opcode": 31,
@@ -511,200 +701,47 @@
       "should_increment": false,
       "docstring": "jump to the specified address if the comparison result in register C corresponds to \"less than\" or \"equal\""
     },
-    "SubtractTargetSourceImmediate": {
-      "opcode": 19,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "S",
-          "source"
-        ]
-      ],
-      "opcode_type": "immediate",
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "subtract the constant CC from the value in register SS and store the result in TT, set zero and carry flags appropriately"
-    },
-    "JumpAddressIfNotCarry": {
-      "opcode": 35,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the carry flag is not set"
-    },
-    "JumpRegisterIfNotDivideByZero": {
-      "opcode": 48,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the divide by zero flag is not set"
-    },
-    "JumpAddressIfLessThan": {
-      "opcode": 29,
-      "registers": [
-        [
-          "C",
-          "comparison"
-        ]
-      ],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"less than\""
-    },
-    "GetKeyState": {
-      "opcode": 50,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "K",
-          "keycode"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "store the keystate (1 = held down, 0 = not held down) of the key specified by register K into register T and set the zero flag appropriately"
-    },
-    "Return": {
-      "opcode": 24,
-      "registers": [],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "pop the return address from the stack and jump to it"
-    },
-    "JumpRegisterIfZero": {
-      "opcode": 43,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the zero flag is set"
-    },
-    "DivmodTargetModLhsRhs": {
-      "opcode": 11,
-      "registers": [
-        [
-          "D",
-          "result"
-        ],
-        [
-          "M",
-          "remainder"
-        ],
-        [
-          "L",
-          "lhs"
-        ],
-        [
-          "R",
-          "rhs"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "divmod the values in registers LL and RR, store the result in DD and the remainder in MM set zero and divide-by-zero flags appropriately"
-    },
-    "JumpRegisterIfLessThan": {
-      "opcode": 40,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ],
-        [
-          "C",
-          "comparison"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the comparison result in register C corresponds to \"less than\""
-    },
-    "AddTargetLhsRhs": {
-      "opcode": 7,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "L",
-          "lhs"
-        ],
-        [
-          "R",
-          "rhs"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "add the values in registers LL and RR, store the result in TT, set zero and carry flags appropriately"
-    },
-    "NotTargetSource": {
-      "opcode": 15,
-      "registers": [
-        [
-          "T",
-          "target"
-        ],
-        [
-          "S",
-          "source"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": true,
-      "docstring": "not the value in register SS, store the result in TT, set zero flag appropriately"
-    },
-    "JumpRegisterIfCarry": {
-      "opcode": 45,
-      "registers": [
-        [
-          "P",
-          "pointer"
-        ]
-      ],
-      "opcode_type": null,
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the address specified in register P if the carry flag is set"
-    },
-    "JumpRegister": {
-      "opcode": 26,
+    "MoveRegisterAddress": {
+      "opcode": 1,
       "registers": [
         [
           "R",
           "register"
         ]
       ],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": true,
+      "docstring": "move the value at address A into register R"
+    },
+    "JumpAddressIfCarry": {
+      "opcode": 34,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the specified address if the carry flag is set"
+    },
+    "JumpAddress": {
+      "opcode": 25,
+      "registers": [],
+      "opcode_type": "address",
+      "cycles": 1,
+      "should_increment": false,
+      "docstring": "jump to the given address"
+    },
+    "JumpRegisterIfNotCarry": {
+      "opcode": 46,
+      "registers": [
+        [
+          "P",
+          "pointer"
+        ]
+      ],
       "opcode_type": null,
       "cycles": 1,
       "should_increment": false,
-      "docstring": "jump to the address stored in register R"
+      "docstring": "jump to the address specified in register P if the carry flag is not set"
     },
     "AndTargetLhsRhs": {
       "opcode": 12,
@@ -727,29 +764,21 @@
       "should_increment": true,
       "docstring": "and the values in registers LL and RR, store the result in TT, set zero flag appropriately"
     },
-    "XorTargetLhsRhs": {
-      "opcode": 14,
+    "MoveAddressRegister": {
+      "opcode": 3,
       "registers": [
         [
-          "T",
-          "target"
-        ],
-        [
-          "L",
-          "lhs"
-        ],
-        [
           "R",
-          "rhs"
+          "register"
         ]
       ],
-      "opcode_type": null,
+      "opcode_type": "address",
       "cycles": 1,
       "should_increment": true,
-      "docstring": "xor the values in registers LL and RR, store the result in TT, set zero flag appropriately"
+      "docstring": "move the contents of register R into memory at address A"
     },
-    "JumpAddressIfGreaterThanOrEqual": {
-      "opcode": 30,
+    "JumpAddressIfGreaterThan": {
+      "opcode": 28,
       "registers": [
         [
           "C",
@@ -759,26 +788,32 @@
       "opcode_type": "address",
       "cycles": 1,
       "should_increment": false,
-      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"greater than\" or \"equal\""
-    },
-    "JumpAddressIfNotDivideByZero": {
-      "opcode": 37,
-      "registers": [],
-      "opcode_type": "address",
-      "cycles": 1,
-      "should_increment": false,
-      "docstring": "jump to the specified address if the divide by zero flag is not set"
+      "docstring": "jump to the specified address if the comparison result in register C corresponds to \"greater than\""
     }
   },
   "constants": {
-    "CYCLE_COUNT_LOW": 252,
-    "NUM_REGISTERS": 256,
     "STACK_POINTER": 255,
     "STACK_SIZE": 524288,
-    "ENTRY_POINT": 532296,
-    "CYCLE_COUNT_HIGH": 251,
-    "INSTRUCTION_POINTER": 254,
+    "SECOND_FRAMEBUFFER_START": 699208,
+    "TERMINAL_BUFFER_START": 0,
+    "FRAMEBUFFER_SIZE": 691200,
+    "NUM_REGISTERS": 256,
     "FLAGS": 253,
-    "STACK_START": 8008
+    "ENTRY_POINT": 1914696,
+    "STACK_START": 1390408,
+    "FIRST_FRAMEBUFFER_START": 8008,
+    "DISPLAY_HEIGHT": 360,
+    "CYCLE_COUNT_LOW": 252,
+    "TERMINAL_BUFFER_SIZE": 8008,
+    "INSTRUCTION_POINTER": 254,
+    "TERMINAL_HEIGHT": 25,
+    "CYCLE_COUNT_HIGH": 251,
+    "TERMINAL_WIDTH": 80,
+    "DISPLAY_WIDTH": 480
+  },
+  "flags": {
+    "Zero": 0,
+    "Carry": 1,
+    "DivideByZero": 2
   }
 }

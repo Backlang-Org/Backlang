@@ -69,7 +69,7 @@ public class EmitterTests
     [TestMethod]
     public void LabelBlock_Mov_Should_Pass()
     {
-        var src = "{ mov A, 65; mov &[0], A; loop { add A, A, 1; mov &[0], A; jmp $loop; } }"; // why does the jmp does not work?
+        var src = "{ mov A, 65; mov &[0], A; loop { add A, A, 1; mov &[0], A; jmp $loop; } }";
 
         var lexer = new Lexer();
         var tokens = lexer.Tokenize(src);

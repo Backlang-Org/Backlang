@@ -561,7 +561,7 @@ public class AssemblyEmitter
         {
             if (_labels.ContainsKey(label.Label))
             {
-                return _labels[label.Label] + emitter.MachineInfo.constants.ENTRY_POINT;
+                return emitter.MachineInfo.constants.ENTRY_POINT + _labels[label.Label];
             }
             else
             {

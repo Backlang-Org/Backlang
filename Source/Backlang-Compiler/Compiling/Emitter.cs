@@ -107,6 +107,20 @@ public class Emitter
         _writer.Write(0x0000_0000_0000_0000 | (Instruction)opcode << 48 | ((Instruction)register) << 40 | (Instruction)address);
     }
 
+    public void EmitJumpIfGreater(Register register, Address address)
+    {
+        var opcode = GetOpcodeFor("JumpAddressIfGreaterThan");
+
+        _writer.Write(0x0000_0000_0000_0000 | (Instruction)opcode << 48 | ((Instruction)register) << 40 | (Instruction)address);
+    }
+
+    public void EmitJumpIfLess(Register register, Address address)
+    {
+        var opcode = GetOpcodeFor("JumpAddressIfLessThan");
+
+        _writer.Write(0x0000_0000_0000_0000 | (Instruction)opcode << 48 | ((Instruction)register) << 40 | (Instruction)address);
+    }
+
     public void EmitJumpRegister(Register register)
     {
         var opcode = GetOpcodeFor("JumpRegister");
