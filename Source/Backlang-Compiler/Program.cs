@@ -12,6 +12,7 @@ public static class Program
            cfg.Add<ParsingStage>();
            cfg.Add<LowererStage>();
            cfg.Add<OptimizingStage>();
+           cfg.Add<EmitStage>();
        }
    );
 
