@@ -190,4 +190,7 @@ public enum TokenType
 
     [Keyword("global")]
     Global,
+
+    [Keyword("asm")]
+    Asm,
 }

@@ -4,6 +4,7 @@ using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -32,6 +33,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
+        AddStatementParsePoint<AssemblerBlockStatement>(TokenType.Asm);
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);

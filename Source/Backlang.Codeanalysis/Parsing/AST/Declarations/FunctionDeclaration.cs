@@ -12,7 +12,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         Body = body;
     }
 
-    public Block Body { get; }
+    public Block Body { get; set; }
     public Token Name { get; }
     public List<ParameterDeclaration> Parameters { get; }
     public TypeLiteral ReturnType { get; }
