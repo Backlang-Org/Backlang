@@ -1,0 +1,24 @@
+﻿fn main() {
+	asm {
+		mov A, 0xFF;
+		mov Z, 129600;
+
+		outer {
+			mov B, 0;
+			add A, A, 0x100;
+			mov C, 8008;
+
+			inner {
+				mov &[PTR 2], 0;
+				add C, C, 4;
+				add B, B, 1;
+				cmp J, A, Z;
+
+				jmplt J, 1914696 + 5 * 8;
+			}
+
+			jmp 1914696 + 2 * 8;
+		}
+
+	}
+}
