@@ -2,7 +2,7 @@ import Memory;
 
 struct Terminal {
 	End = Width * Height;
-	Width = 80; // u32 is standard if no type set
+	Width = 80;
 	Height = 25;
 
 	CursorX = 0;
@@ -14,6 +14,8 @@ implementation of static Terminal {
 		let address : u32* = CursorY * Width + CursorX;
 
 		*address = char;
+
+		CursorX += 1;
 
 		if CursorX = Width  {
 			CursorX = 0; 
@@ -33,5 +35,10 @@ implementation of static Terminal {
 
 	fn clear() {
 		Memory::clear(0, End);
+	}
+
+	fn setCursorPosition(top : u32, left : u32) {
+		CursorX = left;
+		CursorY = top;
 	}
 }

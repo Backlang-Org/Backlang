@@ -1,0 +1,21 @@
+struct Span<T> {
+    Ptr : T*;
+    Length : u32;
+}
+
+implementation of Span<T> {
+    fn new(ptr : T*, length : u32) {
+        Ptr = ptr;
+        Length = length;
+    }
+
+    fn new(ptr : T*) {
+        Ptr = ptr;
+        Length = 1;
+    }
+
+    fn new(arr : T[]) {
+        Ptr = &arr;
+        Length = arr.length
+    }
+}

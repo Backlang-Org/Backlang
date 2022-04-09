@@ -1,3 +1,5 @@
+import Span;
+
 fn Memory::clear(start : u32*, end : u32*) static {
     Memory::set(start, end, 0);
 }
@@ -16,6 +18,10 @@ fn Memory::copy(src : u32*, dest : u32) static {
 fn Memory::copy<T>(src : T[], dst : T[])
     where T : u8..u32
 {
+    if src.length != dst.length {
+        error("Destination Array has to havae same length as Source Array");
+    }
+
     for i in 0..src.length {
         dst[i] = src[i];
     }

@@ -1,0 +1,27 @@
+const Math::PI = 3.1451;
+
+fn Math::pow(base : u32, exponent : u32) {
+    let mut result = 1;
+
+    for i in 0..exponent {
+        result *= base;        
+    }
+
+    result;
+}
+
+fn Math::min(x : u32, y : u32) {
+    if x < y {
+        x;
+    }
+
+    y;
+}
+
+fn Math::min(x : u32, y : u32) {
+    if x > y {
+        y;
+    }
+
+    x;
+}

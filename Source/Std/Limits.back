@@ -1,0 +1,14 @@
+implementation for u8 {
+    const Max = 0xFF;
+    const Min = 0;
+}
+
+implementation for u16 {
+    const Max = 0xFF_FF;
+    const Min = 0;
+}
+
+implementation for u32 {
+    const Max = 0xFF_FF_FF_FF;
+    const Min = 0;
+}
