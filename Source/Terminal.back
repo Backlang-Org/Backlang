@@ -1,0 +1,28 @@
+import Memory;
+
+struct Terminal {
+	End = Width * Height;
+	Width = 80;
+	Height = 25;
+
+	CursorX = 0;
+	CursorY = 0;
+}
+
+implementation of static Terminal {
+	fn write(char : i8) {
+		let address : u32* = CursorY * Width + CursorX;
+
+		*address = char;
+	}
+
+	fn readChar() {
+		let address : u32* = CursorY * Width + CursorX;
+
+		return *address;
+	}
+
+	fn clear() {
+		Memory::clear(0, End);
+	}
+}
