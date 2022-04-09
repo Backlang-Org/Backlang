@@ -2,7 +2,7 @@
     "name": "back",
     "displayName": "Backstention",
     "description": "Backlang For Backseat System",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "publisher": "furesoft",
     "engines": {
         "vscode": "^1.66.0"
@@ -21,6 +21,12 @@
             "language": "back",
             "scopeName": "source.back",
             "path": "./syntaxes/back.tmLanguage.json"
-        }]
+        }],
+		"snippets": [
+            {
+                "language": "back",
+                "path": "./snippets/snippets.code-snippets"
+            }
+        ]
     }
 }
