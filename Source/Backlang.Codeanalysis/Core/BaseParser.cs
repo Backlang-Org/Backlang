@@ -11,7 +11,7 @@ public abstract class BaseParser<TNode, TLexer, TParser>
     public BaseParser(SourceDocument document, List<Token> tokens, List<Message> messages)
     {
         Document = document;
-        Iterator = new(tokens);
+        Iterator = new(tokens, document);
         Messages = messages;
     }
 
@@ -22,11 +22,11 @@ public abstract class BaseParser<TNode, TLexer, TParser>
     {
         if (string.IsNullOrEmpty(document.Source) || document.Source == null)
         {
-            return (default, new() { Message.Error("Empty File", 0, 0) });
+            return (default, new() { Message.Error(document, "Empty File", 0, 0) });
         }
 
         var lexer = new TLexer();
-        var tokens = lexer.Tokenize(document.Source);
+        var tokens = lexer.Tokenize(document);
 
         var parser = (TParser)Activator.CreateInstance(typeof(TParser), document, tokens, lexer.Messages);
 

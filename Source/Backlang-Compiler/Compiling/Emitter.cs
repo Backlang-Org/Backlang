@@ -28,7 +28,12 @@ public class Emitter
     }
 
     public uint Current => (uint)_stream.Length;
-    public byte[] Result => _stream.ToArray();
+
+    public byte[] Result {
+        get {
+            return _stream.ToArray();
+        }
+    }
 
     public void Add(Register target, Register source, Word value)
     {

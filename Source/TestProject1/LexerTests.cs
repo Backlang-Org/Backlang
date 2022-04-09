@@ -11,7 +11,7 @@ namespace TestProject1
         {
             var src = "a -> b";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(4, tokens.Count);
             Assert.AreEqual(tokens[1].Type, TokenType.Arrow);
@@ -22,7 +22,7 @@ namespace TestProject1
         {
             var src = "0x1011011110110110";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(tokens.Count, 2);
             Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
@@ -34,7 +34,7 @@ namespace TestProject1
         {
             var src = "0x1011_0111_1011_0110";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(tokens.Count, 2);
             Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
@@ -46,7 +46,7 @@ namespace TestProject1
         {
             var src = "0xc0ffee";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(tokens.Count, 2);
             Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
@@ -58,7 +58,7 @@ namespace TestProject1
         {
             var src = "0xc0_ff_ee";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(tokens.Count, 2);
             Assert.AreEqual(tokens[0].Type, TokenType.HexNumber);
@@ -70,7 +70,7 @@ namespace TestProject1
         {
             var src = "hello_world";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(tokens.Count, 2);
             Assert.AreEqual(tokens[0].Type, TokenType.Identifier);
@@ -82,7 +82,7 @@ namespace TestProject1
         {
             var src = "a <-> b";
             var lexer = new Lexer();
-            var tokens = lexer.Tokenize(src);
+            var tokens = lexer.Tokenize(new SourceDocument("test", src));
 
             Assert.AreEqual(4, tokens.Count);
             Assert.AreEqual(tokens[1].Type, TokenType.SwapOperator);

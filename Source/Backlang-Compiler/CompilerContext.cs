@@ -1,5 +1,5 @@
-﻿using CommandLine;
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using CommandLine;
 
 namespace Backlang_Compiler;
 

@@ -47,7 +47,7 @@ public class AssemblerBlockStatement : Statement, IParsePoint<Statement>
                 instruction.OpCode = opCodeToken.Text;
                 if (!Enum.TryParse<OpCode>(instruction.OpCode, true, out var result))
                 {
-                    parser.Messages.Add(Message.Error("Unknown Opcode '{instruction.OpCode}'", opCodeToken.Line, opCodeToken.Column));
+                    parser.Messages.Add(Message.Error(parser.Document, "Unknown Opcode '{instruction.OpCode}'", opCodeToken.Line, opCodeToken.Column));
                 }
 
                 while (iterator.Current.Type != TokenType.Semicolon)

@@ -70,7 +70,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         }
         else
         {
-            Messages.Add(Message.Error($"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+            Messages.Add(Message.Error(Document, $"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
             Iterator.NextToken();
 
             return default;

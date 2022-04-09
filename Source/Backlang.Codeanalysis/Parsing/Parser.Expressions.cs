@@ -27,7 +27,7 @@ public partial class Parser
 
     private Expression Invalid(string message)
     {
-        Messages.Add(Message.Error(message, Iterator.Current.Line, Iterator.Current.Column));
+        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
 
         return new InvalidExpr();
     }

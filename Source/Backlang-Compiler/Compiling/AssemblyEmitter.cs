@@ -9,6 +9,7 @@ public class AssemblyEmitter
 {
     public List<Message> Messages = new List<Message>();
     private Dictionary<string, uint> _labels = new();
+    private Dictionary<uint, string> _needsAddressChange = new();
     private Dictionary<string, byte> _registers = new();
 
     public AssemblyEmitter(Emitter emitter)
@@ -23,6 +24,7 @@ public class AssemblyEmitter
     public byte[] Emit(AssemblerBlockStatement node)
     {
         EmitBlock(node.Body);
+        ReplaceLabels();
 
         return Emitter.Result;
     }
@@ -604,14 +606,7 @@ public class AssemblyEmitter
         }
         else if (expr is LabelReferenceExpression label)
         {
-            if (_labels.ContainsKey(label.Label))
-            {
-                return emitter.MachineInfo.constants.ENTRY_POINT + _labels[label.Label];
-            }
-            else
-            {
-                Messages.Add(Message.Warning($"Label '{label.Label}' does not exists", -1, -1));
-            }
+            _needsAddressChange.Add(emitter.Current, label.Label);
         }
 
         return 0;
@@ -631,9 +626,9 @@ public class AssemblyEmitter
     {
         const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         //A, B, .. Z, AA, AB, AAA, ..
-        for (byte i = 5; i < 251; i++)
+        for (byte i = 0; i < 251; i++)
         {
-            _registers.Add(ALPHABET[i % 26] + ((i / 26) == 0 ? "" : ALPHABET[i / 26 - 1].ToString()), i);
+            _registers.Add(ALPHABET[i % 26] + ((i / 26) == 0 ? "" : ALPHABET[i / 26 - 1].ToString()), (byte)(i + 5));
         }
 
         _registers.Add("CCH", 251); // Cycle Count High
@@ -641,6 +636,27 @@ public class AssemblyEmitter
         _registers.Add("FLGS", 253); // Flags
         _registers.Add("IP", 254); // Instruction Pointer
         _registers.Add("SP", 255); // Stack Pointer
+    }
+
+    private void ReplaceLabels()
+    {
+        foreach (var l in _needsAddressChange)
+        {
+            if (_labels.ContainsKey(l.Value))
+            {
+                var newAddress = BitConverter.GetBytes(Emitter.MachineInfo.constants.ENTRY_POINT
+                    + _labels[l.Value]);
+
+                Emitter.Result[l.Key] = newAddress[0];
+                Emitter.Result[l.Key + 1] = newAddress[1];
+                Emitter.Result[l.Key + 2] = newAddress[2];
+                Emitter.Result[l.Key + 3] = newAddress[3];
+            }
+            else
+            {
+                Messages.Add(Message.Warning(null, $"Label '{l.Value}' does not exists", -1, -1));
+            }
+        }
     }
 
     private uint ReverseAddress(uint address)

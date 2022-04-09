@@ -5,11 +5,13 @@ public class TokenIterator
     public readonly List<Message> Messages = new();
     protected int _position = 0;
 
+    private readonly SourceDocument _document;
     private readonly List<Token> _tokens;
 
-    public TokenIterator(List<Token> tokens)
+    public TokenIterator(List<Token> tokens, SourceDocument document)
     {
         _tokens = tokens;
+        this._document = document;
     }
 
     public Token Current => Peek(0);
@@ -19,7 +21,7 @@ public class TokenIterator
         if (Current.Type == kind)
             return NextToken();
 
-        Messages.Add(Message.Error($"Expected {kind} but got {Current.Type}", Current.Line, Current.Column));
+        Messages.Add(Message.Error(_document, $"Expected {kind} but got {Current.Type}", Current.Line, Current.Column));
         NextToken();
 
         return Token.Invalid;

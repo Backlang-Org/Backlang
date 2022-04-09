@@ -1,23 +1,19 @@
 ﻿fn main() {
 	asm {
-		mov A, 0xFF;
-		mov Z, 129600;
 
-		outer {
-			mov B, 0;
-			add A, A, 0x100;
-			mov C, 8008;
+		mov A, 65;
+		mov C, 0x8;
 
-			inner {
-				mov &[PTR 2], 0;
-				add C, C, 4;
-				add B, B, 1;
-				cmp J, A, Z;
+		mov &[4], C;
+		mov &[0x8], C;
 
-				jmplt J, 1914696 + 5 * 8;
-			}
+		loop {
+			mov &[PTR 4], B;
+			add B, B, 0x8;
+			mov &[PTR 4], A;
+			add A, A, 0x1;
 
-			jmp 1914696 + 2 * 8;
+			jmp $loop;
 		}
 
 	}
