@@ -1,6 +1,8 @@
 const Math::PI = 3.1451;
 
-fn Math::pow(base : u32, exponent : u32) {
+fn Math::pow<T>(base : T, exponent : T)
+    where T : u8..u32 
+{
     let mut result = 1;
 
     for i in 0..exponent {
@@ -10,7 +12,9 @@ fn Math::pow(base : u32, exponent : u32) {
     result;
 }
 
-fn Math::min(x : u32, y : u32) {
+fn Math::min<T>(x : u32, y : u32)
+    where T : u8..u32 
+{
     if x < y {
         x;
     }
@@ -18,7 +22,9 @@ fn Math::min(x : u32, y : u32) {
     y;
 }
 
-fn Math::min(x : u32, y : u32) {
+fn Math::min<T>(x : T, y : T) 
+    where T : u8..u32 
+{
     if x > y {
         y;
     }
