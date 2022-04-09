@@ -9,20 +9,47 @@
 			"include": "#primitives"
 		},
 		{
+			"include": "#literals"
+		},
+		{
+			"include": "#numerics"
+		},
+		{
+			"include": "#operators"
+		},
+		{
 			"include": "#strings"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
-				"name": "keyword.control.back",
-				"match": "\\b(import|struct|let|implementation|of|static|fn|enum|bitfield|asm)\\b"
+				"name": "keyword.other.back",
+				"match": "\\b(import|struct|let|implementation|of|for|if|while|static|fn|enum|bitfield|asm)\\b"
+			}]
+		},
+		"literals": {
+			"patterns": [{
+				"name": "constant.language.back",
+				"match": "\\b(true|false|none)\\b"
+			}]
+		},
+		"numerics": {
+			"patterns": [{
+				"name": "constant.numeric.back",
+				"match": "\\b([0-9]+)\\b"
+			}]
+		},
+		"operators": {
+			"patterns": [{
+				"name": "keyword.operator.back",
+				"match": "\\b(and|or)\\b"
 			}]
 		},
 		"primitives": {
 			"patterns": [{
-				"name": "primitive.control.back",
-				"match": "\\b(u8|u16|u32|i32|i16|i32|i64|bool|string)\\b"
+				"name": "keyword.control.back",
+				"match": "\\b(u8|u16|u32|i32|i8|i16|i32|i64|bool|string)\\b"
 			}]
 		},
 		"strings": {

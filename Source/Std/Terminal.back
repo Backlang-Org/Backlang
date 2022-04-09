@@ -15,9 +15,15 @@ implementation of static Terminal {
 
 		*address = char;
 
-		if CursorX = Width {
-			CursorX = 0;
+		if CursorX = Width  {
+			CursorX = 0; 
 			CursorY++;
+		}
+	}
+
+	fn write(str : string) {
+		for c in str) {
+			write(c);
 		}
 	}
 
