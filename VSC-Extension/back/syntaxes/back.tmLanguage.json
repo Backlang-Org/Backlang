@@ -25,7 +25,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.other.back",
-				"match": "\\b(import|struct|let|implementation|of|for|if|while|static|fn|enum|bitfield|asm)\\b"
+				"match": "\\b(register|const|global|type|mut|import|struct|let|implementation|of|for|if|else|match|with|while|static|fn|enum|bitfield|asm|default|sizeof|and|or)\\b"
 			}]
 		},
 		"literals": {
@@ -49,7 +49,7 @@
 		"primitives": {
 			"patterns": [{
 				"name": "keyword.control.back",
-				"match": "\\b(u8|u16|u32|i32|i8|i16|i32|i64|bool|string)\\b"
+				"match": "\\b(u8|u16|u32|i32|i8|i16|i32|i64|fraction|bool|string)\\b"
 			}]
 		},
 		"strings": {

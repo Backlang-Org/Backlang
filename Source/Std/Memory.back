@@ -1,10 +1,22 @@
-fn Memory::clear(start : u32*, End : u32*) static {
+fn Memory::clear(start : u32*, end : u32*) static {
     Memory::set(start, end, 0);
 }
 
-fn Memory::set(start : u32*, End : u32*, value : u32) static {
-    for i in 0..End) {
+fn Memory::set(start : u32*, end : u32*, value : u32) static {
+    for i in 0..end) {
        *start = value;
        start += 1;
+    }
+}
+
+fn Memory::copy(src : u32*, dest : u32) static {
+    *dest = *src;
+}
+
+fn Memory::copy<T>(src : T[], dst : T[])
+    where T : u8..u32
+{
+    for i in 0..src.length {
+        dst[i] = src[i];
     }
 }

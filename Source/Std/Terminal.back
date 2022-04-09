@@ -2,7 +2,7 @@ import Memory;
 
 struct Terminal {
 	End = Width * Height;
-	Width = 80;
+	Width = 80; // u32 is standard if no type set
 	Height = 25;
 
 	CursorX = 0;
@@ -28,9 +28,7 @@ implementation of static Terminal {
 	}
 
 	fn readChar() {
-		let address : u32* = CursorY * Width + CursorX;
 		
-		*address;
 	}
 
 	fn clear() {
