@@ -6,6 +6,9 @@
 			"include": "#keywords"
 		},
 		{
+			"include": "#primitives"
+		},
+		{
 			"include": "#strings"
 		}
 	],
@@ -13,7 +16,13 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.back",
-				"match": "\\b(import|struct|let|implementation|of|static|fn|enum|bitfield)\\b"
+				"match": "\\b(import|struct|let|implementation|of|static|fn|enum|bitfield|asm)\\b"
+			}]
+		},
+		"primitives": {
+			"patterns": [{
+				"name": "primitive.control.back",
+				"match": "\\b(u8|u16|u32|i32|i16|i32|i64|bool|string)\\b"
 			}]
 		},
 		"strings": {
