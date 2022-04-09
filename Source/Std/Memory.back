@@ -1,0 +1,10 @@
+fn Memory::clear(start : u32*, End : u32*) static {
+    Memory::set(start, end, 0);
+}
+
+fn Memory::set(start : u32*, End : u32*, value : u32) static {
+    for i in 0..End) {
+       *start = value;
+       start += 1;
+    }
+}

@@ -1,7 +1,19 @@
 {
   "For Loop": {
     "prefix": ["for"],
-    "body": ["for ${2:element} in 0..${1:array}) {", "\t$0", "}"],
+    "body": ["for ${2:i} in 0..${1:index}) {", "\t$0", "}"],
     "description": "A for loop."
+  },
+  
+  "For Each Loop": {
+    "prefix": ["for"],
+    "body": ["for ${2:element} in {1:array}) {", "\t$0", "}"],
+    "description": "A for each loop."
+  },
+  
+  "Function": {
+    "prefix": ["fn"],
+    "body": ["fn ${1:name} () {", "\t$0", "}"],
+    "description": "A function."
   }
 }

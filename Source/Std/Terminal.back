@@ -18,8 +18,8 @@ implementation of static Terminal {
 
 	fn readChar() {
 		let address : u32* = CursorY * Width + CursorX;
-
-		return *address;
+		
+		*address;
 	}
 
 	fn clear() {
