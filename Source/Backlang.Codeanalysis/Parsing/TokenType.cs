@@ -193,4 +193,7 @@ public enum TokenType
 
     [Keyword("asm")]
     Asm,
+
+    [Keyword("static")]
+    Static,
 }

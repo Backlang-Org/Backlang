@@ -4,15 +4,20 @@ namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
-    public FunctionDeclaration(Token name, TypeLiteral returnType, List<ParameterDeclaration> parameters, Block body)
+    public FunctionDeclaration(Token name,
+                               TypeLiteral returnType, bool isStatic,
+                               List<ParameterDeclaration> parameters,
+                               Block body)
     {
         Name = name;
         ReturnType = returnType;
         Parameters = parameters;
         Body = body;
+        IsStatic = isStatic;
     }
 
     public Block Body { get; set; }
+    public bool IsStatic { get; set; }
     public Token Name { get; }
     public List<ParameterDeclaration> Parameters { get; }
     public TypeLiteral ReturnType { get; }
@@ -21,12 +26,20 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
     {
         var name = iterator.Match(TokenType.Identifier);
         TypeLiteral returnType = null;
+        bool isStatic = false;
 
         iterator.Match(TokenType.OpenParen);
 
         var parameters = ParseParameterDeclarations(iterator, parser);
 
         iterator.Match(TokenType.CloseParen);
+
+        if (iterator.Current.Type == TokenType.Static)
+        {
+            iterator.NextToken();
+
+            isStatic = true;
+        }
 
         if (iterator.Current.Type == TokenType.Arrow)
         {
@@ -35,7 +48,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        return new FunctionDeclaration(name, returnType, parameters, Statement.ParseBlock(parser));
+        return new FunctionDeclaration(name, returnType, isStatic, parameters, Statement.ParseBlock(parser));
     }
 
     public override T Accept<T>(IVisitor<T> visitor)
