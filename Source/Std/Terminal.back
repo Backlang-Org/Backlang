@@ -14,6 +14,11 @@ implementation of static Terminal {
 		let address : u32* = CursorY * Width + CursorX;
 
 		*address = char;
+
+		if CursorX = Width {
+			CursorX = 0;
+			CursorY++;
+		}
 	}
 
 	fn readChar() {
