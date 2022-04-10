@@ -3,6 +3,10 @@ fn Memory::clear(start : u32*, end : u32*) static {
 }
 
 fn Memory::set(start : u32*, end : u32*, value : u32) static {
+    if end < start {
+        return error(nameof(end) + " must be greater than " + start);
+    }
+
     for i in 0..end) {
        *start = value;
        start += 1;

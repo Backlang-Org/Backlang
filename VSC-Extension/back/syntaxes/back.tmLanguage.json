@@ -18,6 +18,9 @@
 			"include": "#operators"
 		},
 		{
+			"include": "#identifiers"
+		},
+		{
 			"include": "#strings"
 		}
 	],
@@ -38,6 +41,12 @@
 			"patterns": [{
 				"name": "constant.numeric.back",
 				"match": "\\b([0-9]+)\\b"
+			}]
+		},
+		"identifiers": {
+			"patterns": [{
+				"name": "variable.other.back",
+				"match": "\\b([_a-zA-Z][_a-zA-Z0-9]*)\\b"
 			}]
 		},
 		"operators": {
