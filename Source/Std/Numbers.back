@@ -6,7 +6,7 @@ implementation for u8..u32 {
         
         for c in str.length..0 {
             if c >= "0" and c <= "9" {
-                result += ("0" - c) * Math::pow(10, i);
+                result += ( c - "0") * Math::pow(10, i);
             }
         }
 

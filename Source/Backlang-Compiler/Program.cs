@@ -10,6 +10,7 @@ public static class Program
         var pipeline = Flo.Pipeline.Build<CompilerContext, CompilerContext>(
        cfg => {
            cfg.Add<ParsingStage>();
+           cfg.Add<IntermediateStage>();
            cfg.Add<LowererStage>();
            cfg.Add<OptimizingStage>();
            cfg.Add<EmitStage>();

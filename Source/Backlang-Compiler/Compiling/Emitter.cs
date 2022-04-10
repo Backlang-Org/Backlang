@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler.TypeSystem;
-using Be.IO;
+﻿using Be.IO;
 using Newtonsoft.Json;
 using System.Reflection;
 using Address = System.UInt32;
@@ -133,54 +132,6 @@ public class Emitter
         _writer.Write(0x0000_0000_0000_0000
             | (Instruction)opcode << 48
             | ((Instruction)register) << 40);
-    }
-
-    public void EmitLiteral(bool value)
-    {
-        _writer.Write(0x0000_0000_0000_0000
-            | ((byte)PrimitiveObjectID.Bool) << 60);
-        _writer.Write(0x0000_0000_0000_0000
-            | (value ? 1 : 0));
-    }
-
-    public void EmitLiteral(byte value)
-    {
-        _writer.Write(0x0000_0000_0000_0000
-            | ((byte)PrimitiveObjectID.I8) << 60);
-        _writer.Write(0x0000_0000_0000_0000
-            | value);
-    }
-
-    public void EmitLiteral(short value)
-    {
-        _writer.Write(0x0000_0000_0000_0000
-            | ((byte)PrimitiveObjectID.I16) << 60);
-        _writer.Write(0x0000_0000_0000_0000
-            | value);
-    }
-
-    public void EmitLiteral(int value)
-    {
-        _writer.Write(0x0000_0000_0000_0000
-            | ((byte)PrimitiveObjectID.I32) << 60);
-        _writer.Write(0x0000_0000_0000_0000
-            | value);
-    }
-
-    public void EmitLiteral(long value)
-    {
-        _writer.Write(0x0000_0000_0000_0000
-            | ((byte)PrimitiveObjectID.I64) << 60);
-        _writer.Write(0x0000_0000_0000_0000
-            | value);
-    }
-
-    public void EmitLiteral(string value)
-    {
-        _writer.Write(0x0000_0000_0000_0000
-            | ((byte)PrimitiveObjectID.String) << 60
-            | value.Length << 32);
-        _writer.Write(System.Text.Encoding.ASCII.GetBytes(value));
     }
 
     public void EmitNegate(Register target, Register source)
