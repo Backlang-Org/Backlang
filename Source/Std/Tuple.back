@@ -1,0 +1,11 @@
+struct Tuple<T, U> {
+    Item1 : T;
+    Item2 : U;
+}
+
+implementation for Tuple<T, U> {
+    fn new(item1 : T, item2 : U) {
+        Item1 = item1;
+        Item2 = item2;
+    }
+}

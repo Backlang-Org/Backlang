@@ -41,4 +41,8 @@ implementation of static Terminal {
 		CursorX = left;
 		CursorY = top;
 	}
+
+	fn getCursorPosition() {
+		return Tuple<u32, u32>::new(CursorX, CursorY);
+	}
 }
