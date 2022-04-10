@@ -14,7 +14,7 @@ public class AssemblerTests
     {
         var src = "&[0xFF + 4]";
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize(src);
+        var tokens = lexer.Tokenize(new SourceDocument("d", src));
 
         var expr = Expression.Parse(new Parser(null, tokens, lexer.Messages), AssemblerBlockStatement.ExpressionParsePoints);
 
@@ -31,7 +31,7 @@ public class AssemblerTests
         var src = "{ mov EAX, 12; }";
 
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize(src);
+        var tokens = lexer.Tokenize(new SourceDocument("d", src));
 
         var parser = new Parser(null, tokens, lexer.Messages);
 
@@ -48,7 +48,7 @@ public class AssemblerTests
         var src = "{ loop { mov A, 65; add A, A, 1; mov A, &[0]; jmp $loop; } }";
 
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize(src);
+        var tokens = lexer.Tokenize(new SourceDocument("d", src));
 
         var parser = new Parser(null, tokens, lexer.Messages);
 
@@ -64,7 +64,7 @@ public class AssemblerTests
     {
         var src = "$eax";
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize(src);
+        var tokens = lexer.Tokenize(new SourceDocument("d", src));
 
         var expr = Expression.Parse(new Parser(null, tokens, lexer.Messages), AssemblerBlockStatement.ExpressionParsePoints);
 
@@ -78,7 +78,7 @@ public class AssemblerTests
     {
         var src = "&[PTR 0xFF + 4]";
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize(src);
+        var tokens = lexer.Tokenize(new SourceDocument("d", src));
 
         var expr = Expression.Parse(new Parser(null, tokens, lexer.Messages), AssemblerBlockStatement.ExpressionParsePoints);
 

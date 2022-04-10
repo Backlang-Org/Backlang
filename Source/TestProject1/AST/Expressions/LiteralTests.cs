@@ -1,7 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestProject1;
 
 namespace TestProject1.AST.Expressions;
 
@@ -101,8 +100,9 @@ public class LiteralTests
     private static TypeLiteral ParseLiteral(string src)
     {
         var lexer = new Lexer();
-        var tokens = lexer.Tokenize(src);
+        var document = new SourceDocument("test.txt", src);
+        var tokens = lexer.Tokenize(document);
 
-        return TypeLiteral.Parse(new TokenIterator(tokens), new Parser(new SourceDocument("test.txt", src), tokens, lexer.Messages));
+        return TypeLiteral.Parse(new TokenIterator(tokens, document), new Parser(document, tokens, lexer.Messages));
     }
 }

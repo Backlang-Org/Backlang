@@ -199,4 +199,10 @@ public enum TokenType
 
     [Keyword("nameof")]
     NameOf,
+
+    [Keyword("of")]
+    Of,
+
+    [Keyword("implementation")]
+    ImplementationKeyword,
 }

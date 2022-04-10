@@ -222,4 +222,9 @@ public class ForLowerer : IVisitor<SyntaxNode>
     {
         return constVariableDeclaration;
     }
+
+    public SyntaxNode Visit(ImplementationDeclaration implementationDeclaration)
+    {
+        return implementationDeclaration;
+    }
 }
