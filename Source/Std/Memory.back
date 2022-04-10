@@ -13,11 +13,11 @@ fn Memory::copy(src : u32*, dest : u32) static {
     *dest = *src;
 }
 
-fn Memory::copy<T>(src : T[], dst : T[])
+fn Memory::copy<T>(src : T[], dst : T[]) static
     where T : u8..u32
 {
     if src.length != dst.length {
-        error("Destination Array has to havae same length as Source Array");
+        error(nameof(src) + " has to have same length as " + nameof(dst));
     }
 
     for i in 0..src.length {

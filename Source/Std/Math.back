@@ -9,25 +9,25 @@ fn Math::pow<T>(base : T, exponent : T)
         result *= base;        
     }
 
-    result;
+    return result;
 }
 
 fn Math::min<T>(x : u32, y : u32)
     where T : u8..u32 
 {
     if x < y {
-        x;
+        return x;
     }
 
-    y;
+    return y;
 }
 
 fn Math::min<T>(x : T, y : T) 
     where T : u8..u32 
 {
     if x > y {
-        y;
+        return y;
     }
 
-    x;
+    return x;
 }

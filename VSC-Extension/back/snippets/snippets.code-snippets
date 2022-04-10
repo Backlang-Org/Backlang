@@ -27,5 +27,11 @@
     "prefix": ["fn"],
     "body": ["fn ${1:name} () {", "\t$0", "}"],
     "description": "A function."
+  },
+
+  "Static Function": {
+    "prefix": ["fnstatic"],
+    "body": ["fn ${1:name} () static {", "\t$0", "}"],
+    "description": "A static function."
   }
 }
