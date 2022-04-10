@@ -26,6 +26,7 @@ public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
+        AddExpressionParsePoint<NameOfExpression>(TokenType.NameOf);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);

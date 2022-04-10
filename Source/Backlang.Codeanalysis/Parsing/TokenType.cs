@@ -196,4 +196,7 @@ public enum TokenType
 
     [Keyword("static")]
     Static,
+
+    [Keyword("nameof")]
+    NameOf,
 }
