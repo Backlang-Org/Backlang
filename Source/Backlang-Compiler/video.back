@@ -18,3 +18,7 @@
 
 	}
 }
+
+fn print(value : u32) {
+
+}
