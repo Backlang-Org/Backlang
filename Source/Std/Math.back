@@ -2,7 +2,7 @@ const Math::PI = 3.1415926535897931;
 const Math::E = 2.7182818284590451;
 
 fn Math::pow<T>(base : T, exponent : T)
-    where T : u8..u32 
+    where T : i8..i32, u8..u32
 {
     let mut result = 1;
 
@@ -13,8 +13,8 @@ fn Math::pow<T>(base : T, exponent : T)
     return result;
 }
 
-fn Math::min<T>(x : u32, y : u32)
-    where T : u8..u32 
+fn Math::min<T>(x : T, y : T)
+    where T : u8..u32, i8..i32
 {
     if x < y {
         return x;
@@ -23,8 +23,8 @@ fn Math::min<T>(x : u32, y : u32)
     return y;
 }
 
-fn Math::min<T>(x : T, y : T) 
-    where T : u8..u32 
+fn Math::max<T>(x : T, y : T) 
+    where T : u8..u32, i8..i32
 {
     if x > y {
         return y;

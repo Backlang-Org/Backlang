@@ -1,0 +1,84 @@
+struct LinkedListNode<T> {
+    Next : LinkedListNode*;
+    Value : T;
+}
+
+struct LinkedList<T> {
+    Root : LinkedListNode<T>;
+    Count : u32;
+}
+
+implementation of LinkedList<T>
+{
+    fn add(value : T) {
+        if Root == none {
+            Root = LinkedListNode<T>::new(value);
+        }
+        else {
+            let lastNode = getLastNode();
+
+            lastNode.Next = LinkedListNode<T>::new(value);
+        }
+
+        Count += 1;
+    }
+
+    fn getLastNode() private {
+        let tmp = Root;
+
+        while tmp.Next != none {
+            tmp = tmp.Next;
+        }
+
+        return &tmp;
+    }
+
+    fn getNodeAtIndex(index : u32) private {
+        assert(index < Count, "Index is out of bound");
+
+        let tmp = Root;
+
+        for i in 0..(index - 1) {
+            tmp = tmp.Next;
+        }
+
+        return &tmp;
+    }
+
+    fn remove(value : T) {
+        let tmp = Root;
+
+        if tmp.Value == value {
+            Root = *tmp.Next;
+        }
+
+        while tmp.Next != none {
+            if (*tmp.Next).Value == value {
+                let nextValidNode = (*tmp.Next).Next;
+
+                LinkedListNode<T>::Free(tmp.Next);
+
+                tmp.Next = nextValidNode;
+
+                return;
+            }
+            else {
+                tmp = tmp.Next;
+            }
+        }
+
+        Count -= 1;
+
+        error("No Value found to delete");
+    }
+
+    fn index_get(index : u32) operator {
+        return (*getNodeAtIndex(index)).Value;
+    }
+
+    fn index_set(index : u32, value : T) operator {
+        let node = *getNodeAtIndex(index);
+
+        node.Value = value;
+    }
+}

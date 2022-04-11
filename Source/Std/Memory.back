@@ -13,12 +13,12 @@ fn Memory::set(start : u32*, end : u32*, value : u32) static {
     }
 }
 
-fn Memory::copy(src : u32*, dest : u32) static {
+fn Memory::copy(src : u32*, dest : u32*) static {
     *dest = *src;
 }
 
 fn Memory::copy<T>(src : T[], dst : T[]) static
-    where T : u8..u32
+    where T : u8..u32, i8, i32
 {
     if src.length != dst.length {
         error(nameof(src) + " has to have same length as " + nameof(dst));
