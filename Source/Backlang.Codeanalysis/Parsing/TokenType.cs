@@ -205,4 +205,10 @@ public enum TokenType
 
     [Keyword("implementation")]
     ImplementationKeyword,
+
+    [Keyword("operator")]
+    Operator,
+
+    [Keyword("private")]
+    Private,
 }

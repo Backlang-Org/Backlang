@@ -5,7 +5,7 @@ namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public FunctionDeclaration(Token name,
-                               TypeLiteral returnType, bool isStatic,
+                               TypeLiteral returnType, bool isStatic, bool isPrivate, bool isOperator,
                                List<ParameterDeclaration> parameters,
                                Block body)
     {
@@ -14,9 +14,13 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         Parameters = parameters;
         Body = body;
         IsStatic = isStatic;
+        IsPrivate = isPrivate;
+        IsOperator = isOperator;
     }
 
     public Block Body { get; set; }
+    public bool IsOperator { get; }
+    public bool IsPrivate { get; }
     public bool IsStatic { get; set; }
     public Token Name { get; }
     public List<ParameterDeclaration> Parameters { get; }
@@ -26,7 +30,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
     {
         var name = iterator.Match(TokenType.Identifier);
         TypeLiteral returnType = null;
-        bool isStatic = false;
+        bool isStatic = false, isPrivate = false, isOperator = false;
 
         iterator.Match(TokenType.OpenParen);
 
@@ -41,6 +45,20 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
             isStatic = true;
         }
 
+        if (iterator.Current.Type == TokenType.Private)
+        {
+            iterator.NextToken();
+
+            isPrivate = true;
+        }
+
+        if (iterator.Current.Type == TokenType.Operator)
+        {
+            iterator.NextToken();
+
+            isOperator = true;
+        }
+
         if (iterator.Current.Type == TokenType.Arrow)
         {
             iterator.NextToken();
@@ -48,7 +66,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        return new FunctionDeclaration(name, returnType, isStatic, parameters, Statement.ParseBlock(parser));
+        return new FunctionDeclaration(name, returnType, isStatic, isPrivate, isOperator, parameters, Statement.ParseBlock(parser));
     }
 
     public override T Accept<T>(IVisitor<T> visitor)
