@@ -11,12 +11,6 @@ namespace Backlang_Compiler.Compiling.Stages;
 
 public struct Dependencies
 {
-    /// <summary>
-    /// Creates a Brainfuck IO dependencies data structure.
-    /// </summary>
-    /// <param name="environment">The type environment to use.</param>
-    /// <param name="readMethod">The 'read' method to use.</param>
-    /// <param name="writeMethod">The 'write' method to use.</param>
     public Dependencies(TypeEnvironment environment, IMethod readMethod, IMethod writeMethod)
     {
         this.Environment = environment;
@@ -42,19 +36,6 @@ public struct Dependencies
     /// <value>The 'write' method.</value>
     public IMethod WriteMethod { get; private set; }
 
-    /// <summary>
-    /// Resolves dependencies that Brainfuck programs use to accept input and produce output.
-    /// </summary>
-    /// <param name="environment">
-    /// The type environment to resolve dependencies in.
-    /// </param>
-    /// <param name="binder">
-    /// A type resolver for resolving dependencies with.
-    /// </param>
-    /// <param name="log">A log to send messages to.</param>
-    /// <returns>
-    /// Brainfuck IO dependencies.
-    /// </returns>
     public static Dependencies Resolve(
         TypeEnvironment environment,
         ReadOnlyTypeResolver binder)

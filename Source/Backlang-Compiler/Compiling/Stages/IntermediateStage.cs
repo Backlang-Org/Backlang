@@ -55,6 +55,7 @@ public partial class IntermediateStage : IHandler<CompilerContext, CompilerConte
             var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Text).FullyUnqualifiedName, function.IsStatic, new VoidType());
 
             method.Body = body;
+            method.IsStatic = function.IsStatic;
 
             AddParameters(method, function);
             SetReturnType(method, function);
