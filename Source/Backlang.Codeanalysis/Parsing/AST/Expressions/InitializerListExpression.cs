@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class InitializerListExpression : Expression, IParsePoint<Expression>
+public sealed class InitializerListExpression : Expression, IParsePoint<Expression>
 {
     public List<Expression> Elements { get; } = new();
 

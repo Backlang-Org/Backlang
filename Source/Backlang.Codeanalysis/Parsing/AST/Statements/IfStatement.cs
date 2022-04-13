@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class IfStatement : Statement, IParsePoint<Statement>
+public sealed class IfStatement : Statement, IParsePoint<Statement>
 {
     public IfStatement(Expression condition, Block body, Block? elseBody)
     {

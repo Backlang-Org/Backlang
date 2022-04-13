@@ -8,7 +8,7 @@ public abstract class BaseParser<TNode, TLexer, TParser>
 {
     public readonly List<Message> Messages;
 
-    public BaseParser(SourceDocument document, List<Token> tokens, List<Message> messages)
+    protected BaseParser(SourceDocument document, List<Token> tokens, List<Message> messages)
     {
         Document = document;
         Iterator = new(tokens, document);

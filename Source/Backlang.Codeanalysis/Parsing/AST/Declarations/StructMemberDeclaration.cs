@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class StructMemberDeclaration : SyntaxNode
+public sealed class StructMemberDeclaration : SyntaxNode
 {
     public string Name { get; set; }
     public TypeLiteral Type { get; set; }

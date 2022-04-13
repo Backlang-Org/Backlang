@@ -2,7 +2,7 @@
 
 namespace Backlang_Compiler.Compiling;
 
-public class PassManager
+public sealed class PassManager
 {
     private readonly List<IVisitor<SyntaxNode>> Passes = new();
 

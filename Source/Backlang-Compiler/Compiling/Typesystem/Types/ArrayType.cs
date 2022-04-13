@@ -4,7 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Backlang_Compiler.Compiling.Typesystem.Types;
 
-public class ArrayType : ContainerType
+public sealed class ArrayType : ContainerType
 {
     public ArrayType(int rank, IType arrayType) : base(arrayType)
     {

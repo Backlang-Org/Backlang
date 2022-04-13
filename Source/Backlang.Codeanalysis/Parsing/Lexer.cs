@@ -1,12 +1,12 @@
-﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
 using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public class Lexer : BaseLexer
+public sealed class Lexer : BaseLexer
 {
-    private static readonly Dictionary<string, TokenType> _symbolTokens = new();
+    private static readonly Dictionary<string, TokenType> _symbolTokens = new(StringComparer.Ordinal);
 
     static Lexer()
     {

@@ -2,9 +2,9 @@
 
 namespace Backlang_Compiler;
 
-public class Utils
+public sealed class Utils
 {
-    public string GenerateIdentifier()
+    public static string GenerateIdentifier()
     {
         var sb = new StringBuilder();
         const string ALPHABET = "abcdefhijklmnopqrstABCDEFGHIJKLMNOPQRSTUVWXYZ&%$";

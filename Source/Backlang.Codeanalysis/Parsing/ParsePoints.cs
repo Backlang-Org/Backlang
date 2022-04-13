@@ -1,4 +1,4 @@
 ﻿namespace Backlang.Codeanalysis.Parsing;
 
-public class ParsePoints<T> : Dictionary<TokenType, Func<TokenIterator, Parser, T>>
+public sealed class ParsePoints<T> : Dictionary<TokenType, Func<TokenIterator, Parser, T>>
 { }

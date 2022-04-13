@@ -1,6 +1,6 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 
-public class MatchExpression : Expression, IParsePoint<Expression>
+public sealed class MatchExpression : Expression, IParsePoint<Expression>
 {
     /*
 	 * match a with

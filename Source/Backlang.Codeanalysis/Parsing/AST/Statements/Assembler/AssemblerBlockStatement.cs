@@ -1,6 +1,6 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
+namespace Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
-public class AssemblerBlockStatement : Statement, IParsePoint<Statement>
+public sealed class AssemblerBlockStatement : Statement, IParsePoint<Statement>
 {
     public static readonly ParsePoints<Expression> ExpressionParsePoints = new();
 

@@ -1,8 +1,8 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class ConstVariableDeclaration : VariableDeclarationStatement, IParsePoint<SyntaxNode>
+public sealed class ConstVariableDeclaration : VariableDeclarationStatement, IParsePoint<SyntaxNode>
 {
-    public ConstVariableDeclaration(string name, TypeLiteral? type, Expression? value) : base(name, type, false, value)
+    public ConstVariableDeclaration(string name, TypeLiteral? type, Expression? value) : base(name, type, isMutable: false, value)
     {
     }
 

@@ -2,10 +2,10 @@
 
 public enum MessageSeverity
 {
-    Error, Warning, Info, Hint
+    Error, Warning, Info, Hint,
 }
 
-public class Message
+public sealed class Message
 {
     public Message(SourceDocument document, MessageSeverity severity, string text, int line, int column)
     {

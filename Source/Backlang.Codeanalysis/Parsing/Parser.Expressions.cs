@@ -1,10 +1,10 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using System.Globalization;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public partial class Parser
+public sealed partial class Parser
 {
     internal override Expression ParsePrimary(ParsePoints<Expression> parsePoints = null)
     {

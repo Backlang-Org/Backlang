@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class NoneExpression : Expression, IParsePoint<Expression>
+public sealed class NoneExpression : Expression, IParsePoint<Expression>
 {
     public static Expression Parse(TokenIterator iterator, Parser parser)
     {

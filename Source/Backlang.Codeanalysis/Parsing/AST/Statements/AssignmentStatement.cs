@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class AssignmentStatement : Statement
+public sealed class AssignmentStatement : Statement
 {
     public AssignmentStatement(string name, Expression value)
     {

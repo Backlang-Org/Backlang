@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
-public class LabelReferenceExpression : Expression, IParsePoint<Expression>
+public sealed class LabelReferenceExpression : Expression, IParsePoint<Expression>
 {
     public string Label { get; set; }
 

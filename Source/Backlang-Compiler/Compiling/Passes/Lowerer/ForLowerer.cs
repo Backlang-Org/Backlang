@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
@@ -8,7 +8,7 @@ using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
 namespace Backlang_Compiler.Compiling.Passes.Lowerer;
 
-public class ForLowerer : IVisitor<SyntaxNode>
+public sealed class ForLowerer : IVisitor<SyntaxNode>
 {
     public SyntaxNode Visit(InvalidNode invalidNode)
     {

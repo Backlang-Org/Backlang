@@ -17,7 +17,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
-public partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
+public sealed partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
     public IAssembly Assembly { get; private set; }
 
@@ -64,7 +64,7 @@ public partial class IntermediateStage : IHandler<CompilerContext, CompilerConte
             context.Assembly.AddType(type);
         }
 
-        return await next.Invoke(context);
+        return await next.Invoke(context).ConfigureAwait(false);
     }
 
     private static Instruction ConvertExpression(IType elementType, Expression value)
@@ -81,7 +81,7 @@ public partial class IntermediateStage : IHandler<CompilerContext, CompilerConte
                                            elementType);
     }
 
-    private void AddParameters(DescribedMethod method, FunctionDeclaration function)
+    private static void AddParameters(DescribedMethod method, FunctionDeclaration function)
     {
         foreach (var p in function.Parameters)
         {
@@ -89,7 +89,7 @@ public partial class IntermediateStage : IHandler<CompilerContext, CompilerConte
         }
     }
 
-    private MethodBody CompileBody(FunctionDeclaration function, CompilerContext context)
+    private static MethodBody CompileBody(FunctionDeclaration function, CompilerContext context)
     {
         var graph = new FlowGraphBuilder();
 
@@ -136,7 +136,7 @@ public partial class IntermediateStage : IHandler<CompilerContext, CompilerConte
             graph.ToImmutable());
     }
 
-    private IType GetType(string name)
+    private static IType GetType(string name)
     {
         switch (name)
         {
@@ -148,7 +148,7 @@ public partial class IntermediateStage : IHandler<CompilerContext, CompilerConte
         return null;
     }
 
-    private void SetReturnType(DescribedMethod method, FunctionDeclaration function)
+    private static void SetReturnType(DescribedMethod method, FunctionDeclaration function)
     {
         if (function.ReturnType != null)
         {

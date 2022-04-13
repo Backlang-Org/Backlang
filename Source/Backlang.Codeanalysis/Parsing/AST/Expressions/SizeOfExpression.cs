@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class SizeOfExpression : Expression, IParsePoint<Expression>
+public sealed class SizeOfExpression : Expression, IParsePoint<Expression>
 {
     public TypeLiteral Type { get; set; }
 

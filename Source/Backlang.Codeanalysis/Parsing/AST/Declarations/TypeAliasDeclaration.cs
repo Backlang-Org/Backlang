@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class TypeAliasDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class TypeAliasDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public string AliasName { get; set; }
     public string ToAlias { get; set; }

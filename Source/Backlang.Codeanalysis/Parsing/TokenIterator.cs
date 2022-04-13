@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing;
 
-public class TokenIterator
+public sealed class TokenIterator
 {
     public readonly List<Message> Messages = new();
     protected int _position = 0;
@@ -38,7 +38,7 @@ public class TokenIterator
     {
         var index = _position + offset;
         if (index >= _tokens.Count)
-            return _tokens.Last();
+            return _tokens[_tokens.Count - 1];
 
         return _tokens[index];
     }

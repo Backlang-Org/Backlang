@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public ParameterDeclaration(Token name, TypeLiteral type, Expression? defaultValue)
     {

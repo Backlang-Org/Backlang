@@ -4,7 +4,7 @@ using Backlang_Compiler.Compiling.Stages;
 
 namespace Backlang_Compiler.Compiling.Typesystem.Types;
 
-public class VoidType : IType
+public sealed class VoidType : IType
 {
     public AttributeMap Attributes => AttributeMap.Empty;
     public IReadOnlyList<IType> BaseTypes => null;

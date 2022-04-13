@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class EnumMemberDeclaration : SyntaxNode
+public sealed class EnumMemberDeclaration : SyntaxNode
 {
     public string Name { get; set; }
     public Expression? Value { get; set; }

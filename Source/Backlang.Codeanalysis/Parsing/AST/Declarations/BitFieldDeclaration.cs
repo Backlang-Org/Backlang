@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class BitFieldDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class BitFieldDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public List<BitFieldMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }

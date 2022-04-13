@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST;
 
-public class LiteralNode : Expression
+public sealed class LiteralNode : Expression
 {
     public LiteralNode(object value)
     {

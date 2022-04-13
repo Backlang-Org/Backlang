@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
-public class ArrayAccessExpression : Expression
+public sealed class ArrayAccessExpression : Expression
 {
     public List<Expression> Indices { get; set; } = new();
     public NameExpression Name { get; set; }

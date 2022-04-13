@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class RegisterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class RegisterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public Expression Address { get; set; }
     public string Name { get; set; }

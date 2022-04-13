@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
@@ -8,7 +8,7 @@ using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
+public sealed partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 {
     public readonly ParsePoints<SyntaxNode> DeclarationParsePoints = new();
     public readonly ParsePoints<Expression> ExpressionParsePoints = new();

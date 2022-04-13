@@ -1,9 +1,9 @@
-﻿using Backlang_Compiler.Compiling.Passes.Lowerer;
+using Backlang_Compiler.Compiling.Passes.Lowerer;
 using Flo;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
-public class LowererStage : IHandler<CompilerContext, CompilerContext>
+public sealed class LowererStage : IHandler<CompilerContext, CompilerContext>
 {
     private PassManager _optimization = new();
 
