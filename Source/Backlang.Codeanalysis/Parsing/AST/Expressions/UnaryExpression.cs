@@ -1,6 +1,6 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class UnaryExpression : Expression
+public sealed class UnaryExpression : Expression
 {
     public UnaryExpression(Token operatorToken, Expression expression, bool isPostUnary)
     {

@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class ForStatement : Statement, IParsePoint<Statement>
+public sealed class ForStatement : Statement, IParsePoint<Statement>
 {
     public ForStatement(Expression variable, TypeLiteral? type, Expression collection, Block body)
     {

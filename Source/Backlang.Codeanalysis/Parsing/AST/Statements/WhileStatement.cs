@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class WhileStatement : Statement, IParsePoint<Statement>
+public sealed class WhileStatement : Statement, IParsePoint<Statement>
 {
     public WhileStatement(Expression condition, Block body)
     {

@@ -1,7 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 namespace Backlang.Codeanalysis.Parsing.AST;
 
-public class Block : SyntaxNode
+public sealed class Block : SyntaxNode
 {
     public Block(List<SyntaxNode> body)
     {

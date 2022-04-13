@@ -1,9 +1,9 @@
-﻿using Flo;
+using Flo;
 using Backlang.Codeanalysis.Parsing.AST;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
-public class ParsingStage : IHandler<CompilerContext, CompilerContext>
+public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {

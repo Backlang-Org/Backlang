@@ -3,7 +3,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
 namespace Backlang_Compiler.Compiling.Typesystem.Types;
 
-public class U16Type : IType
+public sealed class U16Type : IType
 {
     public AttributeMap Attributes => new AttributeMap();
     public IReadOnlyList<IType> BaseTypes => null;

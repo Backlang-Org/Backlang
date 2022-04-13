@@ -1,8 +1,8 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class GlobalVariableDeclaration : VariableDeclarationStatement, IParsePoint<SyntaxNode>
+public sealed class GlobalVariableDeclaration : VariableDeclarationStatement, IParsePoint<SyntaxNode>
 {
-    public GlobalVariableDeclaration(string name, TypeLiteral? type, Expression? value) : base(name, type, true, value)
+    public GlobalVariableDeclaration(string name, TypeLiteral? type, Expression? value) : base(name, type, isMutable: true, value)
     {
     }
 

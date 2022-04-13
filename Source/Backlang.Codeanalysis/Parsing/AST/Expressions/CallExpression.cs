@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class CallExpression : Expression
+public sealed class CallExpression : Expression
 {
     public CallExpression(Expression name, List<Expression> arguments)
     {

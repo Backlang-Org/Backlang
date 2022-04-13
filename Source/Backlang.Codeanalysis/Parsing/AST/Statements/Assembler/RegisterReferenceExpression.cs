@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
-public class RegisterReferenceExpression : Expression, IParsePoint<Expression>
+public sealed class RegisterReferenceExpression : Expression, IParsePoint<Expression>
 {
     public string RegisterName { get; set; }
 

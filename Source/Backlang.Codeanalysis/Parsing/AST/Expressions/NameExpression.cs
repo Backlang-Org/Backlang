@@ -1,6 +1,6 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class NameExpression : Expression, IParsePoint<Expression>
+public sealed class NameExpression : Expression, IParsePoint<Expression>
 {
     public NameExpression(string name, int line, int column)
     {

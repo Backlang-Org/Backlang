@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class BitFieldMemberDeclaration : SyntaxNode
+public sealed class BitFieldMemberDeclaration : SyntaxNode
 {
     public Expression Index { get; set; }
     public string Name { get; set; }

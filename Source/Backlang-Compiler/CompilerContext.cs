@@ -4,7 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Backlang_Compiler;
 
-public class CompilerContext
+public sealed class CompilerContext
 {
     public DescribedAssembly Assembly { get; set; }
 

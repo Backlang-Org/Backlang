@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class GroupExpression : Expression, IParsePoint<Expression>
+public sealed class GroupExpression : Expression, IParsePoint<Expression>
 {
     public GroupExpression(Expression inner)
     {

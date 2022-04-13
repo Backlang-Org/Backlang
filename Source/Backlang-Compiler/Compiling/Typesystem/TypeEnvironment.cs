@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Backlang_Compiler.Compiling.Typesystem;
 
-public class BackTypeEnvironment : TypeEnvironment
+public sealed class BackTypeEnvironment : TypeEnvironment
 {
     public override IType CapturedException => throw new NotImplementedException();
     public override IType Char => throw new NotImplementedException();

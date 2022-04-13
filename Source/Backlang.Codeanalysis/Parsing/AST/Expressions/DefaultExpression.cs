@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class DefaultExpression : Expression, IParsePoint<Expression>
+public sealed class DefaultExpression : Expression, IParsePoint<Expression>
 {
     public TypeLiteral Type { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing;
 
-public class SourceDocument
+public sealed class SourceDocument
 {
     public SourceDocument(string filename)
     {

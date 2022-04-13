@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST;
 
-public class TypeLiteral : SyntaxNode
+public sealed class TypeLiteral : SyntaxNode
 {
     public List<SyntaxNode> Arguments { get; set; } = new();
     public int Dimensions { get; set; }

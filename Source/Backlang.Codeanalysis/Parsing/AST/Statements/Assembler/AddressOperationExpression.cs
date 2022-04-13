@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
-public class AddressOperationExpression : Expression, IParsePoint<Expression>
+public sealed class AddressOperationExpression : Expression, IParsePoint<Expression>
 {
     public Expression Expression { get; set; }
 

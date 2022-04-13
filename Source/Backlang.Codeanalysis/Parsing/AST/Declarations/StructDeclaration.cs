@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class StructDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class StructDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public List<StructMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }

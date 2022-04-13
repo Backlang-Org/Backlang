@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public class BinaryExpression : Expression
+public sealed class BinaryExpression : Expression
 {
     public BinaryExpression(Expression lhs, Token operatorToken, Expression rhs)
     {

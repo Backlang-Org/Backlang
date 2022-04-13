@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class EnumDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class EnumDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 {
     public List<EnumMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 
-public class Instruction : AssemblerBodyNode
+public sealed class Instruction : AssemblerBodyNode
 {
     public List<Expression> Arguments { get; set; } = new();
     public string OpCode { get; set; }

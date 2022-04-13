@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing;
 
-public class Token
+public sealed class Token
 {
     public static Token Invalid = new(TokenType.Invalid);
 
