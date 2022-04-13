@@ -70,13 +70,11 @@ public sealed partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 
             return parsePoints[type](Iterator, this);
         }
-        else
-        {
-            Messages.Add(Message.Error(Document, $"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
-            Iterator.NextToken();
 
-            return default;
-        }
+        Messages.Add(Message.Error(Document, $"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+        Iterator.NextToken();
+
+        return default;
     }
 
     public Statement InvokeStatementParsePoint()
@@ -89,10 +87,8 @@ public sealed partial class Parser : BaseParser<SyntaxNode, Lexer, Parser>
 
             return StatementParsePoints[type](Iterator, this);
         }
-        else
-        {
-            return ExpressionStatement.Parse(Iterator, this);
-        }
+
+        return ExpressionStatement.Parse(Iterator, this);
     }
 
     protected override SyntaxNode Start()

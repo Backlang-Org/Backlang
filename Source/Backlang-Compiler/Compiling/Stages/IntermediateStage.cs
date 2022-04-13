@@ -52,10 +52,11 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                     ReassociateOperators.Instance,
                     DeadValueElimination.Instance));
 
-            var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Text).FullyUnqualifiedName, function.IsStatic, new VoidType());
-
-            method.Body = body;
-            method.IsStatic = function.IsStatic;
+            var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Text).FullyUnqualifiedName, function.IsStatic, new VoidType())
+            {
+                Body = body,
+                IsStatic = function.IsStatic
+            };
 
             AddParameters(method, function);
             SetReturnType(method, function);
@@ -65,20 +66,6 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         }
 
         return await next.Invoke(context).ConfigureAwait(false);
-    }
-
-    private static Instruction ConvertExpression(IType elementType, Expression value)
-    {
-        if (value is LiteralNode lit)
-        {
-            return Instruction.CreateConstant(
-                                           new IntegerConstant((int)lit.Value, IntegerSpec.UInt32),
-                                           elementType);
-        }
-
-        return Instruction.CreateConstant(
-                                           new IntegerConstant(1, IntegerSpec.UInt32),
-                                           elementType);
     }
 
     private static void AddParameters(DescribedMethod method, FunctionDeclaration function)
@@ -131,9 +118,23 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         // Finish up the method body.
         return new MethodBody(
             new Parameter(),
-            default(Parameter),
+            default,
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
+    }
+
+    private static Instruction ConvertExpression(IType elementType, Expression value)
+    {
+        if (value is LiteralNode lit)
+        {
+            return Instruction.CreateConstant(
+                                           new IntegerConstant((int)lit.Value, IntegerSpec.UInt32),
+                                           elementType);
+        }
+
+        return Instruction.CreateConstant(
+                                           new IntegerConstant(1, IntegerSpec.UInt32),
+                                           elementType);
     }
 
     private static IType GetType(string name)
