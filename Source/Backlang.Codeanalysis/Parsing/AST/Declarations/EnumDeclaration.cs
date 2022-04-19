@@ -4,9 +4,6 @@ namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public sealed class EnumDeclaration : IParsePoint<LNode>
 {
-    public List<EnumMemberDeclaration> Members { get; set; } = new();
-    public string Name { get; set; }
-
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var declaration = new EnumDeclaration();
@@ -15,11 +12,12 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.OpenCurly);
 
+        var members = new LNodeList();
+
         while (iterator.Current.Type != (TokenType.CloseCurly))
         {
             var memberNameToken = iterator.Current;
-            var member = new EnumMemberDeclaration();
-            member.Name = memberNameToken.Text;
+            LNode value = LNode.Missing;
 
             iterator.NextToken();
 
@@ -27,7 +25,7 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
             {
                 iterator.NextToken();
 
-                member.Value = parser.ParsePrimary();
+                value = parser.ParsePrimary();
             }
 
             if (iterator.Current.Type != TokenType.CloseCurly)
@@ -35,18 +33,11 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
                 iterator.Match(TokenType.Comma);
             }
 
-            declaration.Members.Add(member);
+            members.Add(SyntaxTree.Factory.Var(LNode.Missing, LNode.Id(memberNameToken.Text), value));
         }
 
         iterator.Match(TokenType.CloseCurly);
 
-        declaration.Name = nameToken.Text;
-
-        return declaration;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members);
     }
 }
