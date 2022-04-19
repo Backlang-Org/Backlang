@@ -23,6 +23,14 @@ public static class SyntaxTree
         return LNode.Call(CodeSymbols.Default, LNode.List(type));
     }
 
+    public static LNode Enum(LNode name, LNodeList members)
+    {
+        return LNode.Call(CodeSymbols.Enum, LNode.List(name,
+            LNode.Call(CodeSymbols.AltList),
+              LNode.Call(CodeSymbols.Braces,
+                  members)));
+    }
+
     public static LNode Fn(LNode name, TypeLiteral type, LNodeList args, LNodeList body)
     {
         return LNode.Call(args, CodeSymbols.Fn, LNode.List(type, name,
