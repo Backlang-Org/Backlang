@@ -1,4 +1,5 @@
-﻿using Loyc;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -12,6 +13,22 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
+    public static LNode Default()
+    {
+        return Default(LNode.Missing);
+    }
+
+    public static LNode Default(LNode type)
+    {
+        return LNode.Call(CodeSymbols.Default, LNode.List(type));
+    }
+
+    public static LNode Fn(LNode name, TypeLiteral type, LNodeList args, LNodeList body)
+    {
+        return LNode.Call(args, CodeSymbols.Fn, LNode.List(type, name,
+                LNode.Call(CodeSymbols.AltList, args), LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode For(LNode init, LNode arr, LNodeList body)
     {
         return LNode.Call(
@@ -22,11 +39,6 @@ public static class SyntaxTree
                             LNode.Call(CodeSymbols.AltList),
                                 LNode.Call(CodeSymbols.Braces,
                                     body).SetStyle(NodeStyle.StatementBlock)));
-    }
-
-    public static LNode Group(LNode inner)
-    {
-        return inner.WithArgs(LNode.List(LNode.InParensTrivia));
     }
 
     public static LNode If(LNode cond, LNodeList ifBody, LNodeList elseBody)
