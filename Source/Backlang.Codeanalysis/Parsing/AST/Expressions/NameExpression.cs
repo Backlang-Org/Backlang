@@ -1,6 +1,8 @@
+using Loyc.Syntax;
+
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public sealed class NameExpression : Expression, IParsePoint<Expression>
+public sealed class NameExpression : Expression, IParsePoint<LNode>
 {
     public NameExpression(string name, int line, int column)
     {
@@ -13,7 +15,7 @@ public sealed class NameExpression : Expression, IParsePoint<Expression>
     public int Line { get; set; }
     public string Name { get; set; }
 
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var nameExpression = new NameExpression(iterator.Peek(-1).Text, iterator.Peek(-1).Line, iterator.Peek(-1).Column);
 
@@ -40,11 +42,6 @@ public sealed class NameExpression : Expression, IParsePoint<Expression>
         {
             return nameExpression;
         }
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 
     public override string ToString()

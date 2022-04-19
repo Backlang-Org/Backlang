@@ -1,11 +1,13 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public sealed class EnumDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class EnumDeclaration : IParsePoint<LNode>
 {
     public List<EnumMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var declaration = new EnumDeclaration();
 

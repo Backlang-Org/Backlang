@@ -1,6 +1,8 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public sealed class BitFieldDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class BitFieldDeclaration : SyntaxNode, IParsePoint<LNode>
 {
     public List<BitFieldMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }

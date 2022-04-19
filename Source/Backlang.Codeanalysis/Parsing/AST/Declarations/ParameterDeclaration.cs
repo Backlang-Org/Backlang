@@ -1,6 +1,8 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<LNode>
 {
     public ParameterDeclaration(Token name, TypeLiteral type, Expression? defaultValue)
     {
@@ -9,7 +11,7 @@ public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         DefaultValue = defaultValue;
     }
 
-    public Expression? DefaultValue { get; }
+    public LNode? DefaultValue { get; }
     public Token Name { get; }
     public TypeLiteral Type { get; }
 
@@ -21,7 +23,7 @@ public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 
         var type = TypeLiteral.Parse(iterator, parser);
 
-        Expression? defaultValue = null;
+        LNode? defaultValue = null;
 
         if (iterator.Current.Type == TokenType.EqualsToken)
         {
@@ -31,10 +33,5 @@ public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         }
 
         return new ParameterDeclaration(name, type, defaultValue);
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }

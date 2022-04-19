@@ -1,9 +1,10 @@
 ﻿using Backlang.Codeanalysis.Parsing;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Core;
 
-public abstract class BaseParser<TNode, TLexer, TParser>
-    where TParser : BaseParser<TNode, TLexer, TParser>
+public abstract class BaseParser<TLexer, TParser>
+    where TParser : BaseParser<TLexer, TParser>
     where TLexer : BaseLexer, new()
 {
     public readonly List<Message> Messages;
@@ -18,7 +19,7 @@ public abstract class BaseParser<TNode, TLexer, TParser>
     public SourceDocument Document { get; }
     public TokenIterator Iterator { get; set; }
 
-    public static (TNode? Tree, List<Message> Messages) Parse(SourceDocument document)
+    public static (LNode? Tree, List<Message> Messages) Parse(SourceDocument document)
     {
         if (string.IsNullOrEmpty(document.Source) || document.Source == null)
         {
@@ -33,7 +34,7 @@ public abstract class BaseParser<TNode, TLexer, TParser>
         return (parser.Program(), parser.Messages);
     }
 
-    public TNode Program()
+    public LNode Program()
     {
         var node = Start();
 
@@ -42,7 +43,7 @@ public abstract class BaseParser<TNode, TLexer, TParser>
         return node;
     }
 
-    internal abstract Expression ParsePrimary(ParsePoints<Expression> parsePoints = null);
+    internal abstract LNode ParsePrimary(ParsePoints<LNode> parsePoints = null);
 
-    protected abstract TNode Start();
+    protected abstract LNode Start();
 }

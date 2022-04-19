@@ -1,8 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class FunctionDeclaration : IParsePoint<LNode>
 {
     public FunctionDeclaration(Token name,
                                TypeLiteral returnType, bool isStatic,
@@ -22,7 +23,7 @@ public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
     public List<ParameterDeclaration> Parameters { get; }
     public TypeLiteral ReturnType { get; }
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var name = iterator.Match(TokenType.Identifier);
         TypeLiteral returnType = null;
@@ -49,11 +50,6 @@ public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         }
 
         return new FunctionDeclaration(name, returnType, isStatic, parameters, Statement.ParseBlock(parser));
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 
     private static List<ParameterDeclaration> ParseParameterDeclarations(TokenIterator iterator, Parser parser)

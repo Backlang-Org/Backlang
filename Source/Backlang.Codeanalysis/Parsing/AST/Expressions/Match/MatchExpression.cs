@@ -1,6 +1,8 @@
+using Loyc.Syntax;
+
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 
-public sealed class MatchExpression : Expression, IParsePoint<Expression>
+public sealed class MatchExpression : Expression, IParsePoint<LNode>
 {
     /*
 	 * match a with
@@ -9,14 +11,14 @@ public sealed class MatchExpression : Expression, IParsePoint<Expression>
 		_ => 0 + 4;
 	*/
 
-    public Expression MatchArgument { get; set; }
+    public LNode MatchArgument { get; set; }
 
     public List<MatchRule> Rules { get; set; } = new();
 
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         MatchExpression result = new MatchExpression();
-        result.MatchArgument = Parse(parser);
+        result.MatchArgument = Expression.Parse(parser);
 
         iterator.Match(TokenType.With);
 
@@ -35,10 +37,5 @@ public sealed class MatchExpression : Expression, IParsePoint<Expression>
         }
 
         return result;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }

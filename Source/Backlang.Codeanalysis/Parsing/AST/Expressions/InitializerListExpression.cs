@@ -1,10 +1,12 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿using Loyc.Syntax;
 
-public sealed class InitializerListExpression : Expression, IParsePoint<Expression>
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+
+public sealed class InitializerListExpression : Expression, IParsePoint<LNode>
 {
     public List<Expression> Elements { get; } = new();
 
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var node = new InitializerListExpression();
 
@@ -26,10 +28,5 @@ public sealed class InitializerListExpression : Expression, IParsePoint<Expressi
         iterator.Match(TokenType.CloseSquare);
 
         return node;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }

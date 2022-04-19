@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.AST;
 
-public sealed class TypeLiteral : SyntaxNode
+public sealed class TypeLiteral
 {
     public List<SyntaxNode> Arguments { get; set; } = new();
     public int Dimensions { get; set; }
@@ -57,10 +57,5 @@ public sealed class TypeLiteral : SyntaxNode
         }
 
         return literal;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }
