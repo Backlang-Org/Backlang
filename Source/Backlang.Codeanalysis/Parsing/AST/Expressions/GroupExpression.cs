@@ -10,6 +10,6 @@ public sealed class GroupExpression : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseParen);
 
-        return SyntaxTree.Group(expr);
+        return SyntaxTree.Factory.InParens(expr);
     }
 }

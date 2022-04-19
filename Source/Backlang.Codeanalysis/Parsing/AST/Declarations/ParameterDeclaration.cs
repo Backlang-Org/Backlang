@@ -2,20 +2,9 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<LNode>
+public sealed class ParameterDeclaration : IParsePoint<LNode>
 {
-    public ParameterDeclaration(Token name, TypeLiteral type, Expression? defaultValue)
-    {
-        Name = name;
-        Type = type;
-        DefaultValue = defaultValue;
-    }
-
-    public LNode? DefaultValue { get; }
-    public Token Name { get; }
-    public TypeLiteral Type { get; }
-
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var name = iterator.Match(TokenType.Identifier);
 
@@ -23,7 +12,7 @@ public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<LNode>
 
         var type = TypeLiteral.Parse(iterator, parser);
 
-        LNode? defaultValue = null;
+        LNode defaultValue = LNode.Missing;
 
         if (iterator.Current.Type == TokenType.EqualsToken)
         {
@@ -32,6 +21,6 @@ public sealed class ParameterDeclaration : SyntaxNode, IParsePoint<LNode>
             defaultValue = Expression.Parse(parser);
         }
 
-        return new ParameterDeclaration(name, type, defaultValue);
+        return SyntaxTree.Factory.Var(type, name.Text, defaultValue);
     }
 }
