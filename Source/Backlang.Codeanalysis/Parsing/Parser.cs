@@ -3,7 +3,6 @@ using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
-using Backlang.Codeanalysis.Parsing.AST.Statements.Assembler;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -20,7 +19,6 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
-        AddDeclarationParsePoint<RegisterDeclaration>(TokenType.Register);
         AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Type);
         AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
@@ -33,7 +31,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
-        AddStatementParsePoint<AssemblerBlockStatement>(TokenType.Asm);
+        //AddStatementParsePoint<AssemblerBlockStatement>(TokenType.Asm);
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);

@@ -2,13 +2,11 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public sealed class InitializerListExpression : Expression, IParsePoint<LNode>
+public sealed class InitializerListExpression : IParsePoint<LNode>
 {
-    public List<Expression> Elements { get; } = new();
-
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var node = new InitializerListExpression();
+        var elements = new LNodeList();
 
         do
         {
@@ -17,7 +15,7 @@ public sealed class InitializerListExpression : Expression, IParsePoint<LNode>
                 break;
             }
 
-            node.Elements.Add(Expression.Parse(parser));
+            elements.Add(Expression.Parse(parser));
 
             if (iterator.Current.Type != TokenType.CloseSquare)
             {
@@ -27,6 +25,6 @@ public sealed class InitializerListExpression : Expression, IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseSquare);
 
-        return node;
+        return SyntaxTree.ArrayInstantiation(elements);
     }
 }

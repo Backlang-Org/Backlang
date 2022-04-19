@@ -9,7 +9,7 @@ public sealed class FunctionDeclaration : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var name = iterator.Match(TokenType.Identifier);
-        TypeLiteral returnType = null;
+        LNode returnType = LNode.Missing;
 
         LNodeList attributes = new();
 

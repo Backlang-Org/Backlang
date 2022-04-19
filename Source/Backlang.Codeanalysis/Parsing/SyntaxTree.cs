@@ -1,4 +1,5 @@
-﻿using Loyc;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -6,6 +7,21 @@ namespace Backlang.Codeanalysis.Parsing;
 public static class SyntaxTree
 {
     public static LNodeFactory Factory = new(EmptySourceFile.Unknown);
+
+    public static LNode Array(LNode typeNode, int dimensions)
+    {
+        return LNode.Call(CodeSymbols.Array, LNode.List(typeNode, LNode.Literal(dimensions)));
+    }
+
+    public static LNode ArrayInstantiation(LNodeList elements)
+    {
+        return LNode.Call(CodeSymbols.Braces, elements);
+    }
+
+    public static LNode ArrayInstantiation(IdNode arr, LNodeList indices)
+    {
+        return arr.WithArgs(indices);
+    }
 
     public static LNode Binary(Symbol op, LNode left, LNode right)
     {
@@ -57,6 +73,16 @@ public static class SyntaxTree
                         elseBody).SetStyle(NodeStyle.StatementBlock)));
     }
 
+    public static LNode None()
+    {
+        return LNode.Call(CodeSymbols.Void);
+    }
+
+    public static LNode Pointer(LNode type)
+    {
+        return LNode.Call(Symbols.PointerType, LNode.List(type));
+    }
+
     public static LNode SizeOf(LNode type)
     {
         return LNode.Call(CodeSymbols.Sizeof, LNode.List(type));
@@ -69,6 +95,11 @@ public static class SyntaxTree
                 LNode.Call(CodeSymbols.AltList),
                     LNode.Call(CodeSymbols.Braces,
                        members).SetStyle(NodeStyle.StatementBlock)));
+    }
+
+    public static LNode Type(string name, LNodeList arguments)
+    {
+        return LNode.Call(Symbols.TypeLiteral, LNode.List(LNode.Id(name), LNode.Call(CodeSymbols.Of, arguments)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)

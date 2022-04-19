@@ -20,11 +20,11 @@ public abstract class BaseParser<TLexer, TParser>
     public SourceDocument Document { get; }
     public TokenIterator Iterator { get; set; }
 
-    public static (LNode Tree, List<Message> Messages) Parse(SourceDocument document)
+    public static (LNodeList Tree, List<Message> Messages) Parse(SourceDocument document)
     {
         if (string.IsNullOrEmpty(document.Source) || document.Source == null)
         {
-            return (LNode.Missing, new() { Message.Error(document, "Empty File", 0, 0) });
+            return (LNode.List(LNode.Missing), new() { Message.Error(document, "Empty File", 0, 0) });
         }
 
         var lexer = new TLexer();
@@ -35,13 +35,13 @@ public abstract class BaseParser<TLexer, TParser>
         return (parser.Program(), parser.Messages);
     }
 
-    public LNode Program()
+    public LNodeList Program()
     {
         var node = Start();
 
         Iterator.Match(TokenType.EOF);
 
-        return node;
+        return node.Body;
     }
 
     internal abstract LNode ParsePrimary(ParsePoints<LNode> parsePoints = null);
