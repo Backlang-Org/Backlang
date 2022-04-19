@@ -5,24 +5,11 @@ namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
 {
-    public VariableDeclarationStatement(string name, TypeLiteral? type, bool isMutable, Expression? value)
-    {
-        Name = name;
-        Type = type;
-        IsMutable = isMutable;
-        Value = value;
-    }
-
-    public bool IsMutable { get; }
-    public string Name { get; }
-    public TypeLiteral? Type { get; }
-    public Expression? Value { get; }
-
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         bool isMutable = false;
         TypeLiteral? type = null;
-        Expression? value = null;
+        LNode value = LNode.Missing;
 
         if (iterator.Current.Type == TokenType.Mutable)
         {
@@ -49,10 +36,5 @@ public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
         iterator.Match(TokenType.Semicolon);
 
         return new VariableDeclarationStatement(nameToken.Text, type, isMutable, value);
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }

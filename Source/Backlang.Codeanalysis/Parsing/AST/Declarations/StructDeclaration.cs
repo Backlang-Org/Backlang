@@ -18,6 +18,6 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Enum(name, members);
+        return SyntaxTree.Struct(name, members);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public abstract class Statement : SyntaxNode
+public abstract class Statement
 {
     public static LNodeList ParseBlock(Parser parser)
     {

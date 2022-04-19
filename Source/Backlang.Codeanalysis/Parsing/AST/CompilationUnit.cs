@@ -1,8 +1,10 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST;
+﻿using Loyc.Syntax;
 
-public sealed class CompilationUnit : SyntaxNode
+namespace Backlang.Codeanalysis.Parsing.AST;
+
+public sealed class CompilationUnit
 {
-    public Block Body { get; set; } = new Block();
+    public LNodeList Body { get; set; }
     public List<Message> Messages { get; set; } = new List<Message>();
 
     public static CompilationUnit FromFile(string filename)
@@ -11,7 +13,7 @@ public sealed class CompilationUnit : SyntaxNode
 
         var result = Parser.Parse(document);
 
-        return (CompilationUnit)result.Tree;
+        return new CompilationUnit { Body = result.Tree, Messages = result.Messages };
     }
 
     public static CompilationUnit FromText(string text)
@@ -20,6 +22,6 @@ public sealed class CompilationUnit : SyntaxNode
 
         var result = Parser.Parse(document);
 
-        return (CompilationUnit)result.Tree;
+        return new CompilationUnit { Body = result.Tree, Messages = result.Messages };
     }
 }
