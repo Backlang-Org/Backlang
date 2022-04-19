@@ -11,7 +11,7 @@ public sealed class ForStatement : IParsePoint<LNode>
 
         var varExpr = Expression.Parse(parser);
 
-        TypeLiteral? type = null;
+        LNode type = LNode.Missing;
 
         if (iterator.Current.Type == TokenType.Colon)
         {

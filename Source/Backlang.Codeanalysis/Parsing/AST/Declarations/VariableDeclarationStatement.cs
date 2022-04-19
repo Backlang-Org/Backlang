@@ -8,7 +8,7 @@ public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         bool isMutable = false;
-        TypeLiteral? type = null;
+        LNode type = LNode.Missing;
         LNode value = LNode.Missing;
 
         if (iterator.Current.Type == TokenType.Mutable)
@@ -18,6 +18,7 @@ public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
         }
 
         var nameToken = iterator.Match(TokenType.Identifier);
+        var name = LNode.Id(nameToken.Text);
 
         if (iterator.Current.Type == TokenType.Colon)
         {
@@ -35,6 +36,8 @@ public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return new VariableDeclarationStatement(nameToken.Text, type, isMutable, value);
+        var node = SyntaxTree.Factory.Var(type, name);
+
+        return isMutable ? node.WithAttrs(LNode.Id(Symbols.Mutable)) : node;
     }
 }

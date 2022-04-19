@@ -4,39 +4,35 @@ namespace Backlang.Codeanalysis.Parsing.AST;
 
 public sealed class TypeLiteral
 {
-    public List<LNode> Arguments { get; set; } = new();
-    public int Dimensions { get; set; }
-    public bool IsArrayType => Dimensions > 0;
-    public bool IsPointer { get; set; }
-
-    public string Typename { get; set; }
-
-    public static TypeLiteral Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var literal = new TypeLiteral();
+        var typename = iterator.Match(TokenType.Identifier).Text;
+        var args = new LNodeList();
 
-        var typename = iterator.Match(TokenType.Identifier);
-        literal.Typename = typename.Text;
+        var typeNode = SyntaxTree.Type(typename, new());
 
         if (iterator.Current.Type == TokenType.Star)
         {
-            literal.IsPointer = true;
             iterator.NextToken();
+
+            return SyntaxTree.Pointer(typeNode);
         }
         else if (iterator.Current.Type == TokenType.OpenSquare)
         {
             iterator.NextToken();
 
-            literal.Dimensions = 1;
+            var dimensions = 1;
 
             while (iterator.Current.Type == TokenType.Comma)
             {
-                literal.Dimensions++;
+                dimensions++;
 
                 iterator.NextToken();
             }
 
             iterator.Match(TokenType.CloseSquare);
+
+            return SyntaxTree.Array(typeNode, dimensions);
         }
         else if (iterator.Current.Type == TokenType.LessThan)
         {
@@ -46,7 +42,7 @@ public sealed class TypeLiteral
             {
                 if (iterator.Current.Type == TokenType.Identifier)
                 {
-                    literal.Arguments.Add(Parse(iterator, parser));
+                    args.Add(Parse(iterator, parser));
                 }
 
                 if (iterator.Current.Type != TokenType.GreaterThan)
@@ -56,8 +52,10 @@ public sealed class TypeLiteral
             }
 
             iterator.Match(TokenType.GreaterThan);
+
+            return typeNode.WithArgs(args);
         }
 
-        return literal;
+        return typeNode;
     }
 }

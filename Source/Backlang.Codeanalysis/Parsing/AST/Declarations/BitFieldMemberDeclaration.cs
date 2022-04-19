@@ -8,21 +8,21 @@ public sealed class BitFieldMemberDeclaration
     {
         var member = new BitFieldMemberDeclaration();
 
+        string name = null;
+
         if (iterator.Current.Type == TokenType.Identifier)
         {
-            member.Name = iterator.Current.Text;
+            name = iterator.Current.Text;
 
             iterator.NextToken();
         }
         else
         {
-            member.Name = iterator.NextToken().Text;
+            name = iterator.NextToken().Text;
         }
 
         iterator.Match(TokenType.EqualsToken);
 
-        member.Index = Expression.Parse(parser);
-
-        return member;
+        return SyntaxTree.Factory.Tuple(LNode.Id(name), Expression.Parse(parser));
     }
 }

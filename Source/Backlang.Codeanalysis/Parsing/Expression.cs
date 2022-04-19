@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public class Expression
+public static class Expression
 {
     public static IList<OperatorInfo> Operators = new List<OperatorInfo>();
 
