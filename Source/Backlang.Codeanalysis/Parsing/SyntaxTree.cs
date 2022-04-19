@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Loyc;
+﻿using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -31,7 +30,7 @@ public static class SyntaxTree
                   members)));
     }
 
-    public static LNode Fn(LNode name, TypeLiteral type, LNodeList args, LNodeList body)
+    public static LNode Fn(LNode name, LNode type, LNodeList args, LNodeList body)
     {
         return LNode.Call(args, CodeSymbols.Fn, LNode.List(type, name,
                 LNode.Call(CodeSymbols.AltList, args), LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
@@ -61,6 +60,15 @@ public static class SyntaxTree
     public static LNode SizeOf(LNode type)
     {
         return LNode.Call(CodeSymbols.Sizeof, LNode.List(type));
+    }
+
+    public static LNode Struct(string name, LNodeList members)
+    {
+        return LNode.Call(CodeSymbols.Struct,
+            LNode.List(LNode.Id((Symbol)name),
+                LNode.Call(CodeSymbols.AltList),
+                    LNode.Call(CodeSymbols.Braces,
+                       members).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)

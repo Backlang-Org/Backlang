@@ -74,9 +74,4 @@ public sealed class AssemblerBlockStatement : Statement, IParsePoint<Statement>
 
         return node;
     }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
-    }
 }

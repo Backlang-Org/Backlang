@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Core;
@@ -19,11 +20,11 @@ public abstract class BaseParser<TLexer, TParser>
     public SourceDocument Document { get; }
     public TokenIterator Iterator { get; set; }
 
-    public static (LNode? Tree, List<Message> Messages) Parse(SourceDocument document)
+    public static (LNode Tree, List<Message> Messages) Parse(SourceDocument document)
     {
         if (string.IsNullOrEmpty(document.Source) || document.Source == null)
         {
-            return (default, new() { Message.Error(document, "Empty File", 0, 0) });
+            return (LNode.Missing, new() { Message.Error(document, "Empty File", 0, 0) });
         }
 
         var lexer = new TLexer();
@@ -45,5 +46,5 @@ public abstract class BaseParser<TLexer, TParser>
 
     internal abstract LNode ParsePrimary(ParsePoints<LNode> parsePoints = null);
 
-    protected abstract LNode Start();
+    protected abstract CompilationUnit Start();
 }

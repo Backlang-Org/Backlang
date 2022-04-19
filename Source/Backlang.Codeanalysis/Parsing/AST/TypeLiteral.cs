@@ -1,8 +1,10 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST;
+﻿using Loyc.Syntax;
+
+namespace Backlang.Codeanalysis.Parsing.AST;
 
 public sealed class TypeLiteral
 {
-    public List<SyntaxNode> Arguments { get; set; } = new();
+    public List<LNode> Arguments { get; set; } = new();
     public int Dimensions { get; set; }
     public bool IsArrayType => Dimensions > 0;
     public bool IsPointer { get; set; }

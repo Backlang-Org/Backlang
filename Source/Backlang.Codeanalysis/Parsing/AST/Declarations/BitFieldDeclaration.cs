@@ -2,12 +2,12 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class BitFieldDeclaration : SyntaxNode, IParsePoint<LNode>
+public sealed class BitFieldDeclaration : IParsePoint<LNode>
 {
     public List<BitFieldMemberDeclaration> Members { get; set; } = new();
     public string Name { get; set; }
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var declaration = new BitFieldDeclaration();
 
@@ -30,10 +30,5 @@ public sealed class BitFieldDeclaration : SyntaxNode, IParsePoint<LNode>
         iterator.Match(TokenType.CloseCurly);
 
         return declaration;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }

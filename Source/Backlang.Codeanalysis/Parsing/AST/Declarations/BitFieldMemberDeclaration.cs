@@ -1,11 +1,10 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public sealed class BitFieldMemberDeclaration : SyntaxNode
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class BitFieldMemberDeclaration
 {
-    public Expression Index { get; set; }
-    public string Name { get; set; }
-
-    public static BitFieldMemberDeclaration Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var member = new BitFieldMemberDeclaration();
 
@@ -25,10 +24,5 @@ public sealed class BitFieldMemberDeclaration : SyntaxNode
         member.Index = Expression.Parse(parser);
 
         return member;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }
