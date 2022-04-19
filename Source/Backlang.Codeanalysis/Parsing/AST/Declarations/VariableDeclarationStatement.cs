@@ -1,8 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
+public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
 {
     public VariableDeclarationStatement(string name, TypeLiteral? type, bool isMutable, Expression? value)
     {
@@ -17,7 +18,7 @@ public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
     public TypeLiteral? Type { get; }
     public Expression? Value { get; }
 
-    public static Statement Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         bool isMutable = false;
         TypeLiteral? type = null;

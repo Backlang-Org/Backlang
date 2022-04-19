@@ -1,25 +1,15 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿using Loyc.Syntax;
 
-public sealed class GroupExpression : Expression, IParsePoint<Expression>
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+
+public sealed class GroupExpression : IParsePoint<LNode>
 {
-    public GroupExpression(Expression inner)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Inner = inner;
-    }
-
-    public Expression Inner { get; set; }
-
-    public static Expression Parse(TokenIterator iterator, Parser parser)
-    {
-        var expr = Parse(parser);
+        var expr = Expression.Parse(parser);
 
         iterator.Match(TokenType.CloseParen);
 
-        return new GroupExpression(expr);
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.Group(expr);
     }
 }

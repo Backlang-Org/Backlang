@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-namespace Backlang.Codeanalysis.Parsing.AST;
+﻿namespace Backlang.Codeanalysis.Parsing.AST;
 
 public sealed class CompilationUnit : SyntaxNode
 {
@@ -22,10 +21,5 @@ public sealed class CompilationUnit : SyntaxNode
         var result = Parser.Parse(document);
 
         return (CompilationUnit)result.Tree;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }

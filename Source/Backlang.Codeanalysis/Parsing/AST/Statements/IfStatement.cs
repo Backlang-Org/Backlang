@@ -1,25 +1,16 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Loyc.Syntax;
 
-public sealed class IfStatement : Statement, IParsePoint<Statement>
+namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+
+public sealed class IfStatement : IParsePoint<LNode>
 {
-    public IfStatement(Expression condition, Block body, Block? elseBody)
-    {
-        Condition = condition;
-        Body = body;
-        ElseBody = elseBody;
-    }
-
-    public Block Body { get; set; }
-    public Expression Condition { get; set; }
-    public Block? ElseBody { get; set; }
-
-    public static Statement Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         // if cond {} else {}
 
         var cond = Expression.Parse(parser);
         var body = Statement.ParseBlock(parser);
-        Block? elseBlock = null;
+        LNodeList elseBlock = new();
 
         if (iterator.Current.Type == TokenType.Else)
         {
@@ -28,11 +19,6 @@ public sealed class IfStatement : Statement, IParsePoint<Statement>
             elseBlock = Statement.ParseBlock(parser);
         }
 
-        return new IfStatement(cond, body, elseBlock);
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.If(cond, body, elseBlock);
     }
 }

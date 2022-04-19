@@ -1,10 +1,12 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿using Loyc.Syntax;
 
-public sealed class DefaultExpression : Expression, IParsePoint<Expression>
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+
+public sealed class DefaultExpression : Expression, IParsePoint<LNode>
 {
     public TypeLiteral Type { get; set; }
 
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         //default<i32>
         //default

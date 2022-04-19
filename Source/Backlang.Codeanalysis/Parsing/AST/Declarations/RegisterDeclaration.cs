@@ -1,11 +1,13 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public sealed class RegisterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class RegisterDeclaration : IParsePoint<LNode>
 {
-    public Expression Address { get; set; }
+    public LNode Address { get; set; }
     public string Name { get; set; }
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var node = new RegisterDeclaration();
 
@@ -20,10 +22,5 @@ public sealed class RegisterDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         iterator.Match(TokenType.Semicolon);
 
         return node;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 }
