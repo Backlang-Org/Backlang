@@ -6,8 +6,6 @@ public sealed class BitFieldMemberDeclaration
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var member = new BitFieldMemberDeclaration();
-
         string name = null;
 
         if (iterator.Current.Type == TokenType.Identifier)

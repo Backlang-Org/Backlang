@@ -1,5 +1,5 @@
-using Flo;
 using Backlang.Codeanalysis.Parsing.AST;
+using Flo;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
@@ -7,7 +7,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        bool hasError = false;
+        var hasError = false;
         foreach (var filename in context.InputFiles)
         {
             if (File.Exists(filename))
@@ -19,6 +19,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
             else
             {
                 hasError = true;
+                Console.WriteLine($"File '{filename}' does not exist.");
             }
         }
 
@@ -26,9 +27,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
         {
             return await next.Invoke(context);
         }
-        else
-        {
-            return context;
-        }
+
+        return context;
     }
 }

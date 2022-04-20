@@ -10,7 +10,7 @@ public sealed class Utils
         const string ALPHABET = "abcdefhijklmnopqrstABCDEFGHIJKLMNOPQRSTUVWXYZ&%$";
         var random = new Random();
 
-        for (int i = 0; i < random.Next(5, 9); i++)
+        for (var i = 0; i < random.Next(5, 9); i++)
         {
             sb.Append(ALPHABET[random.Next()]);
         }
