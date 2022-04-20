@@ -3,3 +3,7 @@
 
 	print(msg);
 }
+
+fn println(arg : string) static -> void {
+	print(msg + "\n");
+}

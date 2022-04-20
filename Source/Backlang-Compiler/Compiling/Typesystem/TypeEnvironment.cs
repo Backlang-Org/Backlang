@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler.Compiling.Stages;
-using Backlang_Compiler.Compiling.Typesystem.Types;
+﻿using Backlang_Compiler.Compiling.Typesystem.Types;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
@@ -15,7 +14,7 @@ public sealed class BackTypeEnvironment : TypeEnvironment
     public override IType MethodToken => throw new NotImplementedException();
     public override IType NaturalInt => throw new NotImplementedException();
     public override IType NaturalUInt => throw new NotImplementedException();
-    public override IType Object => throw new NotImplementedException();
+    public override IType Object => new ObjectType();
     public override IType String => new StringType();
     public override SubtypingRules Subtyping => null;
 

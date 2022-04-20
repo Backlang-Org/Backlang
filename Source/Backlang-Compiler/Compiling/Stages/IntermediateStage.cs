@@ -52,7 +52,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                 Body = body
             };
 
-            // AddParameters(method, function);
+            AddParameters(method, function);
             SetReturnType(method, function);
 
             type.AddMethod(method);
@@ -62,15 +62,16 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return await next.Invoke(context).ConfigureAwait(false);
     }
 
-    /*
     private static void AddParameters(DescribedBodyMethod method, LNode function)
     {
-        foreach (var p in function.Parameters)
+        var param = function.Args[2];
+
+        foreach (var p in param.Args)
         {
-            method.AddParameter(new Parameter(GetType(p.Type.Typename), p.Name.Text));
+            var pa = ConvertParameter(p);
+            method.AddParameter(pa);
         }
     }
-    */
 
     private static MethodBody CompileBody(LNode function, CompilerContext context)
     {
@@ -136,6 +137,16 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return Instruction.CreateConstant(
                                            new IntegerConstant(0, IntegerSpec.UInt32),
                                            elementType);
+    }
+
+    private static Parameter ConvertParameter(LNode p)
+    {
+        var type = GetType(p.Args[0]);
+        var assignment = p.Args[1];
+
+        var name = assignment.Args[0].Name;
+
+        return new Parameter(type, name.ToString());
     }
 
     private static IType GetType(LNode type)
