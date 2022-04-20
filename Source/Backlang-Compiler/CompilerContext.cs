@@ -8,6 +8,8 @@ namespace Backlang_Compiler;
 
 public sealed class CompilerContext
 {
+    public IEnumerable<Furesoft.Core.CodeDom.Compiler.Core.IMethod> writeMethods;
+
     public CompilerContext()
     {
         var corlib = ClrTypeEnvironmentBuilder.BuildAssembly();
@@ -16,12 +18,11 @@ public sealed class CompilerContext
 
         var consoleType = Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
 
-        var writeMethod = consoleType.Methods.FirstOrDefault(
+        writeMethods = consoleType.Methods.Where(
             method => method.Name.ToString() == "Write"
                 && method.IsStatic
                 && method.ReturnParameter.Type == Environment.Void
-                && method.Parameters.Count == 1
-                && method.Parameters[0].Type == Environment.String);
+                && method.Parameters.Count == 1);
     }
 
     public DescribedAssembly Assembly { get; set; }

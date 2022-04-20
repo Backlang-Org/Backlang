@@ -8,20 +8,30 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
 public sealed partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
+    public static IType GetLiteralType(object value)
+    {
+        if (value is string) return new StringType();
+        if (value is IdNode id) { } //todo: symbol table
+
+        return new VoidType();
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         var freeFunctions = new List<LNode>();
 
         context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
-        var type = new DescribedType(new QualifiedName("Program"), context.Assembly);
+        var type = new DescribedType(new QualifiedName("Example.Program"), context.Assembly);
 
         foreach (var tree in context.Trees)
         {
@@ -47,7 +57,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                     ReassociateOperators.Instance,
                     DeadValueElimination.Instance));
 
-            var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Name).FullyUnqualifiedName, function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), new VoidType())
+            var method = new DescribedBodyMethod(type, new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName, function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), new VoidType())
             {
                 Body = body
             };
@@ -88,7 +98,9 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
         foreach (var node in function.Args[3].Args)
         {
-            if (node.IsCall && node.Name == CodeSymbols.Var)
+            if (!node.IsCall) continue;
+
+            if (node.Name == CodeSymbols.Var)
             {
                 var elementType = GetType(node.Args[0]);
 
@@ -105,6 +117,16 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                            block.AppendInstruction(
                                ConvertExpression(elementType, decl.Args[1].Value))));
                 }
+            }
+            else if (node.Name == (Symbol)"print")
+            {
+                var method = context.writeMethods.FirstOrDefault();
+                var constant = block.AppendInstruction(
+                    ConvertExpression(GetLiteralType(node.Args[0].Value), node.Args[0].Value.ToString()));
+
+                var str = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(node.Args[0].Value), constant));
+
+                block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
             }
         }
 

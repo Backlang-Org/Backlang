@@ -1,6 +1,7 @@
 ﻿fn main() static -> void {
 	let msg : string = "hello world";
 
+	print("something new");
 	print(msg);
 }
 
