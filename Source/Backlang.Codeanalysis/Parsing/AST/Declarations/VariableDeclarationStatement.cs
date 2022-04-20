@@ -36,7 +36,7 @@ public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        var node = SyntaxTree.Factory.Var(type, name);
+        var node = SyntaxTree.Factory.Var(type, name, value);
 
         return isMutable ? node.WithAttrs(LNode.Id(Symbols.Mutable)) : node;
     }

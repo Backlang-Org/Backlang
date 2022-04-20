@@ -1,3 +1,5 @@
-﻿fn main() static {
-	print("Hello World");
+﻿fn main() static -> void {
+	let msg : string = "hello world";
+
+	print(msg);
 }

@@ -1,8 +1,14 @@
 ﻿using Backlang_Compiler.Compiling.Typesystem.Types;
 using Flo;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
 
@@ -10,8 +16,6 @@ namespace Backlang_Compiler.Compiling.Stages;
 
 public sealed partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public IAssembly Assembly { get; private set; }
-
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         var freeFunctions = new List<LNode>();
@@ -26,9 +30,9 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
         foreach (var function in freeFunctions)
         {
-            // var sourceBody = CompileBody(function, context);
+            var sourceBody = CompileBody(function, context);
 
-            /*var body = sourceBody.WithImplementation(
+            var body = sourceBody.WithImplementation(
                 sourceBody.Implementation.Transform(
                     AllocaToRegister.Instance,
                     CopyPropagation.Instance,
@@ -41,15 +45,15 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                     new ConstantPropagation(),
                     DeadValueElimination.Instance,
                     ReassociateOperators.Instance,
-                    DeadValueElimination.Instance));*/
+                    DeadValueElimination.Instance));
 
             var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Name).FullyUnqualifiedName, function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), new VoidType())
             {
-                //Body = body
+                Body = body
             };
 
             // AddParameters(method, function);
-            //SetReturnType(method, function);
+            SetReturnType(method, function);
 
             type.AddMethod(method);
             context.Assembly.AddType(type);
@@ -59,13 +63,14 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
     }
 
     /*
-    private static void AddParameters(DescribedMethod method, LNode function)
+    private static void AddParameters(DescribedBodyMethod method, LNode function)
     {
         foreach (var p in function.Parameters)
         {
             method.AddParameter(new Parameter(GetType(p.Type.Typename), p.Name.Text));
         }
     }
+    */
 
     private static MethodBody CompileBody(LNode function, CompilerContext context)
     {
@@ -80,26 +85,25 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in function.Body)
+        foreach (var node in function.Args[3].Args)
         {
-            if (node is VariableDeclarationStatement variableDecl)
+            if (node.IsCall && node.Name == CodeSymbols.Var)
             {
-                var elementType = GetType(variableDecl.Type?.Typename);
-                var local = block.AppendInstruction(
-                    Instruction.CreateAlloca(elementType));
+                var elementType = GetType(node.Args[0]);
 
-                if (variableDecl.Value != null)
+                var local = block.AppendInstruction(
+                     Instruction.CreateAlloca(elementType));
+
+                var decl = node.Args[1];
+                if (decl.Args[1].HasValue)
                 {
                     block.AppendInstruction(
                        Instruction.CreateStore(
                            elementType,
                            local,
                            block.AppendInstruction(
-                               ConvertExpression(elementType, variableDecl.Value))));
+                               ConvertExpression(elementType, decl.Args[1].Value))));
                 }
-            }
-            else if (node is BinaryExpression variableAss && variableAss.OperatorToken.Type == TokenType.EqualsToken)
-            {
             }
         }
 
@@ -114,25 +118,34 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             graph.ToImmutable());
     }
 
-    private static Instruction ConvertExpression(IType elementType, LNode value)
+    private static Instruction ConvertExpression(IType elementType, object value)
     {
-        if (value is LiteralNode lit)
+        if (value is int i)
         {
             return Instruction.CreateConstant(
-                                           new IntegerConstant((int)lit.Value, IntegerSpec.UInt32),
+                                           new IntegerConstant(i, IntegerSpec.UInt32),
+                                           elementType);
+        }
+        else if (value is string str)
+        {
+            return Instruction.CreateConstant(
+                                           new StringConstant(str),
                                            elementType);
         }
 
         return Instruction.CreateConstant(
-                                           new IntegerConstant(1, IntegerSpec.UInt32),
+                                           new IntegerConstant(0, IntegerSpec.UInt32),
                                            elementType);
     }
 
-    private static IType GetType(string name)
+    private static IType GetType(LNode type)
     {
+        var name = type.Args[0].Name.ToString();
         switch (name)
         {
             case "u32": return new U32Type();
+            case "string": return new StringType();
+            case "void": return new VoidType();
             default:
                 break;
         }
@@ -140,17 +153,9 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return null;
     }
 
-    private static void SetReturnType(DescribedMethod method, FunctionDeclaration function)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function)
     {
-        if (function.ReturnType != null)
-        {
-            method.ReturnParameter = new Parameter(new VoidType());
-        }
-        else
-        {
-            method.ReturnParameter = new Parameter(GetType(function.ReturnType?.Typename));
-        }
+        var retType = function.Args[0];
+        method.ReturnParameter = new Parameter(GetType(retType));
     }
-
-    */
 }

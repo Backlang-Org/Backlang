@@ -53,7 +53,7 @@ public static class SyntaxTree
 
     public static LNode Fn(LNode name, LNode type, LNodeList args, LNodeList body)
     {
-        return LNode.Call(args, CodeSymbols.Fn, LNode.List(type, name,
+        return LNode.Call(CodeSymbols.Fn, LNode.List(type, name,
                 LNode.Call(CodeSymbols.AltList, args), LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
     }
 
