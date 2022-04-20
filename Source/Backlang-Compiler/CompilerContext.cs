@@ -10,8 +10,9 @@ public sealed class CompilerContext
 {
     public CompilerContext()
     {
-        Environment = new BackTypeEnvironment();
-        Binder = new ReadOnlyTypeResolver(Environment.Object.Parent.Assembly); //ToDo: Turn clr types to DescribedTypes
+        var corlib = ClrTypeEnvironmentBuilder.BuildAssembly();
+        Environment = new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corlib);
+        Binder = new TypeResolver(corlib);
 
         var consoleType = Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
 
@@ -25,7 +26,7 @@ public sealed class CompilerContext
 
     public DescribedAssembly Assembly { get; set; }
 
-    public ReadOnlyTypeResolver Binder { get; set; } = new();
+    public TypeResolver Binder { get; set; } = new();
     public TypeEnvironment Environment { get; set; }
 
     [Option('i', "input", Required = true, HelpText = "Input files to be compiled.")]
