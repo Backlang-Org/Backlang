@@ -8,7 +8,19 @@ public sealed class FunctionDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var name = iterator.Match(TokenType.Identifier);
+        string name = null;
+        if (iterator.Current.Type == TokenType.Identifier)
+        {
+            name = iterator.Current.Text;
+            iterator.NextToken();
+        }
+        else
+        {
+            //error
+            parser.Messages.Add(Message.Error(parser.Document,
+                $"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column));
+        }
+
         LNode returnType = LNode.Missing;
 
         LNodeList attributes = new();
@@ -47,7 +59,7 @@ public sealed class FunctionDeclaration : IParsePoint<LNode>
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        return SyntaxTree.Fn(LNode.Id((Symbol)name.Text), returnType, parameters, Statement.ParseBlock(parser))
+        return SyntaxTree.Fn(LNode.Id((Symbol)name), returnType, parameters, Statement.ParseBlock(parser))
             .WithAttrs(attributes);
     }
 

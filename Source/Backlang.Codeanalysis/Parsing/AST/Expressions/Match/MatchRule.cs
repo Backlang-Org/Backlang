@@ -1,75 +1,67 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Expressions.Match.Rules;
+﻿using Loyc;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 
-public class MatchRule
+public sealed class MatchRule
 {
-    public Expression Result { get; set; }
-
-    public static MatchRule Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         if (iterator.Current.Type == TokenType.Underscore) // _ => 0
         {
             iterator.NextToken();
 
-            var defaultRule = new DefaultMatchRule();
-
             iterator.Match(TokenType.GoesTo);
 
-            defaultRule.Result = Expression.Parse(parser);
+            var result = Expression.Parse(parser);
 
-            return defaultRule;
+            return SyntaxTree.Factory.Tuple(LNode.Literal((Symbol)"_"), result);
         }
         else if (iterator.Peek(1).Type == TokenType.GoesTo) //12 => 13
         {
-            var simpleRule = new SimpleExpressionRule();
-            simpleRule.Matcher = Expression.Parse(parser);
+            var matcher = Expression.Parse(parser);
 
             iterator.Match(TokenType.GoesTo);
 
-            simpleRule.Result = Expression.Parse(parser);
+            var result = Expression.Parse(parser);
 
-            return simpleRule;
+            return SyntaxTree.Factory.Tuple(matcher, result);
         }
         else if (iterator.Current.IsOperator()) // > 12 => false
         {
-            var condRule = new ConditionRule();
-
-            condRule.OperatorToken = iterator.Current;
+            var operatorToken = iterator.Current;
             iterator.NextToken();
 
-            condRule.Condition = Expression.Parse(parser);
+            var condition = Expression.Parse(parser);
 
             iterator.Match(TokenType.GoesTo);
 
-            condRule.Result = Expression.Parse(parser);
+            var result = Expression.Parse(parser);
 
-            return condRule;
+            return SyntaxTree.Factory.Tuple(SyntaxTree.Unary((Symbol)operatorToken.Text, condition), result);
         }
         else if (iterator.Current.Type == TokenType.Identifier && iterator.Peek(1).Type == TokenType.Identifier) //i32 num => num + 2
         {
-            var namedRule = new TypeNameRule();
-            namedRule.Type = iterator.NextToken().Text;
-            namedRule.Name = iterator.NextToken().Text;
+            var type = TypeLiteral.Parse(iterator, parser);
+            var name = iterator.NextToken().Text;
 
             iterator.Match(TokenType.GoesTo);
 
-            namedRule.Result = Expression.Parse(parser);
+            var result = Expression.Parse(parser);
 
-            return namedRule;
+            return SyntaxTree.Factory.Tuple(SyntaxTree.Factory.Var(type, name), result);
         }
         else if (iterator.Current.Type == TokenType.Identifier) //i32 => 32
         {
-            var typeRule = new TypeRule();
-            typeRule.Type = iterator.NextToken().Text;
+            var type = TypeLiteral.Parse(iterator, parser);
 
             iterator.Match(TokenType.GoesTo);
 
-            typeRule.Result = Expression.Parse(parser);
+            var result = Expression.Parse(parser);
 
-            return typeRule;
+            return SyntaxTree.Factory.Tuple(type, result);
         }
 
-        return null;
+        return LNode.Missing;
     }
 }

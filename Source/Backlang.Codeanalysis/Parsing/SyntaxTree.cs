@@ -28,6 +28,11 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
+    public static LNode Bitfield(string name, LNodeList members)
+    {
+        return LNode.Call(Symbols.Bitfield, LNode.Id(name)).WithAttrs(members);
+    }
+
     public static LNode Default()
     {
         return Default(LNode.Missing);

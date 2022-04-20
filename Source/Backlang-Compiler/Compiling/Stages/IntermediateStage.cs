@@ -1,19 +1,10 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Declarations;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Backlang_Compiler.Compiling.Typesystem.Types;
+﻿using Backlang_Compiler.Compiling.Typesystem.Types;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Flow;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using Loyc.Syntax;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
@@ -23,21 +14,21 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        var freeFunctions = new List<FunctionDeclaration>();
+        var freeFunctions = new List<LNode>();
 
         context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
         var type = new DescribedType(new QualifiedName("Program"), context.Assembly);
 
         foreach (var tree in context.Trees)
         {
-            freeFunctions.AddRange(tree.Body.Body.OfType<FunctionDeclaration>());
+            freeFunctions.AddRange(tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn));
         }
 
         foreach (var function in freeFunctions)
         {
-            var sourceBody = CompileBody(function, context);
+            // var sourceBody = CompileBody(function, context);
 
-            var body = sourceBody.WithImplementation(
+            /*var body = sourceBody.WithImplementation(
                 sourceBody.Implementation.Transform(
                     AllocaToRegister.Instance,
                     CopyPropagation.Instance,
@@ -50,16 +41,15 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                     new ConstantPropagation(),
                     DeadValueElimination.Instance,
                     ReassociateOperators.Instance,
-                    DeadValueElimination.Instance));
+                    DeadValueElimination.Instance));*/
 
-            var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Text).FullyUnqualifiedName, function.IsStatic, new VoidType())
+            var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Name).FullyUnqualifiedName, function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), new VoidType())
             {
-                Body = body,
-                IsStatic = function.IsStatic
+                //Body = body
             };
 
-            AddParameters(method, function);
-            SetReturnType(method, function);
+            // AddParameters(method, function);
+            //SetReturnType(method, function);
 
             type.AddMethod(method);
             context.Assembly.AddType(type);
@@ -68,7 +58,8 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return await next.Invoke(context).ConfigureAwait(false);
     }
 
-    private static void AddParameters(DescribedMethod method, FunctionDeclaration function)
+    /*
+    private static void AddParameters(DescribedMethod method, LNode function)
     {
         foreach (var p in function.Parameters)
         {
@@ -76,7 +67,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         }
     }
 
-    private static MethodBody CompileBody(FunctionDeclaration function, CompilerContext context)
+    private static MethodBody CompileBody(LNode function, CompilerContext context)
     {
         var graph = new FlowGraphBuilder();
 
@@ -89,7 +80,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in function.Body.Body)
+        foreach (var node in function.Body)
         {
             if (node is VariableDeclarationStatement variableDecl)
             {
@@ -123,7 +114,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             graph.ToImmutable());
     }
 
-    private static Instruction ConvertExpression(IType elementType, Expression value)
+    private static Instruction ConvertExpression(IType elementType, LNode value)
     {
         if (value is LiteralNode lit)
         {
@@ -160,4 +151,6 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             method.ReturnParameter = new Parameter(GetType(function.ReturnType?.Typename));
         }
     }
+
+    */
 }
