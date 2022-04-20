@@ -92,12 +92,16 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
     protected override CompilationUnit Start()
     {
         var cu = new CompilationUnit();
+
+        var body = new LNodeList();
         while (Iterator.Current.Type != (TokenType.EOF))
         {
-            cu.Body.Add(InvokeParsePoint(DeclarationParsePoints));
+            var item = InvokeParsePoint(DeclarationParsePoints);
+            body.Add(item);
         }
 
         cu.Messages = Messages.Concat(Iterator.Messages).ToList();
+        cu.Body = body;
 
         return cu;
     }

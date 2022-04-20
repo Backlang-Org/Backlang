@@ -4,7 +4,7 @@ namespace Backlang.Codeanalysis.Parsing.AST;
 
 public sealed class CompilationUnit
 {
-    public LNodeList Body { get; set; }
+    public LNodeList Body { get; set; } = new();
     public List<Message> Messages { get; set; } = new List<Message>();
 
     public static CompilationUnit FromFile(string filename)
