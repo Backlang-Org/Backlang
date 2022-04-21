@@ -1,4 +1,4 @@
-﻿using Backlang_Compiler.Compiling.Typesystem;
+using Backlang_Compiler.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -166,26 +166,23 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
     {
         var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
 
-        if (ff.Any())
+        foreach (var function in ff)
         {
-            foreach (var function in ff)
+            DescribedType type;
+
+            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == "Example.Program"))
             {
-                DescribedType type;
-
-                if (!context.Assembly.Types.Any(_ => _.FullName.FullName == "Example.Program"))
-                {
-                    type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
-                    context.Assembly.AddType(type);
-                }
-                else
-                {
-                    type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == "Example.Program");
-                }
-
-                var method = CompileFunction(context, type, function);
-
-                type.AddMethod(method);
+                type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
+                context.Assembly.AddType(type);
             }
+            else
+            {
+                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == "Example.Program");
+            }
+
+            var method = CompileFunction(context, type, function);
+
+            type.AddMethod(method);
         }
     }
 
