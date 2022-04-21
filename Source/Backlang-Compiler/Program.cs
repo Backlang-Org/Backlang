@@ -10,8 +10,14 @@ public static class Program
         var pipeline = Flo.Pipeline.Build<CompilerContext, CompilerContext>(
        cfg => {
            cfg.Add<ParsingStage>();
-           cfg.Add<IntermediateStage>();
+           cfg.Add<InitTypeSystemStage>();
+
+           cfg.When(_ => _.References.Any(), _ => {
+               _.Add<InitReferencesStage>();
+           });
+
            cfg.Add<LowererStage>();
+           cfg.Add<IntermediateStage>();
        }
    );
 
