@@ -1,6 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Reflection;
 
 namespace Backlang_Compiler.Compiling.Typesystem;
@@ -89,6 +90,13 @@ public class ClrTypeEnvironmentBuilder
                     field.IsStatic, ResolveType(resolver, field.FieldType));
 
                 t.AddField(f);
+            }
+            else if (member is PropertyInfo prop)
+            {
+                var p = new DescribedProperty(new SimpleName(prop.Name),
+                     ResolveType(resolver, prop.PropertyType), t);
+
+                t.AddProperty(p);
             }
         }
     }
