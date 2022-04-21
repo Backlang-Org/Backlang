@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	  <TargetFramework>net7.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
 	<LangVersion>preview</LangVersion>
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
-  </PropertyGroup>
+  
+</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Flo" Version="0.3.0" />

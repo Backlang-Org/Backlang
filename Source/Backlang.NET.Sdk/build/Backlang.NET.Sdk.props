@@ -1,0 +1,18 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<WarningLevel>4</WarningLevel>
+
+		<!-- BacklangToolFullPath pointing to the task dll -->
+		<BacklangToolFullPath Condition=" '$(BacklangToolFullPath)'=='' ">$(MSBuildThisFileDirectory)../tools/Backlang.NET.Sdk.dll</BacklangToolFullPath>
+
+		<!-- project guid used by dotnet sln add -->
+		<!--TODO DefaultProjectTypeGuid Condition=" '$(DefaultProjectTypeGuid)' == '' ">{F2A71F9B-5D33-465A-A702-920D77279786}</DefaultProjectTypeGuid -->
+
+		<!-- imported by common targets -->
+		<LanguageTargets>$(MSBuildThisFileDirectory)Backlang.NET.Current.Sdk.targets</LanguageTargets>
+	</PropertyGroup>
+
+	<!-- current Backlang SDK version -->
+	<Import Project="$(MSBuildThisFileDirectory)Backlang.Version.props" Condition=" '$(BacklangVersion)'=='' " />
+</Project>

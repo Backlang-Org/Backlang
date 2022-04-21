@@ -1,0 +1,23 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DefaultLanguageSourceExtension>.back</DefaultLanguageSourceExtension>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+
+		<!-- disable wilcard include of Compile items, file ordering is a feature -->
+		<EnableDefaultCompileItems Condition=" '$(EnableDefaultCompileItems)'=='' ">false</EnableDefaultCompileItems>
+
+		<!-- DefaultItems.props -->
+		<EnableDefaultItems Condition=" '$(EnableDefaultItems)' == '' ">true</EnableDefaultItems>
+		<EnableDefaultNoneItems Condition=" '$(EnableDefaultNoneItems)' == '' ">true</EnableDefaultNoneItems>
+		<EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">false</EnableDefaultEmbeddedResourceItems>
+	</PropertyGroup>
+
+	<Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+	<Import Project="$(MSBuildThisFileDirectory)..\build\Backlang.NET.Sdk.props" />
+</Project>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties">
+
+    <ContentType
+        Name="BacklangSourceFile"
+        DisplayName="Backlang file"
+        ItemType="Compile">
+    </ContentType>
+
+    <ItemType Name="Compile" UpToDateCheckInput="true" DisplayName="Compile" />
+    <!-- ItemType Name="AdditionalFiles" UpToDateCheckInput="true" DisplayName="PeachPie analyzer additional file"/ -->
+
+    <FileExtension Name=".back" ContentType="BacklangSourceFile" />
+</ProjectSchemaDefinitions>
