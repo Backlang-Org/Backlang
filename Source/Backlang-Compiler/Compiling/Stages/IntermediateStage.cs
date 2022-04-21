@@ -1,4 +1,4 @@
-using Backlang_Compiler.Compiling.Typesystem;
+﻿using Backlang_Compiler.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -33,6 +33,8 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         foreach (var tree in context.Trees)
         {
             ConvertFreeFunctions(context, tree);
+
+            ConvertStructs(context, tree);
         }
 
         return await next.Invoke(context).ConfigureAwait(false);
@@ -194,6 +196,42 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         var name = assignment.Args[0].Name;
 
         return new Parameter(type, name.ToString());
+    }
+
+    private static void ConvertStructMembers(LNode members, DescribedType type, CompilerContext context)
+    {
+        foreach (var member in members.Args)
+        {
+            if (member.Name == CodeSymbols.Var)
+            {
+                var mtype = GetType(member.Args[0], context.Binder);
+
+                var mvar = member.Args[1];
+                var mname = mvar.Args[0].Name;
+
+                var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                type.AddField(field);
+            }
+        }
+    }
+
+    private static void ConvertStructs(CompilerContext context, Backlang.Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var structs = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Struct);
+
+        foreach (var st in structs)
+        {
+            var name = st.Args[0].Name;
+            var members = st.Args[2];
+
+            var type = new DescribedType(new SimpleName(name.Name).Qualify("Example"), context.Assembly);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+
+            ConvertStructMembers(members, type, context);
+
+            context.Assembly.AddType(type);
+        }
     }
 
     private static IType GetType(LNode type, TypeResolver resolver)
