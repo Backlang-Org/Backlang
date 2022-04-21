@@ -1,4 +1,9 @@
-﻿fn main() static -> void {
+﻿struct Point {
+	X : u32;
+	Y : u32;
+}
+
+fn main() static -> void {
 	let msg : string = "hello world";
 
 	print("something new");

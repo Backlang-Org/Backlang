@@ -28,47 +28,11 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        var freeFunctions = new List<LNode>();
-
         context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
-        var type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
 
         foreach (var tree in context.Trees)
         {
-            freeFunctions.AddRange(tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn));
-        }
-
-        foreach (var function in freeFunctions)
-        {
-            var sourceBody = CompileBody(function, context);
-
-            var body = sourceBody.WithImplementation(
-                sourceBody.Implementation.Transform(
-                    AllocaToRegister.Instance,
-                    CopyPropagation.Instance,
-                    new ConstantPropagation(),
-                    GlobalValueNumbering.Instance,
-                    CopyPropagation.Instance,
-                    DeadValueElimination.Instance,
-                    MemoryAccessElimination.Instance,
-                    CopyPropagation.Instance,
-                    new ConstantPropagation(),
-                    DeadValueElimination.Instance,
-                    ReassociateOperators.Instance,
-                    DeadValueElimination.Instance));
-
-            var method = new DescribedBodyMethod(type,
-                new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName,
-                function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
-            {
-                Body = body
-            };
-
-            AddParameters(method, function, context.Binder);
-            SetReturnType(method, function, context.Binder);
-
-            type.AddMethod(method);
-            context.Assembly.AddType(type);
+            ConvertFreeFunctions(context, tree);
         }
 
         return await next.Invoke(context).ConfigureAwait(false);
@@ -147,6 +111,37 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             graph.ToImmutable());
     }
 
+    private static DescribedBodyMethod CompileFunction(CompilerContext context, DescribedType type, LNode function)
+    {
+        var sourceBody = CompileBody(function, context);
+
+        var body = sourceBody.WithImplementation(
+            sourceBody.Implementation.Transform(
+                AllocaToRegister.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                GlobalValueNumbering.Instance,
+                CopyPropagation.Instance,
+                DeadValueElimination.Instance,
+                MemoryAccessElimination.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                DeadValueElimination.Instance,
+                ReassociateOperators.Instance,
+                DeadValueElimination.Instance));
+
+        var method = new DescribedBodyMethod(type,
+            new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName,
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
+        {
+            Body = body
+        };
+
+        AddParameters(method, function, context.Binder);
+        SetReturnType(method, function, context.Binder);
+        return method;
+    }
+
     private static Instruction ConvertExpression(IType elementType, object value)
     {
         if (value is int i)
@@ -165,6 +160,33 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return Instruction.CreateConstant(
                                            new IntegerConstant(0, IntegerSpec.UInt32),
                                            elementType);
+    }
+
+    private static void ConvertFreeFunctions(CompilerContext context, Backlang.Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
+
+        if (ff.Any())
+        {
+            foreach (var function in ff)
+            {
+                DescribedType type;
+
+                if (!context.Assembly.Types.Any(_ => _.FullName.FullName == "Example.Program"))
+                {
+                    type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
+                    context.Assembly.AddType(type);
+                }
+                else
+                {
+                    type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == "Example.Program");
+                }
+
+                var method = CompileFunction(context, type, function);
+
+                type.AddMethod(method);
+            }
+        }
     }
 
     private static Parameter ConvertParameter(LNode p, TypeResolver resolver)
