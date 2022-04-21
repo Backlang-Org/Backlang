@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Backlang_Compiler.Compiling.Typesystem.Types;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using System.Reflection;
@@ -7,43 +8,79 @@ namespace Backlang_Compiler.Compiling.Typesystem;
 
 public class ClrTypeEnvironmentBuilder
 {
-    public static IAssembly BuildAssembly()
+    public static IAssembly CollectTypes(Assembly ass)
     {
-        var assembly = new DescribedAssembly(new QualifiedName("System"));
+        var assembly = new DescribedAssembly(new QualifiedName(ass.GetName().Name));
 
-        var types = typeof(uint).Assembly.GetTypes();
+        var types = ass.GetTypes();
 
         foreach (var type in types)
         {
             if (!type.IsPublic) continue;
 
-            assembly.AddType(new DescribedType(new SimpleName(type.Name).Qualify("System"), assembly));
-        }
-
-        var resolver = new TypeResolver(assembly);
-        foreach (var type in types)
-        {
-            if (!type.IsPublic) continue;
-
-            var t = (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify("System")).First();
-
-            AddMethods(type, t, resolver);
+            assembly.AddType(new DescribedType(new SimpleName(type.Name).Qualify(type.Namespace), assembly));
         }
 
         return assembly;
     }
 
-    private static void AddMethods(Type type, DescribedType t, TypeResolver resolver)
+    public static void FillTypes(Assembly ass, TypeResolver resolver)
     {
-        foreach (var m in type.GetMethods())
+        foreach (var type in ass.GetTypes())
         {
-            if (m.Name.StartsWith("get_") || m.Name.StartsWith("set_")) continue;
+            if (!type.IsPublic) continue;
 
-            var method = new DescribedMethod(t, new SimpleName(m.Name), m.IsStatic, resolver.ResolveTypes(new SimpleName(m.ReturnType.Name).Qualify(m.ReturnType.Namespace)).FirstOrDefault());
+            var t = ResolveType(resolver, type);
 
-            ConvertParameter(m.GetParameters(), method, resolver);
+            if (type.BaseType != null)
+            {
+                var bt = ResolveType(resolver, type.BaseType);
 
-            t.AddMethod(method);
+                if (bt != null)
+                {
+                    t.AddBaseType(bt);
+                }
+            }
+
+            foreach (var item in type.GetGenericArguments())
+            {
+                t.AddGenericParameter(new DescribedGenericParameter(t, new SimpleName(item.Name)));
+            }
+
+            AddMembers(type, t, resolver);
+        }
+    }
+
+    private static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
+    {
+        foreach (var member in type.GetMembers())
+        {
+            if (member is ConstructorInfo ctor)
+            {
+                var method = new DescribedMethod(t,
+                    new SimpleName(ctor.Name), ctor.IsStatic, new VoidType());
+
+                method.IsConstructor = true;
+
+                ConvertParameter(ctor.GetParameters(), method, resolver);
+
+                t.AddMethod(method);
+            }
+            else if (member is MethodInfo m)
+            {
+                var method = new DescribedMethod(t, new SimpleName(m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
+
+                ConvertParameter(m.GetParameters(), method, resolver);
+
+                t.AddMethod(method);
+            }
+            else if (member is FieldInfo field)
+            {
+                var f = new DescribedField(t, new SimpleName(field.Name),
+                    field.IsStatic, ResolveType(resolver, field.FieldType));
+
+                t.AddField(f);
+            }
         }
     }
 
@@ -55,5 +92,10 @@ public class ClrTypeEnvironmentBuilder
 
             method.AddParameter(pa);
         }
+    }
+
+    private static DescribedType ResolveType(TypeResolver resolver, Type type)
+    {
+        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(type.Namespace))?.FirstOrDefault();
     }
 }

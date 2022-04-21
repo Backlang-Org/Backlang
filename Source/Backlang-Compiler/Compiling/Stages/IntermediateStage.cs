@@ -31,7 +31,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         var freeFunctions = new List<LNode>();
 
         context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
-        var type = new DescribedType(new QualifiedName("Example.Program"), context.Assembly);
+        var type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
 
         foreach (var tree in context.Trees)
         {
