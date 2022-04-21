@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler.Compiling.Typesystem.Types;
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using System.Reflection;
@@ -51,6 +50,16 @@ public class ClrTypeEnvironmentBuilder
         }
     }
 
+    public static DescribedType ResolveType(TypeResolver resolver, Type type)
+    {
+        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(type.Namespace))?.FirstOrDefault();
+    }
+
+    public static DescribedType ResolveType(TypeResolver resolver, string name, string ns)
+    {
+        return (DescribedType)resolver.ResolveTypes(new SimpleName(name).Qualify(ns))?.FirstOrDefault();
+    }
+
     private static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
     {
         foreach (var member in type.GetMembers())
@@ -58,7 +67,7 @@ public class ClrTypeEnvironmentBuilder
             if (member is ConstructorInfo ctor)
             {
                 var method = new DescribedMethod(t,
-                    new SimpleName(ctor.Name), ctor.IsStatic, new VoidType());
+                    new SimpleName(ctor.Name), ctor.IsStatic, ResolveType(resolver, typeof(void)));
 
                 method.IsConstructor = true;
 
@@ -92,10 +101,5 @@ public class ClrTypeEnvironmentBuilder
 
             method.AddParameter(pa);
         }
-    }
-
-    private static DescribedType ResolveType(TypeResolver resolver, Type type)
-    {
-        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(type.Namespace))?.FirstOrDefault();
     }
 }

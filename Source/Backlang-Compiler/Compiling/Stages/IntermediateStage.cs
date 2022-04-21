@@ -1,4 +1,4 @@
-﻿using Backlang_Compiler.Compiling.Typesystem.Types;
+﻿using Backlang_Compiler.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -18,12 +18,12 @@ namespace Backlang_Compiler.Compiling.Stages;
 
 public sealed partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static IType GetLiteralType(object value)
+    public static IType GetLiteralType(object value, TypeResolver resolver)
     {
-        if (value is string) return new StringType();
+        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
         if (value is IdNode id) { } //todo: symbol table
 
-        return new VoidType();
+        return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
@@ -57,13 +57,15 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                     ReassociateOperators.Instance,
                     DeadValueElimination.Instance));
 
-            var method = new DescribedBodyMethod(type, new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName, function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), new VoidType())
+            var method = new DescribedBodyMethod(type,
+                new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName,
+                function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
             {
                 Body = body
             };
 
-            AddParameters(method, function);
-            SetReturnType(method, function);
+            AddParameters(method, function, context.Binder);
+            SetReturnType(method, function, context.Binder);
 
             type.AddMethod(method);
             context.Assembly.AddType(type);
@@ -72,13 +74,13 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return await next.Invoke(context).ConfigureAwait(false);
     }
 
-    private static void AddParameters(DescribedBodyMethod method, LNode function)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, TypeResolver resolver)
     {
         var param = function.Args[2];
 
         foreach (var p in param.Args)
         {
-            var pa = ConvertParameter(p);
+            var pa = ConvertParameter(p, resolver);
             method.AddParameter(pa);
         }
     }
@@ -102,7 +104,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
             if (node.Name == CodeSymbols.Var)
             {
-                var elementType = GetType(node.Args[0]);
+                var elementType = GetType(node.Args[0], context.Binder);
 
                 var local = block.AppendInstruction(
                      Instruction.CreateAlloca(elementType));
@@ -122,16 +124,20 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             {
                 var method = context.writeMethods.FirstOrDefault();
                 var constant = block.AppendInstruction(
-                    ConvertExpression(GetLiteralType(node.Args[0].Value), node.Args[0].Value.ToString()));
+                    ConvertExpression(
+                        GetLiteralType(node.Args[0].Value, context.Binder),
+                    node.Args[0].Value.ToString()));
 
-                var str = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(node.Args[0].Value), constant));
+                var str = block.AppendInstruction(
+                    Instruction.CreateLoad(
+                        GetLiteralType(node.Args[0].Value, context.Binder), constant));
 
                 block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
             }
         }
 
         block.Flow = new ReturnFlow(
-                Instruction.CreateConstant(DefaultConstant.Instance, new VoidType()));
+                Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
 
         // Finish up the method body.
         return new MethodBody(
@@ -161,9 +167,9 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                                            elementType);
     }
 
-    private static Parameter ConvertParameter(LNode p)
+    private static Parameter ConvertParameter(LNode p, TypeResolver resolver)
     {
-        var type = GetType(p.Args[0]);
+        var type = GetType(p.Args[0], resolver);
         var assignment = p.Args[1];
 
         var name = assignment.Args[0].Name;
@@ -171,24 +177,24 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         return new Parameter(type, name.ToString());
     }
 
-    private static IType GetType(LNode type)
+    private static IType GetType(LNode type, TypeResolver resolver)
     {
         var name = type.Args[0].Name.ToString();
         switch (name)
         {
-            case "u32": return new U32Type();
-            case "string": return new StringType();
-            case "void": return new VoidType();
+            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+            case "string": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+            case "void": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
             default:
-                break;
+                return ClrTypeEnvironmentBuilder.ResolveType(resolver, name, "Example");
         }
 
         return null;
     }
 
-    private static void SetReturnType(DescribedBodyMethod method, LNode function)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, TypeResolver resolver)
     {
         var retType = function.Args[0];
-        method.ReturnParameter = new Parameter(GetType(retType));
+        method.ReturnParameter = new Parameter(GetType(retType, resolver));
     }
 }
