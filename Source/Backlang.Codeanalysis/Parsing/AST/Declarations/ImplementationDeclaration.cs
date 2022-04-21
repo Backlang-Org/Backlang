@@ -1,19 +1,10 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public class ImplementationDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public class ImplementationDeclaration : IParsePoint<LNode>
 {
-    public ImplementationDeclaration(SyntaxNode target, Block body, bool isStatic)
-    {
-        Target = target;
-        Body = body;
-        IsStatic = isStatic;
-    }
-
-    public Block Body { get; set; }
-    public bool IsStatic { get; set; }
-    public SyntaxNode Target { get; set; }
-
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         if (iterator.Current.Type == TokenType.For || iterator.Current.Type == TokenType.Of)
         {
@@ -26,7 +17,7 @@ public class ImplementationDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
                 iterator.NextToken();
             }
 
-            SyntaxNode target = null;
+            LNode target = null;
 
             if (iterator.Peek(1).Type == TokenType.RangeOperator)
             {
@@ -39,26 +30,21 @@ public class ImplementationDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
 
             iterator.Match(TokenType.OpenCurly);
 
-            Block body = new();
+            LNodeList body = new();
             while (iterator.Current.Type != TokenType.EOF && iterator.Current.Type != TokenType.CloseCurly)
             {
-                body.Body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints));
+                body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints));
             }
 
             iterator.Match(TokenType.CloseCurly);
 
-            return new ImplementationDeclaration(target, body, isStatic);
+            return SyntaxTree.ImplDecl(target, body, isStatic);
         }
 
         parser.Messages.Add(
             Message.Error(parser.Document,
                 "Expected For Or Of", iterator.Current.Line, iterator.Current.Column));
 
-        return new InvalidNode();
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return LNode.Missing;
     }
 }

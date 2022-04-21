@@ -78,6 +78,20 @@ public static class SyntaxTree
                         elseBody).SetStyle(NodeStyle.StatementBlock)));
     }
 
+    public static LNode ImplDecl(LNode target, LNodeList body, bool isStatic)
+    {
+        var attributes = new LNodeList();
+
+        if (isStatic)
+        {
+            attributes.Add(LNode.Call(CodeSymbols.Static));
+        }
+
+        return LNode.Call(attributes, Symbols.Implementation,
+           LNode.List(target, LNode.Call(CodeSymbols.Braces,
+               body).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode None()
     {
         return LNode.Call(CodeSymbols.Void);

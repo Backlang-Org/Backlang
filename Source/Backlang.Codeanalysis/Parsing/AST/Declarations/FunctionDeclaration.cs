@@ -42,14 +42,14 @@ public sealed class FunctionDeclaration : IParsePoint<LNode>
         {
             iterator.NextToken();
 
-            isPrivate = true;
+            attributes.Add(LNode.Id(CodeSymbols.Private));
         }
 
         if (iterator.Current.Type == TokenType.Operator)
         {
             iterator.NextToken();
 
-            isOperator = true;
+            attributes.Add(LNode.Id(CodeSymbols.Operator));
         }
 
         if (iterator.Current.Type == TokenType.Arrow)

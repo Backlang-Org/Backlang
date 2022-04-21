@@ -10,14 +10,16 @@
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Compiling\Passes\**" />
+    <EmbeddedResource Remove="Compiling\Passes\**" />
+    <None Remove="Compiling\Passes\**" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Be.IO" Version="1.0.0" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
 		<PackageReference Include="Flo" Version="0.3.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Compiling\Passes\Lowerer\" />
 	</ItemGroup>
 
 	<ItemGroup>
