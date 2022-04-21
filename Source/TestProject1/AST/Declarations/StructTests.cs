@@ -1,6 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Declarations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestProject1;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Declarations;
 
@@ -11,7 +9,7 @@ public class StructTests : ParserTestBase
     public void Simple_Struct_Should_Pass()
     {
         var src = "struct Point { X : i32; Y : i32; }";
-        var declaration = ParseAndGetNode<StructDeclaration>(src);
+        var declaration = ParseAndGetNodes(src);
 
         Assert.AreEqual(declaration.Name, "Point");
         Assert.AreEqual(declaration.Members.Count, 2);
@@ -21,7 +19,7 @@ public class StructTests : ParserTestBase
     public void Struct_With_Values_Should_Pass()
     {
         var src = "struct Point { X : i32 = 24; Y : i32 = 42; }";
-        var declaration = ParseAndGetNode<StructDeclaration>(src);
+        var declaration = ParseAndGetNodes(src);
 
         Assert.AreEqual(declaration.Name, "Point");
         Assert.AreEqual(declaration.Members.Count, 2);

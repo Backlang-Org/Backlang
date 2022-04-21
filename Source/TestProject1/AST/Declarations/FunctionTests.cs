@@ -1,6 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Declarations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestProject1;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Declarations;
 
@@ -11,7 +9,7 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Multiple_Parameters_And_Default_Value_Should_Pass()
     {
         var src = "fn test(something : i32, hello : bool = true) -> i32 { 123; }";
-        var statement = ParseAndGetNode<FunctionDeclaration>(src);
+        var statement = ParseAndGetNodes(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
         Assert.AreEqual(statement.ReturnType.Typename, "i32");
@@ -22,7 +20,7 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Multiple_Parameters_And_Trailing_Comma_Should_Pass()
     {
         var src = "fn test(something : i32, hello : bool,) -> i32 { 123; }";
-        var statement = ParseAndGetNode<FunctionDeclaration>(src);
+        var statement = ParseAndGetNodes(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
         Assert.AreEqual(statement.ReturnType.Typename, "i32");
@@ -33,7 +31,7 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Multiple_Parameters_Should_Pass()
     {
         var src = "fn test(something : i32, hello : bool) -> i32 { 123; }";
-        var statement = ParseAndGetNode<FunctionDeclaration>(src);
+        var statement = ParseAndGetNodes(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
         Assert.AreEqual(statement.ReturnType.Typename, "i32");
@@ -44,7 +42,7 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Parameter_And_Default_Value_Should_Pass()
     {
         var src = "fn test(something : i32 = 42) -> i32 { 123; }";
-        var statement = ParseAndGetNode<FunctionDeclaration>(src);
+        var statement = ParseAndGetNodes(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
         Assert.AreEqual(statement.ReturnType.Typename, "i32");
@@ -55,7 +53,7 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Parameter_Should_Pass()
     {
         var src = "fn test(something : i32) -> i32 { 123; }";
-        var statement = ParseAndGetNode<FunctionDeclaration>(src);
+        var statement = ParseAndGetNodes(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
         Assert.AreEqual(statement.ReturnType.Typename, "i32");
@@ -66,7 +64,7 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclarationWithoutParameters_Should_Pass()
     {
         var src = "fn test() -> i32 { 123; }";
-        var statement = ParseAndGetNode<FunctionDeclaration>(src);
+        var statement = ParseAndGetNodes(src);
 
         Assert.AreEqual(statement.Name.Text, "test");
         Assert.AreEqual(statement.ReturnType.Typename, "i32");
