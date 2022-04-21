@@ -17,13 +17,13 @@ implementation of Point {
 	}
 }
 
-fn main() static -> void {
+fn main() static -> none {
 	let msg : string = "hello world";
 
 	print("something new");
 	print(msg);
 }
 
-fn println(arg : string) static -> void {
+fn println(arg : string) static -> none {
 	print(msg + "\n");
 }

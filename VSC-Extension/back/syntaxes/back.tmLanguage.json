@@ -28,7 +28,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.other.back",
-				"match": "\\b(register|const|global|in|return|where|type|mut|import|struct|let|implementation|of|for|if|else|match|with|while|static|fn|enum|bitfield|asm|default|sizeof|and|or)\\b"
+				"match": "\\b(register|const|global|in|return|where|type|mut|import|struct|let|implementation|of|for|if|else|match|with|while|static|operator|private|public|fn|enum|union|bitfield|asm|default|sizeof|and|or)\\b"
 			}]
 		},
 		"literals": {
@@ -58,7 +58,7 @@
 		"primitives": {
 			"patterns": [{
 				"name": "keyword.control.back",
-				"match": "\\b(u8|u16|u32|i32|i8|i16|i32|i64|fraction|bool|string)\\b"
+				"match": "\\b(u8|u16|u32|i32|i8|i16|i32|i64|f32|f64|f16|fraction|bool|string)\\b"
 			}]
 		},
 		"strings": {
