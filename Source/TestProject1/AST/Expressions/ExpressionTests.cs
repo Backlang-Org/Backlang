@@ -1,8 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TestProject1;
 
 namespace TestProject1.AST.Expressions;
 
@@ -13,7 +10,7 @@ public class ExpressionTests : ParserTestBase
     public void ArrayAccess_With_Indices_Should_Pass()
     {
         var src = "arr[0, 1];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(ArrayAccessExpression));
 
@@ -27,7 +24,7 @@ public class ExpressionTests : ParserTestBase
     public void ArrayAccess_With_One_Index_Addition_Should_Pass()
     {
         var src = "arr[1+2];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(ArrayAccessExpression));
 
@@ -41,7 +38,7 @@ public class ExpressionTests : ParserTestBase
     public void ArrayAccess_With_One_Index_Should_Pass()
     {
         var src = "arr[0];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(ArrayAccessExpression));
 
@@ -55,7 +52,7 @@ public class ExpressionTests : ParserTestBase
     public void Empty_InitializerList_Should_Pass()
     {
         var src = "[];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(InitializerListExpression));
 
@@ -68,7 +65,7 @@ public class ExpressionTests : ParserTestBase
     public void InitializerList_With_Element_Should_Pass()
     {
         var src = "[12];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(InitializerListExpression));
 
@@ -82,7 +79,7 @@ public class ExpressionTests : ParserTestBase
     public void InitializerList_With_Elements_Should_Pass()
     {
         var src = "[1, 2];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(InitializerListExpression));
 
@@ -97,7 +94,7 @@ public class ExpressionTests : ParserTestBase
     public void InitializerList_With_InitialierList_Element_Should_Pass()
     {
         var src = "[[]];";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(InitializerListExpression));
 
@@ -111,7 +108,7 @@ public class ExpressionTests : ParserTestBase
     public void None_Should_Pass()
     {
         var src = "none;";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
 
         Assert.IsInstanceOfType(tree.Expression, typeof(NoneExpression));
     }
@@ -120,7 +117,7 @@ public class ExpressionTests : ParserTestBase
     public void SizeOf_Should_Pass()
     {
         var src = "sizeof<i32>;";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
         var expression = (SizeOfExpression)tree.Expression;
 
         Assert.AreEqual(expression.Type.Typename, "i32");

@@ -1,6 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Expressions;
@@ -12,7 +10,7 @@ public class CallExpressionTests : ParserTestBase
     public void Call_With_Array_Index_Argument_Should_Pass()
     {
         var src = "print(arr[1]);";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
         var node = (CallExpression)tree.Expression;
 
         Assert.AreEqual(node.Arguments.Count, 1);
@@ -30,7 +28,7 @@ public class CallExpressionTests : ParserTestBase
     public void Call_With_One_Argument_Should_Pass()
     {
         var src = "print(true);";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
         var node = (CallExpression)tree.Expression;
 
         Assert.AreEqual(node.Arguments.Count, 1);
@@ -42,7 +40,7 @@ public class CallExpressionTests : ParserTestBase
     public void Call_With_Two_Arguments_Should_Pass()
     {
         var src = "print(1, true);";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
         var node = (CallExpression)tree.Expression;
 
         Assert.AreEqual(node.Arguments.Count, 2);
@@ -54,7 +52,7 @@ public class CallExpressionTests : ParserTestBase
     public void Call_Without_Arguments_Should_Pass()
     {
         var src = "print();";
-        var tree = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+        var tree = ParseAndGetNodesInFunction(src);
         var node = (CallExpression)tree.Expression;
 
         Assert.AreEqual(node.Arguments.Count, 0);
