@@ -1,9 +1,10 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Driver;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
-namespace Backlang_Compiler.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {

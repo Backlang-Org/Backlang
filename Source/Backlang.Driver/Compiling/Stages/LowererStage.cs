@@ -1,6 +1,7 @@
+using Backlang.Driver.Compiling;
 using Flo;
 
-namespace Backlang_Compiler.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class LowererStage : IHandler<CompilerContext, CompilerContext>
 {

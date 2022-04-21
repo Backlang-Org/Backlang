@@ -9,18 +9,10 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Be.IO" Version="1.0.0" />
 		<PackageReference Include="Flo" Version="0.3.0" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.7" />
 		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.7" />
-		<PackageReference Include="Meziantou.Analyzer" Version="1.0.701">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2" />
 		<PackageReference Include="Tomlyn" Version="0.14.2" />
 	</ItemGroup>

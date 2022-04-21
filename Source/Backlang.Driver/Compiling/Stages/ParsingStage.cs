@@ -1,7 +1,7 @@
 using Backlang.Codeanalysis.Parsing.AST;
 using Flo;
 
-namespace Backlang_Compiler.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
 {

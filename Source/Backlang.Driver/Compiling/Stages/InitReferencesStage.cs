@@ -1,8 +1,9 @@
-﻿using Backlang_Compiler.Compiling.Typesystem;
+﻿using Backlang.Driver;
+using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using System.Reflection;
 
-namespace Backlang_Compiler.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class InitReferencesStage : IHandler<CompilerContext, CompilerContext>
 {

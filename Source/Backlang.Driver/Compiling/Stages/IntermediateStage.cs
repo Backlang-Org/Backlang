@@ -1,4 +1,5 @@
-﻿using Backlang_Compiler.Compiling.Typesystem;
+﻿using Backlang.Driver;
+using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -14,7 +15,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
 
-namespace Backlang_Compiler.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
@@ -182,7 +183,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                                            elementType);
     }
 
-    private static void ConvertFreeFunctions(CompilerContext context, Backlang.Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertFreeFunctions(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
         var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
 
@@ -234,7 +235,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void ConvertStructs(CompilerContext context, Backlang.Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
         var structs = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Struct);
 

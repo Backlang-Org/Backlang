@@ -1,4 +1,4 @@
-﻿namespace Backlang_Compiler;
+﻿namespace Backlang.Driver;
 
 public sealed class Scope
 {

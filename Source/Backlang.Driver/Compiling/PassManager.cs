@@ -1,6 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 
-namespace Backlang_Compiler.Compiling;
+namespace Backlang.Driver.Compiling;
 
 public sealed class PassManager
 {
@@ -18,7 +18,7 @@ public sealed class PassManager
         {
             var pass = Passes[i];
 
-            result = (CompilationUnit)pass(result);
+            result = pass(result);
         }
 
         return result;

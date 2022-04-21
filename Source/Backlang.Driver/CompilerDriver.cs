@@ -1,5 +1,4 @@
-﻿using Backlang_Compiler;
-using Backlang_Compiler.Compiling.Stages;
+﻿using Backlang.Driver.Compiling.Stages;
 
 namespace Backlang.Driver;
 

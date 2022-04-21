@@ -4,7 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Reflection;
 
-namespace Backlang_Compiler.Compiling.Typesystem;
+namespace Backlang.Driver.Compiling.Typesystem;
 
 public class ClrTypeEnvironmentBuilder
 {

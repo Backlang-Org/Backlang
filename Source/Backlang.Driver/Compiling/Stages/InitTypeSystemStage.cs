@@ -1,10 +1,10 @@
-﻿using Backlang_Compiler.Compiling.Typesystem;
+﻿using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using System.Collections.Specialized;
 
-namespace Backlang_Compiler.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerContext>
 {

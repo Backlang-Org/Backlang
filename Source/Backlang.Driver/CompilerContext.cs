@@ -2,7 +2,7 @@
 using CommandLine;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang_Compiler;
+namespace Backlang.Driver;
 
 public sealed class CompilerContext
 {
