@@ -3,6 +3,20 @@
 	Y : u32;
 }
 
+implementation of Point {
+	fn distance(other : Point) static -> Point {
+		
+	}
+
+	fn add(lhs : Point, rhs : Point) operator -> Point {
+		
+	}
+
+	fn toString() -> string {
+		
+	}
+}
+
 fn main() static -> void {
 	let msg : string = "hello world";
 

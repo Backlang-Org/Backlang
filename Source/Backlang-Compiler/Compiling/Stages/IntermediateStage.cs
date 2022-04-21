@@ -16,42 +16,9 @@ using Loyc.Syntax;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
-public sealed partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
+public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static IType GetLiteralType(object value, TypeResolver resolver)
-    {
-        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        if (value is IdNode id) { } //todo: symbol table
-
-        return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
-    }
-
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
-    {
-        context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
-
-        foreach (var tree in context.Trees)
-        {
-            ConvertFreeFunctions(context, tree);
-
-            ConvertStructs(context, tree);
-        }
-
-        return await next.Invoke(context).ConfigureAwait(false);
-    }
-
-    private static void AddParameters(DescribedBodyMethod method, LNode function, TypeResolver resolver)
-    {
-        var param = function.Args[2];
-
-        foreach (var p in param.Args)
-        {
-            var pa = ConvertParameter(p, resolver);
-            method.AddParameter(pa);
-        }
-    }
-
-    private static MethodBody CompileBody(LNode function, CompilerContext context)
+    public static MethodBody CompileBody(LNode function, CompilerContext context)
     {
         var graph = new FlowGraphBuilder();
 
@@ -113,7 +80,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             graph.ToImmutable());
     }
 
-    private static DescribedBodyMethod CompileFunction(CompilerContext context, DescribedType type, LNode function)
+    public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function)
     {
         var sourceBody = CompileBody(function, context);
 
@@ -141,7 +108,58 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
         AddParameters(method, function, context.Binder);
         SetReturnType(method, function, context.Binder);
+
         return method;
+    }
+
+    public static IType GetLiteralType(object value, TypeResolver resolver)
+    {
+        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        if (value is IdNode id) { } //todo: symbol table
+
+        return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
+    }
+
+    public static IType GetType(LNode type, TypeResolver resolver)
+    {
+        var name = type.Args[0].Name.ToString();
+        switch (name)
+        {
+            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+            case "string": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+            case "void": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
+            default:
+                return ClrTypeEnvironmentBuilder.ResolveType(resolver, name, "Example");
+        }
+
+        return null;
+    }
+
+    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    {
+        context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
+
+        foreach (var tree in context.Trees)
+        {
+            ConvertFreeFunctions(context, tree);
+
+            ConvertStructs(context, tree);
+        }
+
+        context.Binder.AddAssembly(context.Assembly);
+
+        return await next.Invoke(context);
+    }
+
+    private static void AddParameters(DescribedBodyMethod method, LNode function, TypeResolver resolver)
+    {
+        var param = function.Args[2];
+
+        foreach (var p in param.Args)
+        {
+            var pa = ConvertParameter(p, resolver);
+            method.AddParameter(pa);
+        }
     }
 
     private static Instruction ConvertExpression(IType elementType, object value)
@@ -182,7 +200,7 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
                 type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == "Example.Program");
             }
 
-            var method = CompileFunction(context, type, function);
+            var method = ConvertFunction(context, type, function);
 
             type.AddMethod(method);
         }
@@ -232,21 +250,6 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
 
             context.Assembly.AddType(type);
         }
-    }
-
-    private static IType GetType(LNode type, TypeResolver resolver)
-    {
-        var name = type.Args[0].Name.ToString();
-        switch (name)
-        {
-            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
-            case "string": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-            case "void": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
-            default:
-                return ClrTypeEnvironmentBuilder.ResolveType(resolver, name, "Example");
-        }
-
-        return null;
     }
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, TypeResolver resolver)

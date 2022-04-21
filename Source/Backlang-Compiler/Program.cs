@@ -18,6 +18,7 @@ public static class Program
 
            cfg.Add<LowererStage>();
            cfg.Add<IntermediateStage>();
+           cfg.Add<ImplementationStage>();
        }
    );
 
