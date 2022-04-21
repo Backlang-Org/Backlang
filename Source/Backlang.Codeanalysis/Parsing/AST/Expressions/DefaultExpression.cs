@@ -1,29 +1,24 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿using Loyc.Syntax;
 
-public sealed class DefaultExpression : Expression, IParsePoint<Expression>
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+
+public sealed class DefaultExpression : IParsePoint<LNode>
 {
-    public TypeLiteral Type { get; set; }
-
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         //default<i32>
         //default
-        var expr = new DefaultExpression();
-
         if (iterator.Current.Type == TokenType.LessThan)
         {
             iterator.NextToken();
 
-            expr.Type = TypeLiteral.Parse(iterator, parser);
+            var type = TypeLiteral.Parse(iterator, parser);
 
             iterator.Match(TokenType.GreaterThan);
+
+            return SyntaxTree.Default(type);
         }
 
-        return expr;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.Default();
     }
 }

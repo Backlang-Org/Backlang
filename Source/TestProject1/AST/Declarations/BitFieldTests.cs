@@ -1,6 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Declarations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Declarations;
 
@@ -11,7 +9,7 @@ public class BitFieldTests : ParserTestBase
     public void Simple_BitField_Should_Pass()
     {
         var src = "bitfield Flags { DivideByZero = 0, IsNull = 1 }";
-        var node = ParseAndGetNode<BitFieldDeclaration>(src);
+        var node = ParseAndGetNodes(src);
 
         Assert.AreEqual(node.Name, "Flags");
         Assert.AreEqual(node.Members.Count, 2);

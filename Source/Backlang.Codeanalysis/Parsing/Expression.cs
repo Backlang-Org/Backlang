@@ -1,14 +1,14 @@
 ﻿using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Loyc;
+using Loyc.Syntax;
 using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public class Expression : SyntaxNode
+public static class Expression
 {
-    public static List<OperatorInfo> Operators = new List<OperatorInfo>();
+    public static IList<OperatorInfo> Operators = new List<OperatorInfo>();
 
     static Expression()
     {
@@ -28,23 +28,23 @@ public class Expression : SyntaxNode
         }
     }
 
-    public static Expression Parse<TNode, TLexer, TParser>(
-        BaseParser<TNode, TLexer, TParser> parser,
-        ParsePoints<Expression> parsePoints = null,
+    public static LNode Parse<TLexer, TParser>(
+        Core.BaseParser<TLexer, TParser> parser,
+        ParsePoints<LNode> parsePoints = null,
         int parentPrecedence = 0)
 
-        where TParser : BaseParser<TNode, TLexer, TParser>
+        where TParser : Core.BaseParser<TLexer, TParser>
         where TLexer : BaseLexer, new()
     {
-        Expression left;
+        LNode left;
         var unaryOperatorPrecedence = GetUnaryOperatorPrecedence(parser.Iterator.Current.Type);
 
         if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
             Token? operatorToken = parser.Iterator.NextToken();
-            Expression? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
+            LNode? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
-            left = new UnaryExpression(operatorToken, operand, false);
+            left = SyntaxTree.Unary(GSymbol.Get("'suf" + operatorToken.Text), operand);
         }
         else
         {
@@ -54,7 +54,7 @@ public class Expression : SyntaxNode
             {
                 Token? operatorToken = parser.Iterator.NextToken();
 
-                left = new UnaryExpression(operatorToken, left, true);
+                left = SyntaxTree.Unary(GSymbol.Get("'" + operatorToken.Text), left);
             }
         }
 
@@ -67,19 +67,19 @@ public class Expression : SyntaxNode
             var operatorToken = parser.Iterator.NextToken();
             var right = Parse(parser, parsePoints, precedence);
 
-            left = new BinaryExpression(left, operatorToken, right);
+            left = SyntaxTree.Binary(GSymbol.Get(operatorToken.Text), left, right);
         }
 
         return left;
     }
 
-    public static List<Expression> ParseList<TNode, TLexer, TParser>(BaseParser<TNode, TLexer, TParser> parser, TokenType terminator,
-            ParsePoints<Expression> parsePoints = null)
+    public static LNodeList ParseList<TLexer, TParser>(Core.BaseParser<TLexer, TParser> parser, TokenType terminator,
+            ParsePoints<LNode> parsePoints = null)
 
-        where TParser : BaseParser<TNode, TLexer, TParser>
+        where TParser : Core.BaseParser<TLexer, TParser>
         where TLexer : BaseLexer, new()
     {
-        var list = new List<Expression>();
+        var list = new LNodeList();
         while (parser.Iterator.Current.Type != terminator) //ToDo: implement option to disallow empty list
         {
             list.Add(Expression.Parse(parser));
@@ -93,11 +93,6 @@ public class Expression : SyntaxNode
         parser.Iterator.Match(terminator);
 
         return list;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
     }
 
     private static int GetBinaryOperatorPrecedence(TokenType kind)

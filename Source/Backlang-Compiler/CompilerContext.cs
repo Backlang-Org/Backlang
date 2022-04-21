@@ -6,8 +6,11 @@ namespace Backlang_Compiler;
 
 public sealed class CompilerContext
 {
+    public IEnumerable<Furesoft.Core.CodeDom.Compiler.Core.IMethod> writeMethods;
+
     public DescribedAssembly Assembly { get; set; }
 
+    public TypeResolver Binder { get; set; } = new();
     public TypeEnvironment Environment { get; set; }
 
     [Option('i', "input", Required = true, HelpText = "Input files to be compiled.")]
@@ -15,6 +18,9 @@ public sealed class CompilerContext
 
     [Option('o', "output", Required = true, HelpText = "Output filename")]
     public string OutputFilename { get; set; }
+
+    [Option('r', "reference", Required = false, HelpText = "References of the assembly")]
+    public IEnumerable<string> References { get; set; }
 
     public List<CompilationUnit> Trees { get; set; } = new();
 }

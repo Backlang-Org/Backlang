@@ -1,7 +1,4 @@
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Statements
@@ -13,7 +10,7 @@ namespace TestProject1.AST.Statements
         public void VariableAssignment_Multiple_Should_Pass()
         {
             var src = "a = b = c = 5;";
-            var statement = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
             var expr = (BinaryExpression)statement.Expression;
 
             Assert.IsInstanceOfType(expr.Right, typeof(LiteralNode));
@@ -23,7 +20,7 @@ namespace TestProject1.AST.Statements
         public void VariableAssignment_Should_Pass()
         {
             var src = "hello = 42;";
-            var statement = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
             var expr = (BinaryExpression)statement.Expression;
 
             Assert.AreEqual(expr.OperatorToken.Text, "=");
@@ -37,7 +34,7 @@ namespace TestProject1.AST.Statements
         public void VariableAssignment_With_Adress_Operator_Should_Pass()
         {
             var src = "a = &b;";
-            var statement = ParseAndGetNodeInFunction<ExpressionStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
             var expr = (BinaryExpression)statement.Expression;
 
             Assert.IsInstanceOfType(expr.Right, typeof(UnaryExpression));
@@ -53,7 +50,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "declare hello : bool = true;";
 
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
@@ -67,7 +64,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "declare hello : i32 = 42;";
 
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(statement.Type.Typename, "i32");
@@ -81,7 +78,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "declare hello : bool = 'true';";
 
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
@@ -95,7 +92,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "let mut hello : bool = true;";
 
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(statement.Type.Typename, "bool");
@@ -110,7 +107,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "declare hello = 42;";
 
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.IsNull(statement.Type);
@@ -124,7 +121,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "declare hello : i32;";
 
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(statement.Type.Typename, "i32");
@@ -135,7 +132,7 @@ namespace TestProject1.AST.Statements
         public void VariableDeclarationWithBinary_Should_Pass()
         {
             var src = "declare hello = 0b10101;";
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 0b10101L);
@@ -145,7 +142,7 @@ namespace TestProject1.AST.Statements
         public void VariableDeclarationWithHex_Should_Pass()
         {
             var src = "declare hello = 0xc0ffee;";
-            var statement = ParseAndGetNodeInFunction<VariableDeclarationStatement>(src);
+            var statement = ParseAndGetNodesInFunction(src);
 
             Assert.AreEqual(statement.Name, "hello");
             Assert.AreEqual(((LiteralNode)statement.Value).Value, 0xc0ffee);

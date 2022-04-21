@@ -1,8 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Declarations;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Backlang_Compiler.Compiling.Typesystem.Types;
+﻿using Backlang_Compiler.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -12,71 +8,50 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using Loyc;
+using Loyc.Syntax;
 
 namespace Backlang_Compiler.Compiling.Stages;
 
 public sealed partial class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public IAssembly Assembly { get; private set; }
+    public static IType GetLiteralType(object value, TypeResolver resolver)
+    {
+        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        if (value is IdNode id) { } //todo: symbol table
+
+        return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
+    }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        var freeFunctions = new List<FunctionDeclaration>();
-
         context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
-        var type = new DescribedType(new QualifiedName("Program"), context.Assembly);
 
         foreach (var tree in context.Trees)
         {
-            freeFunctions.AddRange(tree.Body.Body.OfType<FunctionDeclaration>());
-        }
+            ConvertFreeFunctions(context, tree);
 
-        foreach (var function in freeFunctions)
-        {
-            var sourceBody = CompileBody(function, context);
-
-            var body = sourceBody.WithImplementation(
-                sourceBody.Implementation.Transform(
-                    AllocaToRegister.Instance,
-                    CopyPropagation.Instance,
-                    new ConstantPropagation(),
-                    GlobalValueNumbering.Instance,
-                    CopyPropagation.Instance,
-                    DeadValueElimination.Instance,
-                    MemoryAccessElimination.Instance,
-                    CopyPropagation.Instance,
-                    new ConstantPropagation(),
-                    DeadValueElimination.Instance,
-                    ReassociateOperators.Instance,
-                    DeadValueElimination.Instance));
-
-            var method = new DescribedBodyMethod(type, new QualifiedName(function.Name.Text).FullyUnqualifiedName, function.IsStatic, new VoidType())
-            {
-                Body = body,
-                IsStatic = function.IsStatic
-            };
-
-            AddParameters(method, function);
-            SetReturnType(method, function);
-
-            type.AddMethod(method);
-            context.Assembly.AddType(type);
+            ConvertStructs(context, tree);
         }
 
         return await next.Invoke(context).ConfigureAwait(false);
     }
 
-    private static void AddParameters(DescribedMethod method, FunctionDeclaration function)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, TypeResolver resolver)
     {
-        foreach (var p in function.Parameters)
+        var param = function.Args[2];
+
+        foreach (var p in param.Args)
         {
-            method.AddParameter(new Parameter(GetType(p.Type.Typename), p.Name.Text));
+            var pa = ConvertParameter(p, resolver);
+            method.AddParameter(pa);
         }
     }
 
-    private static MethodBody CompileBody(FunctionDeclaration function, CompilerContext context)
+    private static MethodBody CompileBody(LNode function, CompilerContext context)
     {
         var graph = new FlowGraphBuilder();
 
@@ -89,31 +64,46 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in function.Body.Body)
+        foreach (var node in function.Args[3].Args)
         {
-            if (node is VariableDeclarationStatement variableDecl)
-            {
-                var elementType = GetType(variableDecl.Type?.Typename);
-                var local = block.AppendInstruction(
-                    Instruction.CreateAlloca(elementType));
+            if (!node.IsCall) continue;
 
-                if (variableDecl.Value != null)
+            if (node.Name == CodeSymbols.Var)
+            {
+                var elementType = GetType(node.Args[0], context.Binder);
+
+                var local = block.AppendInstruction(
+                     Instruction.CreateAlloca(elementType));
+
+                var decl = node.Args[1];
+                if (decl.Args[1].HasValue)
                 {
                     block.AppendInstruction(
                        Instruction.CreateStore(
                            elementType,
                            local,
                            block.AppendInstruction(
-                               ConvertExpression(elementType, variableDecl.Value))));
+                               ConvertExpression(elementType, decl.Args[1].Value))));
                 }
             }
-            else if (node is BinaryExpression variableAss && variableAss.OperatorToken.Type == TokenType.EqualsToken)
+            else if (node.Name == (Symbol)"print")
             {
+                var method = context.writeMethods.FirstOrDefault();
+                var constant = block.AppendInstruction(
+                    ConvertExpression(
+                        GetLiteralType(node.Args[0].Value, context.Binder),
+                    node.Args[0].Value.ToString()));
+
+                var str = block.AppendInstruction(
+                    Instruction.CreateLoad(
+                        GetLiteralType(node.Args[0].Value, context.Binder), constant));
+
+                block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
             }
         }
 
         block.Flow = new ReturnFlow(
-                Instruction.CreateConstant(DefaultConstant.Instance, new VoidType()));
+                Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
 
         // Finish up the method body.
         return new MethodBody(
@@ -123,41 +113,145 @@ public sealed partial class IntermediateStage : IHandler<CompilerContext, Compil
             graph.ToImmutable());
     }
 
-    private static Instruction ConvertExpression(IType elementType, Expression value)
+    private static DescribedBodyMethod CompileFunction(CompilerContext context, DescribedType type, LNode function)
     {
-        if (value is LiteralNode lit)
+        var sourceBody = CompileBody(function, context);
+
+        var body = sourceBody.WithImplementation(
+            sourceBody.Implementation.Transform(
+                AllocaToRegister.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                GlobalValueNumbering.Instance,
+                CopyPropagation.Instance,
+                DeadValueElimination.Instance,
+                MemoryAccessElimination.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                DeadValueElimination.Instance,
+                ReassociateOperators.Instance,
+                DeadValueElimination.Instance));
+
+        var method = new DescribedBodyMethod(type,
+            new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName,
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
+        {
+            Body = body
+        };
+
+        AddParameters(method, function, context.Binder);
+        SetReturnType(method, function, context.Binder);
+        return method;
+    }
+
+    private static Instruction ConvertExpression(IType elementType, object value)
+    {
+        if (value is int i)
         {
             return Instruction.CreateConstant(
-                                           new IntegerConstant((int)lit.Value, IntegerSpec.UInt32),
+                                           new IntegerConstant(i, IntegerSpec.UInt32),
+                                           elementType);
+        }
+        else if (value is string str)
+        {
+            return Instruction.CreateConstant(
+                                           new StringConstant(str),
                                            elementType);
         }
 
         return Instruction.CreateConstant(
-                                           new IntegerConstant(1, IntegerSpec.UInt32),
+                                           new IntegerConstant(0, IntegerSpec.UInt32),
                                            elementType);
     }
 
-    private static IType GetType(string name)
+    private static void ConvertFreeFunctions(CompilerContext context, Backlang.Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
+        var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
+
+        foreach (var function in ff)
+        {
+            DescribedType type;
+
+            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == "Example.Program"))
+            {
+                type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
+                context.Assembly.AddType(type);
+            }
+            else
+            {
+                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == "Example.Program");
+            }
+
+            var method = CompileFunction(context, type, function);
+
+            type.AddMethod(method);
+        }
+    }
+
+    private static Parameter ConvertParameter(LNode p, TypeResolver resolver)
+    {
+        var type = GetType(p.Args[0], resolver);
+        var assignment = p.Args[1];
+
+        var name = assignment.Args[0].Name;
+
+        return new Parameter(type, name.ToString());
+    }
+
+    private static void ConvertStructMembers(LNode members, DescribedType type, CompilerContext context)
+    {
+        foreach (var member in members.Args)
+        {
+            if (member.Name == CodeSymbols.Var)
+            {
+                var mtype = GetType(member.Args[0], context.Binder);
+
+                var mvar = member.Args[1];
+                var mname = mvar.Args[0].Name;
+
+                var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                type.AddField(field);
+            }
+        }
+    }
+
+    private static void ConvertStructs(CompilerContext context, Backlang.Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var structs = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Struct);
+
+        foreach (var st in structs)
+        {
+            var name = st.Args[0].Name;
+            var members = st.Args[2];
+
+            var type = new DescribedType(new SimpleName(name.Name).Qualify("Example"), context.Assembly);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+
+            ConvertStructMembers(members, type, context);
+
+            context.Assembly.AddType(type);
+        }
+    }
+
+    private static IType GetType(LNode type, TypeResolver resolver)
+    {
+        var name = type.Args[0].Name.ToString();
         switch (name)
         {
-            case "u32": return new U32Type();
+            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+            case "string": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+            case "void": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
             default:
-                break;
+                return ClrTypeEnvironmentBuilder.ResolveType(resolver, name, "Example");
         }
 
         return null;
     }
 
-    private static void SetReturnType(DescribedMethod method, FunctionDeclaration function)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, TypeResolver resolver)
     {
-        if (function.ReturnType != null)
-        {
-            method.ReturnParameter = new Parameter(new VoidType());
-        }
-        else
-        {
-            method.ReturnParameter = new Parameter(GetType(function.ReturnType?.Typename));
-        }
+        var retType = function.Args[0];
+        method.ReturnParameter = new Parameter(GetType(retType, resolver));
     }
 }

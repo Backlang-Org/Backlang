@@ -1,9 +1,11 @@
 ﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Core;
 
-public abstract class BaseParser<TNode, TLexer, TParser>
-    where TParser : BaseParser<TNode, TLexer, TParser>
+public abstract class BaseParser<TLexer, TParser>
+    where TParser : BaseParser<TLexer, TParser>
     where TLexer : BaseLexer, new()
 {
     public readonly List<Message> Messages;
@@ -18,11 +20,11 @@ public abstract class BaseParser<TNode, TLexer, TParser>
     public SourceDocument Document { get; }
     public TokenIterator Iterator { get; set; }
 
-    public static (TNode? Tree, List<Message> Messages) Parse(SourceDocument document)
+    public static (LNodeList Tree, List<Message> Messages) Parse(SourceDocument document)
     {
         if (string.IsNullOrEmpty(document.Source) || document.Source == null)
         {
-            return (default, new() { Message.Error(document, "Empty File", 0, 0) });
+            return (LNode.List(LNode.Missing), new() { Message.Error(document, "Empty File", 0, 0) });
         }
 
         var lexer = new TLexer();
@@ -33,16 +35,16 @@ public abstract class BaseParser<TNode, TLexer, TParser>
         return (parser.Program(), parser.Messages);
     }
 
-    public TNode Program()
+    public LNodeList Program()
     {
         var node = Start();
 
         Iterator.Match(TokenType.EOF);
 
-        return node;
+        return node.Body;
     }
 
-    internal abstract Expression ParsePrimary(ParsePoints<Expression> parsePoints = null);
+    internal abstract LNode ParsePrimary(ParsePoints<LNode> parsePoints = null);
 
-    protected abstract TNode Start();
+    protected abstract CompilationUnit Start();
 }

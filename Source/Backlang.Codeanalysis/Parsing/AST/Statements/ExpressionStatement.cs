@@ -1,25 +1,15 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Loyc.Syntax;
 
-public sealed class ExpressionStatement : Statement, IParsePoint<Statement>
+namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+
+public sealed class ExpressionStatement : IParsePoint<LNode>
 {
-    public ExpressionStatement(Expression expression)
-    {
-        Expression = expression;
-    }
-
-    public Expression Expression { get; set; }
-
-    public static Statement Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var expr = Expression.Parse(parser);
 
         iterator.Match(TokenType.Semicolon);
 
-        return new ExpressionStatement(expr);
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return expr;
     }
 }

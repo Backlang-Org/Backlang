@@ -1,32 +1,29 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Loyc;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+public sealed class FunctionDeclaration : IParsePoint<LNode>
 {
-    public FunctionDeclaration(Token name,
-                               TypeLiteral returnType, bool isStatic,
-                               List<ParameterDeclaration> parameters,
-                               Block body)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Name = name;
-        ReturnType = returnType;
-        Parameters = parameters;
-        Body = body;
-        IsStatic = isStatic;
-    }
+        string name = null;
+        if (iterator.Current.Type == TokenType.Identifier)
+        {
+            name = iterator.Current.Text;
+            iterator.NextToken();
+        }
+        else
+        {
+            //error
+            parser.Messages.Add(Message.Error(parser.Document,
+                $"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column));
+        }
 
-    public Block Body { get; set; }
-    public bool IsStatic { get; set; }
-    public Token Name { get; }
-    public List<ParameterDeclaration> Parameters { get; }
-    public TypeLiteral ReturnType { get; }
+        LNode returnType = LNode.Missing;
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
-    {
-        var name = iterator.Match(TokenType.Identifier);
-        TypeLiteral returnType = null;
-        bool isStatic = false;
+        LNodeList attributes = new();
 
         iterator.Match(TokenType.OpenParen);
 
@@ -38,7 +35,7 @@ public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
         {
             iterator.NextToken();
 
-            isStatic = true;
+            attributes.Add(LNode.Id(CodeSymbols.Static));
         }
 
         if (iterator.Current.Type == TokenType.Arrow)
@@ -48,17 +45,13 @@ public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        return new FunctionDeclaration(name, returnType, isStatic, parameters, Statement.ParseBlock(parser));
+        return SyntaxTree.Fn(LNode.Id((Symbol)name), returnType, parameters, Statement.ParseBlock(parser))
+            .WithAttrs(attributes);
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    private static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)
     {
-        return visitor.Visit(this);
-    }
-
-    private static List<ParameterDeclaration> ParseParameterDeclarations(TokenIterator iterator, Parser parser)
-    {
-        var parameters = new List<ParameterDeclaration>();
+        var parameters = new LNodeList();
         while (iterator.Current.Type != TokenType.CloseParen)
         {
             while (iterator.Current.Type != TokenType.Comma && iterator.Current.Type != TokenType.CloseParen)
@@ -70,7 +63,7 @@ public sealed class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
                     iterator.NextToken();
                 }
 
-                parameters.Add((ParameterDeclaration)parameter);
+                parameters.Add(parameter);
             }
         }
 
