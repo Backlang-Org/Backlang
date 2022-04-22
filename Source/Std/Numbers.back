@@ -1,0 +1,32 @@
+import Math;
+
+implementation for u8..u32 {
+    fn parse(str : string) static {
+        let mut result = 0;
+        
+        for c in str.length..0 {
+            if c >= "0" and c <= "9" {
+                result += ( c - "0") * Math::pow(10, i);
+            }
+        }
+
+        if result > Max {
+            error("Value is not in range");
+        }
+
+        return result;
+    }
+}
+
+implementation for bool {
+    fn parse(str : string) static {
+        let condition = str == "true" or str == "false";
+
+        if condition {
+            return condition;
+        }
+        else {
+            error("invalid input for bool");
+        }
+    }
+}

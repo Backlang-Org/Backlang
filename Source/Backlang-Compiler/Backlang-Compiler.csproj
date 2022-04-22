@@ -2,43 +2,32 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>Backlang_Compiler</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	  <LangVersion>latest</LangVersion>
-	  <EnablePreviewFeatures>True</EnablePreviewFeatures>
+	<LangVersion>preview</LangVersion>
+	<EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="machineinfo.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="machineinfo.json" />
-  </ItemGroup>
-
 	<ItemGroup>
-		<PackageReference Include="Be.IO" Version="1.0.0" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
 		<PackageReference Include="Flo" Version="0.3.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Compiling\Passes\Lowerer\" />
+		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.8" />
+		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.8" />
+		<PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2" />
+		<PackageReference Include="Tomlyn" Version="0.14.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
+	  <ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="System.Runtime.Experimental" Version="6.0.0" />
-		<PackageReference Include="Tomlyn" Version="0.14.0" />
-	</ItemGroup>
-
-	<ItemGroup>
+	  <None Update="compilation.back">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="test.back">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>

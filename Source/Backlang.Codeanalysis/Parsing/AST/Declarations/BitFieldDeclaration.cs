@@ -1,18 +1,16 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public class BitFieldDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class BitFieldDeclaration : IParsePoint<LNode>
 {
-    public List<BitFieldMemberDeclaration> Members { get; set; } = new();
-    public string Name { get; set; }
-
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var declaration = new BitFieldDeclaration();
-
-        declaration.Name = iterator.Match(TokenType.Identifier).Text;
+        var name = iterator.Match(TokenType.Identifier).Text;
 
         iterator.Match(TokenType.OpenCurly);
 
+        var members = new LNodeList();
         while (iterator.Current.Type != TokenType.CloseCurly)
         {
             var member = BitFieldMemberDeclaration.Parse(iterator, parser);
@@ -22,16 +20,11 @@ public class BitFieldDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
                 iterator.Match(TokenType.Comma);
             }
 
-            declaration.Members.Add(member);
+            members.Add(member);
         }
 
         iterator.Match(TokenType.CloseCurly);
 
-        return declaration;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.Bitfield(name, members);
     }
 }

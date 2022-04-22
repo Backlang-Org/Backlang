@@ -1,28 +1,15 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
+public class VariableDeclarationStatement : Statement, IParsePoint<LNode>
 {
-    public VariableDeclarationStatement(Token nameToken, TypeLiteral? type, bool isMutable, Expression? value)
-    {
-        NameToken = nameToken;
-        Type = type;
-        IsMutable = isMutable;
-        Value = value;
-    }
-
-    public bool IsMutable { get; }
-    public Token NameToken { get; }
-    public TypeLiteral? Type { get; }
-    public Expression? Value { get; }
-
-    public static Statement Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         bool isMutable = false;
-        TypeLiteral? type = null;
-        Expression? value = null;
-        Token nameToken = null;
+        LNode type = LNode.Missing;
+        LNode value = LNode.Missing;
 
         if (iterator.Current.Type == TokenType.Mutable)
         {
@@ -30,7 +17,8 @@ public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
             iterator.NextToken();
         }
 
-        nameToken = iterator.Match(TokenType.Identifier);
+        var nameToken = iterator.Match(TokenType.Identifier);
+        var name = LNode.Id(nameToken.Text);
 
         if (iterator.Current.Type == TokenType.Colon)
         {
@@ -48,11 +36,8 @@ public class VariableDeclarationStatement : Statement, IParsePoint<Statement>
 
         iterator.Match(TokenType.Semicolon);
 
-        return new VariableDeclarationStatement(nameToken, type, isMutable, value);
-    }
+        var node = SyntaxTree.Factory.Var(type, name, value);
 
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return isMutable ? node.WithAttrs(LNode.Id(Symbols.Mutable)) : node;
     }
 }

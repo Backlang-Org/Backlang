@@ -228,3 +228,12 @@ dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
+
+[*.cs]
+dotnet_diagnostic.MA0053.severity = suggestion
+
+# Report public classes without inheritors (default: false)
+MA0053.public_class_should_be_sealed = true
+
+# Report class without inheritors even if there is virtual members (default: false)
+MA0053.class_with_virtual_member_shoud_be_sealed = true

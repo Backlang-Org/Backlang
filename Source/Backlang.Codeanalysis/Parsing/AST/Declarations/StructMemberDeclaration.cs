@@ -1,41 +1,27 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Loyc.Syntax;
 
-public class StructMemberDeclaration : SyntaxNode
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class StructMemberDeclaration
 {
-    public string Name { get; set; }
-    public TypeLiteral Type { get; set; }
-
-    public Expression? Value { get; set; }
-
-    public static StructMemberDeclaration Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var member = new StructMemberDeclaration();
-
-        if (iterator.Current.Type == TokenType.Identifier)
-        {
-            member.Name = iterator.Current.Text;
-
-            iterator.NextToken();
-        }
+        var nameToken = iterator.Match(TokenType.Identifier);
+        LNode value = LNode.Missing;
 
         iterator.Match(TokenType.Colon);
 
-        member.Type = TypeLiteral.Parse(iterator, parser);
+        var type = TypeLiteral.Parse(iterator, parser);
 
         if (iterator.Current.Type == TokenType.EqualsToken)
         {
             iterator.NextToken();
 
-            member.Value = Expression.Parse(parser);
+            value = Expression.Parse(parser);
         }
 
         iterator.Match(TokenType.Semicolon);
 
-        return member;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.Factory.Var(type, nameToken.Text, value);
     }
 }

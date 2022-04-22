@@ -1,30 +1,56 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Loyc;
+using Loyc.Syntax;
 
-public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+
+public sealed class FunctionDeclaration : IParsePoint<LNode>
 {
-    public FunctionDeclaration(Token name, TypeLiteral returnType, List<ParameterDeclaration> parameters, Block body)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Name = name;
-        ReturnType = returnType;
-        Parameters = parameters;
-        Body = body;
-    }
+        string name = null;
+        if (iterator.Current.Type == TokenType.Identifier)
+        {
+            name = iterator.Current.Text;
+            iterator.NextToken();
+        }
+        else
+        {
+            //error
+            parser.Messages.Add(Message.Error(parser.Document,
+                $"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column));
+        }
 
-    public Block Body { get; }
-    public Token Name { get; }
-    public List<ParameterDeclaration> Parameters { get; }
-    public TypeLiteral ReturnType { get; }
+        LNode returnType = LNode.Missing;
 
-    public static SyntaxNode Parse(TokenIterator iterator, Parser parser)
-    {
-        var name = iterator.Match(TokenType.Identifier);
-        TypeLiteral returnType = null;
+        LNodeList attributes = new();
 
         iterator.Match(TokenType.OpenParen);
 
         var parameters = ParseParameterDeclarations(iterator, parser);
 
         iterator.Match(TokenType.CloseParen);
+
+        if (iterator.Current.Type == TokenType.Static)
+        {
+            iterator.NextToken();
+
+            attributes.Add(LNode.Id(CodeSymbols.Static));
+        }
+
+        if (iterator.Current.Type == TokenType.Private)
+        {
+            iterator.NextToken();
+
+            attributes.Add(LNode.Id(CodeSymbols.Private));
+        }
+
+        if (iterator.Current.Type == TokenType.Operator)
+        {
+            iterator.NextToken();
+
+            attributes.Add(LNode.Id(CodeSymbols.Operator));
+        }
 
         if (iterator.Current.Type == TokenType.Arrow)
         {
@@ -33,27 +59,13 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        iterator.Match(TokenType.OpenCurly);
-
-        var body = new Block();
-        while (iterator.Current.Type != (TokenType.CloseCurly))
-        {
-            body.Body.Add(parser.InvokeStatementParsePoint());
-        }
-
-        iterator.Match(TokenType.CloseCurly);
-
-        return new FunctionDeclaration(name, returnType, parameters, body);
+        return SyntaxTree.Fn(LNode.Id((Symbol)name), returnType, parameters, Statement.ParseBlock(parser))
+            .WithAttrs(attributes);
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    private static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)
     {
-        return visitor.Visit(this);
-    }
-
-    private static List<ParameterDeclaration> ParseParameterDeclarations(TokenIterator iterator, Parser parser)
-    {
-        var parameters = new List<ParameterDeclaration>();
+        var parameters = new LNodeList();
         while (iterator.Current.Type != TokenType.CloseParen)
         {
             while (iterator.Current.Type != TokenType.Comma && iterator.Current.Type != TokenType.CloseParen)
@@ -65,7 +77,7 @@ public class FunctionDeclaration : SyntaxNode, IParsePoint<SyntaxNode>
                     iterator.NextToken();
                 }
 
-                parameters.Add((ParameterDeclaration)parameter);
+                parameters.Add(parameter);
             }
         }
 

@@ -2,9 +2,9 @@
 namespace Backlang.Codeanalysis.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-public class BinaryOperatorInfoAttribute : OperatorInfoAttribute
+public sealed class BinaryOperatorInfoAttribute : OperatorInfoAttribute
 {
-    public BinaryOperatorInfoAttribute(int precedence) : base(precedence, false, false)
+    public BinaryOperatorInfoAttribute(int precedence) : base(precedence, isUnary: false, isPostUnary: false)
     {
     }
 }

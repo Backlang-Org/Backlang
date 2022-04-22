@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Parsing;
+
 namespace Backlang.Codeanalysis.Core;
 
 public abstract class BaseLexer
@@ -6,13 +7,13 @@ public abstract class BaseLexer
     public List<Message> Messages = new();
 
     protected int _column = 1;
+    protected SourceDocument _document;
     protected int _line = 1;
     protected int _position = 0;
-    protected string _source = string.Empty;
 
-    public List<Token> Tokenize(string source)
+    public List<Token> Tokenize(SourceDocument document)
     {
-        _source = source;
+        _document = document;
 
         var tokens = new List<Token>();
 
@@ -34,29 +35,29 @@ public abstract class BaseLexer
 
     protected char Current()
     {
-        if (_position >= _source.Length)
+        if (_position >= _document.Source.Length)
         {
             return '\0';
         }
 
-        return _source[_position];
+        return _document.Source[_position];
     }
 
     protected abstract Token NextToken();
 
     protected char Peek(int offset = 0)
     {
-        if (_position + offset >= _source.Length)
+        if (_position + offset >= _document.Source.Length)
         {
             return '\0';
         }
 
-        return _source[_position + offset];
+        return _document.Source[_position + offset];
     }
 
     protected void ReportError()
     {
-        Messages.Add(Message.Error($"Unknown Charackter '{Current()}'", _line, _column++));
+        Messages.Add(Message.Error(_document, $"Unknown Charackter '{Current()}'", _line, _column++));
         Advance();
     }
 }

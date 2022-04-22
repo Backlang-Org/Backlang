@@ -1,14 +1,11 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+﻿using Loyc.Syntax;
 
-public class NoneExpression : Expression, IParsePoint<Expression>
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
+
+public sealed class NoneExpression : IParsePoint<LNode>
 {
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        return new NoneExpression();
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.None();
     }
 }

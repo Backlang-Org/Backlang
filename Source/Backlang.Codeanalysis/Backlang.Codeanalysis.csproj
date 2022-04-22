@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net6.0</TargetFramework>
+	<TargetFramework>net7.0</TargetFramework>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
-	<LangVersion>latest</LangVersion>
+	<LangVersion>preview</LangVersion>
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Runtime.Experimental" Version="6.0.0" />
+		<PackageReference Include="Loyc.Syntax" Version="29.0.3" />
+		<PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2" />
 	</ItemGroup>
 
 </Project>

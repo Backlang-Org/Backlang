@@ -169,4 +169,46 @@ public enum TokenType
 
     [Keyword("type")]
     Type,
+
+    [Keyword("if")]
+    If,
+
+    [Keyword("else")]
+    Else,
+
+    [Keyword("while")]
+    While,
+
+    [Keyword("in")]
+    In,
+
+    [Keyword("for")]
+    For,
+
+    [Keyword("const")]
+    Const,
+
+    [Keyword("global")]
+    Global,
+
+    [Keyword("asm")]
+    Asm,
+
+    [Keyword("static")]
+    Static,
+
+    [Keyword("nameof")]
+    NameOf,
+
+    [Keyword("of")]
+    Of,
+
+    [Keyword("implementation")]
+    ImplementationKeyword,
+
+    [Keyword("operator")]
+    Operator,
+
+    [Keyword("private")]
+    Private,
 }

@@ -1,9 +1,9 @@
 ﻿namespace Backlang.Codeanalysis.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-public class PreUnaryOperatorInfoAttribute : OperatorInfoAttribute
+public sealed class PreUnaryOperatorInfoAttribute : OperatorInfoAttribute
 {
-    public PreUnaryOperatorInfoAttribute(int precedence) : base(precedence, true, false)
+    public PreUnaryOperatorInfoAttribute(int precedence) : base(precedence, isUnary: true, isPostUnary: false)
     {
     }
 }

@@ -1,0 +1,68 @@
+import Memory;
+import Limits;
+import Keyboard;
+
+struct Terminal {
+	End = Width * Height;
+	Width = 80;
+	Height = 25;
+
+	CursorX = 0;
+	CursorY = 0;
+}
+
+implementation of static Terminal {
+	fn write(char : i8) {
+		let address : u32* = CursorY * Width + CursorX;
+
+		*address = char;
+
+		CursorX += 1;
+
+		if CursorX = Width  {
+			CursorX = 0; 
+			CursorY++;
+		}
+		if CursorY == Height {
+			CursorY = 0;
+			CursorX = 0;
+		}
+	}
+
+	fn write(str : string) {
+		for c in str) {
+			write(c);
+		}
+	}
+
+	fn writeln(str : string) {
+		write(str);
+		
+		CursorY += 1;
+		CursorX = 0;
+	}
+
+	fn readChar() {
+		for i in 0..u8::Max {
+			if Keyboard::isKeyDown(i) {
+				return i;
+			}
+		}
+	}
+
+	fn clear() {
+		Memory::clear(0, End);
+
+		CursorX = 0;
+		CursorY = 0;
+	}
+
+	fn setCursorPosition(top : u32, left : u32) {
+		CursorX = left;
+		CursorY = top;
+	}
+
+	fn getCursorPosition() {
+		return Tuple<u32, u32>::new(CursorX, CursorY);
+	}
+}

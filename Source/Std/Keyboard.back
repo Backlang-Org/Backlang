@@ -1,0 +1,76 @@
+fn Keyboard::isKeyDown<T>(key : T) static -> bool
+    where T : KeyCode, u8 {
+        
+    asm {
+        mov J, key;
+        GetKeyState K, J; 
+    }
+
+    return #K;
+}
+
+enum KeyCode : u8 {
+    Backspace = 8
+    Space = 0x20,
+    Key0 = 48,
+    Key1,
+    Key2,
+    Key3,
+    Key4,
+    Key5,
+    Key6,
+    Key7,
+    Key8,
+    Key9,
+    A = 65,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
+    a = 97,
+    b,
+    c,
+    d,
+    f,
+    g,
+    h,
+    i,
+    j,
+    k,
+    l,
+    m,
+    n,
+    o,
+    p,
+    q,
+    r,
+    s,
+    t,
+    u,
+    v,
+    w,
+    x,
+    y,
+    z
+}

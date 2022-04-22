@@ -1,0 +1,32 @@
+{
+    "name": "back",
+    "displayName": "Backstention",
+    "description": "Backlang For Backseat System",
+    "version": "0.0.33",
+    "publisher": "furesoft",
+    "engines": {
+        "vscode": "^1.66.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "back",
+            "aliases": ["Backlang", "back"],
+            "extensions": [".back"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "back",
+            "scopeName": "source.back",
+            "path": "./syntaxes/back.tmLanguage.json"
+        }],
+		"snippets": [
+            {
+                "language": "back",
+                "path": "./snippets/snippets.code-snippets"
+            }
+        ]
+    }
+}

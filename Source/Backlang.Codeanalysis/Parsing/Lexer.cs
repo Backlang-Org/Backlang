@@ -1,12 +1,12 @@
-﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
 using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public class Lexer : BaseLexer
+public sealed class Lexer : BaseLexer
 {
-    private static readonly Dictionary<string, TokenType> _symbolTokens = new();
+    private static readonly Dictionary<string, TokenType> _symbolTokens = new(StringComparer.Ordinal);
 
     static Lexer()
     {
@@ -32,8 +32,9 @@ public class Lexer : BaseLexer
     protected override Token NextToken()
     {
         SkipWhitespaces();
+        SkipComments();
 
-        if (_position >= _source.Length)
+        if (_position >= _document.Source.Length)
         {
             return new Token(TokenType.EOF, "\0", _position, _position, _line, _column);
         }
@@ -46,7 +47,7 @@ public class Lexer : BaseLexer
             {
                 if (Current() == '\n' || Current() == '\r')
                 {
-                    Messages.Add(Message.Error($"Unterminated String", _line, oldColumn));
+                    Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
                 }
 
                 Advance();
@@ -55,7 +56,7 @@ public class Lexer : BaseLexer
 
             _column += 2;
 
-            return new Token(TokenType.StringLiteral, _source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+            return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
         }
         else if (Current() == '"')
         {
@@ -66,7 +67,7 @@ public class Lexer : BaseLexer
             {
                 if (Current() == '\n' || Current() == '\r')
                 {
-                    Messages.Add(Message.Error($"Unterminated String", _line, oldColumn));
+                    Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
                 }
 
                 Advance();
@@ -75,7 +76,7 @@ public class Lexer : BaseLexer
 
             _column += 2;
 
-            return new Token(TokenType.StringLiteral, _source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+            return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
         }
         else if (IsMatch("0x"))
         {
@@ -91,7 +92,7 @@ public class Lexer : BaseLexer
                 _column++;
             }
 
-            return new Token(TokenType.HexNumber, _source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+            return new Token(TokenType.HexNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
         }
         else if (IsMatch("0b"))
         {
@@ -107,7 +108,7 @@ public class Lexer : BaseLexer
                 _column++;
             }
 
-            return new Token(TokenType.BinNumber, _source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+            return new Token(TokenType.BinNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
         }
         else if (char.IsDigit(Current()))
         {
@@ -132,7 +133,7 @@ public class Lexer : BaseLexer
                 }
             }
 
-            return new Token(TokenType.Number, _source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+            return new Token(TokenType.Number, _document.Source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
         }
         else if (IsIdentifierStartDigit())
         {
@@ -145,7 +146,7 @@ public class Lexer : BaseLexer
                 _column++;
             }
 
-            var tokenText = _source.Substring(oldpos, _position - oldpos);
+            var tokenText = _document.Source.Substring(oldpos, _position - oldpos);
 
             return new Token(TokenUtils.GetTokenType(tokenText), tokenText, oldpos, _position, _line, oldcolumn);
         }
@@ -160,7 +161,7 @@ public class Lexer : BaseLexer
                     _position += symbol.Key.Length;
                     _column += symbol.Key.Length;
 
-                    string text = _source.Substring(oldpos, symbol.Key.Length);
+                    string text = _document.Source.Substring(oldpos, symbol.Key.Length);
 
                     return new Token(_symbolTokens[text], text, oldpos, _position, _line, _column);
                 }
@@ -207,9 +208,62 @@ public class Lexer : BaseLexer
         return result;
     }
 
+    private void SkipComments()
+    {
+        if (IsMatch("//"))
+        {
+            Advance();
+            Advance();
+            _column++;
+            _column++;
+
+            while (Current() != '\n' && Current() != '\r' && Current() != '\0')
+            {
+                Advance();
+                _column++;
+            }
+
+            if (Current() == '\n' || Current() == '\r')
+            {
+                Advance();
+                _column++;
+            }
+        }
+        else if (IsMatch("/*"))
+        {
+            int oldcol = _column;
+
+            Advance();
+            Advance();
+            _column++;
+            _column++;
+
+            while (!IsMatch("*/") && Current() != '\0')
+            {
+                Advance();
+            }
+
+            if (Current() == '\0')
+            {
+                Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
+            }
+
+            if (IsMatch("*/"))
+            {
+                Advance();
+                _column++;
+
+                Advance();
+                _column++;
+            }
+
+            SkipWhitespaces();
+        }
+    }
+
     private void SkipWhitespaces()
     {
-        while (char.IsWhiteSpace(Current()) && _position <= _source.Length)
+        while (char.IsWhiteSpace(Current()) && _position <= _document.Source.Length)
         {
             if (Current() == '\r')
             {

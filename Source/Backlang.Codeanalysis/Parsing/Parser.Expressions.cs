@@ -1,12 +1,11 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Loyc.Syntax;
 using System.Globalization;
 
 namespace Backlang.Codeanalysis.Parsing;
 
-public partial class Parser
+public sealed partial class Parser
 {
-    internal override Expression ParsePrimary(ParsePoints<Expression> parsePoints = null)
+    internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
     {
         if (parsePoints == null)
         {
@@ -25,14 +24,14 @@ public partial class Parser
         };
     }
 
-    private Expression Invalid(string message)
+    private LNode Invalid(string message)
     {
-        Messages.Add(Message.Error(message, Iterator.Current.Line, Iterator.Current.Column));
+        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
 
-        return new InvalidExpr();
+        return LNode.Call(CodeSymbols.Error, LNode.List(LNode.Literal(message)));
     }
 
-    private Expression InvokeExpressionParsePoint(ParsePoints<Expression> parsePoints)
+    private LNode InvokeExpressionParsePoint(ParsePoints<LNode> parsePoints)
     {
         var type = Iterator.Current.Type;
         if (parsePoints.ContainsKey(type))
@@ -47,7 +46,7 @@ public partial class Parser
         }
     }
 
-    private Expression ParseBinNumber()
+    private LNode ParseBinNumber()
     {
         var valueToken = Iterator.NextToken();
         var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
@@ -60,24 +59,24 @@ public partial class Parser
             result += (int)Math.Pow(2, i);
         }
 
-        return new LiteralNode(result);
+        return SyntaxTree.Factory.Literal(result);
     }
 
-    private Expression ParseBooleanLiteral(bool value)
+    private LNode ParseBooleanLiteral(bool value)
     {
         Iterator.NextToken();
 
-        return new LiteralNode(value);
+        return SyntaxTree.Factory.Literal(value);
     }
 
-    private Expression ParseHexNumber()
+    private LNode ParseHexNumber()
     {
         var valueToken = Iterator.NextToken();
 
-        return new LiteralNode(int.Parse(valueToken.Text, NumberStyles.HexNumber));
+        return SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber));
     }
 
-    private Expression ParseNumber()
+    private LNode ParseNumber()
     {
         var valueToken = Iterator.NextToken();
 
@@ -88,11 +87,11 @@ public partial class Parser
             value = double.Parse(valueToken.Text, CultureInfo.InvariantCulture);
         }
 
-        return new LiteralNode(value);
+        return SyntaxTree.Factory.Literal(value);
     }
 
-    private Expression ParseString()
+    private LNode ParseString()
     {
-        return new LiteralNode(Iterator.NextToken().Text);
+        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text);
     }
 }

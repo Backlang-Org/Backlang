@@ -1,5 +1,21 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Loyc.Syntax;
 
-public abstract class Statement : SyntaxNode
+namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+
+public abstract class Statement
 {
+    public static LNodeList ParseBlock(Parser parser)
+    {
+        parser.Iterator.Match(TokenType.OpenCurly);
+
+        var body = new List<LNode>();
+        while (parser.Iterator.Current.Type != TokenType.CloseCurly)
+        {
+            body.Add(parser.InvokeStatementParsePoint());
+        }
+
+        parser.Iterator.Match(TokenType.CloseCurly);
+
+        return LNode.List(body);
+    }
 }

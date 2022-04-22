@@ -5,7 +5,7 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public static class TokenUtils
 {
-    private static readonly Dictionary<string, TokenType> TokenTypeRepresentations = new Dictionary<string, TokenType>();
+    private static readonly Dictionary<string, TokenType> TokenTypeRepresentations = new Dictionary<string, TokenType>(StringComparer.Ordinal);
 
     static TokenUtils()
     {
@@ -13,7 +13,7 @@ public static class TokenUtils
 
         foreach (var keyword in typeValues)
         {
-            var attributes = keyword.GetType().GetField(Enum.GetName<TokenType>(keyword)).GetCustomAttributes<KeywordAttribute>(true);
+            var attributes = keyword.GetType().GetField(Enum.GetName<TokenType>(keyword)).GetCustomAttributes<KeywordAttribute>(inherit: true);
 
             if (attributes != null && attributes.Any())
             {
@@ -33,5 +33,18 @@ public static class TokenUtils
         }
 
         return TokenType.Identifier;
+    }
+
+    public static bool IsOperator(this Token token)
+    {
+        foreach (var opInfo in Expression.Operators)
+        {
+            if (opInfo.TokenType == token.Type)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

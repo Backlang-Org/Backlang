@@ -1,6 +1,8 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
+using Loyc.Syntax;
 
-public class MatchExpression : Expression, IParsePoint<Expression>
+namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
+
+public sealed class MatchExpression : IParsePoint<LNode>
 {
     /*
 	 * match a with
@@ -9,20 +11,17 @@ public class MatchExpression : Expression, IParsePoint<Expression>
 		_ => 0 + 4;
 	*/
 
-    public Expression MatchArgument { get; set; }
-
-    public List<MatchRule> Rules { get; set; } = new();
-
-    public static Expression Parse(TokenIterator iterator, Parser parser)
+    public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        MatchExpression result = new MatchExpression();
-        result.MatchArgument = Parse(parser);
+        var matchArgument = Expression.Parse(parser);
 
         iterator.Match(TokenType.With);
 
+        var conditions = new LNodeList();
+
         while (iterator.Current.Type != TokenType.Semicolon)
         {
-            result.Rules.Add(MatchRule.Parse(iterator, parser));
+            conditions.Add(MatchRule.Parse(iterator, parser));
 
             if (iterator.Current.Type == TokenType.Semicolon)
             {
@@ -34,11 +33,6 @@ public class MatchExpression : Expression, IParsePoint<Expression>
             }
         }
 
-        return result;
-    }
-
-    public override T Accept<T>(IVisitor<T> visitor)
-    {
-        return visitor.Visit(this);
+        return SyntaxTree.Factory.Call(LNode.Id(Symbols.Match), matchArgument).WithAttrs(conditions);
     }
 }

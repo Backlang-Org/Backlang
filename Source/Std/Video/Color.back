@@ -1,0 +1,20 @@
+struct Color {
+    Value : u32;;
+}
+
+implementation of Color
+    where %target:clr% {
+
+    fn new(r : u8, g : u8, b : u8, a : u8) {
+        
+    }
+
+}
+
+implementation of Color
+    where %target:bs2k% {
+
+    fn new(r : u8, g : u8, b : u8, a : u8) {
+        
+    }
+}

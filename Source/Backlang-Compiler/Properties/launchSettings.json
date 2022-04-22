@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Backlang-Compiler": {
+      "commandName": "Project",
+      "commandLineArgs": "-i compilation.back -o compilation.exe"
+    }
+  }
+}
