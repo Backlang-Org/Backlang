@@ -182,7 +182,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static Instruction ConvertExpression(IType elementType, object value)
     {
-        if (value is int i)
+        if (value is uint i)
         {
             return Instruction.CreateConstant(
                                            new IntegerConstant(i, IntegerSpec.UInt32),
