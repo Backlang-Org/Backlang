@@ -3,6 +3,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Typesystem;
 
@@ -47,6 +48,11 @@ public class ClrTypeEnvironmentBuilder
                 t.AddGenericParameter(new DescribedGenericParameter(t, new SimpleName(item.Name)));
             }
 
+            foreach (var attr in type.GetCustomAttributes())
+            {
+                t.AddAttribute(new DescribedAttribute(ResolveType(resolver, attr.GetType())));
+            }
+
             AddMembers(type, t, resolver);
         }
     }
@@ -81,6 +87,16 @@ public class ClrTypeEnvironmentBuilder
                 var method = new DescribedMethod(t, new SimpleName(m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
 
                 ConvertParameter(m.GetParameters(), method, resolver);
+
+                foreach (var attr in m.GetCustomAttributes())
+                {
+                    method.AddAttribute(new DescribedAttribute(ResolveType(resolver, attr.GetType())));
+                }
+
+                if (m.IsSpecialName)
+                {
+                    method.AddAttribute(new DescribedAttribute(ResolveType(resolver, typeof(SpecialNameAttribute))));
+                }
 
                 t.AddMethod(method);
             }
