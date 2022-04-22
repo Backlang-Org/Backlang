@@ -1,4 +1,4 @@
-using Backlang.Core;
+﻿using Backlang.Core;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -37,9 +37,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
                 && method.IsStatic
                 && method.ReturnParameter.Type == context.Environment.Void
                 && method.Parameters.Count == 1);
-
-        context.ExtensionsType = new DescribedType(new SimpleName("Extensions").Qualify("Example"), context.Assembly);
-
+        
         return await next.Invoke(context);
     }
 }

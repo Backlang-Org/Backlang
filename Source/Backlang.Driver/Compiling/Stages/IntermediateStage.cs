@@ -38,7 +38,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             if (node.Name == CodeSymbols.Var)
             {
-                var elementType = GetType(node.Args[0], context.Binder);
+                var elementType = GetType(node.Args[0], context);
 
                 var local = block.AppendInstruction(
                      Instruction.CreateAlloca(elementType));
@@ -122,8 +122,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         method.AddAttribute(modifier);
 
-        AddParameters(method, function, context.Binder);
-        SetReturnType(method, function, context.Binder);
+        AddParameters(method, function, context);
+        SetReturnType(method, function, context);
 
         return method;
     }
@@ -136,26 +136,25 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
     }
 
-    public static IType GetType(LNode type, TypeResolver resolver)
+    public static IType GetType(LNode type, CompilerContext context)
     {
         var name = type.Args[0].Name.ToString();
         switch (name)
         {
-            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
-            case "u8": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
-            case "u16": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
-            case "string": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-            case "void": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
+            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(uint));
+            case "u8": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(byte));
+            case "u16": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ushort));
+            case "string": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(string));
+            case "void": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
             default:
-                return ClrTypeEnvironmentBuilder.ResolveType(resolver, name, "Example");
+                return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, name, context.Assembly.Name.Qualify().FullName);
         }
-
-        return null;
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
+        context.ExtensionsType = new DescribedType(new SimpleName("__Extensions").Qualify(context.Assembly.Name), context.Assembly);
 
         foreach (var tree in context.Trees)
         {
@@ -170,13 +169,13 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void AddParameters(DescribedBodyMethod method, LNode function, TypeResolver resolver)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context)
     {
         var param = function.Args[2];
 
         foreach (var p in param.Args)
         {
-            var pa = ConvertParameter(p, resolver);
+            var pa = ConvertParameter(p, context);
             method.AddParameter(pa);
         }
     }
@@ -209,14 +208,14 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             DescribedType type;
 
-            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == "Example.Program"))
+            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == context.Assembly.Name + ".__Program"))
             {
-                type = new DescribedType(new SimpleName("Program").Qualify("Example"), context.Assembly);
+                type = new DescribedType(new SimpleName("__Program").Qualify(context.Assembly.Name), context.Assembly);
                 context.Assembly.AddType(type);
             }
             else
             {
-                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == "Example.Program");
+                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == context.Assembly.Name + ".__Program");
             }
 
             var method = ConvertFunction(context, type, function);
@@ -233,9 +232,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return $"op_{m}";
     }
 
-    private static Parameter ConvertParameter(LNode p, TypeResolver resolver)
+    private static Parameter ConvertParameter(LNode p, CompilerContext context)
     {
-        var type = GetType(p.Args[0], resolver);
+        var type = GetType(p.Args[0], context);
         var assignment = p.Args[1];
 
         var name = assignment.Args[0].Name;
@@ -249,7 +248,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             if (member.Name == CodeSymbols.Var)
             {
-                var mtype = GetType(member.Args[0], context.Binder);
+                var mtype = GetType(member.Args[0], context);
 
                 var mvar = member.Args[1];
                 var mname = mvar.Args[0].Name;
@@ -270,7 +269,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var name = st.Args[0].Name;
             var members = st.Args[2];
 
-            var type = new DescribedType(new SimpleName(name.Name).Qualify("Example"), context.Assembly);
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
@@ -281,9 +280,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, TypeResolver resolver)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
     {
         var retType = function.Args[0];
-        method.ReturnParameter = new Parameter(GetType(retType, resolver));
+        method.ReturnParameter = new Parameter(GetType(retType, context));
     }
 }
