@@ -13,6 +13,7 @@ using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
+using System.Globalization;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -99,12 +100,27 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 ReassociateOperators.Instance,
                 DeadValueElimination.Instance));
 
+        string methodName = function.Args[1].Name.Name;
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
+        {
+            function.Attrs.Add(LNode.Id(CodeSymbols.Static));
+            methodName = ConvertMethodNameToOperator(methodName);
+        }
+
         var method = new DescribedBodyMethod(type,
-            new QualifiedName(function.Args[1].Name.Name).FullyUnqualifiedName,
+            new QualifiedName(methodName).FullyUnqualifiedName,
             function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
         {
             Body = body
         };
+
+        var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+        {
+            modifier = AccessModifierAttribute.Create(AccessModifier.Private);
+        }
+
+        method.AddAttribute(modifier);
 
         AddParameters(method, function, context.Binder);
         SetReturnType(method, function, context.Binder);
@@ -209,6 +225,14 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
+    private static string ConvertMethodNameToOperator(string methodName)
+    {
+        TextInfo info = CultureInfo.InvariantCulture.TextInfo;
+        var m = info.ToTitleCase(methodName); //ToDo: convert to opmap: greaterThen -> GreaterThan
+
+        return $"op_{m}";
+    }
+
     private static Parameter ConvertParameter(LNode p, TypeResolver resolver)
     {
         var type = GetType(p.Args[0], resolver);
@@ -248,6 +272,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify("Example"), context.Assembly);
             type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+
+            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 
             ConvertStructMembers(members, type, context);
 
