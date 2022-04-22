@@ -17,6 +17,7 @@ public class CompilerDriver
 
            cfg.Add<LowererStage>();
            cfg.Add<IntermediateStage>();
+           cfg.Add<ExpandImplementationStage>();
            cfg.Add<ImplementationStage>();
        }
        );

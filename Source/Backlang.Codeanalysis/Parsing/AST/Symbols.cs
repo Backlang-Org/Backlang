@@ -10,5 +10,6 @@ public static class Symbols
     public static readonly Symbol Match = GSymbol.Get("#match");
     public static readonly Symbol Mutable = GSymbol.Get("#mutable");
     public static readonly Symbol PointerType = GSymbol.Get("#type*");
+    public static readonly Symbol ToExpand = GSymbol.Get("'to_expand'");
     public static readonly Symbol TypeLiteral = GSymbol.Get("#type");
 }

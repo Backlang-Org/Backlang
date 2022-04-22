@@ -18,14 +18,32 @@ public class ImplementationDeclaration : IParsePoint<LNode>
             }
 
             LNode target = null;
+            var targets = new LNodeList();
 
-            if (iterator.Peek(1).Type == TokenType.RangeOperator)
+            while (iterator.Current.Type != TokenType.OpenCurly)
             {
-                target = Expression.Parse(parser);
+                if (iterator.Peek(1).Type == TokenType.RangeOperator)
+                {
+                    targets.Add(Expression.Parse(parser));
+                }
+                else
+                {
+                    targets.Add(TypeLiteral.Parse(iterator, parser));
+                }
+
+                if (iterator.Current.Type != TokenType.OpenCurly)
+                {
+                    iterator.Match(TokenType.Comma);
+                }
+            }
+
+            if (targets.Count == 1)
+            {
+                target = targets[0];
             }
             else
             {
-                target = TypeLiteral.Parse(iterator, parser);
+                target = LNode.Call(Symbols.ToExpand, targets);
             }
 
             iterator.Match(TokenType.OpenCurly);
