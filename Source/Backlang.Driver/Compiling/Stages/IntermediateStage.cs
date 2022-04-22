@@ -1,4 +1,4 @@
-using Backlang.Driver.Compiling.Typesystem;
+﻿using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -148,6 +148,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             ConvertStructs(context, tree);
         }
 
+        context.Assembly.AddType(context.ExtensionsType);
         context.Binder.AddAssembly(context.Assembly);
 
         return await next.Invoke(context);

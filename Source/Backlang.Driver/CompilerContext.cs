@@ -12,6 +12,7 @@ public sealed class CompilerContext
 
     public TypeResolver Binder { get; set; } = new();
     public TypeEnvironment Environment { get; set; }
+    public DescribedType ExtensionsType { get; set; }
 
     [Option('i', "input", Required = true, HelpText = "Input files to be compiled.")]
     public IEnumerable<string> InputFiles { get; set; }

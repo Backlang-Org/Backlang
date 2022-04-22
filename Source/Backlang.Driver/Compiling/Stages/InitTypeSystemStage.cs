@@ -34,6 +34,8 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
                 && method.ReturnParameter.Type == context.Environment.Void
                 && method.Parameters.Count == 1);
 
+        context.ExtensionsType = new DescribedType(new SimpleName("Extensions").Qualify("Example"), context.Assembly);
+
         return await next.Invoke(context);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Driver;
 using Flo;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
@@ -31,9 +31,22 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 if (node.Name == CodeSymbols.Fn)
                 {
-                    var fn = IntermediateStage.ConvertFunction(context, targetType, node);
+                    if (targetType.Parent.Assembly == context.Assembly)
+                    {
+                        var fn = IntermediateStage.ConvertFunction(context, targetType, node);
+                        targetType.AddMethod(fn);
+                    }
+                    else
+                    {
+                        var fn = IntermediateStage.ConvertFunction(context, context.ExtensionsType, node);
 
-                    targetType.AddMethod(fn);
+                        var thisParameter = new Parameter(targetType, "this");
+                        var param = (IList<Parameter>)fn.Parameters;
+
+                        param.Insert(0, thisParameter);
+
+                        context.ExtensionsType.AddMethod(fn);
+                    }
                 }
             }
         }
