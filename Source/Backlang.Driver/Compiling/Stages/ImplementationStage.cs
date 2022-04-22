@@ -1,8 +1,11 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
+using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -44,6 +47,11 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                         var param = (IList<Parameter>)fn.Parameters;
 
                         param.Insert(0, thisParameter);
+
+                        var extType = ClrTypeEnvironmentBuilder
+                            .ResolveType(context.Binder, typeof(ExtensionAttribute));
+
+                        fn.AddAttribute(new DescribedAttribute(extType));
 
                         context.ExtensionsType.AddMethod(fn);
                     }
