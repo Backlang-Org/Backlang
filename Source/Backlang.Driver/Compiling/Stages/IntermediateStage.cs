@@ -1,4 +1,3 @@
-﻿using Backlang.Driver;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -127,6 +126,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         switch (name)
         {
             case "u32": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+            case "u8": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
+            case "u16": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
             case "string": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
             case "void": return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
             default:

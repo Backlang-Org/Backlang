@@ -17,6 +17,12 @@ implementation of Point {
 	}
 }
 
+implementation for u8,u16 {
+	fn parse(str : string) -> bool {
+		
+	}
+}
+
 fn main() static -> none {
 	let msg : string = "hello world";
 
