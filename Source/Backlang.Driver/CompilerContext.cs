@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
 using CommandLine;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
@@ -16,6 +17,8 @@ public sealed class CompilerContext
 
     [Option('i', "input", Required = true, HelpText = "Input files to be compiled.")]
     public IEnumerable<string> InputFiles { get; set; }
+
+    public List<Message> Messages { get; set; } = new();
 
     [Option('o', "output", Required = true, HelpText = "Output filename")]
     public string OutputFilename { get; set; }

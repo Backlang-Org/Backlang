@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Flo;
 
@@ -15,11 +16,13 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
                 var tree = CompilationUnit.FromFile(filename);
 
                 context.Trees.Add(tree);
+
+                context.Messages.AddRange(tree.Messages);
             }
             else
             {
                 hasError = true;
-                Console.WriteLine($"File '{filename}' does not exist.");
+                context.Messages.Add(Message.Error(new SourceDocument(filename, ""), "File does not exists", 0, 0));
             }
         }
 
