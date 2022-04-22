@@ -19,10 +19,31 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
+    private static readonly Dictionary<string, Type> typenameTable = new()
+    {
+        ["bool"] = typeof(bool),
+
+        ["u8"] = typeof(byte),
+        ["u16"] = typeof(ushort),
+        ["u32"] = typeof(uint),
+        ["u64"] = typeof(ulong),
+
+        ["i8"] = typeof(sbyte),
+        ["i16"] = typeof(short),
+        ["i32"] = typeof(int),
+        ["i64"] = typeof(long),
+
+        ["f16"] = typeof(Half),
+        ["f32"] = typeof(float),
+        ["f64"] = typeof(double),
+
+        ["char"] = typeof(char),
+        ["string"] = typeof(string),
+    };
+
     public static MethodBody CompileBody(LNode function, CompilerContext context)
     {
         var graph = new FlowGraphBuilder();
-
         // Use a permissive exception delayability model to make the optimizer's
         // life easier.
         graph.AddAnalysis(
@@ -139,15 +160,14 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public static IType GetType(LNode type, CompilerContext context)
     {
         var name = type.Args[0].Name.ToString();
-        switch (name)
+
+        if (typenameTable.ContainsKey(name))
         {
-            case "u32": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(uint));
-            case "u8": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(byte));
-            case "u16": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ushort));
-            case "string": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(string));
-            case "void": return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
-            default:
-                return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, name, context.Assembly.Name.Qualify().FullName);
+            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typenameTable[name]);
+        }
+        else
+        {
+            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, name, context.Assembly.Name.Qualify().FullName);
         }
     }
 
