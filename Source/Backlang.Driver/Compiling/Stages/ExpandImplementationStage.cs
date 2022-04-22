@@ -39,8 +39,6 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
                     var impl = node.Clone();
                     impl = impl.WithArgChanged(0, target);
 
-                    //impl = ExpandBody(impl, target);
-
                     newBody.Add(impl);
                 }
             }
