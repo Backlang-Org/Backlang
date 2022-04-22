@@ -20,6 +20,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
+	  <ProjectReference Include="..\Backlang.Core\Backlang.Core.csproj" />
 	</ItemGroup>
 	
 </Project>
