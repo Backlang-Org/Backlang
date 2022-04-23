@@ -1,4 +1,4 @@
-fn main() static -> none
+func main() static -> none
 {
     print("Hello World");
 }
