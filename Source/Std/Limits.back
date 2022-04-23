@@ -1,15 +1,15 @@
-implementation for u8 {
+implement u8 {
     const Max : u8 = 0xFF;
 }
 
-implementation for u16 {
+implement u16 {
     const Max : u16 = 0xFF_FF;
 }
 
-implementation for u32 {
+implement u32 {
     const Max : u32 = 0xFF_FF_FF_FF; 
 }
 
-implementation for u8..u32 {
+implement u8..u32 {
     const Min : SELF = 0;
 }

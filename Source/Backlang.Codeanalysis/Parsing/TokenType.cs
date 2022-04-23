@@ -129,7 +129,7 @@ public enum TokenType
     [Keyword("false")]
     FalseLiteral,
 
-    [Keyword("fn")]
+    [Keyword("func")]
     Function,
 
     [Keyword("let")]
@@ -203,7 +203,7 @@ public enum TokenType
     [Keyword("of")]
     Of,
 
-    [Keyword("implementation")]
+    [Keyword("implement")]
     ImplementationKeyword,
 
     [Keyword("operator")]

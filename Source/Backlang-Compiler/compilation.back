@@ -3,33 +3,33 @@
 	Y : u32;
 }
 
-implementation of Point {
-	fn distance(other : Point) static -> Point {
+implement Point {
+	func distance(other : Point) static -> Point {
 		
 	}
 
-	fn add(lhs : Point, rhs : Point) operator -> Point {
+	func add(lhs : Point, rhs : Point) operator -> Point {
 		
 	}
 
-	fn toString() -> string {
-		
-	}
-}
-
-implementation for u8,u16 {
-	fn parse(str : string) -> bool {
+	func toString() -> string {
 		
 	}
 }
 
-fn main() static -> none {
+implement u8,u16 {
+	func parse(str : SELF) -> SELF {
+		
+	}
+}
+
+func main() static -> none {
 	let msg : string = "hello world";
 
 	print("something new");
 	print(msg);
 }
 
-fn println(arg : string) static -> none {
+func println(arg : string) static -> none {
 	print(msg + "\n");
 }

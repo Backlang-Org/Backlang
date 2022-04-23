@@ -8,9 +8,9 @@ struct LinkedList<T> {
     Count : u32;
 }
 
-implementation of LinkedList<T>
+implement LinkedList<T>
 {
-    fn add(value : T) {
+    func add(value : T) {
         if Root == none {
             Root = LinkedListNode<T>::new(value);
         }
@@ -23,7 +23,7 @@ implementation of LinkedList<T>
         Count += 1;
     }
 
-    fn getLastNode() private {
+    func getLastNode() private {
         let tmp = Root;
 
         while tmp.Next != none {
@@ -33,7 +33,7 @@ implementation of LinkedList<T>
         return &tmp;
     }
 
-    fn getNodeAtIndex(index : u32) private {
+    func getNodeAtIndex(index : u32) private {
         assert(index < Count, "Index is out of bound");
 
         let tmp = Root;
@@ -45,7 +45,7 @@ implementation of LinkedList<T>
         return &tmp;
     }
 
-    fn remove(value : T) {
+    func remove(value : T) {
         let tmp = Root;
 
         if tmp.Value == value {
@@ -72,11 +72,11 @@ implementation of LinkedList<T>
         error("No Value found to delete");
     }
 
-    fn index_get(index : u32) operator {
+    func index_get(index : u32) operator {
         return (*getNodeAtIndex(index)).Value;
     }
 
-    fn index_set(index : u32, value : T) operator {
+    func index_set(index : u32, value : T) operator {
         let node = *getNodeAtIndex(index);
 
         node.Value = value;

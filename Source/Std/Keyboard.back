@@ -1,4 +1,4 @@
-fn Keyboard::isKeyDown<T>(key : T) static -> bool
+func Keyboard::isKeyDown<T>(key : T) static -> bool
     where T : KeyCode, u8 {
         
     asm {
