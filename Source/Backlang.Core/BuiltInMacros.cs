@@ -6,10 +6,14 @@ namespace Backlang.Core;
 [ContainsMacros]
 public static partial class BuiltInMacros
 {
-    [LexicalMacro("nameof(Identifier);",
-            "Replacing the current node with the identifier name", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode nameof(LNode node, IMacroContext context)
+    private static LNodeFactory F = new LNodeFactory(new EmptySourceFile("LeMP.Backlang"));
+
+    [LexicalMacro(@"nameof(id_or_expr)", @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")")]
+    public static LNode @nameof(LNode nameof, IMacroContext context)
     {
-        return node;
+        if (nameof.ArgCount != 1)
+            return null;
+
+        return F.Literal("something");
     }
 }
