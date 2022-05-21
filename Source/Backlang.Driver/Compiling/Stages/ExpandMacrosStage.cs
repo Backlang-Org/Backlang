@@ -17,6 +17,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
         //_macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
         _macroProcessor.AddMacros(typeof(BuiltInMacros).Assembly, false);
+        _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(BuiltInMacros).Namespace);
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)

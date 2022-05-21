@@ -42,4 +42,5 @@ StreamPlan 23.05.2022 Backseat-Montag:
 	- obj als primitiven datentyp festlegen + in vscode extension
 	- :: als static lookup operator definieren
 	- implement blöcke nicht in original assembly sondern in neue implement klasse, falls typ nicht in selber assembly ist
-	
+	- BuiltInMacros implementieren
+		- nameof

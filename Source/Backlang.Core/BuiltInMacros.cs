@@ -14,6 +14,6 @@ public static partial class BuiltInMacros
         if (nameof.ArgCount != 1)
             return null;
 
-        return F.Literal("something");
+        return nameof.Args[0];
     }
 }
