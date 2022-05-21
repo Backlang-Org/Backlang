@@ -1,4 +1,5 @@
-﻿using Flo;
+﻿using Backlang.Core;
+using Flo;
 using LeMP;
 using Loyc;
 using Loyc.Collections;
@@ -14,7 +15,8 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
     {
         _macroProcessor = new MacroProcessor(new NullMessageSink(), typeof(LeMP.Prelude.BuiltinMacros));
 
-        _macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
+        //_macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
+        _macroProcessor.AddMacros(typeof(BuiltInMacros).Assembly, false);
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)

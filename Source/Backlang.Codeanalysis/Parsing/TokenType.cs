@@ -155,9 +155,6 @@ public enum TokenType
     [Keyword("bitfield")]
     Bitfield,
 
-    [Keyword("register")]
-    Register,
-
     [Keyword("default")]
     Default,
 
@@ -191,14 +188,8 @@ public enum TokenType
     [Keyword("global")]
     Global,
 
-    [Keyword("asm")]
-    Asm,
-
     [Keyword("static")]
     Static,
-
-    [Keyword("nameof")]
-    NameOf,
 
     [Keyword("of")]
     Of,

@@ -8,7 +8,10 @@ fn print(value : u32) {
 	
 }
 
-register EAX = 0;
+class SomeModel : ViewModel() {
+	notify(Name : string);
+}
+
 
 type int = i32;
 const bits = 32;
@@ -24,16 +27,6 @@ fn doSomething() {
 
 	print(arr[0]);
 
-	asm {
-		mov 12, EAX;
-		something {
-			xor EAX, EAX, EAX;
-		}
-
-		move 42, &[0xFF + 4];
-		move &[0xFF + 4], &[PTR 0x4];
-		jmp $something; // does not work properly
-	}
 
 	/*
 	multi

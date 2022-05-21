@@ -23,6 +23,6 @@ public class CompilerDriver
        }
        );
 
-        await pipeline.Invoke(context).ConfigureAwait(false);
+        await pipeline.Invoke(context);
     }
 }

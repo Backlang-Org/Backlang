@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{655A3CAC-BA3F-4B7F-AC54-4E8983F1FE0D}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		StreamPlan.txt = StreamPlan.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Codeanalysis", "Backlang.Codeanalysis\Backlang.Codeanalysis.csproj", "{E5FB8B0B-26ED-4088-9CA4-B72F1FD7A9E3}"
@@ -18,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Driver", "Backlang
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.NET.Sdk", "Backlang.NET.Sdk\Backlang.NET.Sdk.csproj", "{38D916F5-AA06-41C6-8CF0-640BF3B5820C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlang.Core", "Backlang.Core\Backlang.Core.csproj", "{943C4032-AB54-477D-B11D-D2D4B1D80BB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Core", "Backlang.Core\Backlang.Core.csproj", "{943C4032-AB54-477D-B11D-D2D4B1D80BB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

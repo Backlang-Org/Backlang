@@ -24,7 +24,9 @@ implement u8,u16 {
 }
 
 func main() static -> none {
-	let msg : string = "hello world";
+	nameof(println);
+
+	let msg : string = nameof(println);
 
 	print("something new");
 	print(msg);
@@ -33,3 +35,4 @@ func main() static -> none {
 func println(arg : string) static -> none {
 	print(msg + "\n");
 }
+

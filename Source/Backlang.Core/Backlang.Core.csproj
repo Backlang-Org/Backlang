@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="LeMP" Version="29.0.3" />
+  </ItemGroup>
+
 </Project>
