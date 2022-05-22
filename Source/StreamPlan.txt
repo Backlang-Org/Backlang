@@ -48,6 +48,8 @@ StreamPlan 23.05.2022 Backseat-Montag:
 		}
 	- BuiltInMacros implementieren
 		- nameof
+		- concatId
+		- generateId
 
 	- expanding von implement-block fixen von:
 		implement u8 {
@@ -55,3 +57,8 @@ StreamPlan 23.05.2022 Backseat-Montag:
 				return 12;
 			}
 		}
+
+	- implement parsing module definiton
+		module hello.world;
+	- implement import statement:
+		import hello.world;
