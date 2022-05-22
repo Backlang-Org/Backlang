@@ -17,12 +17,6 @@ implement Point {
 	}
 }
 
-implement u8,u16 {
-	func parse(str : SELF) -> SELF {
-		
-	}
-}
-
 func main() static -> none {
 	let msg : string = nameof(println);
 

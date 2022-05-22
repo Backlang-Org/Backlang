@@ -42,5 +42,16 @@ StreamPlan 23.05.2022 Backseat-Montag:
 	- obj als primitiven datentyp festlegen + in vscode extension
 	- :: als static lookup operator definieren
 	- implement blöcke nicht in original assembly sondern in neue implement klasse, falls typ nicht in selber assembly ist
+	- macro folgende syntax erlauben:
+		mymacro(args) {
+			//do something
+		}
 	- BuiltInMacros implementieren
 		- nameof
+
+	- expanding von implement-block fixen von:
+		implement u8 {
+			func do() -> SELF {
+				return 12;
+			}
+		}
