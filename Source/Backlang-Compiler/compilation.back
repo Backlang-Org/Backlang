@@ -18,8 +18,12 @@ implement Point {
 }
 
 func main() static -> none {
-	let msg : string = nameof(println);
+	let msg : string = concatId(a, b, c);
 
+	generateId();
+	generateId();
+	generateId();
+	
 	print("something new");
 	print(msg);
 }

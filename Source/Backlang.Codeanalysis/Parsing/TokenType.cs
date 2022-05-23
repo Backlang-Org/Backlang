@@ -13,7 +13,12 @@ public enum TokenType
     BinNumber,
 
     [Lexeme(".")]
+    [BinaryOperatorInfo(7)]
     Dot,
+
+    [Lexeme("::")]
+    [BinaryOperatorInfo(7)]
+    ColonColon,
 
     [BinaryOperatorInfo(4)]
     [Lexeme("+")]
@@ -65,10 +70,6 @@ public enum TokenType
     [Lexeme("#")]
     [PreUnaryOperatorInfo(10)]
     Hash,
-
-    [Keyword("PTR")]
-    [PreUnaryOperatorInfo(1)]
-    PTR,
 
     [Lexeme("<")]
     [BinaryOperatorInfo(5)]
