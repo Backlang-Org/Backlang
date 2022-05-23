@@ -36,7 +36,7 @@ StreamPlan 23.05.2022 Backseat-Montag:
 		expandiert alle integral types im range, also i8,i16,i32
 
 	- Scopes implementieren
-	- short assignment operatoren implementieren (lexer, parser, expansion)
+	- short assignment operatoren implementieren ( expansion)
 		+= -= *= /=
 
 	- implement blöcke nicht in original assembly sondern in neue implement klasse, falls typ nicht in selber assembly ist
@@ -51,3 +51,10 @@ StreamPlan 23.05.2022 Backseat-Montag:
 				return 12;
 			}
 		}
+
+	- bitwise operators
+	& | ^ ~
+	- bitwise assignment operators
+	&= |= ^= ~=
+
+	- find way to match '+= in macro without match any call

@@ -63,6 +63,22 @@ public enum TokenType
     [Lexeme("!")]
     Exclamation,
 
+    [Lexeme("*=")]
+    [BinaryOperatorInfo(8)]
+    StarEqualsToken,
+
+    [Lexeme("/=")]
+    [BinaryOperatorInfo(8)]
+    DivEqualsToken,
+
+    [Lexeme("+=")]
+    [BinaryOperatorInfo(8)]
+    PlusEqualsToken,
+
+    [Lexeme("-=")]
+    [BinaryOperatorInfo(8)]
+    MinusEqualsToken,
+
     [Lexeme("=")]
     [BinaryOperatorInfo(8)]
     EqualsToken,

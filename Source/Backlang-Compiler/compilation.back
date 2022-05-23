@@ -26,6 +26,11 @@ implement Point {
 func main() static -> none {
 	let msg : string = concatId(a, b, c);
 
+	msg += "Hello";
+	msg -= "Hello";
+	msg *= "Hello";
+	msg /= "Hello";
+
 	generateId();
 	generateId();
 	generateId();
