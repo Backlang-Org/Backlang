@@ -125,6 +125,7 @@ public enum TokenType
     Comma,
 
     [Lexeme("$")]
+    [PreUnaryOperatorInfo(10)]
     Dollar,
 
     [Lexeme("==")]
