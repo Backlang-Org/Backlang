@@ -92,6 +92,16 @@ public static class SyntaxTree
                body).SetStyle(NodeStyle.StatementBlock)));
     }
 
+    public static LNode Import(LNode expr)
+    {
+        return LNode.Call(CodeSymbols.Import, LNode.List(expr));
+    }
+
+    public static LNode Module(LNode ns)
+    {
+        return LNode.Call(CodeSymbols.Namespace, LNode.List(ns));
+    }
+
     public static LNode None()
     {
         return LNode.Call(CodeSymbols.Void);

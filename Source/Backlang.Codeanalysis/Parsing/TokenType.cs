@@ -203,4 +203,10 @@ public enum TokenType
 
     [Keyword("private")]
     Private,
+
+    [Keyword("import")]
+    Import,
+
+    [Keyword("module")]
+    Module,
 }

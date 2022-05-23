@@ -53,8 +53,3 @@ StreamPlan 23.05.2022 Backseat-Montag:
 				return 12;
 			}
 		}
-
-	- implement parsing module definiton
-		module hello.world;
-	- implement import statement:
-		import hello.world;

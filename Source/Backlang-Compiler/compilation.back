@@ -1,4 +1,10 @@
-﻿struct Point {
+﻿import System;
+import System.Collections;
+import System.Collections.Generic;
+
+module TesT;
+
+struct Point {
 	X : u32;
 	Y : u32;
 }

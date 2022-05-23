@@ -23,9 +23,10 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
         AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.ImplementationKeyword);
+        AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
+        AddDeclarationParsePoint<ModuleStatement>(TokenType.Module);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
-        //AddExpressionParsePoint<NameOfExpression>(TokenType.NameOf);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
@@ -33,7 +34,6 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
-        //AddStatementParsePoint<AssemblerBlockStatement>(TokenType.Asm);
         AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
