@@ -12,7 +12,7 @@ public static class BuiltInMacros
 
     [LexicalMacro(@"nameof(id_or_expr)",
         @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")")]
-    public static LNode @nameof(LNode nameof, IMacroContext context)
+    public static LNode @Nameof(LNode nameof, IMacroContext context)
     {
         if (nameof.ArgCount != 1)
             return null;
@@ -48,7 +48,7 @@ public static class BuiltInMacros
     }
 
     [LexicalMacro("concatId(id, id)", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)")]
-    public static LNode concatId(LNode concatID, IMacroContext context)
+    public static LNode ConcatId(LNode concatID, IMacroContext context)
     {
         if (concatID.ArgCount < 2)
             return null;
@@ -70,8 +70,33 @@ public static class BuiltInMacros
         return F.Id(sb.ToString());
     }
 
+    [LexicalMacro("$variableName",
+            "Expands a variable (scoped property) assigned by a macro such as `static deconstruct()` or `static tryDeconstruct()`.",
+            "'$", Mode = MacroMode.Passive)]
+    public static LNode DollarSignVariable(LNode node, IMacroContext context)
+    {
+        LNode id;
+        if (node.ArgCount == 1 && (id = node.Args[0]).IsId && !id.HasPAttrs())
+        {
+            object value;
+            if (context.ScopedProperties.TryGetValue("$" + id.Name.Name, out value))
+            {
+                if (value is LNode)
+                    return ((LNode)value).WithRange(id.Range);
+                else
+                    context.Sink.Warning(id, "The specified scoped property is not a syntax tree. " +
+                        "Use `#getScopedProperty({0})` to insert it as a literal.", id.Name);
+            }
+            else
+            {
+                context.Sink.Error(id, "There is no macro property in scope named `{0}`", id.Name);
+            }
+        }
+        return null;
+    }
+
     [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)")]
-    public static LNode generateId(LNode generateID, IMacroContext context)
+    public static LNode GenerateId(LNode generateID, IMacroContext context)
     {
         string alphabet = "abcdefghijklmnopqrstuvwxyz_";
 

@@ -1,31 +1,5 @@
 StreamPlan 23.05.2022 Backseat-Montag:
 	
-	- !! implementieren:
-		func hello(somtehing!! : Point) {
-		
-		}
-		
-		wird expandiert zu:
-		
-		func hello(somtehing : Point) {
-			if sometehing == none {
-				error("Argument " + nameof(someheting) + " is none");
-			}
-	
-		}
-
-		func hello2(value!! : i8) {
-		
-		}
-
-		wird expandiert zu:
-		
-		func hello2(value : u8) {
-			if value == default {
-				error("Argument " + nameof(value) + " is " + value);
-			}
-		}
-
 	- Scopes implementieren
 
 	- macro folgende syntax erlauben:
@@ -37,5 +11,3 @@ StreamPlan 23.05.2022 Backseat-Montag:
 	& | ^ ~
 	- bitwise assignment operators
 	&= |= ^= ~=
-
-	- find way to match '+= in macro without match any call

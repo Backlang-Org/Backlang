@@ -9,25 +9,25 @@ public static class SyntacticMacros
 {
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
-    [LexicalMacro("'/=()", "Convert to left = left / something", Mode = MacroMode.MatchEveryCall)]
+    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode DivEquals(LNode @operator, IMacroContext context)
     {
         return ConverToAssignment(@operator, CodeSymbols.Div);
     }
 
-    [LexicalMacro("'-=()", "Convert to left = left - something", Mode = MacroMode.MatchEveryCall)]
+    [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
         return ConverToAssignment(@operator, CodeSymbols.Sub);
     }
 
-    [LexicalMacro("'*=()", "Convert to left = left * something", Mode = MacroMode.MatchEveryCall)]
+    [LexicalMacro("left *= right;", "Convert to left = left * something", "'*=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MulEquals(LNode @operator, IMacroContext context)
     {
         return ConverToAssignment(@operator, CodeSymbols.Mul);
     }
 
-    [LexicalMacro("'+=()", "Convert to left = left + something", Mode = MacroMode.MatchEveryCall)]
+    [LexicalMacro("left += right;", "Convert to left = left + something", "'+=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode PlusEquals(LNode @operator, IMacroContext context)
     {
         return ConverToAssignment(@operator, CodeSymbols.Add);
@@ -35,9 +35,6 @@ public static class SyntacticMacros
 
     private static LNode ConverToAssignment(LNode @operator, Symbol symbol)
     {
-        if (@operator.Name != (Symbol)symbol.Name.Insert(symbol.Name.Length, "="))
-            return null;
-
         var arg1 = @operator.Args[0];
         var arg2 = @operator.Args[1];
 

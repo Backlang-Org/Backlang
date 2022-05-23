@@ -35,7 +35,12 @@ public enum TokenType
 
     [Lexeme("&")]
     [PreUnaryOperatorInfo(9)]
+    [BinaryOperatorInfo(3)]
     Ampersand,
+
+    [Lexeme("^")]
+    [BinaryOperatorInfo(2)]
+    Xor,
 
     [BinaryOperatorInfo(5)]
     [Lexeme("/")]
@@ -123,6 +128,7 @@ public enum TokenType
     Dollar,
 
     [Lexeme("==")]
+    [BinaryOperatorInfo(4)]
     EqualsEquals,
 
     [Lexeme("<->")]
