@@ -15,11 +15,10 @@ public class CompilerDriver
                _.Add<InitReferencesStage>();
            });
 
-           cfg.Add<LowererStage>();
-           cfg.Add<ExpandImplementationStage>();
-           cfg.Add<ImplementationStage>();
            cfg.Add<ExpandMacrosStage>();
            cfg.Add<IntermediateStage>();
+           cfg.Add<ExpandImplementationStage>();
+           cfg.Add<ImplementationStage>();
        }
        );
 

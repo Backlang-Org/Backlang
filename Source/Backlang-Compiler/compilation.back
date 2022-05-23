@@ -23,6 +23,12 @@ implement Point {
 	}
 }
 
+implement u8 {
+	func someTest() -> u8 {
+		
+	}
+}
+
 func main() static -> none {
 	let msg : string = concatId(a, b, c);
 

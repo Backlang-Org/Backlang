@@ -6,8 +6,6 @@ public class ImplementationDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        iterator.NextToken();
-
         bool isStatic = false;
         if (iterator.Current.Type == TokenType.Static)
         {
