@@ -3,10 +3,10 @@ using Loyc;
 using Loyc.Syntax;
 using System.Text;
 
-namespace Backlang.Core;
+namespace Backlang.Core.Macros;
 
 [ContainsMacros]
-public static class BuiltInMacros
+public static partial class BuiltInMacros
 {
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
@@ -98,10 +98,10 @@ public static class BuiltInMacros
     [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)")]
     public static LNode GenerateId(LNode generateID, IMacroContext context)
     {
-        string alphabet = "abcdefghijklmnopqrstuvwxyz_";
+        var alphabet = "abcdefghijklmnopqrstuvwxyz_";
 
         var sb = new StringBuilder();
-        for (int i = 0; i < 3; i++)
+        for (var i = 0; i < 3; i++)
         {
             sb.Append(Random.Shared.Next(0, alphabet.Length));
         }

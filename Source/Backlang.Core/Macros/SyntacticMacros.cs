@@ -2,13 +2,10 @@
 using Loyc;
 using Loyc.Syntax;
 
-namespace Backlang.Core;
+namespace Backlang.Core.Macros;
 
-[ContainsMacros]
-public static class SyntacticMacros
+public static partial class BuiltInMacros
 {
-    private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
-
     [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode DivEquals(LNode @operator, IMacroContext context)
     {
