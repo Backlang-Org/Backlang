@@ -34,14 +34,6 @@ func main() static -> none {
 
 	msg += "Hello";
 	msg -= "Hello";
-	msg *= "Hello";
-	msg /= "Hello";
-
-	quote(msg += 42);
-
-	generateId();
-	generateId();
-	generateId();
 	
 	print("something new");
 	print(msg);
