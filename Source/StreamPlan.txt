@@ -26,27 +26,11 @@ StreamPlan 23.05.2022 Backseat-Montag:
 			}
 		}
 
-	- expansion von integraltypes in implement block implementieren:
-		implement i8..i32 {
-			func do() -> SELF {
-			
-			}
-		}
-
-		expandiert alle integral types im range, also i8,i16,i32
-
 	- Scopes implementieren
 
 	- macro folgende syntax erlauben:
 		mymacro(args) {
 			//do something
-		}
-
-	- expanding von implement-block fixen von:
-		implement u8 {
-			func do() -> SELF {
-				return 12;
-			}
 		}
 
 	- bitwise operators

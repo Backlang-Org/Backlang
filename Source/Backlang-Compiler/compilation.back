@@ -23,8 +23,8 @@ implement Point {
 	}
 }
 
-implement u8 {
-	func someTest() -> u8 {
+implement u8..u64, f64, i16..i64 {
+	func someTest() -> SELF {
 		
 	}
 }
