@@ -10,15 +10,11 @@
 		<DefineCommonCapabilities Condition=" '$(DefineCommonCapabilities)' == '' ">true</DefineCommonCapabilities>
 	</PropertyGroup>
 
-	<UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.Tools.BuildTask" />
+	<UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.BuildTask" />
 
 	<ItemGroup>
 		<!-- well-known items -->
 		<Compile Remove="$(DefaultItemExcludes)" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<DocFileItem Include="$(DocumentationFile)" Condition="'$(DocumentationFile)'!=''" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(_DebugSymbolsProduced)' == 'true' and '$(PdbFile)' != ''">
@@ -104,7 +100,6 @@
                 @(ReferencePath);
                 @(CompiledLicenseFile);
                 @(LinkResource);
-                @(EmbeddedDocumentation);
                 $(Win32Resource);
                 $(Win32Manifest);
                 @(CustomAdditionalCompileInputs);
@@ -117,7 +112,7 @@
                 $(NonExistentFile);
                 @(CustomAdditionalCompileOutputs)"
 			Returns="@(BacklangCommandLineArgs)"
-			DependsOnTargets="ComposerResolve;$(CoreCompileDependsOn)">
+			DependsOnTargets="$(CoreCompileDependsOn)">
 
 		<PropertyGroup>
 			<TargetProfile Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " >mscorlib</TargetProfile>
@@ -164,12 +159,6 @@
 			<DefineConstants Include="DEBUG" Condition=" '$(Configuration)' == 'Debug' " />
 		</ItemGroup>
 
-		<PropertyGroup>
-			<_PublicSign Condition=" '$(SignAssembly)' == 'true' ">$(PublicSign)</_PublicSign>
-			<_KeyFile Condition=" '$(SignAssembly)' == 'true' ">$(AssemblyOriginatorKeyFile)</_KeyFile>
-			<_DocumentationFile Condition=" '$(GenerateDocumentationFile)' == 'true' ">$(DocumentationFile)</_DocumentationFile>
-		</PropertyGroup>
-
 		<Error Condition=" '$(BacklangToolFullPath)'=='' " Text="Path to Backlang.NET.Sdk.dll was not set." />
 
 		<BuildTask Condition=" Exists('$(BacklangToolFullPath)') "
@@ -178,29 +167,15 @@
 				   TempOutputPath="$(TempOutputDir)"
 				   TargetFramework="$(TargetFrameworkMoniker)"
 				   NetFrameworkPath="$(NetFrameworkPath)"
-				   BasePath="$(BacklangBasePath)"
 				   Optimization="$(Optimize)"
-				   DebugType="$(DebugType)"
-				   PdbFile="$(PdbFile)"
-				   DocumentationFile="$(DocumentationFile)"
 				   Version="$(Version)"
 				   OutputType="$(OutputType)"
 				   EntryPoint="$(StartupObject)"
-				   BacklangDocTypes="$(BacklangDocTypes)"
-				   ShortOpenTags="$(ShortOpenTag)"
-				   NoWarn="$(NoWarn.Replace('\n', ';'))"
-				   KeyFile="$(_KeyFile)"
-				   PublicSign="$(_PublicSign)"
-				   SourceLink="$(SourceLink)"
-				   BacklangRelativePath="$(BacklangRelativePath)"
-				   DefineConstants="@(DefineConstants)"
 				   ReferencePath="@(ReferencePath)"
 				   Compile="@(Compile)"
 				   Resources="@(EmbeddedResource)"
 				   DebuggerAttach="$(DebuggerAttach)"
 				   GenerateFullPaths="$(GenerateFullPaths)" />
-
-		<Copy SourceFiles="$(TempOutputDir)$(DocumentationFile)" DestinationFolder="$(OutputPath)" Condition=" '$(GenerateDocumentation)'=='true' " />
 	</Target>
 
 	<!--End Required Task by .Common.target-->

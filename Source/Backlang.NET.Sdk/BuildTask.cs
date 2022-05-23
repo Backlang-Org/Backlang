@@ -2,7 +2,6 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,14 +10,11 @@ using System.Threading;
 
 namespace Backlang.NET.Sdk
 {
-    /// <summary>
-    /// Compilation task.
-    /// </summary>
     public class BuildTask : Task, ICancelableTask // TODO: ToolTask
     {
         private CancellationTokenSource _cancellation = new CancellationTokenSource();
 
-        /// <summary></summary>
+        [Required]
         public string[] Compile { get; set; }
 
         /// <summary>
@@ -35,9 +31,6 @@ namespace Backlang.NET.Sdk
 
         /// <summary></summary>
         public bool GenerateFullPaths { get; set; }
-
-        /// <summary></summary>
-        public string KeyFile { get; set; }
 
         public string[] Macros { get; set; }
 
@@ -64,19 +57,10 @@ namespace Backlang.NET.Sdk
         public string OutputType { get; set; }
 
         /// <summary></summary>
-        public string PdbFile { get; set; }
-
-        /// <summary></summary>
-        public string PublicSign { get; set; }
-
-        /// <summary></summary>
         public string[] ReferencePath { get; set; }
 
         /// <summary></summary>
         public ITaskItem[] Resources { get; set; }
-
-        /// <summary></summary>
-        public string SourceLink { get; set; }
 
         /// <summary></summary>
         [Required]
@@ -107,68 +91,7 @@ namespace Backlang.NET.Sdk
             // initiate our assembly resolver within MSBuild process:
             AssemblyResolver.InitializeSafe();
 
-            if (IsCanceled())
-            {
-                return false;
-            }
-
-            //
-            // compose compiler arguments:
-            var args = new List<string>(1024)
-            {
-                "/output-name:" + OutputName,
-                "/target:" + (string.IsNullOrEmpty(OutputType) ? "library" : OutputType),
-                "/o:" + Optimization,
-                "/fullpaths:" + GenerateFullPaths.ToString(),
-            };
-
-            if (string.Equals(PublicSign, "true", StringComparison.OrdinalIgnoreCase))
-                args.Add("/publicsign+");
-            else if (string.Equals(PublicSign, "false", StringComparison.OrdinalIgnoreCase))
-                args.Add("/publicsign-");
-
-            AddNoEmpty(args, "target-framework", TargetFramework);
-            AddNoEmpty(args, "temp-output", TempOutputPath);
-            AddNoEmpty(args, "out", OutputPath);
-            AddNoEmpty(args, "m", EntryPoint);
-            AddNoEmpty(args, "pdb", PdbFile);
-            AddNoEmpty(args, "debug-type", DebugType);// => emitPdb = true
-            AddNoEmpty(args, "keyfile", KeyFile);
-            AddNoEmpty(args, "v", Version);
-            AddNoEmpty(args, "nowarn", NoWarn);
-            AddNoEmpty(args, "sourcelink", SourceLink);
-
-            if (ReferencePath != null && ReferencePath.Length != 0)
-            {
-                foreach (var r in ReferencePath)
-
-                {
-                    args.Add("/r:" + r);
-                }
-            }
-            else
-            {
-                Log.LogWarning("No references specified.");
-            }
-
-            if (Resources != null)
-            {
-                foreach (var res in Resources)
-                {
-                    args.Add(FormatArgFromItem(res, "res", "LogicalName", "Access"));
-                }
-            }
-
-            // sources at the end:
-            if (Compile != null)
-            {
-                args.AddRange(Compile.Distinct(StringComparer.InvariantCulture));
-            }
-
-            //
             // run the compiler:
-            var libs = Environment.GetEnvironmentVariable("LIB") + @";C:\Windows\Microsoft.NET\assembly\GAC_MSIL";
-
             if (IsCanceled())
             {
                 return false;
@@ -179,23 +102,22 @@ namespace Backlang.NET.Sdk
                 Debugger.Launch();
             }
 
-            // compile
             try
             {
+                if (Compile == null)
+                {
+                    Log.LogError("No Source Files specified.");
+                    return false;
+                }
+
                 var context = new CompilerContext();
+                context.InputFiles = Compile;
+                context.OutputFilename = OutputName;
+
+                Log.LogMessage("Compile: " + string.Join(", ", Compile));
+                Log.LogMessage("Output: " + OutputName);
+
                 CompilerDriver.Compile(context);
-                /*var resultCode = PhpCompilerDriver.Run(
-                    PhpCommandLineParser.Default,
-                    null,
-                    args: args.ToArray(),
-                    clientDirectory: null,
-                    baseDirectory: BasePath,
-                    sdkDirectory: NetFrameworkPath,
-                    additionalReferenceDirectories: libs,
-                    analyzerLoader: new SimpleAnalyzerAssemblyLoader(),
-                    output: new LogWriter(this.Log),
-                    cancellationToken: _cancellation.Token);
-                */
 
                 return !context.Messages.Any();
             }
@@ -212,37 +134,6 @@ namespace Backlang.NET.Sdk
         public bool IsCanceled()
         {
             return _cancellation != null && _cancellation.IsCancellationRequested;
-        }
-
-        private bool AddNoEmpty(List<string> args, string optionName, string optionValue)
-        {
-            if (string.IsNullOrEmpty(optionValue))
-            {
-                return false;
-            }
-
-            args.Add("/" + optionName + ":" + optionValue);
-            return true;
-        }
-
-        private string FormatArgFromItem(ITaskItem item, string switchName, params string[] metadataNames)
-        {
-            var arg = new StringBuilder($"/{switchName}:{item.ItemSpec}");
-
-            foreach (var name in metadataNames)
-            {
-                var value = item.GetMetadata(name);
-                if (string.IsNullOrEmpty(value))
-                {
-                    // The values are expected in linear order, so we have to end at the first missing one
-                    break;
-                }
-
-                arg.Append(',');
-                arg.Append(value);
-            }
-
-            return arg.ToString();
         }
 
         private void LogException(Exception ex)
