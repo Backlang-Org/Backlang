@@ -39,8 +39,6 @@ StreamPlan 23.05.2022 Backseat-Montag:
 	- short assignment operatoren implementieren (lexer, parser, expansion)
 		+= -= *= /=
 
-	- obj als primitiven datentyp festlegen + in vscode extension
-
 	- implement blöcke nicht in original assembly sondern in neue implement klasse, falls typ nicht in selber assembly ist
 	- macro folgende syntax erlauben:
 		mymacro(args) {

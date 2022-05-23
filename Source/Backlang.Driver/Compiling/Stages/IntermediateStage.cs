@@ -21,6 +21,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 {
     private static readonly Dictionary<string, Type> typenameTable = new()
     {
+        ["obj"] = typeof(object),
+
         ["bool"] = typeof(bool),
 
         ["u8"] = typeof(byte),
