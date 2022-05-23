@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>$id$</id>
@@ -13,7 +13,7 @@
 		<tags>Backlang,compile-Backlang,sdk</tags>
 		<dependencies>
 			<group targetFramework=".NETStandard2.0">
-				<dependency id="Backlang.App" version="$version$" exclude="Build,Analyzers" />
+				<dependency id="Backlang.Templates" version="1.0.0" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
 	</metadata>

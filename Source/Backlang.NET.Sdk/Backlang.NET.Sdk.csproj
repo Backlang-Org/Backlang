@@ -14,9 +14,9 @@
     <PackageTags>backlang;sdk;back;msbuild</PackageTags>
     <GeneratePackageOnBuild Condition=" $(GeneratePackageOnBuild)=='' ">True</GeneratePackageOnBuild>    
     <Description>The MSBuild SDK containing build targets and runtime.</Description>    
-    <AssemblyVersion>1.0.1</AssemblyVersion>    
-    <FileVersion>$(VersionPrefix)</FileVersion>    
-    <Version>1.0.1</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>    
+    <FileVersion>$(Version)</FileVersion>    
+    <Version>1.0.6</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">

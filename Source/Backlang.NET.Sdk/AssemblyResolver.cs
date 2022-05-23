@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 
 namespace Backlang.NET.Sdk
 {
-    sealed class AssemblyResolver
+    internal sealed class AssemblyResolver
     {
-        /// <summary>
-        /// Resolve assembly.
-        /// </summary>
-        static ResolveEventHandler s_AssemblyResolve = new ResolveEventHandler(AssemblyResolve);
-
         /// <summary>
         /// Build task directory containing our assemblies.
         /// </summary>
-        static readonly string s_path = Path.GetDirectoryName(Path.GetFullPath(typeof(AssemblyResolver).Assembly.Location));
+        private static readonly string s_path = Path.GetDirectoryName(Path.GetFullPath(typeof(AssemblyResolver).Assembly.Location));
+
+        /// <summary>
+        /// Resolve assembly.
+        /// </summary>
+        private static ResolveEventHandler assemblyresolver = new ResolveEventHandler(AssemblyResolve);
 
         public static void InitializeSafe()
         {
@@ -26,8 +24,8 @@ namespace Backlang.NET.Sdk
 
                 // re-add the event handler
 
-                domain.AssemblyResolve -= s_AssemblyResolve;
-                domain.AssemblyResolve += s_AssemblyResolve;
+                domain.AssemblyResolve -= assemblyresolver;
+                domain.AssemblyResolve += assemblyresolver;
             }
             catch
             {
@@ -42,7 +40,6 @@ namespace Backlang.NET.Sdk
 
             try
             {
-
                 var hintpath = Path.Combine(s_path, assname.Name + ".dll");
                 if (File.Exists(hintpath))
                 {
