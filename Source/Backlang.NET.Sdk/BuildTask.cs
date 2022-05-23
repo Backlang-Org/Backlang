@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Framework;
+﻿using Backlang.Driver;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
@@ -15,109 +16,10 @@ namespace Backlang.NET.Sdk
     /// </summary>
     public class BuildTask : Task, ICancelableTask // TODO: ToolTask
     {
-        /// <summary></summary>
-        [Required]
-        public string OutputPath { get; set; }
-
-        /// <summary></summary>
-        [Required]
-        public string OutputName { get; set; }
-
-        /// <summary></summary>
-        [Required]
-        public string TempOutputPath { get; set; }
-
-        /// <summary></summary>
-        [Required]
-        public string TargetFramework { get; set; }
-
-        /// <summary></summary>
-        public string NetFrameworkPath { get; set; }
-
-        /// <summary>
-        /// The base project directory. Script paths are stored relatively to this path.
-        /// If no value is specified, the current working directory is used.
-        /// </summary>
-        public string BasePath { get; set; }
-
-        /// <summary>
-        /// Optimization level.
-        /// Can be a boolean value (true/false), an integer specifying the level(0-9), or an optimization name (debug, release).</summary>
-        public string Optimization { get; set; } = bool.TrueString;
-
-        /// <summary></summary>
-        public string DebugType { get; set; }
-
-        /// <summary></summary>
-        public string PdbFile { get; set; }
-
-        /// <summary></summary>
-        public string DocumentationFile { get; set; }
-
-        /// <summary></summary>
-        public string Version { get; set; }
-
-        /// <summary></summary>
-        public string OutputType { get; set; }
-
-        /// <summary></summary>
-        public bool GenerateFullPaths { get; set; }
-
-        /// <summary></summary>
-        public string EntryPoint { get; set; }
-
-        /// <summary></summary>
-        public string LangVersion { get; set; }
-
-        /// <summary></summary>
-        public string PhpDocTypes { get; set; }
-
-        /// <summary></summary>
-        public bool ShortOpenTags { get; set; }
-
-        /// <summary></summary>
-        public string NoWarn { get; set; }
-
-        /// <summary></summary>
-        public string KeyFile { get; set; }
-
-        /// <summary></summary>
-        public string PublicSign { get; set; } // empty, true, false
-
-        /// <summary></summary>
-        public string SourceLink { get; set; }
-
-        /// <summary></summary>
-        public string PhpRelativePath { get; set; }
-
-        /// <summary> <c>/codepage</c> switch</summary>
-        public string CodePage { get; set; }
-
-        /// <summary></summary>
-        public string[] DefineConstants { get; set; }
-
-        /// <summary></summary>
-        public string[] ReferencePath { get; set; }
+        private CancellationTokenSource _cancellation = new CancellationTokenSource();
 
         /// <summary></summary>
         public string[] Compile { get; set; }
-
-        // TODO: embed
-
-        /// <summary></summary>
-        public ITaskItem[] Resources { get; set; }
-
-        /// <summary>Autoload PSR-4 map. Each item provides properties:<br/>
-        /// - Prefix<br/>
-        /// - Path<br/>
-        /// </summary>
-        public ITaskItem[] Autoload_PSR4 { get; set; }
-
-        /// <summary>Set of files to be included in autoload class-map.</summary>
-        public string[] Autoload_ClassMap { get; set; }
-
-        /// <summary>Set of files to be autoloaded (included) on each request.</summary>
-        public string[] Autoload_Files { get; set; }
 
         /// <summary>
         /// Used for debugging purposes.
@@ -125,6 +27,78 @@ namespace Backlang.NET.Sdk
         /// </summary>
         public bool DebuggerAttach { get; set; } = false;
 
+        /// <summary></summary>
+        public string DebugType { get; set; }
+
+        /// <summary></summary>
+        public string EntryPoint { get; set; }
+
+        /// <summary></summary>
+        public bool GenerateFullPaths { get; set; }
+
+        /// <summary></summary>
+        public string KeyFile { get; set; }
+
+        public string[] Macros { get; set; }
+
+        /// <summary></summary>
+        public string NetFrameworkPath { get; set; }
+
+        /// <summary></summary>
+        public string NoWarn { get; set; }
+
+        /// <summary>
+        /// Optimization level.
+        /// Can be a boolean value (true/false), an integer specifying the level(0-9), or an optimization name (debug, release).</summary>
+        public string Optimization { get; set; } = bool.TrueString;
+
+        /// <summary></summary>
+        [Required]
+        public string OutputName { get; set; }
+
+        /// <summary></summary>
+        [Required]
+        public string OutputPath { get; set; }
+
+        /// <summary></summary>
+        public string OutputType { get; set; }
+
+        /// <summary></summary>
+        public string PdbFile { get; set; }
+
+        /// <summary></summary>
+        public string PublicSign { get; set; }
+
+        /// <summary></summary>
+        public string[] ReferencePath { get; set; }
+
+        /// <summary></summary>
+        public ITaskItem[] Resources { get; set; }
+
+        /// <summary></summary>
+        public string SourceLink { get; set; }
+
+        /// <summary></summary>
+        [Required]
+        public string TargetFramework { get; set; }
+
+        /// <summary></summary>
+        [Required]
+        public string TempOutputPath { get; set; }
+
+        /// <summary></summary>
+        public string Version { get; set; }
+
+        /// <summary>
+        /// Cancels the task nicely.
+        /// </summary>
+        public void Cancel()
+        {
+            _cancellation.Cancel();
+        }
+
+        // empty, true, false
+        // TODO: embed
         /// <summary></summary>
         public override bool Execute()
         {
@@ -148,16 +122,6 @@ namespace Backlang.NET.Sdk
                 "/fullpaths:" + GenerateFullPaths.ToString(),
             };
 
-            if (HasDebugPlus)
-            {
-                args.Add("/debug+");
-            }
-
-            if (ShortOpenTags)
-            {
-                args.Add("/shortopentag+");
-            }
-
             if (string.Equals(PublicSign, "true", StringComparison.OrdinalIgnoreCase))
                 args.Add("/publicsign+");
             else if (string.Equals(PublicSign, "false", StringComparison.OrdinalIgnoreCase))
@@ -170,22 +134,9 @@ namespace Backlang.NET.Sdk
             AddNoEmpty(args, "pdb", PdbFile);
             AddNoEmpty(args, "debug-type", DebugType);// => emitPdb = true
             AddNoEmpty(args, "keyfile", KeyFile);
-            AddNoEmpty(args, "xmldoc", DocumentationFile);
-            AddNoEmpty(args, "langversion", LangVersion);
             AddNoEmpty(args, "v", Version);
             AddNoEmpty(args, "nowarn", NoWarn);
-            AddNoEmpty(args, "phpdoctypes", PhpDocTypes);
             AddNoEmpty(args, "sourcelink", SourceLink);
-            AddNoEmpty(args, "codepage", CodePage);
-            AddNoEmpty(args, "subdir", PhpRelativePath);
-
-            if (DefineConstants != null)
-            {
-                foreach (var d in DefineConstants)
-                {
-                    args.Add("/d:" + d);
-                }
-            }
 
             if (ReferencePath != null && ReferencePath.Length != 0)
             {
@@ -208,58 +159,11 @@ namespace Backlang.NET.Sdk
                 }
             }
 
-            if (Autoload_PSR4 != null)
-            {
-                foreach (var psr4map in Autoload_PSR4)
-                {
-                    //args.Add(FormatArgFromItem(psr4map, "autoload", "Prefix", "Path")); // Prefix can be empty!
-                    args.Add($"/autoload:psr-4,{psr4map.GetMetadata("Prefix")},{psr4map.GetMetadata("Path")}");
-                }
-            }
-
-            if (Autoload_ClassMap != null)
-            {
-                foreach (var fname in Autoload_ClassMap.Distinct())
-                {
-                    args.Add("/autoload:classmap," + fname);
-                }
-            }
-
-            if (Autoload_Files != null)
-            {
-                foreach (var fname in Autoload_Files.Distinct())
-                {
-                    args.Add("/autoload:files," + fname);
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(BasePath))
-            {
-                BasePath = Directory.GetCurrentDirectory();
-            }
-
-            if (!Directory.Exists(BasePath))
-            {
-                Log.LogWarning("Specified base directory '{0}' does not exist.", BasePath);
-            }
-
             // sources at the end:
             if (Compile != null)
             {
                 args.AddRange(Compile.Distinct(StringComparer.InvariantCulture));
             }
-
-#if DEBUG
-            // save the arguments as .rsp file for debugging purposes:
-            try
-            {
-                File.WriteAllText(Path.Combine(TempOutputPath, "dotnet-php.rsp"), string.Join(Environment.NewLine, args));
-            }
-            catch (Exception ex)
-            {
-                Log.LogWarningFromException(ex);
-            }
-#endif
 
             //
             // run the compiler:
@@ -270,7 +174,6 @@ namespace Backlang.NET.Sdk
                 return false;
             }
 
-            // Debugger.Launch
             if (DebuggerAttach)
             {
                 Debugger.Launch();
@@ -279,8 +182,8 @@ namespace Backlang.NET.Sdk
             // compile
             try
             {
-                // CompilerDriver.Compile();
-
+                var context = new CompilerContext();
+                CompilerDriver.Compile(context);
                 /*var resultCode = PhpCompilerDriver.Run(
                     PhpCommandLineParser.Default,
                     null,
@@ -294,7 +197,7 @@ namespace Backlang.NET.Sdk
                     cancellationToken: _cancellation.Token);
                 */
 
-                return true;
+                return !context.Messages.Any();
             }
             catch (Exception ex)
             {
@@ -303,19 +206,12 @@ namespace Backlang.NET.Sdk
             }
         }
 
-        private void LogException(Exception ex)
+        /// <summary>
+        /// Gets value indicating user has canceled the task.
+        /// </summary>
+        public bool IsCanceled()
         {
-            if (ex is AggregateException aex && aex.InnerExceptions != null)
-            {
-                foreach (var innerEx in aex.InnerExceptions)
-                {
-                    LogException(innerEx);
-                }
-            }
-            else
-            {
-                Log.LogErrorFromException(ex, true);
-            }
+            return _cancellation != null && _cancellation.IsCancellationRequested;
         }
 
         private bool AddNoEmpty(List<string> args, string optionName, string optionValue)
@@ -349,38 +245,18 @@ namespace Backlang.NET.Sdk
             return arg.ToString();
         }
 
-        private CancellationTokenSource _cancellation = new CancellationTokenSource();
-
-        /// <summary>
-        /// Cancels the task nicely.
-        /// </summary>
-        public void Cancel()
+        private void LogException(Exception ex)
         {
-            _cancellation.Cancel();
-        }
-
-        /// <summary>
-        /// Gets value indicating user has canceled the task.
-        /// </summary>
-        public bool IsCanceled()
-        {
-            return _cancellation != null && _cancellation.IsCancellationRequested;
-        }
-
-        private bool HasDebugPlus {
-            get {
-                if (DefineConstants != null)
+            if (ex is AggregateException aex && aex.InnerExceptions != null)
+            {
+                foreach (var innerEx in aex.InnerExceptions)
                 {
-                    foreach (var c in DefineConstants)
-                    {
-                        if (string.Equals(c, "DEBUG", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
+                    LogException(innerEx);
                 }
-
-                return false;
+            }
+            else
+            {
+                Log.LogErrorFromException(ex, true);
             }
         }
 
@@ -388,12 +264,6 @@ namespace Backlang.NET.Sdk
         // so we have our custom TextWriter that we pass to Log
         private sealed class LogWriter : TextWriter
         {
-            private TaskLoggingHelper Log { get; }
-
-            private StringBuilder Buffer { get; } = new StringBuilder();
-
-            public override Encoding Encoding => Encoding.UTF8;
-
             public LogWriter(TaskLoggingHelper log)
             {
                 Debug.Assert(log != null);
@@ -402,35 +272,9 @@ namespace Backlang.NET.Sdk
                 NewLine = "\n";
             }
 
-            private bool TryLogCompleteMessage()
-            {
-                string line = null;
-
-                lock (Buffer)   // accessed in parallel
-                {
-                    // get line from the buffer:
-                    for (var i = 0; i < Buffer.Length; i++)
-                    {
-                        if (Buffer[i] == '\n')
-                        {
-                            line = Buffer.ToString(0, i);
-
-                            Buffer.Remove(0, i + 1);
-                        }
-                    }
-                }
-
-                //
-                return line != null && LogCompleteMessage(line);
-            }
-
-            private bool LogCompleteMessage(string line)
-            {
-                // TODO: following logs only Warnings and Errors,
-                // to log Info diagnostics properly, parse it by ourselves
-
-                return Log.LogMessageFromText(line.Trim(), MessageImportance.High);
-            }
+            public override Encoding Encoding => Encoding.UTF8;
+            private StringBuilder Buffer { get; } = new StringBuilder();
+            private TaskLoggingHelper Log { get; }
 
             public override void Write(char value)
             {
@@ -453,6 +297,36 @@ namespace Backlang.NET.Sdk
                 }
 
                 TryLogCompleteMessage();
+            }
+
+            private bool LogCompleteMessage(string line)
+            {
+                // TODO: following logs only Warnings and Errors,
+                // to log Info diagnostics properly, parse it by ourselves
+
+                return Log.LogMessageFromText(line.Trim(), MessageImportance.High);
+            }
+
+            private bool TryLogCompleteMessage()
+            {
+                string line = null;
+
+                lock (Buffer)   // accessed in parallel
+                {
+                    // get line from the buffer:
+                    for (var i = 0; i < Buffer.Length; i++)
+                    {
+                        if (Buffer[i] == '\n')
+                        {
+                            line = Buffer.ToString(0, i);
+
+                            Buffer.Remove(0, i + 1);
+                        }
+                    }
+                }
+
+                //
+                return line != null && LogCompleteMessage(line);
             }
         }
     }
