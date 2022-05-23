@@ -11,11 +11,13 @@
 		<description>$description$</description>
 		<summary></summary>
 		<tags>Backlang,compile-Backlang,sdk</tags>
+		<!--
 		<dependencies>
 			<group targetFramework=".NETStandard2.0">
-				<dependency id="Backlang.Templates" version="1.0.0" exclude="Build,Analyzers" />
+				<dependency id="Backlang.Templates" version="1.0.9" exclude="Build,Analyzers" />
 			</group>
 		</dependencies>
+		-->
 	</metadata>
 	<files>
 		<file src="$packToolsDir$\**" target="tools\" />
