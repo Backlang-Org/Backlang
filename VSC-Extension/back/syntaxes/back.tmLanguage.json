@@ -28,7 +28,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.other.back",
-				"match": "\\b(register|const|global|in|return|where|type|mut|import|module|struct|let|implement|of|for|if|else|match|with|while|static|operator|private|public|func|enum|union|bitfield|default|sizeof|and|or)\\b"
+				"match": "\\b(const|global|in|return|where|type|mut|import|module|struct|let|implement|of|for|if|else|match|with|while|static|operator|private|public|func|enum|union|bitfield|default|sizeof|and|or)\\b"
 			}]
 		},
 		"literals": {
