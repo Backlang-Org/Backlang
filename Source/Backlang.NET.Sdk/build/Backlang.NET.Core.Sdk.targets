@@ -93,7 +93,6 @@
 			Name="CoreCompile"
 			Inputs="$(MSBuildAllProjects);
                 @(Compile);
-                $(ComposerJsonPath);
                 @(_CoreCompileResourceInputs);
                 $(ApplicationIcon);
                 $(AssemblyOriginatorKeyFile);
@@ -106,8 +105,7 @@
                 $(ResolvedCodeAnalysisRuleSet);
                 @(AdditionalFiles);
                 @(EmbeddedFiles)"
-			Outputs="@(DocFileItem);
-                @(IntermediateAssembly);
+			Outputs="@(IntermediateAssembly);
                 @(_DebugSymbolsIntermediatePath);
                 $(NonExistentFile);
                 @(CustomAdditionalCompileOutputs)"
@@ -141,11 +139,8 @@
 		</PropertyGroup>
 
 		<PropertyGroup>
-
 			<TempOutputDir>%(IntermediateAssembly.RelativeDir)</TempOutputDir>
 			<OutputType Condition=" '$(OutputType)' == '' ">library</OutputType>
-			<GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' and '$(DocumentationFile)' != '' ">true</GenerateDocumentationFile>
-			<DocumentationFile Condition=" '$(DocumentationFile)' == '' and '$(GenerateDocumentationFile)' == 'true' ">$(IntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
 		</PropertyGroup>
 
 		<!-- If compiling for full .NET, MSBuild is expected to run on it (e.g. in Visual Studio) so that it can obtain the runtime directory -->
@@ -170,6 +165,7 @@
 				   Optimization="$(Optimize)"
 				   Version="$(Version)"
 				   OutputType="$(OutputType)"
+				   Path="$(MSBuildProjectFullPath)"
 				   EntryPoint="$(StartupObject)"
 				   ReferencePath="@(ReferencePath)"
 				   Compile="@(Compile)"

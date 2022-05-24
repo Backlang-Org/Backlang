@@ -1,4 +1,4 @@
-<Project Sdk="Backlang.NET.Sdk/1.0.14">
+<Project Sdk="Backlang.NET.Sdk/1.0.16">
 
   <PropertyGroup>
     <Description>TestConsole</Description>
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include = "Program.back"/>
+    <Compile Include="Program.back"/>
   </ItemGroup>
 
 </Project>

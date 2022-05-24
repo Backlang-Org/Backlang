@@ -56,6 +56,8 @@ namespace Backlang.NET.Sdk
         /// <summary></summary>
         public string OutputType { get; set; }
 
+        public string Path { get; set; }
+
         /// <summary></summary>
         public string[] ReferencePath { get; set; }
 
@@ -91,16 +93,10 @@ namespace Backlang.NET.Sdk
             // initiate our assembly resolver within MSBuild process:
             AssemblyResolver.InitializeSafe();
 
-            // run the compiler:
-            if (IsCanceled())
-            {
-                return false;
-            }
+            var filename = System.IO.Path.GetFileName(Path);
+            Path = Path.Substring(0, Path.Length - filename.Length);
 
-            if (DebuggerAttach)
-            {
-                Debugger.Launch();
-            }
+            Compile = Compile.Select(_ => Path + _).ToArray();
 
             try
             {
@@ -114,10 +110,21 @@ namespace Backlang.NET.Sdk
                 context.InputFiles = Compile;
                 context.OutputFilename = OutputName;
 
-                Log.LogMessage("Compile: " + string.Join(", ", Compile));
-                Log.LogMessage("Output: " + OutputName);
-
                 CompilerDriver.Compile(context);
+
+                //For Debugging purposes
+                var tree = context.Trees.First();
+                var sb = new StringBuilder();
+                foreach (var node in tree.Body)
+                {
+                    sb.AppendLine(node.ToString());
+                }
+                File.WriteAllText(System.IO.Path.Combine(TempOutputPath, OutputName + ".dll"), sb.ToString());
+
+                foreach (var msg in context.Messages)
+                {
+                    Log.LogError(msg.ToString());
+                }
 
                 return !context.Messages.Any();
             }

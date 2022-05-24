@@ -24,7 +24,7 @@ public sealed class CompilerContext
     public string OutputFilename { get; set; }
 
     [Option('r', "reference", Required = false, HelpText = "References of the assembly")]
-    public IEnumerable<string> References { get; set; }
+    public IEnumerable<string> References { get; set; } = Array.Empty<string>();
 
     public List<CompilationUnit> Trees { get; set; } = new();
 }
