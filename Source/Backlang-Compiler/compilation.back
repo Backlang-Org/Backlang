@@ -25,12 +25,21 @@ implement Point {
 
 implement u8..u64, f64, i16..i64 {
 	func someTest() -> SELF {
-		
+		#matchCode(somevalue) {
+			msg += "Hello";
+			let msg : string = concatId(a, b, c);
+		}
 	}
 }
 
 func main() static -> none {
 	let msg : string = concatId(a, b, c);
+	
+	#someMacro {
+		msg += "Hello";
+		
+		let msg : string = concatId(a, b, c);
+	}
 
 	msg += "Hello";
 	msg -= "Hello";

@@ -89,7 +89,6 @@ public enum TokenType
     EqualsToken,
 
     [Lexeme("#")]
-    [PreUnaryOperatorInfo(10)]
     Hash,
 
     [Lexeme("<")]
