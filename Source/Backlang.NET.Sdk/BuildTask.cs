@@ -113,17 +113,27 @@ namespace Backlang.NET.Sdk
                 CompilerDriver.Compile(context);
 
                 //For Debugging purposes
-                var tree = context.Trees.First();
-                var sb = new StringBuilder();
-                foreach (var node in tree.Body)
-                {
-                    sb.AppendLine(node.ToString());
-                }
-                File.WriteAllText(System.IO.Path.Combine(TempOutputPath, OutputName + ".dll"), sb.ToString());
 
                 foreach (var msg in context.Messages)
                 {
                     Log.LogError(msg.ToString());
+                }
+
+                if (!context.Messages.Any())
+                {
+                    var sb = new StringBuilder();
+                    var tree = context.Trees.FirstOrDefault();
+
+                    if (tree == null)
+                    {
+                        return false;
+                    }
+
+                    foreach (var node in tree.Body)
+                    {
+                        sb.AppendLine(node.ToString());
+                    }
+                    File.WriteAllText(System.IO.Path.Combine(TempOutputPath, OutputName + ".dll"), sb.ToString());
                 }
 
                 return !context.Messages.Any();
