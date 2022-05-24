@@ -4,7 +4,8 @@
 	return 0;
 }
 
-func print(value : u32) {
+func print<T>(value : T)
+	for T : i8-i32 {
 	
 }
 
