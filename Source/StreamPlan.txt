@@ -15,5 +15,3 @@ StreamPlan Backseat-Montag:
 	- char-literal und type
 		'' im lexer nicht mehr als string nutzen, sondern als char
 		char als primitiven datentyp implementieren in syntax highlighting
-
-	- macro-function-calls with #
