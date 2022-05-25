@@ -11,7 +11,7 @@ public static partial class BuiltInMacros
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro(@"nameof(id_or_expr)",
-        @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")")]
+        @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode @Nameof(LNode nameof, IMacroContext context)
     {
         if (nameof.ArgCount != 1)
@@ -47,7 +47,7 @@ public static partial class BuiltInMacros
         return arg;
     }
 
-    [LexicalMacro("concatId(id, id)", "concatId", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)")]
+    [LexicalMacro("concatId(id, id)", "concatId", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode ConcatId(LNode concatID, IMacroContext context)
     {
         if (concatID.ArgCount < 2)
@@ -95,7 +95,7 @@ public static partial class BuiltInMacros
         return null;
     }
 
-    [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)")]
+    [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode GenerateId(LNode generateID, IMacroContext context)
     {
         var alphabet = "abcdefghijklmnopqrstuvwxyz_";

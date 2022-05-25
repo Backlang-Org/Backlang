@@ -5,12 +5,12 @@
 }
 
 func print<T>(value : T)
-	for T : i8-i32 {
+	T is i8-i32 {
 	
 }
 
-class SomeModel : ViewModel() {
-	notify(Name : string);
+class SomeModel : #ViewModel() {
+	#notify(Name : string);
 }
 
 
