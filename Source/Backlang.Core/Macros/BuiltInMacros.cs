@@ -47,7 +47,7 @@ public static partial class BuiltInMacros
         return arg;
     }
 
-    [LexicalMacro("concatId(id, id)", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)")]
+    [LexicalMacro("concatId(id, id)", "concatId", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)")]
     public static LNode ConcatId(LNode concatID, IMacroContext context)
     {
         if (concatID.ArgCount < 2)

@@ -24,7 +24,8 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
         AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.ImplementationKeyword);
         AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
-        AddDeclarationParsePoint<ModuleStatement>(TokenType.Module);
+        AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
+        AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Hash);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
@@ -57,6 +58,18 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         where T : IParsePoint<LNode>
     {
         StatementParsePoints.Add(type, T.Parse);
+    }
+
+    public LNodeList InvokeDeclarationParsePoints(TokenType terminator = TokenType.EOF)
+    {
+        var body = new LNodeList();
+        while (Iterator.Current.Type != terminator)
+        {
+            var item = InvokeParsePoint(DeclarationParsePoints);
+            body.Add(item);
+        }
+
+        return body;
     }
 
     public LNode InvokeParsePoint(ParsePoints<LNode> parsePoints)
@@ -94,12 +107,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
     {
         var cu = new CompilationUnit();
 
-        var body = new LNodeList();
-        while (Iterator.Current.Type != (TokenType.EOF))
-        {
-            var item = InvokeParsePoint(DeclarationParsePoints);
-            body.Add(item);
-        }
+        var body = InvokeDeclarationParsePoints();
 
         cu.Messages = Messages.Concat(Iterator.Messages).ToList();
         cu.Body = body;

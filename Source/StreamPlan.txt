@@ -1,4 +1,4 @@
-StreamPlan 23.05.2022 Backseat-Montag:
+StreamPlan Backseat-Montag:
 	
 	- Scopes implementieren
 
@@ -11,3 +11,9 @@ StreamPlan 23.05.2022 Backseat-Montag:
 	& | ^ ~
 	- bitwise assignment operators
 	&= |= ^= ~=
+
+	- char-literal und type
+		'' im lexer nicht mehr als string nutzen, sondern als char
+		char als primitiven datentyp implementieren in syntax highlighting
+
+	- macro-function-calls with #
