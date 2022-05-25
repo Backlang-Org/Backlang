@@ -63,6 +63,11 @@ enum Instructions {
 	Pop,
 }
 
+enum StringEnum : string {
+	prefix = "Hello",
+	suffix = "World",
+}
+
 func tests(something : i32) { //check if something is none, if not return none
 
 	let kkk = sizeof<Colors>;
