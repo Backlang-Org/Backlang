@@ -1,4 +1,5 @@
-﻿using Backlang.Core.Macros;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Core.Macros;
 using Flo;
 using LeMP;
 using Loyc;
@@ -13,7 +14,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
     public ExpandMacrosStage()
     {
-        _macroProcessor = new MacroProcessor(new NullMessageSink(), typeof(LeMP.Prelude.BuiltinMacros));
+        _macroProcessor = new MacroProcessor(new MessageHolder(), typeof(LeMP.Prelude.BuiltinMacros));
 
         //_macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
         _macroProcessor.AddMacros(typeof(BuiltInMacros).Assembly, false);
@@ -25,6 +26,13 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
         foreach (var tree in context.Trees)
         {
             tree.Body = _macroProcessor.ProcessSynchronously(new VList<LNode>(tree.Body));
+
+            var errors = (MessageHolder)_macroProcessor.Sink;
+            if (errors.List.Count > 0)
+            {
+                context.Messages.AddRange(errors.List
+                    .Select(_ => Message.Error(tree.Document, _.Formatted, 0, 0)));
+            }
         }
 
         return await next.Invoke(context);
