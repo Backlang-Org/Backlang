@@ -84,16 +84,16 @@ public sealed partial class Parser
 
     private LNode ParseNumber()
     {
-        var valueToken = Iterator.NextToken();
+        var text = Iterator.NextToken().Text;
 
-        object value = long.Parse(valueToken.Text, CultureInfo.InvariantCulture);
-
-        if (value == null)
+        if (text.Contains("."))
         {
-            value = double.Parse(valueToken.Text, CultureInfo.InvariantCulture);
+            return SyntaxTree.Factory.Literal(double.Parse(text));
         }
-
-        return SyntaxTree.Factory.Literal(value);
+        else
+        {
+            return SyntaxTree.Factory.Literal(int.Parse(text));
+        }
     }
 
     private LNode ParseString()
