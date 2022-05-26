@@ -190,6 +190,15 @@ public enum TokenType
     [Keyword("type")]
     Type,
 
+    [Keyword("switch")]
+    Switch,
+
+    [Keyword("case")]
+    Case,
+
+    [Keyword("break")]
+    Break,
+
     [Keyword("if")]
     If,
 
