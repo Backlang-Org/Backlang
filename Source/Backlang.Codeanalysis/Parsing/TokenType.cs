@@ -40,7 +40,8 @@ public enum TokenType
 
     [Lexeme("^")]
     [BinaryOperatorInfo(2)]
-    Xor,
+    [PreUnaryOperatorInfo(9)]
+    Hat,
 
     [BinaryOperatorInfo(5)]
     [Lexeme("/")]
