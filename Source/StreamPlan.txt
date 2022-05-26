@@ -11,7 +11,3 @@ StreamPlan Backseat-Montag:
 	& | ^ ~
 	- bitwise assignment operators
 	&= |= ^= ~=
-
-	- char-literal und type
-		'' im lexer nicht mehr als string nutzen, sondern als char
-		char als primitiven datentyp implementieren in syntax highlighting

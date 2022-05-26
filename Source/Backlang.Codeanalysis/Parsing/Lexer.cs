@@ -41,7 +41,7 @@ public sealed class Lexer : BaseLexer
 
         if (Current() == '\'')
         {
-            return LexSingleQuoteString();
+            return LexCharLiteral();
         }
         else if (Current() == '"')
         {
@@ -131,6 +131,29 @@ public sealed class Lexer : BaseLexer
         return new Token(TokenType.BinNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
     }
 
+    private Token LexCharLiteral()
+    {
+        var oldpos = ++_position;
+        var oldColumn = _column;
+
+        if (Current() == '\n' || Current() == '\r')
+        {
+            Messages.Add(Message.Error(_document, $"Unterminated CharLiteral", _line, oldColumn));
+
+            return Token.Invalid;
+        }
+
+        if (Peek() != '\'' && Peek() != '\0')
+        {
+            Advance();
+            _column++;
+        }
+
+        _column += 2;
+
+        return new Token(TokenType.CharLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+    }
+
     private Token LexDecimalNumber()
     {
         var oldpos = _position;
@@ -209,27 +232,6 @@ public sealed class Lexer : BaseLexer
         var tokenText = _document.Source.Substring(oldpos, _position - oldpos);
 
         return new Token(TokenUtils.GetTokenType(tokenText), tokenText, oldpos, _position, _line, oldcolumn);
-    }
-
-    private Token LexSingleQuoteString()
-    {
-        var oldpos = ++_position;
-        var oldColumn = _column;
-
-        while (Peek() != '\'' && Peek() != '\0')
-        {
-            if (Current() == '\n' || Current() == '\r')
-            {
-                Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
-            }
-
-            Advance();
-            _column++;
-        }
-
-        _column += 2;
-
-        return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
     }
 
     private Token LexSymbol(KeyValuePair<string, TokenType> symbol)

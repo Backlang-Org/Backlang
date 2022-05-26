@@ -231,4 +231,5 @@ public enum TokenType
 
     [Keyword("module")]
     Module,
+    CharLiteral,
 }

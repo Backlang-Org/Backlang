@@ -15,6 +15,7 @@ public sealed partial class Parser
         return Iterator.Current.Type switch
         {
             TokenType.StringLiteral => ParseString(),
+            TokenType.CharLiteral => ParseChar(),
             TokenType.Number => ParseNumber(),
             TokenType.HexNumber => ParseHexNumber(),
             TokenType.BinNumber => ParseBinNumber(),
@@ -67,6 +68,11 @@ public sealed partial class Parser
         Iterator.NextToken();
 
         return SyntaxTree.Factory.Literal(value);
+    }
+
+    private LNode ParseChar()
+    {
+        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text);
     }
 
     private LNode ParseHexNumber()
