@@ -72,7 +72,7 @@ public sealed partial class Parser
 
     private LNode ParseChar()
     {
-        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text);
+        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]);
     }
 
     private LNode ParseHexNumber()
@@ -86,7 +86,7 @@ public sealed partial class Parser
     {
         var text = Iterator.NextToken().Text;
 
-        if (text.Contains("."))
+        if (text.Contains('.'))
         {
             return SyntaxTree.Factory.Literal(double.Parse(text));
         }
