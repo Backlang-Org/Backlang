@@ -21,6 +21,7 @@ public sealed partial class Parser
             TokenType.BinNumber => ParseBinNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
+            TokenType.Break => ParseBreak(),
             _ => InvokeExpressionParsePoint(parsePoints),
         };
     }
@@ -68,6 +69,11 @@ public sealed partial class Parser
         Iterator.NextToken();
 
         return SyntaxTree.Factory.Literal(value);
+    }
+
+    private LNode ParseBreak()
+    {
+        return SyntaxTree.Factory.Call(CodeSymbols.Break);
     }
 
     private LNode ParseChar()

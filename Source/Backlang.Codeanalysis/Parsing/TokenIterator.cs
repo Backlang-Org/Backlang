@@ -16,6 +16,11 @@ public sealed class TokenIterator
 
     public Token Current => Peek(0);
 
+    public bool IsMatch(TokenType kind)
+    {
+        return Current.Type == kind;
+    }
+
     public Token Match(TokenType kind)
     {
         if (Current.Type == kind)

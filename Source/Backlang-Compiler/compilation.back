@@ -50,6 +50,17 @@ func main() static -> none {
 	let msg : string = concatId(a, b, c);
 	let name : string = nameof(msg);
 	let k = 1.2;
+
+	let myChar = 'a';
+
+	switch myChar {
+		case 'b': print("It's B!");
+		if isAlpha(myChar): {
+			print("It's...");
+			print("a C!");
+		}
+		default: print("i dont know what it is :c");
+	}
 	
 	nameof(msg);
 
