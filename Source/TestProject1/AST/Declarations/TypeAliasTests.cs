@@ -10,8 +10,5 @@ public class TypeAliasTests : ParserTestBase
     {
         var src = "type int = i32;";
         var node = ParseAndGetNodes(src);
-
-        Assert.AreEqual(node.AliasName, "int");
-        Assert.AreEqual(node.ToAlias, "i32");
     }
 }

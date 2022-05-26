@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Expressions;
 
@@ -11,17 +10,6 @@ public class CallExpressionTests : ParserTestBase
     {
         var src = "print(arr[1]);";
         var tree = ParseAndGetNodesInFunction(src);
-        var node = (CallExpression)tree.Expression;
-
-        Assert.AreEqual(node.Arguments.Count, 1);
-        Assert.IsInstanceOfType(node.Name, typeof(NameExpression));
-        Assert.AreEqual("print", ((NameExpression)node.Name).Name);
-        Assert.IsInstanceOfType(node.Arguments[0], typeof(ArrayAccessExpression));
-
-        var arrAccess = (ArrayAccessExpression)node.Arguments[0];
-
-        Assert.AreEqual(arrAccess.Name.Name, "arr");
-        Assert.AreEqual(arrAccess.Indices.Count, 1);
     }
 
     [TestMethod]
@@ -29,11 +17,6 @@ public class CallExpressionTests : ParserTestBase
     {
         var src = "print(true);";
         var tree = ParseAndGetNodesInFunction(src);
-        var node = (CallExpression)tree.Expression;
-
-        Assert.AreEqual(node.Arguments.Count, 1);
-        Assert.IsInstanceOfType(node.Name, typeof(NameExpression));
-        Assert.AreEqual("print", ((NameExpression)node.Name).Name);
     }
 
     [TestMethod]
@@ -41,11 +24,6 @@ public class CallExpressionTests : ParserTestBase
     {
         var src = "print(1, true);";
         var tree = ParseAndGetNodesInFunction(src);
-        var node = (CallExpression)tree.Expression;
-
-        Assert.AreEqual(node.Arguments.Count, 2);
-        Assert.IsInstanceOfType(node.Name, typeof(NameExpression));
-        Assert.AreEqual("print", ((NameExpression)node.Name).Name);
     }
 
     [TestMethod]
@@ -53,10 +31,5 @@ public class CallExpressionTests : ParserTestBase
     {
         var src = "print();";
         var tree = ParseAndGetNodesInFunction(src);
-        var node = (CallExpression)tree.Expression;
-
-        Assert.AreEqual(node.Arguments.Count, 0);
-        Assert.IsInstanceOfType(node.Name, typeof(NameExpression));
-        Assert.AreEqual("print", ((NameExpression)node.Name).Name);
     }
 }

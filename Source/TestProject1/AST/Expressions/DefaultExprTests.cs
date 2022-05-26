@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Expressions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1.AST.Expressions;
 
@@ -11,9 +10,6 @@ public class DefaultExprTests : ParserTestBase
     {
         var src = "default<i32>;";
         var tree = ParseAndGetNodesInFunction(src);
-        var expression = (DefaultExpression)tree.Expression;
-
-        Assert.AreEqual(expression.Type.Typename, "i32");
     }
 
     [TestMethod]
@@ -21,7 +17,5 @@ public class DefaultExprTests : ParserTestBase
     {
         var src = "default;";
         var tree = ParseAndGetNodesInFunction(src);
-
-        Assert.IsInstanceOfType(tree.Expression, typeof(DefaultExpression));
     }
 }
