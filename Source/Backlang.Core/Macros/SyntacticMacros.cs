@@ -12,6 +12,23 @@ public static partial class BuiltInMacros
         return ConverToAssignment(@operator, CodeSymbols.Div);
     }
 
+    [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode ExpandOperator(LNode @operator, IMacroContext context)
+    {
+        var operatorAttribute = LNode.Id((Symbol)"#operator");
+        if (@operator.Attrs.Contains(operatorAttribute))
+        {
+            var newAttrs = new LNodeList() { LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static) };
+            var modChanged = @operator.WithoutAttr(operatorAttribute).WithAttrs(newAttrs);
+            var fnName = @operator.Args[1];
+
+            var newTarget = LNode.Id("op_" + fnName.Name);
+            return modChanged.WithArgChanged(1, newTarget);
+        }
+
+        return @operator;
+    }
+
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
