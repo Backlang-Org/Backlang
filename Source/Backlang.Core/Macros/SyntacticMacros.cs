@@ -33,6 +33,21 @@ public static partial class BuiltInMacros
         return @operator;
     }
 
+    [LexicalMacro("Point::new()", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Instantiation(LNode node, IMacroContext context)
+    {
+        var left = node.Args[0];
+        var right = node.Args[1];
+
+        if (right.Calls("new"))
+        {
+            return LNode.Call(CodeSymbols.New,
+                LNode.List(LNode.Call(left, right.Args)));
+        }
+
+        return node;
+    }
+
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
