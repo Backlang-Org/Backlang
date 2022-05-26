@@ -10,9 +10,6 @@ public class StructTests : ParserTestBase
     {
         var src = "struct Point { X : i32; Y : i32; }";
         var declaration = ParseAndGetNodes(src);
-
-        Assert.AreEqual(declaration.Name, "Point");
-        Assert.AreEqual(declaration.Members.Count, 2);
     }
 
     [TestMethod]
@@ -20,11 +17,5 @@ public class StructTests : ParserTestBase
     {
         var src = "struct Point { X : i32 = 24; Y : i32 = 42; }";
         var declaration = ParseAndGetNodes(src);
-
-        Assert.AreEqual(declaration.Name, "Point");
-        Assert.AreEqual(declaration.Members.Count, 2);
-
-        Assert.AreEqual(declaration.Members[0].Name, "X");
-        Assert.AreEqual(declaration.Members[1].Name, "Y");
     }
 }

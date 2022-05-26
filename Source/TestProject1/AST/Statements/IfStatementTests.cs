@@ -17,8 +17,6 @@ public class IfStatementTests : ParserTestBase
     {
         var src = "if true { none; } else { 42; }";
         var tree = ParseAndGetNodesInFunction(src);
-
-        Assert.IsNotNull(tree.ElseBody);
     }
 
     [TestMethod]
@@ -47,7 +45,5 @@ public class IfStatementTests : ParserTestBase
     {
         var src = "if true { none; }";
         var tree = ParseAndGetNodesInFunction(src);
-
-        Assert.IsInstanceOfType(tree.Condition, typeof(LiteralNode));
     }
 }

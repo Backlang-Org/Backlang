@@ -61,6 +61,7 @@ func main() static -> none {
 		}
 		default: print("i dont know what it is :c");
 	}
+	Point::new(1, 2);
 	
 	nameof(msg);
 
