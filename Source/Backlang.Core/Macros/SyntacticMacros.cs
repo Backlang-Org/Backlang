@@ -23,8 +23,11 @@ public static partial class BuiltInMacros
             var fnName = @operator.Args[1];
 
             var opMap = GetOpMap();
-            var newTarget = LNode.Id("op_" + opMap[fnName.Name.Name]);
-            return modChanged.WithArgChanged(1, newTarget);
+            if (opMap.ContainsKey(fnName.Name.Name))
+            {
+                var newTarget = LNode.Id("op_" + opMap[fnName.Name.Name]);
+                return modChanged.WithArgChanged(1, newTarget);
+            }
         }
 
         return @operator;
