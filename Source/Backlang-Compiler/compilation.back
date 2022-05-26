@@ -49,6 +49,7 @@ implement u8..u64, f64, i16..i64 {
 func main() static -> none {
 	let msg : string = concatId(a, b, c);
 	let name : string = nameof(msg);
+	let k = 1.2;
 	
 	nameof(msg);
 
@@ -61,7 +62,7 @@ func main() static -> none {
 	}
 
 	msg += "Hello";
-	msg -= "Hello";
+	msg -= 'c';
 	
 	print("something new");
 

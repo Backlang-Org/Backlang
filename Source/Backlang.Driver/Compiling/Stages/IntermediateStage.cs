@@ -161,6 +161,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     public static IType GetType(LNode type, CompilerContext context)
     {
+        if (type == LNode.Missing) return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+
         var name = type.Args[0].Name.ToString();
 
         if (typenameTable.ContainsKey(name))

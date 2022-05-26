@@ -6,8 +6,6 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var declaration = new EnumDeclaration();
-
         var nameToken = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.OpenCurly);

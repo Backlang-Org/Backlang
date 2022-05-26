@@ -101,7 +101,7 @@ public sealed class Lexer : BaseLexer
 
     private bool IsMatch(string token)
     {
-        bool result = Peek(0) == token[0];
+        bool result = Current() == token[0];
 
         for (int i = 1; i < token.Length; i++)
         {
@@ -159,18 +159,18 @@ public sealed class Lexer : BaseLexer
         var oldpos = _position;
         var oldcolumn = _column;
 
-        while (char.IsDigit(Peek(0)))
+        while (char.IsDigit(Current()))
         {
-            Advance();
+            _position++;
             _column++;
         }
 
-        if (char.IsDigit(Peek(1)) && Peek(0) == '.')
+        if (char.IsDigit(Peek(1)) && Current() == '.')
         {
             Advance();
             _column++;
 
-            while (char.IsDigit(Peek(0)))
+            while (char.IsDigit(Current()))
             {
                 Advance();
                 _column++;
