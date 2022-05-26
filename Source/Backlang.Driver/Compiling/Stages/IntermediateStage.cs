@@ -13,7 +13,7 @@ using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
-using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -124,11 +124,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 DeadValueElimination.Instance));
 
         string methodName = function.Args[1].Name.Name;
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
-        {
-            function.Attrs.Add(LNode.Id(CodeSymbols.Static));
-            methodName = ConvertMethodNameToOperator(methodName);
-        }
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
@@ -136,6 +131,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             Body = body
         };
+
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
+        {
+            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+        }
 
         var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
@@ -244,14 +244,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             type.AddMethod(method);
         }
-    }
-
-    private static string ConvertMethodNameToOperator(string methodName)
-    {
-        TextInfo info = CultureInfo.InvariantCulture.TextInfo;
-        var m = info.ToTitleCase(methodName); //ToDo: convert to opmap: greaterThen -> GreaterThan
-
-        return $"op_{m}";
     }
 
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
