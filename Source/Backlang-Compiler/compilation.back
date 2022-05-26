@@ -50,6 +50,8 @@ func main() static -> none {
 	let msg : string = concatId(a, b, c);
 	let name : string = nameof(msg);
 	let k = 1.2;
+
+	Point::new(1, 2);
 	
 	nameof(msg);
 
