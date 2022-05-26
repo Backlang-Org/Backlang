@@ -22,6 +22,9 @@
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#char"
 		}
 	],
 	"repository": {
@@ -74,8 +77,8 @@
 		},
 		"char": {
 			"name": "string.quoted.single.back",
-			"begin": "\"",
-			"end": "\"",
+			"begin": "'",
+			"end": "'",
 			"patterns": [
 				{
 					"name": "constant.character.escape.back",

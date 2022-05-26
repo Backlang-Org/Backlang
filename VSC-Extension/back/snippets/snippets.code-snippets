@@ -22,16 +22,22 @@
     "body": ["if ${1:condition} {", "\t$0", "}"],
     "description": "A if clause."
   },
+
+  "Switch Statement": {
+    "prefix": ["switch"],
+    "body": ["switch ${1:element} {", "\tcase ${2:value}: $0", "}"],
+    "description": "A switch statement with one case."
+  },
   
   "Function": {
-    "prefix": ["fn"],
-    "body": ["fn ${1:name} () {", "\t$0", "}"],
+    "prefix": ["fn", "func"],
+    "body": ["func ${1:name} () {", "\t$0", "}"],
     "description": "A function."
   },
 
   "Static Function": {
-    "prefix": ["fnstatic"],
-    "body": ["fn ${1:name} () static {", "\t$0", "}"],
+    "prefix": ["fnstatic", "funcstatic"],
+    "body": ["func ${1:name} () static {", "\t$0", "}"],
     "description": "A static function."
   }
 }
