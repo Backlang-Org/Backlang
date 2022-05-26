@@ -1,6 +1,7 @@
 ﻿using LeMP;
 using Loyc;
 using Loyc.Syntax;
+using System.Globalization;
 
 namespace Backlang.Core.Macros;
 
@@ -22,7 +23,9 @@ public static partial class BuiltInMacros
             var modChanged = @operator.WithoutAttr(operatorAttribute).WithAttrs(newAttrs);
             var fnName = @operator.Args[1];
 
-            var newTarget = LNode.Id("op_" + fnName.Name);
+            var titleCaseName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fnName.Name.Name);
+
+            var newTarget = LNode.Id("op_" + titleCaseName);
             return modChanged.WithArgChanged(1, newTarget);
         }
 
