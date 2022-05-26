@@ -1,7 +1,6 @@
 ﻿using LeMP;
 using Loyc;
 using Loyc.Syntax;
-using System.Globalization;
 
 namespace Backlang.Core.Macros;
 
@@ -19,13 +18,12 @@ public static partial class BuiltInMacros
         var operatorAttribute = LNode.Id((Symbol)"#operator");
         if (@operator.Attrs.Contains(operatorAttribute))
         {
-            var newAttrs = new LNodeList() { LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static) };
-            var modChanged = @operator.WithoutAttr(operatorAttribute).WithAttrs(newAttrs);
+            var newAttrs = new LNodeList() { LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static), LNode.Id(CodeSymbols.Operator) };
+            var modChanged = @operator.WithAttrs(newAttrs);
             var fnName = @operator.Args[1];
 
-            var titleCaseName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fnName.Name.Name);
-
-            var newTarget = LNode.Id("op_" + titleCaseName);
+            var opMap = GetOpMap();
+            var newTarget = LNode.Id("op_" + opMap[fnName.Name.Name]);
             return modChanged.WithArgChanged(1, newTarget);
         }
 
@@ -56,5 +54,17 @@ public static partial class BuiltInMacros
         var arg2 = @operator.Args[1];
 
         return F.Call(CodeSymbols.Assign, arg1, F.Call(symbol, arg1, arg2));
+    }
+
+    private static Dictionary<string, string> GetOpMap()
+    {
+        return new()
+        {
+            ["add"] = "Addition",
+            ["sub"] = "Subtraction",
+            ["mul"] = "Multiply",
+            ["div"] = "Division",
+            ["mod"] = "Modulus",
+        };
     }
 }
