@@ -26,6 +26,7 @@ public abstract class Statement
             return ParseBlock(parser);
         } else
         {
+            // TODO: Make BreakStatement also working, how?
             return LNode.List(ExpressionStatement.Parse(parser.Iterator, parser));
         }
     }

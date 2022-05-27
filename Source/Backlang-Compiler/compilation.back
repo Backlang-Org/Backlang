@@ -53,6 +53,10 @@ func main() static -> none {
 
 	let s = Point::new();
 	let handle = ^s;
+	let another = ^s;
+	#autofree(handle, another) {
+		print(&handle);
+	}
 
 	let myChar = 'a';
 

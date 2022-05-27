@@ -23,6 +23,23 @@ public static partial class BuiltInMacros
             LNode.List(@operator.Args[0]));
     }
 
+    [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
+    public static LNode AutoFree(LNode @operator, IMacroContext context)
+    {
+        var body = @operator.Args.Last;
+
+        var handles = @operator.Args.Take(@operator.Args.Count - 1);
+
+        var freeCalls = LNode.List();
+
+        foreach (var handle in handles)
+        {
+            freeCalls.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(handle, LNode.Id((Symbol)"Free"))).SetStyle(NodeStyle.Operator)));
+        }
+
+        return body.WithArgs(LNode.List().AddRange(body.Args).AddRange(freeCalls));
+    }
+
 
     [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
