@@ -1,4 +1,6 @@
 func main() static -> none
 {
     print("Hello World");
+    
+    return 0;
 }
