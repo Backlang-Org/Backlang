@@ -9,31 +9,17 @@ struct Point {
 	Y : u32;
 }
 
-#matchCode(12) {
-	struct Point {
-		X : u32;
-		Y : u32;
-	}
-}
-
-#someMacro {
-	struct Point {
-		X : u32;
-		Y : u32;
-	}
-}
-
 implement Point {
-	func distance(other : Point) static -> Point {
-		
+	func distance(other : Point) -> Point {
+
 	}
 
 	func add(lhs : Point, rhs : Point) operator -> Point {
-		
+		return Point::new(lhs.X + rhs.X, lhs.Y + rhs.Y);
 	}
 
 	func toString() -> string {
-		
+		return "X: " + X + " Y: " + Y;
 	}
 }
 
@@ -69,18 +55,8 @@ func main() static -> none {
 		case 'w': break;
 		default: print("i dont know what it is :c");
 	}
-
+	
 	Point::new(1, 2);
-	
-	nameof(msg);
-
-	concatId(a, b, c);
-	
-	#someMacro {
-		msg += "Hello";
-		
-		let msg : string = concatId(a, b, c);
-	}
 
 	msg += "Hello";
 	msg -= 'c';
