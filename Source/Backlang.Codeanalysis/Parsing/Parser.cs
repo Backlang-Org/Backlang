@@ -36,6 +36,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
         AddStatementParsePoint<BreakStatement>(TokenType.Break);
+        AddStatementParsePoint<ContinueStatement>(TokenType.Continue);
         AddStatementParsePoint<ReturnStatement>(TokenType.Return);
         AddStatementParsePoint<VariableDeclaration>(TokenType.Declare);
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
