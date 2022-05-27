@@ -109,10 +109,9 @@ namespace Backlang.NET.Sdk
                 var context = new CompilerContext();
                 context.InputFiles = Compile;
                 context.OutputFilename = OutputName;
+                context.OutputType = OutputType;
 
                 CompilerDriver.Compile(context);
-
-                //For Debugging purposes
 
                 foreach (var msg in context.Messages)
                 {
