@@ -47,13 +47,20 @@ func main() static -> none {
 	let myChar = 'a';
 
 	switch myChar {
-		case 'b' || 'c': print("It's B!");
+		break case 'b' || 'c': print("It's B!");
 		if isAlpha(myChar): {
 			print("It's...");
 			print("a C!");
 		}
 		case 'w': break;
 		default: print("i dont know what it is :c");
+	}
+
+	let mut i = 10;
+
+	while i > 0 {
+		i -= 1;
+		continue;
 	}
 	
 	Point::new(1, 2);
@@ -66,6 +73,8 @@ func main() static -> none {
 	#quote {
 		print(msg);
 	}
+
+	return 0;
 }
 
 func println(arg : string) static -> none {
