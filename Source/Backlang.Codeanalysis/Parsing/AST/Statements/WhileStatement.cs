@@ -8,7 +8,7 @@ public sealed class WhileStatement : IParsePoint<LNode>
     {
         // while true { 42; }
         var cond = Expression.Parse(parser);
-        var body = Statement.ParseBlock(parser);
+        var body = Statement.ParseOneOrBlock(parser);
 
         return SyntaxTree.While(cond, body);
     }

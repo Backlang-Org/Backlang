@@ -9,7 +9,7 @@ public sealed class IfStatement : IParsePoint<LNode>
         // if cond {} else {}
 
         var cond = Expression.Parse(parser);
-        var body = Statement.ParseBlock(parser);
+        var body = Statement.ParseOneOrBlock(parser);
         LNodeList elseBlock = new();
 
         if (iterator.Current.Type == TokenType.Else)
