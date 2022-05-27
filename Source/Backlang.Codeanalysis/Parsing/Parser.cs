@@ -22,7 +22,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Type);
         AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
-        AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.ImplementationKeyword);
+        AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.Implement);
         AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
         AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
         AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Hash);
