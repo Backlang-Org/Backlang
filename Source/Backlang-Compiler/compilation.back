@@ -47,11 +47,12 @@ func main() static -> none {
 	let myChar = 'a';
 
 	switch myChar {
-		case 'b': print("It's B!");
+		case 'b' || 'c': print("It's B!");
 		if isAlpha(myChar): {
 			print("It's...");
 			print("a C!");
 		}
+		case 'w': break;
 		default: print("i dont know what it is :c");
 	}
 	
