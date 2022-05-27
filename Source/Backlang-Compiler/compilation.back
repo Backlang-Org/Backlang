@@ -47,7 +47,7 @@ func main() static -> none {
 	let myChar = 'a';
 
 	switch myChar {
-		case 'b' || 'c': print("It's B!");
+		break case 'b' || 'c': print("It's B!");
 		if isAlpha(myChar): {
 			print("It's...");
 			print("a C!");
