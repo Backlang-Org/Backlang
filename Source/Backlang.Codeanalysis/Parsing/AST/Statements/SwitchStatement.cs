@@ -24,12 +24,17 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         while (!parser.Iterator.IsMatch(TokenType.CloseCurly))
         {
-            if(iterator.IsMatch(TokenType.Case))
+            if (iterator.IsMatch(TokenType.Case))
                 cases.Add(ParseCase(parser));
-            if (iterator.IsMatch(TokenType.If))
+            else if (iterator.IsMatch(TokenType.If))
                 cases.Add(ParseIf(parser));
-            if (iterator.IsMatch(TokenType.Default))
+            else if (iterator.IsMatch(TokenType.Default))
                 cases.Add(ParseDefault(parser));
+            else
+            {
+                parser.Messages.Add(Message.Error(parser.Document, "Switch Statement can only have case, if or default, but got " + iterator.Current.Text, iterator.Current.Line, iterator.Current.Column));
+                return LNode.Missing;
+            }
         }
 
         parser.Iterator.Match(TokenType.CloseCurly);
