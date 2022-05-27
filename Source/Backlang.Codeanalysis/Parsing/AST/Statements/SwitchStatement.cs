@@ -24,12 +24,16 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         while (!parser.Iterator.IsMatch(TokenType.CloseCurly))
         {
+            bool autoBreak = iterator.IsMatch(TokenType.Break);
+
+            if (autoBreak) iterator.Match(TokenType.Break);
+
             if (iterator.IsMatch(TokenType.Case))
-                cases.Add(ParseCase(parser));
+                cases.Add(ParseCase(parser, autoBreak));
             else if (iterator.IsMatch(TokenType.If))
-                cases.Add(ParseIf(parser));
+                cases.Add(ParseIf(parser, autoBreak));
             else if (iterator.IsMatch(TokenType.Default))
-                cases.Add(ParseDefault(parser));
+                cases.Add(ParseDefault(parser, autoBreak));
             else
             {
                 parser.Messages.Add(Message.Error(parser.Document, "Switch Statement can only have case, if or default, but got " + iterator.Current.Text, iterator.Current.Line, iterator.Current.Column));
@@ -42,7 +46,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         return SyntaxTree.Switch(element, cases);
     }
 
-    private static LNode ParseCase(Parser parser)
+    private static LNode ParseCase(Parser parser, bool autoBreak)
     {
         parser.Iterator.Match(TokenType.Case);
 
@@ -52,10 +56,13 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         var body = Statement.ParseOneOrBlock(parser);
 
+        if (autoBreak)
+            body = body.Add(LNode.Call(CodeSymbols.Break));
+
         return SyntaxTree.Case(condition, body);
     }
 
-    private static LNode ParseIf(Parser parser)
+    private static LNode ParseIf(Parser parser, bool autoBreak)
     {
         parser.Iterator.Match(TokenType.If);
 
@@ -65,16 +72,22 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         var body = Statement.ParseOneOrBlock(parser);
 
+        if (autoBreak)
+            body = body.Add(LNode.Call(CodeSymbols.Break));
+
         return SyntaxTree.If(condition, body, LNode.List());
     }
 
-    private static LNode ParseDefault(Parser parser)
+    private static LNode ParseDefault(Parser parser, bool autoBreak)
     {
         parser.Iterator.Match(TokenType.Default);
 
         parser.Iterator.Match(TokenType.Colon);
 
         var body = Statement.ParseOneOrBlock(parser);
+
+        if(autoBreak)
+            body = body.Add(LNode.Call(CodeSymbols.Break));
 
         return SyntaxTree.Case(LNode.Call(CodeSymbols.Default), body);
     }
