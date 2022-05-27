@@ -23,7 +23,7 @@ public sealed class ForStatement : IParsePoint<LNode>
         iterator.Match(TokenType.In);
 
         var collExpr = Expression.Parse(parser);
-        var body = Statement.ParseBlock(parser);
+        var body = Statement.ParseOneOrBlock(parser);
 
         return SyntaxTree.For(SyntaxTree.Factory.Tuple(varExpr, type), collExpr, body);
     }
