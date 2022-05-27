@@ -1,0 +1,4 @@
+func main() static -> none
+{
+    print("Hello World");
+}
