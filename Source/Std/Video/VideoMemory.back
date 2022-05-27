@@ -7,15 +7,15 @@ struct VideoMemory {
     FramebufferAddress : i8;
 }
 
-implementation of static VideoMemory {
-    fn new() {
+implement static VideoMemory {
+    func new() {
         asm {
             InvFbAddr S;
             mov &[FramebufferAddress], S;
         }
     }
 
-    fn swap() {
+    func swap() {
         asm {
             Swap;
             InvFbAddr S;
@@ -23,7 +23,7 @@ implementation of static VideoMemory {
         }
     }
 
-    fn setPixel(x : u32, y : u32, color : Color) {
+    func setPixel(x : u32, y : u32, color : Color) {
         let address : u32* = y * VideoMemory::Width + x;
 
         *address = color.value;

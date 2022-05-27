@@ -11,9 +11,15 @@ public enum TokenType
     Number,
     HexNumber,
     BinNumber,
+    CharLiteral,
 
     [Lexeme(".")]
+    [BinaryOperatorInfo(7)]
     Dot,
+
+    [Lexeme("::")]
+    [BinaryOperatorInfo(7)]
+    ColonColon,
 
     [BinaryOperatorInfo(4)]
     [Lexeme("+")]
@@ -30,7 +36,13 @@ public enum TokenType
 
     [Lexeme("&")]
     [PreUnaryOperatorInfo(9)]
+    [BinaryOperatorInfo(3)]
     Ampersand,
+
+    [Lexeme("^")]
+    [BinaryOperatorInfo(2)]
+    [PreUnaryOperatorInfo(9)]
+    Hat,
 
     [BinaryOperatorInfo(5)]
     [Lexeme("/")]
@@ -58,17 +70,32 @@ public enum TokenType
     [Lexeme("!")]
     Exclamation,
 
+    [Lexeme("*=")]
+    [BinaryOperatorInfo(8)]
+    StarEqualsToken,
+
+    [Lexeme("/=")]
+    [BinaryOperatorInfo(8)]
+    DivEqualsToken,
+
+    [Lexeme("+=")]
+    [BinaryOperatorInfo(8)]
+    PlusEqualsToken,
+
+    [Lexeme("-=")]
+    [BinaryOperatorInfo(8)]
+    MinusEqualsToken,
+
     [Lexeme("=")]
     [BinaryOperatorInfo(8)]
     EqualsToken,
 
     [Lexeme("#")]
-    [PreUnaryOperatorInfo(10)]
     Hash,
 
-    [Keyword("PTR")]
-    [PreUnaryOperatorInfo(1)]
-    PTR,
+    [Lexeme("<=")]
+    [BinaryOperatorInfo(5)]
+    LessThanEqual,
 
     [Lexeme("<")]
     [BinaryOperatorInfo(5)]
@@ -77,6 +104,10 @@ public enum TokenType
     [Lexeme(">")]
     [BinaryOperatorInfo(5)]
     GreaterThan,
+
+    [Lexeme(">=")]
+    [BinaryOperatorInfo(5)]
+    GreaterThanEqual,
 
     [Lexeme(":")]
     Colon,
@@ -103,9 +134,11 @@ public enum TokenType
     Comma,
 
     [Lexeme("$")]
+    [PreUnaryOperatorInfo(10)]
     Dollar,
 
     [Lexeme("==")]
+    [BinaryOperatorInfo(4)]
     EqualsEquals,
 
     [Lexeme("<->")]
@@ -129,15 +162,13 @@ public enum TokenType
     [Keyword("false")]
     FalseLiteral,
 
-    [Keyword("fn")]
+    [Keyword("func")]
     Function,
 
     [Keyword("let")]
-    [Keyword("declare")]
     Declare,
 
     [Keyword("mut")]
-    [Keyword("mutable")]
     Mutable,
 
     [Keyword("enum")]
@@ -155,9 +186,6 @@ public enum TokenType
     [Keyword("bitfield")]
     Bitfield,
 
-    [Keyword("register")]
-    Register,
-
     [Keyword("default")]
     Default,
 
@@ -169,6 +197,21 @@ public enum TokenType
 
     [Keyword("type")]
     Type,
+
+    [Keyword("switch")]
+    Switch,
+
+    [Keyword("case")]
+    Case,
+
+    [Keyword("break")]
+    Break,
+
+    [Keyword("continue")]
+    Continue,
+
+    [Keyword("return")]
+    Return,
 
     [Keyword("if")]
     If,
@@ -191,24 +234,24 @@ public enum TokenType
     [Keyword("global")]
     Global,
 
-    [Keyword("asm")]
-    Asm,
-
     [Keyword("static")]
     Static,
-
-    [Keyword("nameof")]
-    NameOf,
 
     [Keyword("of")]
     Of,
 
-    [Keyword("implementation")]
-    ImplementationKeyword,
+    [Keyword("implement")]
+    Implement,
 
     [Keyword("operator")]
     Operator,
 
     [Keyword("private")]
     Private,
+
+    [Keyword("import")]
+    Import,
+
+    [Keyword("module")]
+    Module,
 }

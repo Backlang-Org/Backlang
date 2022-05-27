@@ -10,16 +10,11 @@
 		<DefineCommonCapabilities Condition=" '$(DefineCommonCapabilities)' == '' ">true</DefineCommonCapabilities>
 	</PropertyGroup>
 
-	<UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.Tools.BuildTask" />
-	<UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.Tools.ComposerTask" />
+	<UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.BuildTask" />
 
 	<ItemGroup>
 		<!-- well-known items -->
 		<Compile Remove="$(DefaultItemExcludes)" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<DocFileItem Include="$(DocumentationFile)" Condition="'$(DocumentationFile)'!=''" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(_DebugSymbolsProduced)' == 'true' and '$(PdbFile)' != ''">
@@ -47,7 +42,7 @@
           [OUT]
           @(EmbeddedResource) - EmbeddedResource items with metadata
 
-      Peachpie reuses the mechanism from C#, hence:
+      Backlang reuses the mechanism from C#, hence:
 
         Resources1.resx => RootNamespace.Resources1 => Build into main assembly
         SubFolder\Resources1.resx => RootNamespace.SubFolder.Resources1 => Build into main assembly
@@ -93,91 +88,29 @@
 		</ItemGroup>
 	</Target>
 
-	<!-- processes composer.json file if available -->
-	<Target Name="ComposerCore">
-		<PropertyGroup>
-			<ComposerJsonPath Condition=" '$(ComposerJsonPath)'=='' ">$(MSBuildProjectDirectory)/composer.json</ComposerJsonPath>
-		</PropertyGroup>
-		<ComposerTask Condition=" Exists('$(ComposerJsonPath)') "
-					  ComposerJsonPath="$(ComposerJsonPath)"
-					  VersionSuffix="$(VersionSuffix)"
-					  ComposerIncludeDevPackages="$(ComposerIncludeDevPackages)"
-					  ComposerIncludeSuggestPackages="$(ComposerIncludeSuggestPackages)">
-			<Output TaskParameter="Name" PropertyName="_cName" />
-			<Output TaskParameter="Description" PropertyName="_cDescription" />
-			<Output TaskParameter="Version" PropertyName="_cVersion" />
-			<Output TaskParameter="License" PropertyName="_cLicense" />
-			<Output TaskParameter="Homepage" PropertyName="_cHomepage" />
-			<Output TaskParameter="Authors" ItemName="_cAuthors" />
-			<Output TaskParameter="Dependencies" ItemName="ComposerPackageReference" />
-			<Output TaskParameter="Autoload_PSR4" ItemName="_cAutoload_PSR4" />
-			<Output TaskParameter="Autoload_ClassMap" ItemName="_cAutoload_ClassMap" />
-			<Output TaskParameter="Autoload_ClassMap_Exclude" ItemName="_cAutoload_ClassMap_Exclude" />
-			<Output TaskParameter="Autoload_Files" ItemName="_cAutoload_Files" />
-		</ComposerTask>
-
-		<ItemGroup Condition=" '$(ComposerAutoload)'!='false' ">
-			<Autoload_ClassMap Include="%(_cAutoload_ClassMap.Identity)" />
-			<Autoload_ClassMap Remove="%(_cAutoload_ClassMap_Exclude.Identity)" />
-			<Autoload_Files Include="%(_cAutoload_Files.Identity)" />
-			<Autoload_PSR4 Include="@(_cAutoload_PSR4)" />
-		</ItemGroup>
-	</Target>
-
-	<Target Name="ComposerResolve"
-			DependsOnTargets="ComposerCore"
-			BeforeTargets="GenerateNuspec;CollectPackageReferences">
-		<PropertyGroup Condition=" '$(_cName)'!='' ">
-			<!--AssemblyName>$(_cName)</AssemblyName-->
-			<PackageId>$(_cName)</PackageId>
-		</PropertyGroup>
-
-		<PropertyGroup>
-			<PackageDescription Condition=" '$(_cDescription)'!='' ">$(_cDescription)</PackageDescription>
-			<PackageProjectUrl Condition=" '$(PackageProjectUrl)'=='' AND '$(_cHomepage)'!='' ">$(_cHomepage)</PackageProjectUrl>
-			<PackageLicenseExpression Condition=" '$(PackageLicenseExpression)'=='' AND '$(_cLicense)'!='' ">$(_cLicense)</PackageLicenseExpression>
-			<Authors Condition=" '@(_cAuthors->Count())'!='0' ">@(_cAuthors -> '%(Name);', ';')</Authors>
-		</PropertyGroup>
-
-		<PropertyGroup Condition=" '$(_cVersion)'!='' ">
-			<Version>$(_cVersion)</Version>
-			<PackageVersion>$(_cVersion)</PackageVersion>
-		</PropertyGroup>
-
-		<ItemGroup Condition=" '$(ComposerDependencies)'=='true' ">
-			<!-- this will be enabled by default -->
-			<PackageReference Include="@(ComposerPackageReference->'%(Name)')">
-				<PrivateAssets>None</PrivateAssets>
-			</PackageReference>
-		</ItemGroup>
-	</Target>
-
 	<!-- performs compilation -->
 	<Target
 			Name="CoreCompile"
 			Inputs="$(MSBuildAllProjects);
                 @(Compile);
-                $(ComposerJsonPath);
                 @(_CoreCompileResourceInputs);
                 $(ApplicationIcon);
                 $(AssemblyOriginatorKeyFile);
                 @(ReferencePath);
                 @(CompiledLicenseFile);
                 @(LinkResource);
-                @(EmbeddedDocumentation);
                 $(Win32Resource);
                 $(Win32Manifest);
                 @(CustomAdditionalCompileInputs);
                 $(ResolvedCodeAnalysisRuleSet);
                 @(AdditionalFiles);
                 @(EmbeddedFiles)"
-			Outputs="@(DocFileItem);
-                @(IntermediateAssembly);
+			Outputs="@(IntermediateAssembly);
                 @(_DebugSymbolsIntermediatePath);
                 $(NonExistentFile);
                 @(CustomAdditionalCompileOutputs)"
-			Returns="@(PeachpieCommandLineArgs)"
-			DependsOnTargets="ComposerResolve;$(CoreCompileDependsOn)">
+			Returns="@(BacklangCommandLineArgs)"
+			DependsOnTargets="$(CoreCompileDependsOn)">
 
 		<PropertyGroup>
 			<TargetProfile Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " >mscorlib</TargetProfile>
@@ -206,11 +139,8 @@
 		</PropertyGroup>
 
 		<PropertyGroup>
-
 			<TempOutputDir>%(IntermediateAssembly.RelativeDir)</TempOutputDir>
 			<OutputType Condition=" '$(OutputType)' == '' ">library</OutputType>
-			<GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' and '$(DocumentationFile)' != '' ">true</GenerateDocumentationFile>
-			<DocumentationFile Condition=" '$(DocumentationFile)' == '' and '$(GenerateDocumentationFile)' == 'true' ">$(IntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
 		</PropertyGroup>
 
 		<!-- If compiling for full .NET, MSBuild is expected to run on it (e.g. in Visual Studio) so that it can obtain the runtime directory -->
@@ -224,12 +154,6 @@
 			<DefineConstants Include="DEBUG" Condition=" '$(Configuration)' == 'Debug' " />
 		</ItemGroup>
 
-		<PropertyGroup>
-			<_PublicSign Condition=" '$(SignAssembly)' == 'true' ">$(PublicSign)</_PublicSign>
-			<_KeyFile Condition=" '$(SignAssembly)' == 'true' ">$(AssemblyOriginatorKeyFile)</_KeyFile>
-			<_DocumentationFile Condition=" '$(GenerateDocumentationFile)' == 'true' ">$(DocumentationFile)</_DocumentationFile>
-		</PropertyGroup>
-
 		<Error Condition=" '$(BacklangToolFullPath)'=='' " Text="Path to Backlang.NET.Sdk.dll was not set." />
 
 		<BuildTask Condition=" Exists('$(BacklangToolFullPath)') "
@@ -238,34 +162,16 @@
 				   TempOutputPath="$(TempOutputDir)"
 				   TargetFramework="$(TargetFrameworkMoniker)"
 				   NetFrameworkPath="$(NetFrameworkPath)"
-				   BasePath="$(BacklangBasePath)"
 				   Optimization="$(Optimize)"
-				   DebugType="$(DebugType)"
-				   PdbFile="$(PdbFile)"
-				   DocumentationFile="$(DocumentationFile)"
 				   Version="$(Version)"
 				   OutputType="$(OutputType)"
+				   Path="$(MSBuildProjectFullPath)"
 				   EntryPoint="$(StartupObject)"
-				   LangVersion="$(LangVersion)"
-				   BacklangDocTypes="$(BacklangDocTypes)"
-				   ShortOpenTags="$(ShortOpenTag)"
-				   NoWarn="$(NoWarn.Replace('\n', ';'))"
-				   KeyFile="$(_KeyFile)"
-				   PublicSign="$(_PublicSign)"
-				   SourceLink="$(SourceLink)"
-				   CodePage="$(CodePage)"
-				   BacklangRelativePath="$(BacklangRelativePath)"
-				   DefineConstants="@(DefineConstants)"
 				   ReferencePath="@(ReferencePath)"
 				   Compile="@(Compile)"
 				   Resources="@(EmbeddedResource)"
-				   Autoload_PSR4="@(Autoload_PSR4)"
-				   Autoload_ClassMap="@(Autoload_ClassMap)"
-				   Autoload_Files="@(Autoload_Files)"
 				   DebuggerAttach="$(DebuggerAttach)"
 				   GenerateFullPaths="$(GenerateFullPaths)" />
-
-		<Copy SourceFiles="$(TempOutputDir)$(DocumentationFile)" DestinationFolder="$(OutputPath)" Condition=" '$(GenerateDocumentation)'=='true' " />
 	</Target>
 
 	<!--End Required Task by .Common.target-->

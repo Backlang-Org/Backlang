@@ -69,6 +69,16 @@ public static class SyntaxTree
                                     body).SetStyle(NodeStyle.StatementBlock)));
     }
 
+    public static LNode Switch(LNode element, LNodeList cases)
+    {
+        return LNode.Call(CodeSymbols.SwitchStmt, LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
+    }
+
+    public static LNode Case(LNode condition, LNodeList body)
+    {
+        return LNode.Call(CodeSymbols.Case, LNode.List(condition, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode If(LNode cond, LNodeList ifBody, LNodeList elseBody)
     {
         return LNode.Call(CodeSymbols.If,
@@ -90,6 +100,16 @@ public static class SyntaxTree
         return LNode.Call(attributes, Symbols.Implementation,
            LNode.List(target, LNode.Call(CodeSymbols.Braces,
                body).SetStyle(NodeStyle.StatementBlock)));
+    }
+
+    public static LNode Import(LNode expr)
+    {
+        return LNode.Call(CodeSymbols.Import, LNode.List(expr));
+    }
+
+    public static LNode Module(LNode ns)
+    {
+        return LNode.Call(CodeSymbols.Namespace, LNode.List(ns));
     }
 
     public static LNode None()

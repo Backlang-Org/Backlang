@@ -22,10 +22,12 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Type);
         AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
-        AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.ImplementationKeyword);
+        AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.Implement);
+        AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
+        AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
+        AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Hash);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
-        //AddExpressionParsePoint<NameOfExpression>(TokenType.NameOf);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
@@ -33,11 +35,15 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
-        //AddStatementParsePoint<AssemblerBlockStatement>(TokenType.Asm);
-        AddStatementParsePoint<VariableDeclarationStatement>(TokenType.Declare);
+        AddStatementParsePoint<BreakStatement>(TokenType.Break);
+        AddStatementParsePoint<ContinueStatement>(TokenType.Continue);
+        AddStatementParsePoint<ReturnStatement>(TokenType.Return);
+        AddStatementParsePoint<VariableDeclaration>(TokenType.Declare);
+        AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
         AddStatementParsePoint<ForStatement>(TokenType.For);
+        AddStatementParsePoint<MacroBlockStatement>(TokenType.Hash);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)
@@ -56,6 +62,18 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         where T : IParsePoint<LNode>
     {
         StatementParsePoints.Add(type, T.Parse);
+    }
+
+    public LNodeList InvokeDeclarationParsePoints(TokenType terminator = TokenType.EOF)
+    {
+        var body = new LNodeList();
+        while (Iterator.Current.Type != terminator)
+        {
+            var item = InvokeParsePoint(DeclarationParsePoints);
+            body.Add(item);
+        }
+
+        return body;
     }
 
     public LNode InvokeParsePoint(ParsePoints<LNode> parsePoints)
@@ -93,12 +111,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
     {
         var cu = new CompilationUnit();
 
-        var body = new LNodeList();
-        while (Iterator.Current.Type != (TokenType.EOF))
-        {
-            var item = InvokeParsePoint(DeclarationParsePoints);
-            body.Add(item);
-        }
+        var body = InvokeDeclarationParsePoints();
 
         cu.Messages = Messages.Concat(Iterator.Messages).ToList();
         cu.Body = body;

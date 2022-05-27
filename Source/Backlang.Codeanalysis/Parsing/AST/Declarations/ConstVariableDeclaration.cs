@@ -6,7 +6,7 @@ public sealed class ConstVariableDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var decl = VariableDeclarationStatement.Parse(iterator, parser);
+        var decl = VariableDeclaration.Parse(iterator, parser);
 
         return decl.WithAttrs(LNode.Id(CodeSymbols.Const));
     }

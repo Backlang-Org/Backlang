@@ -15,6 +15,7 @@ public sealed partial class Parser
         return Iterator.Current.Type switch
         {
             TokenType.StringLiteral => ParseString(),
+            TokenType.CharLiteral => ParseChar(),
             TokenType.Number => ParseNumber(),
             TokenType.HexNumber => ParseHexNumber(),
             TokenType.BinNumber => ParseBinNumber(),
@@ -69,6 +70,11 @@ public sealed partial class Parser
         return SyntaxTree.Factory.Literal(value);
     }
 
+    private LNode ParseChar()
+    {
+        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]);
+    }
+
     private LNode ParseHexNumber()
     {
         var valueToken = Iterator.NextToken();
@@ -78,16 +84,16 @@ public sealed partial class Parser
 
     private LNode ParseNumber()
     {
-        var valueToken = Iterator.NextToken();
+        var text = Iterator.NextToken().Text;
 
-        object value = long.Parse(valueToken.Text, CultureInfo.InvariantCulture);
-
-        if (value == null)
+        if (text.Contains('.'))
         {
-            value = double.Parse(valueToken.Text, CultureInfo.InvariantCulture);
+            return SyntaxTree.Factory.Literal(double.Parse(text));
         }
-
-        return SyntaxTree.Factory.Literal(value);
+        else
+        {
+            return SyntaxTree.Factory.Literal(int.Parse(text));
+        }
     }
 
     private LNode ParseString()

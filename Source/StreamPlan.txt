@@ -1,0 +1,13 @@
+StreamPlan Backseat-Montag:
+	
+	- Scopes implementieren
+
+	- macro folgende syntax erlauben:
+		mymacro(args) {
+			//do something
+		}
+
+	- bitwise operators
+	& | ^ ~
+	- bitwise assignment operators
+	&= |= ^= ~=

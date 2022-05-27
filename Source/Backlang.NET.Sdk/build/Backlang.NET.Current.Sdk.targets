@@ -10,9 +10,11 @@
 	</PropertyGroup>
 
 	<!-- implicit packages -->
+	<!--
 	<ItemGroup Condition=" '$(DisableImplicitBacklangReferences)'!='true' and '$(BacklangVersion)'!='' ">
-		<PackageReference Include="Backlang.App" Version="$(BacklangVersion)" />
+		<PackageReference Include="Backlang.Templates" Version="1.0.9" />
 	</ItemGroup>
+	-->
 
 	<Import Project="$(MSBuildThisFileDirectory)\Backlang.NET.Core.Sdk.targets" />
 

@@ -38,117 +38,30 @@ public sealed class Lexer : BaseLexer
         {
             return new Token(TokenType.EOF, "\0", _position, _position, _line, _column);
         }
-        else if (Current() == '\'')
+
+        if (Current() == '\'')
         {
-            var oldpos = ++_position;
-            var oldColumn = _column;
-
-            while (Peek() != '\'' && Peek() != '\0')
-            {
-                if (Current() == '\n' || Current() == '\r')
-                {
-                    Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
-                }
-
-                Advance();
-                _column++;
-            }
-
-            _column += 2;
-
-            return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+            return LexCharLiteral();
         }
         else if (Current() == '"')
         {
-            var oldpos = ++_position;
-            var oldColumn = _column;
-
-            while (Peek() != '"' && Peek() != '\0')
-            {
-                if (Current() == '\n' || Current() == '\r')
-                {
-                    Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
-                }
-
-                Advance();
-                _column++;
-            }
-
-            _column += 2;
-
-            return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+            return LexDoubleQuoteString();
         }
         else if (IsMatch("0x"))
         {
-            _position += 2;
-            _column += 2;
-
-            var oldpos = _position;
-            var oldcolumn = _column;
-
-            while (IsHex(Current()) || Current() == '_')
-            {
-                Advance();
-                _column++;
-            }
-
-            return new Token(TokenType.HexNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+            return LexHexNumber();
         }
         else if (IsMatch("0b"))
         {
-            _position += 2;
-            _column += 2;
-
-            var oldpos = _position;
-            var oldcolumn = _column;
-
-            while (IsBinaryDigit(Current()) || Current() == '_')
-            {
-                Advance();
-                _column++;
-            }
-
-            return new Token(TokenType.BinNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+            return LexBinaryNumber();
         }
         else if (char.IsDigit(Current()))
         {
-            var oldpos = _position;
-            var oldcolumn = _column;
-
-            while (char.IsDigit(Peek(0)))
-            {
-                Advance();
-                _column++;
-            }
-
-            if (char.IsDigit(Peek(1)) && Peek(0) == '.')
-            {
-                Advance();
-                _column++;
-
-                while (char.IsDigit(Peek(0)))
-                {
-                    Advance();
-                    _column++;
-                }
-            }
-
-            return new Token(TokenType.Number, _document.Source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+            return LexDecimalNumber();
         }
         else if (IsIdentifierStartDigit())
         {
-            var oldpos = _position;
-
-            var oldcolumn = _column;
-            while (IsIdentifierDigit())
-            {
-                Advance();
-                _column++;
-            }
-
-            var tokenText = _document.Source.Substring(oldpos, _position - oldpos);
-
-            return new Token(TokenUtils.GetTokenType(tokenText), tokenText, oldpos, _position, _line, oldcolumn);
+            return LexIdentifier();
         }
         else
         {
@@ -156,14 +69,7 @@ public sealed class Lexer : BaseLexer
             {
                 if (IsMatch(symbol.Key))
                 {
-                    var oldpos = _position;
-
-                    _position += symbol.Key.Length;
-                    _column += symbol.Key.Length;
-
-                    string text = _document.Source.Substring(oldpos, symbol.Key.Length);
-
-                    return new Token(_symbolTokens[text], text, oldpos, _position, _line, _column);
+                    return LexSymbol(symbol);
                 }
             }
 
@@ -195,7 +101,7 @@ public sealed class Lexer : BaseLexer
 
     private bool IsMatch(string token)
     {
-        bool result = Peek(0) == token[0];
+        bool result = Current() == token[0];
 
         for (int i = 1; i < token.Length; i++)
         {
@@ -206,6 +112,138 @@ public sealed class Lexer : BaseLexer
         }
 
         return result;
+    }
+
+    private Token LexBinaryNumber()
+    {
+        _position += 2;
+        _column += 2;
+
+        var oldpos = _position;
+        var oldcolumn = _column;
+
+        while (IsBinaryDigit(Current()) || Current() == '_')
+        {
+            Advance();
+            _column++;
+        }
+
+        return new Token(TokenType.BinNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+    }
+
+    private Token LexCharLiteral()
+    {
+        var oldpos = ++_position;
+        var oldColumn = _column;
+
+        if (Current() == '\n' || Current() == '\r')
+        {
+            Messages.Add(Message.Error(_document, $"Unterminated CharLiteral", _line, oldColumn));
+
+            return Token.Invalid;
+        }
+
+        if (Peek() != '\'' && Peek() != '\0')
+        {
+            Advance();
+            _column++;
+        }
+
+        _column += 2;
+
+        return new Token(TokenType.CharLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+    }
+
+    private Token LexDecimalNumber()
+    {
+        var oldpos = _position;
+        var oldcolumn = _column;
+
+        while (char.IsDigit(Current()))
+        {
+            _position++;
+            _column++;
+        }
+
+        if (char.IsDigit(Peek(1)) && Current() == '.')
+        {
+            Advance();
+            _column++;
+
+            while (char.IsDigit(Current()))
+            {
+                Advance();
+                _column++;
+            }
+        }
+
+        return new Token(TokenType.Number, _document.Source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+    }
+
+    private Token LexDoubleQuoteString()
+    {
+        var oldpos = ++_position;
+        var oldColumn = _column;
+
+        while (Peek() != '"' && Peek() != '\0')
+        {
+            if (Current() == '\n' || Current() == '\r')
+            {
+                Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
+            }
+
+            Advance();
+            _column++;
+        }
+
+        _column += 2;
+
+        return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+    }
+
+    private Token LexHexNumber()
+    {
+        _position += 2;
+        _column += 2;
+
+        var oldpos = _position;
+        var oldcolumn = _column;
+
+        while (IsHex(Current()) || Current() == '_')
+        {
+            Advance();
+            _column++;
+        }
+
+        return new Token(TokenType.HexNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+    }
+
+    private Token LexIdentifier()
+    {
+        var oldpos = _position;
+
+        var oldcolumn = _column;
+        while (IsIdentifierDigit())
+        {
+            Advance();
+            _column++;
+        }
+
+        var tokenText = _document.Source.Substring(oldpos, _position - oldpos);
+
+        return new Token(TokenUtils.GetTokenType(tokenText), tokenText, oldpos, _position, _line, oldcolumn);
+    }
+
+    private Token LexSymbol(KeyValuePair<string, TokenType> symbol)
+    {
+        var oldpos = _position;
+
+        _position += symbol.Key.Length;
+        _column += symbol.Key.Length;
+
+        string text = _document.Source.Substring(oldpos, symbol.Key.Length);
+
+        return new Token(_symbolTokens[text], text, oldpos, _position, _line, _column);
     }
 
     private void SkipComments()

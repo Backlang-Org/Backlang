@@ -44,7 +44,7 @@ public static class Expression
             Token? operatorToken = parser.Iterator.NextToken();
             LNode? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
-            left = SyntaxTree.Unary(GSymbol.Get("'suf" + operatorToken.Text), operand);
+            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand);
         }
         else
         {
@@ -54,7 +54,7 @@ public static class Expression
             {
                 Token? operatorToken = parser.Iterator.NextToken();
 
-                left = SyntaxTree.Unary(GSymbol.Get("'" + operatorToken.Text), left);
+                left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), left);
             }
         }
 
@@ -67,7 +67,7 @@ public static class Expression
             var operatorToken = parser.Iterator.NextToken();
             var right = Parse(parser, parsePoints, precedence);
 
-            left = SyntaxTree.Binary(GSymbol.Get(operatorToken.Text), left, right);
+            left = SyntaxTree.Binary(GSymbol.Get($"'{operatorToken.Text}"), left, right);
         }
 
         return left;

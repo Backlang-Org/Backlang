@@ -2,7 +2,7 @@
     "name": "back",
     "displayName": "Backstention",
     "description": "Backlang For Backseat System",
-    "version": "0.0.33",
+    "version": "0.0.40",
     "publisher": "furesoft",
     "engines": {
         "vscode": "^1.66.0"

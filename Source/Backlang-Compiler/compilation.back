@@ -1,35 +1,83 @@
-﻿struct Point {
+﻿import System;
+import System.Collections;
+import System.Collections.Generic;
+
+module TesT;
+
+struct Point {
 	X : u32;
 	Y : u32;
 }
 
-implementation of Point {
-	fn distance(other : Point) static -> Point {
-		
+implement Point {
+	func distance(other : Point) -> Point {
+
 	}
 
-	fn add(lhs : Point, rhs : Point) operator -> Point {
-		
+	func add(lhs : Point, rhs : Point) operator -> Point {
+		return Point::new(lhs.X + rhs.X, lhs.Y + rhs.Y);
 	}
 
-	fn toString() -> string {
-		
-	}
-}
-
-implementation for u8,u16 {
-	fn parse(str : string) -> bool {
-		
+	func toString() -> string {
+		return "X: " + X + " Y: " + Y;
 	}
 }
 
-fn main() static -> none {
-	let msg : string = "hello world";
+implement u8..u64, f64, i16..i64 {
+	func someTest() -> SELF {
+		#matchCode(somevalue) {
+			msg += "Hello";
+			let msg : string = concatId(a, b, c);
+		}
+	}
+}
 
+func main() static -> none {
+	let msg : string = concatId(a, b, c);
+	let name : string = nameof(msg);
+	let k = 1.2;
+
+	let s = Point::new();
+	let handle = ^s;
+	let another = ^s;
+	#autofree(handle, another) {
+		print(&handle);
+	}
+
+	let myChar = 'a';
+
+	switch myChar {
+		break case 'b' || 'c': print("It's B!");
+		if isAlpha(myChar): {
+			print("It's...");
+			print("a C!");
+		}
+		case 'w': break;
+		default: print("i dont know what it is :c");
+	}
+
+	let mut i = 10;
+
+	while i > 0 {
+		i -= 1;
+		continue;
+	}
+	
+	Point::new(1, 2);
+
+	msg += "Hello";
+	msg -= 'c';
+	
 	print("something new");
-	print(msg);
+
+	#quote {
+		print(msg);
+	}
+
+	return 0;
 }
 
-fn println(arg : string) static -> none {
+func println(arg : string) static -> none {
 	print(msg + "\n");
 }
+

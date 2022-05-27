@@ -15,13 +15,13 @@ public class CompilerDriver
                _.Add<InitReferencesStage>();
            });
 
-           cfg.Add<LowererStage>();
+           cfg.Add<ExpandMacrosStage>();
            cfg.Add<IntermediateStage>();
            cfg.Add<ExpandImplementationStage>();
            cfg.Add<ImplementationStage>();
        }
        );
 
-        await pipeline.Invoke(context).ConfigureAwait(false);
+        await pipeline.Invoke(context);
     }
 }

@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>Backlang.NET.Sdk</AssemblyName>
 	<LangVersion>preview</LangVersion>
+	<EnablePreviewFeatures>True</EnablePreviewFeatures>
 
     <PackageOnlyBuild>true</PackageOnlyBuild>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
@@ -12,7 +13,10 @@
     <PackageId>Backlang.NET.Sdk</PackageId>    
     <PackageTags>backlang;sdk;back;msbuild</PackageTags>
     <GeneratePackageOnBuild Condition=" $(GeneratePackageOnBuild)=='' ">True</GeneratePackageOnBuild>    
-    <Description>The MSBuild SDK containing build targets and runtime.</Description>
+    <Description>The MSBuild SDK containing build targets and runtime.</Description>    
+    <AssemblyVersion>$(Version)</AssemblyVersion>    
+    <FileVersion>$(Version)</FileVersion>    
+    <Version>1.0.19</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
@@ -45,7 +49,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.1.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.2.0" />
   </ItemGroup>
 
   <ItemGroup>

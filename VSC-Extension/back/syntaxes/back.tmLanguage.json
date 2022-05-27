@@ -22,13 +22,16 @@
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#char"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.other.back",
-				"match": "\\b(register|const|global|in|return|where|type|mut|import|struct|let|implementation|of|for|if|else|match|with|while|static|operator|private|public|fn|enum|union|bitfield|asm|default|sizeof|and|or)\\b"
+				"match": "\\b(const|global|in|return|where|type|mut|import|module|struct|let|implement|of|for|switch|case|break|if|else|match|with|while|static|operator|private|public|func|enum|union|bitfield|default|sizeof|and|or)\\b"
 			}]
 		},
 		"literals": {
@@ -58,13 +61,24 @@
 		"primitives": {
 			"patterns": [{
 				"name": "keyword.control.back",
-				"match": "\\b(u8|u16|u32|i32|i8|i16|i32|i64|f32|f64|f16|fraction|bool|string)\\b"
+				"match": "\\b(obj|u8|u16|u32|i32|i8|i16|i32|i64|f32|f64|f16|fraction|bool|string|char|SELF)\\b"
 			}]
 		},
 		"strings": {
 			"name": "string.quoted.double.back",
 			"begin": "\"",
 			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.back",
+					"match": "\\\\."
+				}
+			]
+		},
+		"char": {
+			"name": "string.quoted.single.back",
+			"begin": "'",
+			"end": "'",
 			"patterns": [
 				{
 					"name": "constant.character.escape.back",

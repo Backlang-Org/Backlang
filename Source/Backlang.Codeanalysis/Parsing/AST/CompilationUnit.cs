@@ -5,6 +5,7 @@ namespace Backlang.Codeanalysis.Parsing.AST;
 public sealed class CompilationUnit
 {
     public LNodeList Body { get; set; } = new();
+    public SourceDocument Document { get; private set; }
     public List<Message> Messages { get; set; } = new List<Message>();
 
     public static CompilationUnit FromFile(string filename)
@@ -13,7 +14,7 @@ public sealed class CompilationUnit
 
         var result = Parser.Parse(document);
 
-        return new CompilationUnit { Body = result.Tree, Messages = result.Messages };
+        return new CompilationUnit { Body = result.Tree, Messages = result.Messages, Document = document };
     }
 
     public static CompilationUnit FromText(string text)
@@ -22,6 +23,6 @@ public sealed class CompilationUnit
 
         var result = Parser.Parse(document);
 
-        return new CompilationUnit { Body = result.Tree, Messages = result.Messages };
+        return new CompilationUnit { Body = result.Tree, Messages = result.Messages, Document = document };
     }
 }

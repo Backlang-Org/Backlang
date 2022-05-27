@@ -30,7 +30,7 @@ public abstract class BaseLexer
 
     protected int Advance()
     {
-        return _position++;
+        return ++_position;
     }
 
     protected char Current()

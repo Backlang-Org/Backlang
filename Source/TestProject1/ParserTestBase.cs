@@ -21,7 +21,7 @@ namespace TestProject1
 
         protected static LNodeList ParseAndGetNodesInFunction(string source)
         {
-            var tree = ParseAndGetNodes("fn main() {" + source + "}");
+            var tree = ParseAndGetNodes("func main() {" + source + "}");
 
             return tree.First().Args[3].Args;
         }

@@ -6,7 +6,7 @@ public sealed class GlobalVariableDeclaration : IParsePoint<LNode>
 {
     public new static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var decl = VariableDeclarationStatement.Parse(iterator, parser);
+        var decl = VariableDeclaration.Parse(iterator, parser);
 
         return decl.WithAttrs(LNode.Id(Symbols.Global));
     }

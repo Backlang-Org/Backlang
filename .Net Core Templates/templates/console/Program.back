@@ -1,4 +1,6 @@
-fn main() static -> none
+func main() static -> i32
 {
     print("Hello World");
+    
+    return 0;
 }
