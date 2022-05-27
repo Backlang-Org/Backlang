@@ -200,6 +200,9 @@ public enum TokenType
     [Keyword("break")]
     Break,
 
+    [Keyword("return")]
+    Return,
+
     [Keyword("if")]
     If,
 

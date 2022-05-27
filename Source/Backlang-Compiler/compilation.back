@@ -66,6 +66,8 @@ func main() static -> none {
 	#quote {
 		print(msg);
 	}
+
+	return 0;
 }
 
 func println(arg : string) static -> none {
