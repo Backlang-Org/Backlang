@@ -95,7 +95,7 @@ public static class Expression
         return list;
     }
 
-    private static int GetBinaryOperatorPrecedence(TokenType kind)
+    public static int GetBinaryOperatorPrecedence(TokenType kind)
     {
         for (int i = 0; i < Operators.Count - 1; i++)
         {

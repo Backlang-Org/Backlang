@@ -47,11 +47,17 @@ func main() static -> none {
 	let myChar = 'a';
 
 	switch myChar {
-		break case 'b' || 'c': print("It's B!");
+		break case 'b' || 'c': print("It's B or C!");
 		if isAlpha(myChar): {
 			print("It's...");
-			print("a C!");
+			print("alphabetic!");
+			break;
 		}
+		when >= 'A': {
+			print("Greater or equal A, could be capital");
+			break;
+		}
+		break when isCool(): print("converts to myChar.isCool();");
 		case 'w': break;
 		default: print("i dont know what it is :c");
 	}
