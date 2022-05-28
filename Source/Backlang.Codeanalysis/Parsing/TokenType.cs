@@ -213,6 +213,9 @@ public enum TokenType
     [Keyword("return")]
     Return,
 
+    [Keyword("when")]
+    When,
+
     [Keyword("if")]
     If,
 
