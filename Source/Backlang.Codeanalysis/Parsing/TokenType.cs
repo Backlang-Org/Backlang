@@ -11,6 +11,7 @@ public enum TokenType
     Number,
     HexNumber,
     BinNumber,
+    CharLiteral,
 
     [Lexeme(".")]
     [BinaryOperatorInfo(7)]
@@ -92,6 +93,10 @@ public enum TokenType
     [Lexeme("#")]
     Hash,
 
+    [Lexeme("<=")]
+    [BinaryOperatorInfo(5)]
+    LessThanEqual,
+
     [Lexeme("<")]
     [BinaryOperatorInfo(5)]
     LessThan,
@@ -99,6 +104,10 @@ public enum TokenType
     [Lexeme(">")]
     [BinaryOperatorInfo(5)]
     GreaterThan,
+
+    [Lexeme(">=")]
+    [BinaryOperatorInfo(5)]
+    GreaterThanEqual,
 
     [Lexeme(":")]
     Colon,
@@ -157,11 +166,9 @@ public enum TokenType
     Function,
 
     [Keyword("let")]
-    [Keyword("declare")]
     Declare,
 
     [Keyword("mut")]
-    [Keyword("mutable")]
     Mutable,
 
     [Keyword("enum")]
@@ -234,7 +241,7 @@ public enum TokenType
     Of,
 
     [Keyword("implement")]
-    ImplementationKeyword,
+    Implement,
 
     [Keyword("operator")]
     Operator,
@@ -247,5 +254,4 @@ public enum TokenType
 
     [Keyword("module")]
     Module,
-    CharLiteral,
 }
