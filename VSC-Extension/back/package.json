@@ -2,6 +2,7 @@
     "name": "back",
     "displayName": "Backstention",
     "description": "Backlang For Backseat System",
+    "icon": "media/logo.png",
     "version": "0.0.41",
     "publisher": "furesoft",
     "engines": {
@@ -15,7 +16,11 @@
             "id": "back",
             "aliases": ["Backlang", "back"],
             "extensions": [".back"],
-            "configuration": "./language-configuration.json"
+            "configuration": "./language-configuration.json",
+            "icon": {
+                "light": "./media/logo.svg",
+                "dark": "./media/logo.svg"
+            }
         }],
         "grammars": [{
             "language": "back",
