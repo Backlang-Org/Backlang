@@ -1,38 +1,7 @@
-﻿import System;
-import System.Collections;
-import System.Collections.Generic;
-
-module TesT;
-
-struct Point {
-	X : u32;
-	Y : u32;
-}
-
-implement Point {
-	func distance(other : Point) -> Point {
-
-	}
-
-	func add(lhs : Point, rhs : Point) operator -> Point {
-		return Point::new(lhs.X + rhs.X, lhs.Y + rhs.Y);
-	}
-
-	func toString() -> string {
-		return "X: " + X + " Y: " + Y;
-	}
-}
-
-implement u8..u64, f64, i16..i64 {
-	func someTest() -> SELF {
-		#matchCode(somevalue) {
-			msg += "Hello";
-			let msg : string = concatId(a, b, c);
-		}
-	}
-}
-
+﻿
 func main() static -> none {
+	let uh = 1L;
+
 	let msg : string = concatId(a, b, c);
 	let name : string = nameof(msg);
 	let k = 1.2;
@@ -46,44 +15,6 @@ func main() static -> none {
 
 	let myChar = 'a';
 
-	switch myChar {
-		break case 'b' || 'c': print("It's B or C!");
-		if isAlpha(myChar): {
-			print("It's...");
-			print("alphabetic!");
-			break;
-		}
-		when >= 'A': {
-			print("Greater or equal A, could be capital");
-			break;
-		}
-		break when isCool(): print("converts to myChar.isCool();");
-		case 'w': break;
-		default: print("i dont know what it is :c");
-	}
-
-	let mut i = 10;
-
-	while i > 0 {
-		i -= 1;
-		continue;
-	}
 	
-	Point::new(1, 2);
 
-	msg += "Hello";
-	msg -= 'c';
-	
-	print("something new");
-
-	#quote {
-		print(msg);
-	}
-
-	return 0;
 }
-
-func println(arg : string) static -> none {
-	print(msg + "\n");
-}
-

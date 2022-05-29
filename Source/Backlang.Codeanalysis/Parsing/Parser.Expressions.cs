@@ -1,3 +1,4 @@
+using Loyc;
 using Loyc.Syntax;
 using System.Globalization;
 
@@ -5,6 +6,29 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public sealed partial class Parser
 {
+    private List<string> _lits = new() {
+        "ub",
+        "UB",
+        "us",
+        "US",
+        "u",
+        "ui",
+        "U",
+        "UI",
+        "ul",
+        "UL",
+        "b",
+        "B",
+        "s",
+        "S",
+        "l",
+        "L",
+        "h",
+        "H",
+        "d",
+        "D",
+    };
+
     internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
     {
         if (parsePoints == null)
@@ -86,14 +110,30 @@ public sealed partial class Parser
     {
         var text = Iterator.NextToken().Text;
 
+        LNode result;
         if (text.Contains('.'))
         {
-            return SyntaxTree.Factory.Literal(double.Parse(text));
+            result = SyntaxTree.Factory.Literal(double.Parse(text));
         }
         else
         {
-            return SyntaxTree.Factory.Literal(int.Parse(text));
+            result = SyntaxTree.Factory.Literal(int.Parse(text));
         }
+
+        if (Iterator.Current.Type == TokenType.Identifier)
+        {
+            if (_lits.Contains(Iterator.Current.Text))
+            {
+                result = SyntaxTree.Unary(GSymbol.Get("'" + Iterator.NextToken().Text), result);
+            }
+            else
+            {
+                Messages.Add(Message.Error(Document, $"Unknown Literal {Iterator.Current.Text}", Iterator.Current.Line, Iterator.Current.Column));
+                return LNode.Missing;
+            }
+        }
+
+        return result;
     }
 
     private LNode ParseString()

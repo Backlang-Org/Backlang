@@ -28,8 +28,24 @@ public static class Expression
         }
     }
 
+    public static int GetBinaryOperatorPrecedence(TokenType kind)
+    {
+        for (int i = 0; i < Operators.Count - 1; i++)
+        {
+            if (Operators[i].TokenType == kind && !Operators[i].IsUnary)
+            {
+                return Operators[i].Precedence;
+            }
+        }
+
+        return 0;
+    }
+
+    //12L
+    //3.14F
+
     public static LNode Parse<TLexer, TParser>(
-        Core.BaseParser<TLexer, TParser> parser,
+            Core.BaseParser<TLexer, TParser> parser,
         ParsePoints<LNode> parsePoints = null,
         int parentPrecedence = 0)
 
@@ -39,9 +55,10 @@ public static class Expression
         LNode left;
         var unaryOperatorPrecedence = GetUnaryOperatorPrecedence(parser.Iterator.Current.Type);
 
-        if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
+        if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence && !IsPostUnary(parser.Iterator.Current.Type))
         {
             Token? operatorToken = parser.Iterator.NextToken();
+
             LNode? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
             left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand);
@@ -93,19 +110,6 @@ public static class Expression
         parser.Iterator.Match(terminator);
 
         return list;
-    }
-
-    public static int GetBinaryOperatorPrecedence(TokenType kind)
-    {
-        for (int i = 0; i < Operators.Count - 1; i++)
-        {
-            if (Operators[i].TokenType == kind && !Operators[i].IsUnary)
-            {
-                return Operators[i].Precedence;
-            }
-        }
-
-        return 0;
     }
 
     private static int GetUnaryOperatorPrecedence(TokenType kind)
