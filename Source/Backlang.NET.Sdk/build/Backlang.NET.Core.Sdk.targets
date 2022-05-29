@@ -168,7 +168,7 @@
 				   Path="$(MSBuildProjectFullPath)"
 				   EntryPoint="$(StartupObject)"
 				   ReferencePath="@(ReferencePath)"
-				   OutputTree="@(OutputTree)"
+				   OutputTree="$(OutputTree)"
 				   Compile="@(Compile)"
 				   Resources="@(EmbeddedResource)"
 				   DebuggerAttach="$(DebuggerAttach)"
