@@ -46,7 +46,7 @@ func main() static -> none {
 
 	let myChar = 'a';
 
-	let uh = a;
+	let uh = 1;
 
 	switch myChar {
 		break case 'b' || 'c': print("It's B or C!");
