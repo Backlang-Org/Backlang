@@ -61,7 +61,14 @@ public sealed class Lexer : BaseLexer
         }
         else if (IsIdentifierStartDigit())
         {
-            return LexIdentifier();
+            var identifier = LexIdentifier();
+
+            if (IsOperatorIdentifier(identifier))
+            {
+                identifier.Type = GetOperatorKind(identifier);
+            }
+
+            return identifier;
         }
         else
         {
@@ -89,6 +96,19 @@ public sealed class Lexer : BaseLexer
         return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F';
     }
 
+    private TokenType GetOperatorKind(Token identifier)
+    {
+        foreach (var s in _symbolTokens)
+        {
+            if (identifier.Text == s.Key)
+            {
+                return s.Value;
+            }
+        }
+
+        return TokenType.Identifier;
+    }
+
     private bool IsIdentifierDigit()
     {
         return char.IsLetterOrDigit(Current()) || Current() == '_';
@@ -112,6 +132,11 @@ public sealed class Lexer : BaseLexer
         }
 
         return result;
+    }
+
+    private bool IsOperatorIdentifier(Token identifier)
+    {
+        return _symbolTokens.ContainsKey(identifier.Text);
     }
 
     private Token LexBinaryNumber()
