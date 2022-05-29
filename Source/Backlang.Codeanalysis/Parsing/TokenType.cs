@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Core.Attributes;
+using Backlang.Codeanalysis.Parsing.Precedences;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -14,99 +15,99 @@ public enum TokenType
     CharLiteral,
 
     [Lexeme(".")]
-    [BinaryOperatorInfo(7)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
     Dot,
 
     [Lexeme("::")]
-    [BinaryOperatorInfo(7)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
     ColonColon,
 
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
     [Lexeme("+")]
     Plus,
 
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Range)]
     [Lexeme("..")]
     RangeOperator,
 
-    [PreUnaryOperatorInfo(6)]
-    [BinaryOperatorInfo(4)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Minus)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
     [Lexeme("-")]
     Minus,
 
     [Lexeme("&")]
-    [PreUnaryOperatorInfo(9)]
-    [BinaryOperatorInfo(3)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Ampersand)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Ampersand,
 
     [Lexeme("^")]
-    [BinaryOperatorInfo(2)]
-    [PreUnaryOperatorInfo(9)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
     Hat,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
     [Lexeme("/")]
     Slash,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
     [Lexeme("*")]
     Star,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Percent)]
     [Lexeme("%")]
     Percent,
 
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.And)]
     [Lexeme("and")]
     [Lexeme("&&")]
     And,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Or)]
     [Lexeme("or")]
     [Lexeme("||")]
     Or,
 
-    [PreUnaryOperatorInfo(6)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Negative)]
     [Lexeme("!")]
     Exclamation,
 
     [Lexeme("*=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     StarEqualsToken,
 
     [Lexeme("/=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     DivEqualsToken,
 
     [Lexeme("+=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     PlusEqualsToken,
 
     [Lexeme("-=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     MinusEqualsToken,
 
     [Lexeme("=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
     EqualsToken,
 
     [Lexeme("#")]
     Hash,
 
     [Lexeme("<=")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThanEqual,
 
     [Lexeme("<")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThan,
 
     [Lexeme(">")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThan,
 
     [Lexeme(">=")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThanEqual,
 
     [Lexeme(":")]
@@ -134,11 +135,11 @@ public enum TokenType
     Comma,
 
     [Lexeme("$")]
-    [PreUnaryOperatorInfo(10)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Dollar)]
     Dollar,
 
     [Lexeme("==")]
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
     EqualsEquals,
 
     [Lexeme("<->")]
