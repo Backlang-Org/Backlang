@@ -257,4 +257,9 @@ public enum TokenType
 
     [Keyword("module")]
     Module,
+
+    // Unary Ops for Literals
+    [Lexeme("u")]
+    LiteralOPUnsigned
+
 }
