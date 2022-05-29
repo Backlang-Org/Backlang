@@ -11,6 +11,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
      *  case cond: { block; }
      *  if boolean: oneExpr;
      *  if boolean: { block; }
+     *  break when > value: { block; }
      *  default: oneExpr;
      *  default: { block; }
      * }
@@ -34,7 +35,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
             else if (iterator.IsMatch(TokenType.If))
                 cases.Add(ParseIf(parser, autoBreak));
             else if (iterator.IsMatch(TokenType.When))
-                cases.Add(ParseWhen(parser, element, autoBreak));
+                cases.Add(ParseWhen(parser, autoBreak));
             else if (iterator.IsMatch(TokenType.Default))
                 cases.Add(ParseDefault(parser, autoBreak));
             else
@@ -81,19 +82,20 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         return SyntaxTree.If(condition, body, LNode.List());
     }
 
-    private static LNode ParseWhen(Parser parser, LNode element, bool autoBreak)
+    private static LNode ParseWhen(Parser parser, bool autoBreak)
     {
         parser.Iterator.Match(TokenType.When);
 
-        LNode condition = LNode.Missing;
+        LNode binOp = LNode.Missing;
+        LNode right = LNode.Missing;
 
         if (Expression.GetBinaryOperatorPrecedence(parser.Iterator.Current.Type) > 0)
         {
             // with binary expression
             var operatorToken = parser.Iterator.NextToken();
-            var right = Expression.Parse(parser);
-
-            condition = SyntaxTree.Binary(GSymbol.Get($"'{operatorToken.Text}"), element, right);
+            
+            right = Expression.Parse(parser);
+            binOp = LNode.Call(GSymbol.Get($"'{operatorToken.Text}"));
         } else
         {
             // with element function
@@ -107,9 +109,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
             parser.Iterator.Match(TokenType.OpenParen);
             var args = Expression.ParseList(parser, TokenType.CloseParen);
 
-            var func = LNode.Call(name, args);
-
-            condition = LNode.Call(CodeSymbols.Dot, LNode.List(element, func));
+            right = LNode.Call(name, args);
         }
 
         parser.Iterator.Match(TokenType.Colon);
@@ -119,7 +119,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         if (autoBreak)
             body = body.Add(LNode.Call(CodeSymbols.Break));
 
-        return SyntaxTree.If(condition, body, LNode.List());
+        return SyntaxTree.When(binOp, right, body);
     }
 
     private static LNode ParseDefault(Parser parser, bool autoBreak)

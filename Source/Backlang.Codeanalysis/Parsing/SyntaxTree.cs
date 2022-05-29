@@ -79,6 +79,11 @@ public static class SyntaxTree
         return LNode.Call(CodeSymbols.Case, LNode.List(condition, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
     }
 
+    public static LNode When(LNode binOp, LNode rightHand, LNodeList body)
+    {
+        return LNode.Call(CodeSymbols.When, LNode.List(binOp, rightHand, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode If(LNode cond, LNodeList ifBody, LNodeList elseBody)
     {
         return LNode.Call(CodeSymbols.If,
