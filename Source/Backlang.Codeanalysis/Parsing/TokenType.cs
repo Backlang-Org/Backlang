@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Core.Attributes;
+using Backlang.Codeanalysis.Parsing.Precedences;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -29,19 +30,19 @@ public enum TokenType
     [Lexeme("..")]
     RangeOperator,
 
-    [PreUnaryOperatorInfo(6)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.NEGATIVE_OR_MINUS)]
     [BinaryOperatorInfo(4)]
     [Lexeme("-")]
     Minus,
 
     [Lexeme("&")]
-    [PreUnaryOperatorInfo(9)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.AMPERSAND_OR_HAT)]
     [BinaryOperatorInfo(3)]
     Ampersand,
 
     [Lexeme("^")]
     [BinaryOperatorInfo(2)]
-    [PreUnaryOperatorInfo(9)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.AMPERSAND_OR_HAT)]
     Hat,
 
     [BinaryOperatorInfo(5)]
@@ -66,7 +67,7 @@ public enum TokenType
     [Lexeme("||")]
     Or,
 
-    [PreUnaryOperatorInfo(6)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.NEGATIVE_OR_MINUS)]
     [Lexeme("!")]
     Exclamation,
 
@@ -134,7 +135,7 @@ public enum TokenType
     Comma,
 
     [Lexeme("$")]
-    [PreUnaryOperatorInfo(10)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.DOLLAR)]
     Dollar,
 
     [Lexeme("==")]
