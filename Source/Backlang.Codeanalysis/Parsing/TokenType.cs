@@ -259,8 +259,43 @@ public enum TokenType
     [Keyword("module")]
     Module,
 
-    // Unary Ops for Literals
+    /* Unary Ops for Literals */
+
+    [Lexeme("ub")]
+    [Lexeme("UB")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_UnsignedInt8,
+
+    [Lexeme("us")]
+    [Lexeme("US")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_UnsignedInt16,
+
     [Lexeme("u")]
-    LiteralOPUnsigned
+    [Lexeme("ui")]
+    [Lexeme("U")]
+    [Lexeme("UI")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_UnsignedInt32,
+
+    [Lexeme("ul")]
+    [Lexeme("UL")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_UnsignedInt64,
+
+    [Lexeme("b")]
+    [Lexeme("B")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_Int8,
+
+    [Lexeme("s")]
+    [Lexeme("S")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_Int16,
+
+    [Lexeme("l")]
+    [Lexeme("L")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
+    Literal_Int64,
 
 }
