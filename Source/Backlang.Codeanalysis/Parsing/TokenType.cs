@@ -15,54 +15,54 @@ public enum TokenType
     CharLiteral,
 
     [Lexeme(".")]
-    [BinaryOperatorInfo(7)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
     Dot,
 
     [Lexeme("::")]
-    [BinaryOperatorInfo(7)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
     ColonColon,
 
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
     [Lexeme("+")]
     Plus,
 
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Range)]
     [Lexeme("..")]
     RangeOperator,
 
     [PreUnaryOperatorInfo(UnaryOpPrecedences.NEGATIVE_OR_MINUS)]
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
     [Lexeme("-")]
     Minus,
 
     [Lexeme("&")]
     [PreUnaryOperatorInfo(UnaryOpPrecedences.AMPERSAND_OR_HAT)]
-    [BinaryOperatorInfo(3)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Ampersand,
 
     [Lexeme("^")]
-    [BinaryOperatorInfo(2)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
     [PreUnaryOperatorInfo(UnaryOpPrecedences.AMPERSAND_OR_HAT)]
     Hat,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
     [Lexeme("/")]
     Slash,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
     [Lexeme("*")]
     Star,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Percent)]
     [Lexeme("%")]
     Percent,
 
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.And)]
     [Lexeme("and")]
     [Lexeme("&&")]
     And,
 
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Or)]
     [Lexeme("or")]
     [Lexeme("||")]
     Or,
@@ -72,42 +72,42 @@ public enum TokenType
     Exclamation,
 
     [Lexeme("*=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     StarEqualsToken,
 
     [Lexeme("/=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     DivEqualsToken,
 
     [Lexeme("+=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     PlusEqualsToken,
 
     [Lexeme("-=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     MinusEqualsToken,
 
     [Lexeme("=")]
-    [BinaryOperatorInfo(8)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
     EqualsToken,
 
     [Lexeme("#")]
     Hash,
 
     [Lexeme("<=")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThanEqual,
 
     [Lexeme("<")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThan,
 
     [Lexeme(">")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThan,
 
     [Lexeme(">=")]
-    [BinaryOperatorInfo(5)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThanEqual,
 
     [Lexeme(":")]
@@ -139,7 +139,7 @@ public enum TokenType
     Dollar,
 
     [Lexeme("==")]
-    [BinaryOperatorInfo(4)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
     EqualsEquals,
 
     [Lexeme("<->")]
