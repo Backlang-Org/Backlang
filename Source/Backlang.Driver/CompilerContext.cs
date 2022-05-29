@@ -23,11 +23,15 @@ public sealed class CompilerContext
     [Option('o', "output", Required = true, HelpText = "Output filename")]
     public string OutputFilename { get; set; }
 
+    [Option('p', "print-tree", Required = false, HelpText = "Output files as tree")]
+    public bool OutputTree { get; set; }
+
     [Option('t', "type", Required = false, HelpText = "Outputtype")]
     public string OutputType { get; set; }
 
     [Option('r', "reference", Required = false, HelpText = "References of the assembly")]
     public IEnumerable<string> References { get; set; } = Array.Empty<string>();
 
+    public string TempOutputPath { get; set; }
     public List<CompilationUnit> Trees { get; set; } = new();
 }

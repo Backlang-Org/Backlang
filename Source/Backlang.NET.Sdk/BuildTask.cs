@@ -54,6 +54,9 @@ namespace Backlang.NET.Sdk
         public string OutputPath { get; set; }
 
         /// <summary></summary>
+        public string OutputTree { get; set; }
+
+        /// <summary></summary>
         public string OutputType { get; set; }
 
         public string Path { get; set; }
@@ -110,6 +113,8 @@ namespace Backlang.NET.Sdk
                 context.InputFiles = Compile;
                 context.OutputFilename = OutputName;
                 context.OutputType = OutputType;
+                context.TempOutputPath = TempOutputPath;
+                context.OutputTree = bool.Parse(OutputTree);
 
                 CompilerDriver.Compile(context);
 
