@@ -19,6 +19,10 @@ public class CompilerDriver
            cfg.Add<IntermediateStage>();
            cfg.Add<ExpandImplementationStage>();
            cfg.Add<ImplementationStage>();
+
+           cfg.When(_ => _.OutputTree, _ => {
+               _.Add<EmitTreeStage>();
+           });
        }
        );
 
