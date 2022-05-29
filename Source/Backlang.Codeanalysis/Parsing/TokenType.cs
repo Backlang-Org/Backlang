@@ -30,19 +30,19 @@ public enum TokenType
     [Lexeme("..")]
     RangeOperator,
 
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.NEGATIVE_OR_MINUS)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Minus)]
     [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
     [Lexeme("-")]
     Minus,
 
     [Lexeme("&")]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.AMPERSAND_OR_HAT)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Ampersand)]
     [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Ampersand,
 
     [Lexeme("^")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.AMPERSAND_OR_HAT)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
     Hat,
 
     [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
@@ -67,7 +67,7 @@ public enum TokenType
     [Lexeme("||")]
     Or,
 
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.NEGATIVE_OR_MINUS)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Negative)]
     [Lexeme("!")]
     Exclamation,
 
@@ -135,7 +135,7 @@ public enum TokenType
     Comma,
 
     [Lexeme("$")]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.DOLLAR)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Dollar)]
     Dollar,
 
     [Lexeme("==")]

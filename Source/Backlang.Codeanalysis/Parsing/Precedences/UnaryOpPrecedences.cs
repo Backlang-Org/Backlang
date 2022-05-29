@@ -2,10 +2,12 @@
 public enum UnaryOpPrecedences
 {
 
-    NEGATIVE_OR_MINUS = 6,
+    Negative = 6, // !bool
+    Minus = Negative, // -int
 
-    AMPERSAND_OR_HAT = 9,
+    Ampersand = 9,
+    Hat = Ampersand,
 
-    DOLLAR = 10,
+    Dollar = 10,
 
 }
