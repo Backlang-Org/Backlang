@@ -20,13 +20,13 @@
   "If Clause": {
     "prefix": ["if"],
     "body": ["if ${1:condition} {", "\t$0", "}"],
-    "description": "A if clause."
+    "description": "An if clause."
   },
 
   "Switch Statement": {
     "prefix": ["switch"],
     "body": ["switch ${1:element} {", "\tcase ${2:value}: $0", "}"],
-    "description": "A switch statement with one case."
+    "description": "An switch statement with one case."
   },
   
   "Function": {
@@ -39,5 +39,17 @@
     "prefix": ["fnstatic", "funcstatic"],
     "body": ["func ${1:name} () static {", "\t$0", "}"],
     "description": "A static function."
-  }
+  },
+  
+  "Console WriteLine": {
+    "prefix": ["cw"],
+    "body": ["Console::WriteLine(${1:output});"],
+    "description": "Print something to console."
+  },
+  
+  "Struct": {
+    "prefix": ["strucz"],
+    "body": ["struct ${1:name} {", "\t$0", "}"],
+    "description": "A struct."
+  },
 }
