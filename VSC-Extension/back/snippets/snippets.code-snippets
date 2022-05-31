@@ -48,7 +48,7 @@
   },
   
   "Struct": {
-    "prefix": ["strucz"],
+    "prefix": ["struct"],
     "body": ["struct ${1:name} {", "\t$0", "}"],
     "description": "A struct."
   },
