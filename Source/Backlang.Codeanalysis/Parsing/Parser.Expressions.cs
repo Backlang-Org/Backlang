@@ -95,7 +95,7 @@ public sealed partial class Parser
     {
         var valueToken = Iterator.NextToken();
 
-        return SyntaxTree.Unary(CodeSymbols.Int32, SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber)));
+        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber))));
     }
 
     private LNode ParseNumber()
@@ -116,7 +116,7 @@ public sealed partial class Parser
         {
             if (_lits.ContainsKey(Iterator.Current.Text.ToLower()))
             {
-                result = SyntaxTree.Unary(_lits[Iterator.Current.Text.ToLower()], result);
+                result = LNode.Call(_lits[Iterator.Current.Text.ToLower()], LNode.List(result));
             }
             else
             {
@@ -127,10 +127,10 @@ public sealed partial class Parser
             Iterator.NextToken();
         } else if (result.Value is double)
         {
-            result = SyntaxTree.Unary(Symbols.Float64, result);
+            result = LNode.Call(Symbols.Float64, LNode.List(result));
         } else
         {
-            result = SyntaxTree.Unary(CodeSymbols.Int32, result);
+            result = LNode.Call(CodeSymbols.Int32, LNode.List(result));
         }
         
         return result;
