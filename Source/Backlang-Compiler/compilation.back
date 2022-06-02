@@ -21,7 +21,7 @@ struct Vector2 {
 }
 
 //ToDo: implement custom macros
-@MacroInfo("Add functions for comparing two instances", MacroMode.IdentifierOrCall, containsBody = false, matchAttribute = true)
+@MacroInfo("Add functions for comparing two instances", MacroMode.Attribute, containsBody = false)
 macro Comparable(node : LNode, context : MacroContext) -> LNode {
 	let args : LNodeList = LNodeList::new();
 	for i in 0..1 {
