@@ -105,7 +105,7 @@ public sealed partial class Parser
         LNode result;
         if (text.Contains('.'))
         {
-            result = SyntaxTree.Factory.Literal(double.Parse(text));
+            result = SyntaxTree.Factory.Literal(double.Parse(text, CultureInfo.InvariantCulture));
         }
         else
         {
