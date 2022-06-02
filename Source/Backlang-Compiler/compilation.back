@@ -2,20 +2,70 @@
 import System.Collections;
 import System.Collections.Generic;
 
-module TesT;
+using Console::WriteLine as print;
 
-struct Point {
-	X : u32;
-	Y : u32;
+module Test;
+
+enum MirrorKind {
+	YAxis,
+	XAxis,
+	Point
+}
+
+//ToDo: implement attributes
+@Serializable
+@Comparable
+struct Vector2 {
+	X : i32;
+	Y : i32;
+}
+
+//ToDo: implement custom macros
+@MacroInfo("Add functions for comparing two instances", MacroMode.IdentifierOrCall, containsBody = false, matchAttribute = true)
+macro Comparable(node : LNode, context : MacroContext) -> LNode {
+	let args : LNodeList = LNodeList::new();
+	for i in 0..1 {
+		args.Add(node.Args[i]);
+	}
+
+	//ToDo: implement comparison functions
+
+	args.Add(body);
+
+	return node.WithArgs(args);
+}
+
+//ToDo: implement interfaces
+interface ISerializable {
+	func Serialize() -> byte[];
+	func Deserialize(object : byte[]) -> obj;
+}
+
+//ToDo: implement inheritance for struct for interfaces or macro calls
+struct Point : Serialize() {
+	X : i32;
+	Y : i32;
 }
 
 implement Point {
-	func distance(other : Point) -> Point {
-
+	func mirror(other : Point, kind : MirrorKind) -> Point {
+		if kind == MirrorKind.YAxis {
+			return Point::new(other.X, -other.Y);
+		}
+		else if kind == MirrorKind.XAxis {
+			return Point::new(-other.X, other.Y);
+		}
+		else if kind == MirrorKind.Point {
+			return Point::new(-other.X, -other.Y);
+		}
 	}
 
 	func add(lhs : Point, rhs : Point) operator -> Point {
 		return Point::new(lhs.X + rhs.X, lhs.Y + rhs.Y);
+	}
+
+	func sub(lhs : Point, rhs : Point) operator -> Point {
+		return Point::new(lhs.X - rhs.X, lhs.Y - rhs.Y);
 	}
 
 	func toString() -> string {
@@ -60,10 +110,10 @@ func main() static -> none {
 
 	while i > 0 {
 		i -= 1;
-		continue;
 	}
 	
-	Point::new(1, 2);
+	
+	let mypoint = Point::new(1, 2);
 
 	msg += "Hello";
 	msg -= 'c';
