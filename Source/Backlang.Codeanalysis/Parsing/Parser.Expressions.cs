@@ -95,7 +95,7 @@ public sealed partial class Parser
     {
         var valueToken = Iterator.NextToken();
 
-        return SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber));
+        return SyntaxTree.Unary(CodeSymbols.Int32, SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber)));
     }
 
     private LNode ParseNumber()
