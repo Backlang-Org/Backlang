@@ -125,8 +125,14 @@ public sealed partial class Parser
             }
 
             Iterator.NextToken();
+        } else if (result.Value is double)
+        {
+            result = SyntaxTree.Unary(Symbols.Float64, result);
+        } else
+        {
+            result = SyntaxTree.Unary(CodeSymbols.Int32, result);
         }
-
+        
         return result;
     }
 
