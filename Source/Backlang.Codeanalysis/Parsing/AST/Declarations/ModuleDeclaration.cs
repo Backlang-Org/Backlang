@@ -1,6 +1,6 @@
 ﻿using Loyc.Syntax;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
 public sealed class ModuleDeclaration : IParsePoint<LNode>
 {
