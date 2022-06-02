@@ -68,7 +68,7 @@ public sealed partial class Parser
         var valueToken = Iterator.NextToken();
         var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
 
-        long result = 0;
+        int result = 0;
         for (int i = 0; i < valueToken.Text.Length; i++)
         {
             if (chars[i] == '0') { continue; }
@@ -76,19 +76,19 @@ public sealed partial class Parser
             result += (int)Math.Pow(2, i);
         }
 
-        return SyntaxTree.Factory.Literal(result);
+        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result)));
     }
 
     private LNode ParseBooleanLiteral(bool value)
     {
         Iterator.NextToken();
 
-        return SyntaxTree.Factory.Literal(value);
+        return LNode.Call(CodeSymbols.Bool, LNode.List(SyntaxTree.Factory.Literal(value)));
     }
 
     private LNode ParseChar()
     {
-        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]);
+        return LNode.Call(CodeSymbols.Char, LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0])));
     }
 
     private LNode ParseHexNumber()
@@ -138,6 +138,6 @@ public sealed partial class Parser
 
     private LNode ParseString()
     {
-        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text);
+        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text)));
     }
 }
