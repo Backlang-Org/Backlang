@@ -258,4 +258,10 @@ public enum TokenType
 
     [Keyword("module")]
     Module,
+
+    [Keyword("using")]
+    Using,
+
+    [Keyword("as")]
+    As,
 }
