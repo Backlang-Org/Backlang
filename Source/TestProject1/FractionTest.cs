@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1;
 
-[Microsoft.VisualStudio.TestTools.UnitTesting.TestClass]
+[TestClass]
 public class FractionTest
 {
     [TestMethod]
@@ -11,6 +11,7 @@ public class FractionTest
     {
         var value = 1.2;
         var fraction = new Fraction(value);
-        Assert.Equals(new Fraction(12, 10), fraction);
+
+        Assert.AreEqual(new Fraction(12, 10), fraction);
     }
 }
