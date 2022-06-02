@@ -13,4 +13,8 @@ public static class Symbols
     public static readonly Symbol Range = GSymbol.Get("'..");
     public static readonly Symbol ToExpand = GSymbol.Get("'to_expand'");
     public static readonly Symbol TypeLiteral = GSymbol.Get("#type");
+
+    public static readonly Symbol Float16 = GSymbol.Get("#float16");
+    public static readonly Symbol Float32 = GSymbol.Get("#float32");
+    public static readonly Symbol Float64 = GSymbol.Get("#float64");
 }

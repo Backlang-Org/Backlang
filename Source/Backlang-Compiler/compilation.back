@@ -1,7 +1,8 @@
 ﻿
 func main() static -> none {
-	let uh = 1L;
-
+	let uh = 1uL;
+	let cool = 3f;
+	
 	let msg : string = concatId(a, b, c);
 	let name : string = nameof(msg);
 	let k = 1.2;

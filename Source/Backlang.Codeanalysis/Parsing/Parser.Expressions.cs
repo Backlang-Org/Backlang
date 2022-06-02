@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Parsing.AST;
 using Loyc;
 using Loyc.Syntax;
 using System.Globalization;
@@ -6,27 +7,18 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public sealed partial class Parser
 {
-    private List<string> _lits = new() {
-        "ub",
-        "UB",
-        "us",
-        "US",
-        "u",
-        "ui",
-        "U",
-        "UI",
-        "ul",
-        "UL",
-        "b",
-        "B",
-        "s",
-        "S",
-        "l",
-        "L",
-        "h",
-        "H",
-        "d",
-        "D",
+    private Dictionary<string, Symbol> _lits = new() {
+        {"ub", CodeSymbols.UInt8},
+        {"us", CodeSymbols.UInt16},
+        {"u", CodeSymbols.UInt32},
+        {"ui", CodeSymbols.UInt32},
+        {"ul", CodeSymbols.UInt64},
+        {"b", CodeSymbols.Int8},
+        {"s", CodeSymbols.Int16},
+        {"l", CodeSymbols.Int64},
+        {"h", Symbols.Float16},
+        {"f", Symbols.Float32},
+        {"d", Symbols.Float64},
     };
 
     internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
@@ -122,15 +114,17 @@ public sealed partial class Parser
 
         if (Iterator.Current.Type == TokenType.Identifier)
         {
-            if (_lits.Contains(Iterator.Current.Text))
+            if (_lits.ContainsKey(Iterator.Current.Text.ToLower()))
             {
-                result = SyntaxTree.Unary(GSymbol.Get("'" + Iterator.NextToken().Text), result);
+                result = SyntaxTree.Unary(_lits[Iterator.Current.Text.ToLower()], result);
             }
             else
             {
                 Messages.Add(Message.Error(Document, $"Unknown Literal {Iterator.Current.Text}", Iterator.Current.Line, Iterator.Current.Column));
-                return LNode.Missing;
+                result = LNode.Missing;
             }
+
+            Iterator.NextToken();
         }
 
         return result;
