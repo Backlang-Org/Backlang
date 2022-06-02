@@ -117,6 +117,11 @@ public static class SyntaxTree
         return LNode.Call(CodeSymbols.Namespace, LNode.List(ns));
     }
 
+    public static LNode Using(LNode from, LNode to)
+    {
+        return LNode.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
+    }
+
     public static LNode None()
     {
         return LNode.Call(CodeSymbols.Void);
