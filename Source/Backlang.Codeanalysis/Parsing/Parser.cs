@@ -25,6 +25,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.Implement);
         AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
         AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
+        AddDeclarationParsePoint<UsingDeclaration>(TokenType.Using);
         AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Hash);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
