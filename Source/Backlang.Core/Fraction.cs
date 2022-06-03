@@ -68,14 +68,19 @@ public struct Fraction : IComparable<Fraction>
         throw new NotImplementedException();
     }
 
-    public static implicit operator double(Fraction value)
+    public static implicit operator Half(Fraction value)
     {
-        return value._numerator / value._denominator;
+        return (Half)(value._numerator / value._denominator);
     }
 
     public static implicit operator float(Fraction value)
     {
         return (float)value._numerator / value._denominator;
+    }
+
+    public static implicit operator double(Fraction value)
+    {
+        return value._numerator / value._denominator;
     }
 
     public static implicit operator Fraction(Half value)
@@ -91,11 +96,6 @@ public struct Fraction : IComparable<Fraction>
     public static implicit operator Fraction(double value)
     {
         return new Fraction(value);
-    }
-
-    public static implicit operator Half(Fraction value)
-    {
-        return (Half)(value._numerator / value._denominator);
     }
 
     public static Fraction Max(Fraction x, Fraction y)
@@ -135,12 +135,12 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator *(Fraction left, Fraction right)
     {
-        return new Fraction((short)(left._numerator * right._numerator), (short)(left._denominator * right._denominator));
+        return new Fraction((ushort)(left._numerator * right._numerator), (ushort)(left._denominator * right._denominator));
     }
 
     public static Fraction operator /(Fraction left, Fraction right)
     {
-        return new Fraction((short)(left._numerator * right._denominator), (short)(left._denominator * right._numerator));
+        return new Fraction((ushort)(left._numerator * right._denominator), (ushort)(left._denominator * right._numerator));
     }
 
     public static Fraction operator +(Fraction value)
@@ -155,7 +155,7 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator ++(Fraction value)
     {
-        return new Fraction((short)(value._numerator + 1), value._denominator);
+        return new Fraction((ushort)(value._numerator + 1), value._denominator);
     }
 
     public static bool operator <(Fraction left, Fraction right)
