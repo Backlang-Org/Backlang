@@ -131,7 +131,13 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction Parse(string value)
     {
-        throw new NotImplementedException();
+        if (!value.Contains(@"\\")) throw new FormatException("Fraction has wrong format");
+
+        var parts = value.Split('\\');
+        var numerator = short.Parse(parts[0]);
+        var denominator = short.Parse(parts[1]);
+
+        return new Fraction(numerator, denominator);
     }
 
     public int CompareTo(Fraction other)
