@@ -111,12 +111,12 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator *(Fraction left, Fraction right)
     {
-        throw new NotImplementedException();
+        return new Fraction((short)(left._numerator * right._numerator), (short)(left._denominator * right._denominator));
     }
 
     public static Fraction operator /(Fraction left, Fraction right)
     {
-        throw new NotImplementedException();
+        return new Fraction((short)(left._numerator * right._denominator), (short)(left._denominator * right._numerator));
     }
 
     public static Fraction operator +(Fraction value)
