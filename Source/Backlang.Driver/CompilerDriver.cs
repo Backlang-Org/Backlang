@@ -6,6 +6,8 @@ public class CompilerDriver
 {
     public static async void Compile(CompilerContext context)
     {
+        if (string.IsNullOrEmpty(context.TempOutputPath)) context.TempOutputPath = Environment.CurrentDirectory;
+
         var pipeline = Flo.Pipeline.Build<CompilerContext, CompilerContext>(
        cfg => {
            cfg.Add<ParsingStage>();
