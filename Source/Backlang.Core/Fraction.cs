@@ -3,11 +3,12 @@
 //ToDo: don't divide by zero
 public struct Fraction : IComparable<Fraction>
 {
-    public static Fraction MaxValue = new Fraction(short.MaxValue, 1);
-    public static Fraction MinValue = new Fraction(1, short.MaxValue);
+    public static Fraction MaxValue = new Fraction(ushort.MaxValue, 1);
+    public static Fraction MinValue = new Fraction(1, ushort.MaxValue, true);
 
-    private short _denominator;
-    private short _numerator;
+    private bool _negative;
+    private ushort _denominator;
+    private ushort _numerator;
 
     public Fraction(Half value) : this((double)value)
     {
@@ -19,20 +20,43 @@ public struct Fraction : IComparable<Fraction>
 
     public Fraction(double value)
     {
-        short i = 0;
+        ushort i = 0;
+        if (value < 0)
+        {
+            value *= -1;
+            _negative = true;
+        } else
+        {
+            _negative = false;
+        }
         while (value % 1 != 0)
         {
             value *= 10;
             i++;
         }
-        _numerator = (short)value;
-        _denominator = (short)(i * 10);
+        _numerator = (ushort)value;
+        _denominator = (ushort)(i * 10);
+    }
+
+    public Fraction(ushort numerator, ushort denominator, bool negative = false)
+    {
+        _numerator = numerator;
+        _denominator = denominator;
+        _negative = negative;
     }
 
     public Fraction(short numerator, short denominator)
     {
-        _numerator = numerator;
-        _denominator = denominator;
+        if((numerator < 0 && denominator >= 0) || (denominator < 0 && numerator >= 0))
+        {
+            // only one of them is negative
+            _negative = true;
+        } else
+        {
+            _negative = false;
+        }
+        _numerator = (ushort)Math.Abs(numerator);
+        _denominator = (ushort)Math.Abs(denominator);
     }
 
     public static Fraction One => new Fraction(1, 1);
@@ -187,11 +211,11 @@ public struct Fraction : IComparable<Fraction>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_numerator, _denominator);
+        return HashCode.Combine(_negative, _numerator, _denominator);
     }
 
     public override string ToString()
     {
-        return $"{_numerator} \\\\ {_denominator}";
+        return $"{(_negative ? "-" : "")}{_numerator} \\\\ {_denominator}";
     }
 }
