@@ -6,8 +6,8 @@ public struct Fraction : IComparable<Fraction>
     public static Fraction MaxValue = new Fraction(ushort.MaxValue, 1);
     public static Fraction MinValue = new Fraction(1, ushort.MaxValue, true);
 
-    private bool _negative;
     private ushort _denominator;
+    private bool _negative;
     private ushort _numerator;
 
     public Fraction(Half value) : this((double)value)
@@ -25,7 +25,8 @@ public struct Fraction : IComparable<Fraction>
         {
             value *= -1;
             _negative = true;
-        } else
+        }
+        else
         {
             _negative = false;
         }
@@ -47,11 +48,12 @@ public struct Fraction : IComparable<Fraction>
 
     public Fraction(short numerator, short denominator)
     {
-        if((numerator < 0 && denominator >= 0) || (denominator < 0 && numerator >= 0))
+        if ((numerator < 0 && denominator >= 0) || (denominator < 0 && numerator >= 0))
         {
             // only one of them is negative
             _negative = true;
-        } else
+        }
+        else
         {
             _negative = false;
         }
@@ -68,19 +70,14 @@ public struct Fraction : IComparable<Fraction>
         throw new NotImplementedException();
     }
 
-    public static implicit operator Half(Fraction value)
+    public static implicit operator double(Fraction value)
     {
-        return (Half)(value._numerator / value._denominator);
+        return value._numerator / value._denominator;
     }
 
     public static implicit operator float(Fraction value)
     {
         return (float)value._numerator / value._denominator;
-    }
-
-    public static implicit operator double(Fraction value)
-    {
-        return value._numerator / value._denominator;
     }
 
     public static implicit operator Fraction(Half value)
@@ -96,6 +93,11 @@ public struct Fraction : IComparable<Fraction>
     public static implicit operator Fraction(double value)
     {
         return new Fraction(value);
+    }
+
+    public static implicit operator Half(Fraction value)
+    {
+        return (Half)(value._numerator / value._denominator);
     }
 
     public static Fraction Max(Fraction x, Fraction y)
@@ -187,7 +189,7 @@ public struct Fraction : IComparable<Fraction>
     {
         if (!value.Contains(@"\\")) throw new FormatException("Fraction has wrong format");
 
-        var parts = value.Split('\\');
+        var parts = value.Split(@"\\");
         var numerator = short.Parse(parts[0]);
         var denominator = short.Parse(parts[1]);
 
