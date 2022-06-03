@@ -201,7 +201,7 @@ public struct Fraction : IComparable<Fraction>
         var numerator = ushort.Parse(first);
 
         var second = parts[1];
-        if(second.StartsWith('-'))
+        if (second.StartsWith('-'))
         {
             second = second.Substring(1);
             negative = !negative;
@@ -234,6 +234,6 @@ public struct Fraction : IComparable<Fraction>
 
     public override string ToString()
     {
-        return $"{(_negative ? "-" : "")}{_numerator} \\\\ {_denominator}";
+        return $@"{(_negative ? "-" : "")}{_numerator} \\ {_denominator}";
     }
 }
