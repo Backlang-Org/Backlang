@@ -44,6 +44,36 @@ public struct Fraction : IComparable<Fraction>
         throw new NotImplementedException();
     }
 
+    public static implicit operator double(Fraction value)
+    {
+        return value._numerator / value._denominator;
+    }
+
+    public static implicit operator float(Fraction value)
+    {
+        return (float)value._numerator / value._denominator;
+    }
+
+    public static implicit operator Fraction(Half value)
+    {
+        return new Fraction(value);
+    }
+
+    public static implicit operator Fraction(float value)
+    {
+        return new Fraction(value);
+    }
+
+    public static implicit operator Fraction(double value)
+    {
+        return new Fraction(value);
+    }
+
+    public static implicit operator Half(Fraction value)
+    {
+        return (Half)(value._numerator / value._denominator);
+    }
+
     public static Fraction Max(Fraction x, Fraction y)
     {
         throw new NotImplementedException();
