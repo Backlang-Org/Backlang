@@ -37,7 +37,7 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction One => new Fraction(1, 1);
 
-    public static Fraction Zero => new Fraction();
+    public static Fraction Zero => new Fraction(1, 0);
 
     public static Fraction Abs(Fraction value)
     {
@@ -156,6 +156,6 @@ public struct Fraction : IComparable<Fraction>
 
     public override string ToString()
     {
-        return $"{_numerator} \\ {_denominator}";
+        return $"{_numerator} \\\\ {_denominator}";
     }
 }
