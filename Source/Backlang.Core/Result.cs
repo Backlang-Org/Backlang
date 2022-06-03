@@ -1,20 +1,20 @@
 ﻿namespace Backlang.Core
 {
-    public class Optional<T>
+    public class Result<T>
     {
         private readonly T? _value;
 
-        public Optional(T value)
+        public Result(T value)
         {
             _value = value;
         }
 
-        public static implicit operator bool(Optional<T> value)
+        public static implicit operator bool(Result<T> value)
         {
             return value._value != null;
         }
 
-        public static implicit operator T(Optional<T> value)
+        public static implicit operator T(Result<T> value)
         {
             return value._value;
         }
