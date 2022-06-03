@@ -50,4 +50,10 @@ public class FractionTest
     {
         Assert.AreEqual(new Fraction(2, 4), Fraction.Parse(@"2 \\ 4"));
     }
+
+    [TestMethod]
+    public void Fraction_Parse_Both_Negative_Should_Pass()
+    {
+        Assert.AreEqual(new Fraction(2, 4, false), Fraction.Parse(@"-2 \\ -4"));
+    }
 }

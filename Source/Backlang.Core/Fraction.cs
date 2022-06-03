@@ -189,10 +189,10 @@ public struct Fraction : IComparable<Fraction>
     {
         if (!value.Contains(@"\\")) throw new FormatException("Fraction has wrong format");
 
-        var parts = value.Split(@"\\");
+        var parts = value.Trim().Split(@"\\");
         var negative = false;
 
-        var first = parts[0];
+        var first = parts[0].Trim();
         if (first.StartsWith('-'))
         {
             first = first.Substring(1);
@@ -200,13 +200,12 @@ public struct Fraction : IComparable<Fraction>
         }
         var numerator = ushort.Parse(first);
 
-        var second = parts[1];
+        var second = parts[1].Trim();
         if (second.StartsWith('-'))
         {
             second = second.Substring(1);
             negative = !negative;
         }
-
         var denominator = ushort.Parse(second);
 
         return new Fraction(numerator, denominator, negative);
