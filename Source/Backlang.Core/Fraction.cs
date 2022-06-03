@@ -131,7 +131,7 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator ++(Fraction value)
     {
-        throw new NotImplementedException();
+        return new Fraction((short)(value._numerator + 1), value._denominator);
     }
 
     public static bool operator <(Fraction left, Fraction right)
