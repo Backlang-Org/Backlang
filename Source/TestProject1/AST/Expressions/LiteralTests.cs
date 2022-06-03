@@ -11,23 +11,30 @@ public class LiteralTests
     [TestMethod]
     public void TypeLiteral_Pointer_Should_Pass()
     {
-        var literal = ParseLiteral("int32*");
+        var ptrType = ParseTypeLiteral("int32*");
+        var type = ptrType.Args[0];
+        var literal = type.Args[0];
 
-        Assert.IsNotNull(literal);
+        Assert.IsNotNull(ptrType);
+        Assert.IsTrue(ptrType.Calls(Symbols.PointerType));
+        Assert.IsTrue(type.Calls(Symbols.TypeLiteral));
+        Assert.AreEqual(CodeSymbols.Int32, literal.Name);
     }
 
     [TestMethod]
     public void TypeLiteral_Should_Pass()
     {
-        var literal = ParseLiteral("int32");
+        var literalType = ParseTypeLiteral("int32");
+        var literal = literalType.Args[0];
 
-        Assert.IsNotNull(literal);
+        Assert.IsNotNull(literalType);
+        Assert.AreEqual(CodeSymbols.Int32, literal.Name);
     }
 
     [TestMethod]
     public void TypeLiteral_With_1_Dimension_Should_Pass()
     {
-        var literal = ParseLiteral("int32[]");
+        var literal = ParseTypeLiteral("int32[]");
 
         Assert.IsNotNull(literal);
     }
@@ -35,7 +42,7 @@ public class LiteralTests
     [TestMethod]
     public void TypeLiteral_With_2_Dimension_Should_Pass()
     {
-        var literal = ParseLiteral("int32[,]");
+        var literal = ParseTypeLiteral("int32[,]");
 
         Assert.IsNotNull(literal);
     }
@@ -44,28 +51,28 @@ public class LiteralTests
     public void TypeLiteral_With_InnerType_Should_Pass()
     {
         var src = "list<list<i32>>";
-        var literal = ParseLiteral(src);
+        var literal = ParseTypeLiteral(src);
     }
 
     [TestMethod]
     public void TypeLiteral_With_Multiple_Dimension_Should_Pass()
     {
-        var literal = ParseLiteral("int32[,,]");
+        var literal = ParseTypeLiteral("int32[,,]");
     }
 
     [TestMethod]
     public void TypeLiteral_With_Type_Argument_Should_Pass()
     {
-        var literal = ParseLiteral("list<i32>");
+        var literal = ParseTypeLiteral("list<i32>");
     }
 
     [TestMethod]
     public void TypeLiteral_With_Type_Arguments_Should_Pass()
     {
-        var literal = ParseLiteral("list<i32, bool>");
+        var literal = ParseTypeLiteral("list<i32, bool>");
     }
 
-    private static LNode ParseLiteral(string src)
+    private static LNode ParseTypeLiteral(string src)
     {
         var lexer = new Lexer();
         var document = new SourceDocument("test.txt", src);
