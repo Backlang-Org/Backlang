@@ -8,7 +8,7 @@ namespace Backlang.Core.Macros;
 
 public partial class BuiltInMacros
 {
-    private static LNode _CodeSymbols = F.Id("CodeSymbols");
+    private static readonly LNode _CodeSymbols = F.Id("CodeSymbols");
 
     private static Dictionary<Symbol, Symbol> CodeSymbolTable = null;
 
@@ -19,7 +19,7 @@ public partial class BuiltInMacros
         "The output refers unqualified to `CodeSymbols` and `LNode` so you must have 'using Loyc.Syntax' at the top of your file. " +
         "The substitution operator $(expr) causes the specified expression to be inserted unchanged into the output.",
         "quote", "#quote")]
-    public static LNode quote(LNode node, IMessageSink sink) => Quote(node, true, true);
+    public static LNode Quote(LNode node, IMessageSink sink) => Quote(node, true, true);
 
     /// <summary>This implements `quote` and related macros. It converts a
     /// Loyc tree (e.g. `Foo(this)`) into a piece of .NET code that can
@@ -50,23 +50,22 @@ public partial class BuiltInMacros
 
     [LexicalMacro(@"e.g. quoteWithTrivia(/* cool! */ $foo) ==> foo.PlusAttrs(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")))",
         "Behaves the same as quote(code) except that trivia is included in the output.")]
-    public static LNode quoteWithTrivia(LNode node, IMessageSink sink) => Quote(node, true, false);
+    public static LNode QuoteWithTrivia(LNode node, IMessageSink sink) => Quote(node, true, false);
 
     [LexicalMacro(@"e.g. rawQuote($foo) ==> F.Call(CodeSymbols.Substitute, F.Id(""foo""));",
                 "Behaves the same as quote(code) except that the substitution operator $ is not recognized as a request for substitution.",
         "rawQuote", "#rawQuote")]
-    public static LNode rawQuote(LNode node, IMessageSink sink) => Quote(node, false, true);
+    public static LNode RawQuote(LNode node, IMessageSink sink) => Quote(node, false, true);
 
     [LexicalMacro(@"e.g. rawQuoteWithTrivia(/* cool! */ $foo) ==> LNode.Call(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, "" cool! "")), CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) ""foo"")))",
         "Behaves the same as rawQuote(code) except that trivia is included in the output.")]
-    public static LNode rawQuoteWithTrivia(LNode node, IMessageSink sink) => Quote(node, false, false);
+    public static LNode RawQuoteWithTrivia(LNode node, IMessageSink sink) => Quote(node, false, false);
 
     internal static LNode QuoteSymbol(Symbol name)
     {
         if (CodeSymbolTable == null)
             CodeSymbolTable = FindStaticReadOnlies<Symbol>(typeof(CodeSymbols), fInfo => !fInfo.Name.StartsWith("_"));
-        Symbol field;
-        if (CodeSymbolTable.TryGetValue(name, out field))
+        if (CodeSymbolTable.TryGetValue(name, out var field))
             return F.Dot(_CodeSymbols, F.Id(field));
         else
             return F.Call(S.Cast, F.Literal(name.Name), F.Id("Symbol"));
@@ -91,33 +90,29 @@ public partial class BuiltInMacros
     {
         public bool _doSubstitutions;
         public bool _ignoreTrivia;
-        private static LNode CodeSymbols_Splice = F.Dot(_CodeSymbols, F.Id("Splice"));
+        private static readonly LNode CodeSymbols_Splice = F.Dot(_CodeSymbols, F.Id("Splice"));
 
-        private static LNode Id_LNode = F.Id("LNode");
+        private static readonly LNode Id_LNode = F.Id("LNode");
 
-        private static LNode Id_PlusAttrs = F.Id("PlusAttrs");
+        private static readonly LNode Id_PlusAttrs = F.Id("PlusAttrs");
 
-        private static LNode LNode_Braces = F.Dot(Id_LNode, F.Id("Braces"));
+        private static readonly LNode LNode_Braces = F.Dot(Id_LNode, F.Id("Braces"));
 
-        private static LNode LNode_Call = F.Dot(Id_LNode, F.Id("Call"));
+        private static readonly LNode LNode_Call = F.Dot(Id_LNode, F.Id("Call"));
 
-        private static LNode LNode_Dot = F.Dot(Id_LNode, F.Id("Dot"));
+        private static readonly LNode LNode_Dot = F.Dot(Id_LNode, F.Id("Dot"));
 
-        private static LNode LNode_Id = F.Dot(Id_LNode, F.Id("Id"));
+        private static readonly LNode LNode_Id = F.Dot(Id_LNode, F.Id("Id"));
 
-        private static LNode LNode_InParens = F.Dot(Id_LNode, F.Id("InParens"));
+        private static readonly LNode LNode_InParensTrivia = F.Dot(Id_LNode, F.Id("InParensTrivia"));
 
-        private static LNode LNode_InParensTrivia = F.Dot(Id_LNode, F.Id("InParensTrivia"));
+        private static readonly LNode LNode_List = F.Dot(Id_LNode, F.Id("List"));
 
-        private static LNode LNode_List = F.Dot(Id_LNode, F.Id("List"));
+        private static readonly LNode LNode_Literal = F.Dot(Id_LNode, F.Id("Literal"));
 
-        private static LNode LNode_Literal = F.Dot(Id_LNode, F.Id("Literal"));
+        private static readonly LNode LNode_Missing = F.Dot(Id_LNode, F.Id("Missing"));
 
-        private static LNode LNode_Missing = F.Dot(Id_LNode, F.Id("Missing"));
-
-        private static LNode LNode_Of = F.Dot(Id_LNode, F.Id("Of"));
-
-        private static LNode LNode_Trivia = F.Dot(Id_LNode, F.Id("Trivia"));
+        private static readonly LNode LNode_Trivia = F.Dot(Id_LNode, F.Id("Trivia"));
 
         public CodeQuoter(
                                                                                                                             bool doSubstitutions,
