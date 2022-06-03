@@ -18,7 +18,7 @@ namespace TestProject1.AST.Statements
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
-            Assert.AreEqual("true", right.Args[1].Value);
+            Assert.AreEqual("true", right.Args[1].Args[0].Value);
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace TestProject1.AST.Statements
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
             Assert.AreEqual(LNode.Id(Symbols.Mutable), statement.Attrs[0]);
-            Assert.AreEqual(true, right.Args[1].Value);
+            Assert.AreEqual(true, right.Args[1].Args[0].Value);
         }
 
         [TestMethod]
@@ -47,7 +47,7 @@ namespace TestProject1.AST.Statements
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
-            Assert.AreEqual(42, right.Args[1].Value);
+            Assert.AreEqual(42, right.Args[1].Args[0].Value);
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace TestProject1.AST.Statements
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
-            Assert.AreEqual(0xC0ffee, right.Args[1].Value);
+            Assert.AreEqual(0xC0ffee, right.Args[1].Args[0].Value);
         }
     }
 }
