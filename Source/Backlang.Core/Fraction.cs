@@ -72,12 +72,22 @@ public struct Fraction : IComparable<Fraction>
 
     public static implicit operator double(Fraction value)
     {
-        return value._numerator / value._denominator;
+        double result = value._numerator / value._denominator;
+        if(value._negative)
+        {
+            result = -result;
+        }
+        return result;
     }
 
     public static implicit operator float(Fraction value)
     {
-        return (float)value._numerator / value._denominator;
+        float result = value._numerator / value._denominator;
+        if (value._negative)
+        {
+            result = -result;
+        }
+        return result;
     }
 
     public static implicit operator Fraction(Half value)
@@ -97,7 +107,12 @@ public struct Fraction : IComparable<Fraction>
 
     public static implicit operator Half(Fraction value)
     {
-        return (Half)(value._numerator / value._denominator);
+        float result = value._numerator / value._denominator;
+        if (value._negative)
+        {
+            result = -result;
+        }
+        return (Half)result;
     }
 
     public static Fraction Max(Fraction x, Fraction y)
@@ -137,12 +152,12 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator *(Fraction left, Fraction right)
     {
-        return new Fraction((ushort)(left._numerator * right._numerator), (ushort)(left._denominator * right._denominator));
+        return new Fraction((ushort)(left._numerator * right._numerator), (ushort)(left._denominator * right._denominator), left._negative != right._negative);
     }
 
     public static Fraction operator /(Fraction left, Fraction right)
     {
-        return new Fraction((ushort)(left._numerator * right._denominator), (ushort)(left._denominator * right._numerator));
+        return new Fraction((ushort)(left._numerator * right._denominator), (ushort)(left._denominator * right._numerator), left._negative != right._negative);
     }
 
     public static Fraction operator +(Fraction value)
@@ -157,7 +172,18 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator ++(Fraction value)
     {
-        return new Fraction((ushort)(value._numerator + 1), value._denominator);
+        var newValue = 0;
+        if (value._negative)
+        {
+            newValue = value._numerator - 1;
+            if (newValue < 0)
+            {
+                // it's still negative
+                return new Fraction((ushort)((value._numerator - 1) * -1), value._denominator, true);
+            }
+            return new Fraction((ushort)(value._numerator - 1), value._denominator, false);
+        }
+        return new Fraction((ushort)(value._numerator + 1), value._denominator, false);
     }
 
     public static bool operator <(Fraction left, Fraction right)

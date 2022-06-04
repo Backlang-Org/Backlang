@@ -56,4 +56,12 @@ public class FractionTest
     {
         Assert.AreEqual(new Fraction(2, 4, false), Fraction.Parse(@"-2 \\ -4"));
     }
+
+    [TestMethod]
+    public void Fraction_From_Negative_To_Positive_Should_Pass()
+    {
+        var frac = new Fraction(-1, 2);
+        frac++;
+        Assert.AreEqual(new Fraction(0, 2, false), frac);
+    }
 }
