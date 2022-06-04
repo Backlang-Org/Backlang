@@ -62,8 +62,8 @@ public struct Fraction : IComparable<Fraction>
     }
 
     public static Fraction One => new Fraction(1, 1);
-
     public static Fraction Zero => new Fraction(0, 1);
+    public bool IsNegative => _negative;
 
     public static Fraction Abs(Fraction value)
     {
