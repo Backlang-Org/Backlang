@@ -69,13 +69,13 @@ public class FractionTest
     public void Fraction_Get_Full_Negative_Numerator_Should_Pass()
     {
         var frac = new Fraction(-2, 4);
-        Assert.AreEqual(-2, frac.GetNumerator);
+        Assert.AreEqual(-2, frac.Numerator);
     }
 
     [TestMethod]
     public void Fraction_Get_Raw_Negative_Numerator_Should_Pass()
     {
         var frac = new Fraction(-2, 4);
-        Assert.AreEqual(2, frac.GetRawNumerator);
+        Assert.AreEqual(2, frac.RawNumerator);
     }
 }
