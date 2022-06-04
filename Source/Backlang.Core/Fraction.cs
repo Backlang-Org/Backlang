@@ -71,7 +71,7 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction Abs(Fraction value)
     {
-        throw new NotImplementedException();
+        return new Fraction(value._numerator, value._denominator, false);
     }
 
     public static implicit operator double(Fraction value)
