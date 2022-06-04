@@ -23,6 +23,14 @@ public static partial class BuiltInMacros
             LNode.List(@operator.Args[0]));
     }
 
+    [LexicalMacro(@"\\ Fraction", "Creates a fraction with the left and righthand side", @"'\\", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode FractionBinOp(LNode @operator, IMacroContext context)
+    {
+        var left = @operator.Args[0];
+        var right = @operator.Args[1];
+        return LNode.Call(LNode.Call(CodeSymbols.ColonColon, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol)"Backlang"), LNode.Id((Symbol)"Core"))).SetStyle(NodeStyle.Operator), LNode.Id((Symbol)"Fraction"))).SetStyle(NodeStyle.Operator), LNode.Id(CodeSymbols.New))).SetStyle(NodeStyle.Operator), LNode.List(left, right));
+    }
+
     [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
     public static LNode AutoFree(LNode @operator, IMacroContext context)
     {
