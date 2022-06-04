@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Me",
+  "classifications": [ "Common", "Library" ],
+  "identity": "Backlang.MacroLibraryProject",
+  "name": "Backlang macro library project",
+  "shortName": "backmacrolib",
+  "tags": {
+    "language": "Backlang",
+    "type": "project"
+  }
+}
