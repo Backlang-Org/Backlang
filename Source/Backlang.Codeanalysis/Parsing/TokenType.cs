@@ -67,6 +67,10 @@ public enum TokenType
     [Lexeme("||")]
     Or,
 
+    [BinaryOperatorInfo(BinaryOpPrecedences.FractionSymbol)]
+    [Lexeme(@"\\")]
+    Fraction,
+
     [PreUnaryOperatorInfo(UnaryOpPrecedences.Negative)]
     [Lexeme("!")]
     Exclamation,

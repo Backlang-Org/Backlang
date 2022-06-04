@@ -8,6 +8,8 @@ func main() static -> none {
 	let name : string = nameof(msg);
 	let k = 1.2;
 
+	let myFraction = 1 \\ 2;
+
 	let s = Point::new();
 	let handle = ^s;
 	let another = ^s;
