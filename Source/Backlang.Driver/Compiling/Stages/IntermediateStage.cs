@@ -1,4 +1,5 @@
-﻿using Backlang.Driver.Compiling.Typesystem;
+﻿using Backlang.Core;
+using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -41,6 +42,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         ["char"] = typeof(char),
         ["string"] = typeof(string),
+        ["fraction"] = typeof(Fraction),
     };
 
     public static MethodBody CompileBody(LNode function, CompilerContext context)
