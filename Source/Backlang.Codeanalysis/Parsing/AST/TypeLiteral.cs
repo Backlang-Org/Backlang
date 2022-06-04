@@ -9,7 +9,7 @@ public sealed class TypeLiteral
         var typename = iterator.Match(TokenType.Identifier).Text;
         var args = new LNodeList();
 
-        var typeNode = SyntaxTree.Type(typename, new());
+        var typeNode = SyntaxTree.Type($"#{typename}", new());
 
         if (iterator.Current.Type == TokenType.Star)
         {

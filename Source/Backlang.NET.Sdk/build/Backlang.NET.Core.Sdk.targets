@@ -170,6 +170,7 @@
 				   ReferencePath="@(ReferencePath)"
 				   OutputTree="$(OutputTree)"
 				   Compile="@(Compile)"
+				   MacroReferences="@(MacroReference)"
 				   Resources="@(EmbeddedResource)"
 				   DebuggerAttach="$(DebuggerAttach)"
 				   GenerateFullPaths="$(GenerateFullPaths)" />

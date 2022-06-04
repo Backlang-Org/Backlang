@@ -3,10 +3,9 @@
 public sealed class TokenIterator
 {
     public readonly List<Message> Messages = new();
-    protected int _position = 0;
-
     private readonly SourceDocument _document;
     private readonly List<Token> _tokens;
+    private int _position = 0;
 
     public TokenIterator(List<Token> tokens, SourceDocument document)
     {

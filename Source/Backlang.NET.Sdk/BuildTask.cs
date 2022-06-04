@@ -32,7 +32,7 @@ namespace Backlang.NET.Sdk
         /// <summary></summary>
         public bool GenerateFullPaths { get; set; }
 
-        public string[] Macros { get; set; }
+        public string[] MacroReferences { get; set; }
 
         /// <summary></summary>
         public string NetFrameworkPath { get; set; }
