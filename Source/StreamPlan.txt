@@ -2,10 +2,12 @@ StreamPlan Backseat-Montag:
 	
 	- Scopes implementieren
 
-	- macro folgende syntax erlauben:
-		mymacro(args) {
-			//do something
-		}
+	- compileTime macro implementieren um algorithmen während der übersetzungszeit auszuführen
+
+	- eigene macros definieren
+	macro test(node : LNode, context : MacroContext) {
+	
+	}
 
 	- bitwise operators
 	& | ^ ~
