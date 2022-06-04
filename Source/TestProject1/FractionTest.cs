@@ -66,6 +66,14 @@ public class FractionTest
     }
 
     [TestMethod]
+    public void Fraction_From_Positive_To_Negative_Should_Pass()
+    {
+        var frac = new Fraction(0, 2);
+        frac--;
+        Assert.AreEqual(new Fraction(-1, 2), frac);
+    }
+
+    [TestMethod]
     public void Fraction_Get_Full_Negative_Numerator_Should_Pass()
     {
         var frac = new Fraction(-2, 4);

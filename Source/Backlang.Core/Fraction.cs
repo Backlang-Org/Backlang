@@ -131,7 +131,7 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator -(Fraction value)
     {
-        throw new NotImplementedException();
+        return new Fraction(value._numerator, value._denominator, !value._negative);
     }
 
     public static Fraction operator -(Fraction left, Fraction right)
@@ -141,7 +141,17 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator --(Fraction value)
     {
-        throw new NotImplementedException();
+        if (!value._negative)
+        {
+            var newValue = value._numerator - 1;
+            if (newValue < 0)
+            {
+                // now it's negative
+                return new Fraction((ushort)(newValue * -1), value._denominator, true);
+            }
+            return new Fraction((ushort)newValue, value._denominator, false);
+        }
+        return new Fraction((ushort)(value._numerator + 1), value._denominator, false);
     }
 
     public static bool operator !=(Fraction left, Fraction right)
@@ -176,16 +186,15 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator ++(Fraction value)
     {
-        var newValue = 0;
         if (value._negative)
         {
-            newValue = value._numerator - 1;
+            var newValue = value._numerator - 1;
             if (newValue < 0)
             {
                 // it's still negative
-                return new Fraction((ushort)((value._numerator - 1) * -1), value._denominator, true);
+                return new Fraction((ushort)(newValue * -1), value._denominator, true);
             }
-            return new Fraction((ushort)(value._numerator - 1), value._denominator, false);
+            return new Fraction((ushort)newValue, value._denominator, false);
         }
         return new Fraction((ushort)(value._numerator + 1), value._denominator, false);
     }
