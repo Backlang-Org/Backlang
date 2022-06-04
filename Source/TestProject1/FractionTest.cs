@@ -86,4 +86,20 @@ public class FractionTest
         var frac = new Fraction(-2, 4);
         Assert.AreEqual(2, frac.RawNumerator);
     }
+
+    [TestMethod]
+    public void Fraction_Add_Two_EqualNumerator_Fractions_Should_Pass()
+    {
+        var frac1 = new Fraction(3, 4);
+        var frac2 = new Fraction(1, 4);
+        Assert.AreEqual(new Fraction(4, 4), frac1 + frac2);
+    }
+
+    [TestMethod]
+    public void Fraction_Add_Two_UnequalNumerator_Fractions_Should_Pass()
+    {
+        var frac1 = new Fraction(1, 2);
+        var frac2 = new Fraction(3, 4);
+        Assert.AreEqual(new Fraction(5, 4), frac1 + frac2);
+    }
 }

@@ -46,7 +46,11 @@ public struct Fraction : IComparable<Fraction>
         _negative = negative;
     }
 
-    public Fraction(short numerator, short denominator)
+    public Fraction(short numerator, int denominator) : this((int)numerator, denominator)
+    {
+    }
+
+    public Fraction(int numerator, int denominator)
     {
         if ((numerator < 0 && denominator >= 0) || (denominator < 0 && numerator >= 0))
         {
@@ -119,6 +123,12 @@ public struct Fraction : IComparable<Fraction>
         return (Half)result;
     }
 
+    public static Fraction Reduce(Fraction value)
+    {
+        var gcd = GreatestCommonDivisor(value._numerator, value._denominator);
+        return new Fraction(value.Numerator / gcd, value.Denominator / gcd);
+    }
+
     public static Fraction Max(Fraction x, Fraction y)
     {
         throw new NotImplementedException();
@@ -138,11 +148,12 @@ public struct Fraction : IComparable<Fraction>
     {
         if (left._denominator == right._denominator)
         {
-            return new Fraction((short)(left._numerator - right._numerator), (short)left._denominator);
+            return new Fraction(left.Numerator - right.Numerator, left.Denominator);
         }
         else
         {
-            throw new NotImplementedException();
+            var result = new Fraction(left.Numerator * right.Denominator - left.Denominator * right.Numerator, left.Denominator * right.Denominator);
+            return Reduce(result);
         }
     }
 
@@ -185,10 +196,11 @@ public struct Fraction : IComparable<Fraction>
     {
         if(left._denominator == right._denominator)
         {
-            return new Fraction((short)(left._numerator + right._numerator), (short)left._denominator);
+            return new Fraction(left.Numerator + right.Numerator, left.Denominator);
         } else
         {
-            throw new NotImplementedException();
+            var result = new Fraction(left.Numerator * right.Denominator + left.Denominator * right.Numerator, left.Denominator * right.Denominator);
+            return Reduce(result);
         }
     }
 
@@ -281,5 +293,20 @@ public struct Fraction : IComparable<Fraction>
     public override string ToString()
     {
         return $@"{(_negative ? "-" : "")}{_numerator} \\ {_denominator}";
+    }
+
+    private static int GreatestCommonDivisor(int a, int b)
+    {
+        while(a != b)
+        {
+            if (a > b)
+            {
+                a = a - b;
+            } else
+            {
+                b = b - a;
+            }
+        }
+        return a;
     }
 }
