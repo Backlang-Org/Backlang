@@ -136,7 +136,14 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator -(Fraction left, Fraction right)
     {
-        throw new NotImplementedException();
+        if (left._denominator == right._denominator)
+        {
+            return new Fraction((short)(left._numerator - right._numerator), (short)left._denominator);
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static Fraction operator --(Fraction value)
@@ -176,7 +183,13 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction operator +(Fraction left, Fraction right)
     {
-        throw new NotImplementedException();
+        if(left._denominator == right._denominator)
+        {
+            return new Fraction((short)(left._numerator + right._numerator), (short)left._denominator);
+        } else
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static Fraction operator ++(Fraction value)
