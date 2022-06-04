@@ -64,4 +64,18 @@ public class FractionTest
         frac++;
         Assert.AreEqual(new Fraction(0, 2, false), frac);
     }
+
+    [TestMethod]
+    public void Fraction_Get_Full_Negative_Numerator_Should_Pass()
+    {
+        var frac = new Fraction(-2, 4);
+        Assert.AreEqual(-2, frac.GetNumerator);
+    }
+
+    [TestMethod]
+    public void Fraction_Get_Raw_Negative_Numerator_Should_Pass()
+    {
+        var frac = new Fraction(-2, 4);
+        Assert.AreEqual(2, frac.GetRawNumerator);
+    }
 }

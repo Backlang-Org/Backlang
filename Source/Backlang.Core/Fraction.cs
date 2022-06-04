@@ -63,6 +63,10 @@ public struct Fraction : IComparable<Fraction>
 
     public static Fraction One => new Fraction(1, 1);
     public static Fraction Zero => new Fraction(0, 1);
+
+    public ushort GetRawNumerator => _numerator;
+    public ushort GetDenominator => _denominator;
+    public short GetNumerator => (short)(_negative ? _numerator * -1 : _numerator);
     public bool IsNegative => _negative;
 
     public static Fraction Abs(Fraction value)
