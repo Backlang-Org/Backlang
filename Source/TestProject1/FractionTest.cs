@@ -88,7 +88,7 @@ public class FractionTest
     }
 
     [TestMethod]
-    public void Fraction_Add_Two_EqualNumerator_Fractions_Should_Pass()
+    public void Fraction_Add_Two_EqualDenominator_Fractions_Should_Pass()
     {
         var frac1 = new Fraction(3, 4);
         var frac2 = new Fraction(1, 4);
@@ -96,7 +96,7 @@ public class FractionTest
     }
 
     [TestMethod]
-    public void Fraction_Add_Two_UnequalNumerator_Fractions_Should_Pass()
+    public void Fraction_Add_Two_UnequalDenominator_Fractions_Should_Pass()
     {
         var frac1 = new Fraction(1, 2);
         var frac2 = new Fraction(3, 4);
