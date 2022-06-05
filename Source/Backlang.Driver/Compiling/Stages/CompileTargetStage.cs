@@ -1,7 +1,9 @@
-﻿using Flo;
+﻿using Backlang.Core.CompilerService;
+using Backlang.Driver.Compiling.Typesystem;
+using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -30,11 +32,20 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         return await next.Invoke(context);
     }
 
-    private AssemblyContentDescription GetDescription(CompilerContext context)
+    private static AssemblyContentDescription GetDescription(CompilerContext context)
     {
-        var name = new SimpleName("Test").Qualify();
         var attributes = new AttributeMap();
 
-        return new(name, attributes, context.Assembly, context.EntryPoint);
+        if (context.OutputType == "MacroLib")
+        {
+            attributes = new AttributeMap(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(MacroLibAttribute))));
+        }
+
+        return new(context.Assembly.Name.Qualify(), attributes, context.Assembly, GetEntryPoint(context));
+    }
+
+    private static IMethod GetEntryPoint(CompilerContext context)
+    {
+        return context.Assembly.Types.First(_ => _.Name.ToString() == "__Program").Methods.First(_ => _.Name.ToString() == "main" && _.IsStatic);
     }
 }
