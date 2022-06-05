@@ -20,13 +20,9 @@ namespace Backlang.NET.Sdk
         public string DebugType { get; set; }
 
         public string EntryPoint { get; set; }
-
         public bool GenerateFullPaths { get; set; }
-
         public string[] MacroReferences { get; set; }
-
         public string NetFrameworkPath { get; set; }
-
         public string NoWarn { get; set; }
 
         /// <summary>
@@ -41,14 +37,11 @@ namespace Backlang.NET.Sdk
         public string OutputPath { get; set; }
 
         public string OutputTree { get; set; }
-
         public string OutputType { get; set; }
-
         public string Path { get; set; }
-
         public string[] ReferencePath { get; set; }
-
         public ITaskItem[] Resources { get; set; }
+        public string Target { get; set; }
 
         [Required]
         public string TargetFramework { get; set; }

@@ -169,6 +169,7 @@
 				   EntryPoint="$(StartupObject)"
 				   ReferencePath="@(ReferencePath)"
 				   OutputTree="$(OutputTree)"
+				   Target="$(Target)"
 				   Compile="@(Compile)"
 				   MacroReferences="@(MacroReference)"
 				   Resources="@(EmbeddedResource)"
