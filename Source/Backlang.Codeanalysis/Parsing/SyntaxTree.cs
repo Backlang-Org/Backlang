@@ -28,7 +28,7 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
-    internal static LNode Try(LNodeList body, LNodeList catches, LNodeList finallly)
+    public static LNode Try(LNodeList body, LNodeList catches, LNodeList finallly)
     {
         return LNode.Call(CodeSymbols.Try, LNode.List(
             LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock),
