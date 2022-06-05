@@ -65,6 +65,11 @@ public static partial class BuiltInMacros
     [LexicalMacro("Point::new()", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Instantiation(LNode node, IMacroContext context)
     {
+        if (node.Args.IsEmpty)
+        {
+            return node;
+        }
+
         var left = node.Args[0];
         var right = node.Args[1];
 
