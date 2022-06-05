@@ -16,7 +16,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
         var corLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(uint).Assembly);
         var consoleLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Console).Assembly);
         var collectionsLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(BitVector32).Assembly);
-        var coreLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Optional<>).Assembly);
+        var coreLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Result<>).Assembly);
 
         context.Binder.AddAssembly(corLib);
         context.Binder.AddAssembly(coreLib);
@@ -26,7 +26,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
         ClrTypeEnvironmentBuilder.FillTypes(typeof(uint).Assembly, context.Binder);
         ClrTypeEnvironmentBuilder.FillTypes(typeof(Console).Assembly, context.Binder);
         ClrTypeEnvironmentBuilder.FillTypes(typeof(BitVector32).Assembly, context.Binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(Optional<>).Assembly, context.Binder);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, context.Binder);
 
         context.Environment = new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corLib);
 
@@ -37,7 +37,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
                 && method.IsStatic
                 && method.ReturnParameter.Type == context.Environment.Void
                 && method.Parameters.Count == 1);
-        
+
         return await next.Invoke(context);
     }
 }
