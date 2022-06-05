@@ -28,6 +28,14 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
+    public static LNode Try(LNodeList body, LNodeList catches, LNodeList finallly)
+    {
+        return LNode.Call(CodeSymbols.Try, LNode.List(
+            LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock),
+            LNode.Call(CodeSymbols.Braces, catches).SetStyle(NodeStyle.StatementBlock),
+            LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, finallly).SetStyle(NodeStyle.StatementBlock)))));
+    }
+
     public static LNode Bitfield(string name, LNodeList members)
     {
         return LNode.Call(Symbols.Bitfield, LNode.Id(name)).WithAttrs(members);
@@ -36,6 +44,11 @@ public static class SyntaxTree
     public static LNode Default()
     {
         return Default(LNode.Missing);
+    }
+
+    public static LNode Catch(IdNode exceptionType, IdNode exceptionValueName, LNodeList body)
+    {
+        return LNode.Call(CodeSymbols.Catch, LNode.List(exceptionType, exceptionValueName, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode Default(LNode type)

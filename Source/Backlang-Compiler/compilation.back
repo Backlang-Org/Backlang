@@ -1,4 +1,5 @@
 ﻿using Console::WriteLine as println;
+using Console::Error::WriteLine as errorln;
 
 func main() static -> none {
 	let uh = 1uL;
@@ -13,6 +14,15 @@ func main() static -> none {
 	let another = ^s;
 	#autofree(handle, another) {
 		println(&handle);
+	}
+	
+	let somethingNone = none;
+	try {
+		somethingNone.do();
+	} catch (e: NullReferenceException) {
+		errorln(e);
+	} finally {
+	    println("Yippie :D");
 	}
 
 	let myChar = 'a';
