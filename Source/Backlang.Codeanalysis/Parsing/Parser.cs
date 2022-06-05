@@ -43,6 +43,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
+        AddStatementParsePoint<TryStatement>(TokenType.Try);
         AddStatementParsePoint<ForStatement>(TokenType.For);
         AddStatementParsePoint<MacroBlockStatement>(TokenType.Hash);
     }

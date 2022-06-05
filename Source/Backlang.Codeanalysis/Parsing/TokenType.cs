@@ -175,6 +175,15 @@ public enum TokenType
     [Keyword("enum")]
     Enum,
 
+    [Keyword("try")]
+    Try,
+
+    [Keyword("catch")]
+    Catch,
+
+    [Keyword("finally")]
+    Finally,
+
     [Keyword("with")]
     With,
 
