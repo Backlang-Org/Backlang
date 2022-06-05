@@ -16,7 +16,8 @@ public static class Expression
 
         foreach (var op in typeValues)
         {
-            var attributes = op.GetType().GetField(Enum.GetName<TokenType>(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
+            var attributes = op.GetType()
+                .GetField(Enum.GetName(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
 
             if (attributes != null && attributes.Any())
             {
@@ -30,7 +31,7 @@ public static class Expression
 
     public static int GetBinaryOperatorPrecedence(TokenType kind)
     {
-        for (int i = 0; i < Operators.Count - 1; i++)
+        for (var i = 0; i < Operators.Count - 1; i++)
         {
             if (Operators[i].TokenType == kind && !Operators[i].IsUnary)
             {
@@ -57,9 +58,9 @@ public static class Expression
 
         if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence && !IsPostUnary(parser.Iterator.Current.Type))
         {
-            Token? operatorToken = parser.Iterator.NextToken();
+            var operatorToken = parser.Iterator.NextToken();
 
-            LNode? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
+            var operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
             left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand);
         }
@@ -69,7 +70,7 @@ public static class Expression
 
             if (IsPostUnary(parser.Iterator.Current.Type))
             {
-                Token? operatorToken = parser.Iterator.NextToken();
+                var operatorToken = parser.Iterator.NextToken();
 
                 left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), left);
             }
@@ -79,7 +80,9 @@ public static class Expression
         {
             var precedence = GetBinaryOperatorPrecedence(parser.Iterator.Current.Type);
             if (precedence == 0 || precedence <= parentPrecedence)
+            {
                 break;
+            }
 
             var operatorToken = parser.Iterator.NextToken();
             var right = Parse(parser, parsePoints, precedence);
@@ -114,7 +117,7 @@ public static class Expression
 
     private static int GetUnaryOperatorPrecedence(TokenType kind)
     {
-        for (int i = 0; i < Operators.Count - 1; i++)
+        for (var i = 0; i < Operators.Count - 1; i++)
         {
             if (Operators[i].TokenType == kind && Operators[i].IsUnary)
             {
@@ -127,7 +130,7 @@ public static class Expression
 
     private static bool IsPostUnary(TokenType kind)
     {
-        for (int i = 0; i < Operators.Count - 1; i++)
+        for (var i = 0; i < Operators.Count - 1; i++)
         {
             if (Operators[i].TokenType == kind && Operators[i].IsUnary)
             {

@@ -10,34 +10,23 @@ using System.Threading;
 
 namespace Backlang.NET.Sdk
 {
-    public class BuildTask : Task, ICancelableTask // TODO: ToolTask
+    public class BuildTask : Task, ICancelableTask
     {
         private CancellationTokenSource _cancellation = new CancellationTokenSource();
 
         [Required]
         public string[] Compile { get; set; }
 
-        /// <summary>
-        /// Used for debugging purposes.
-        /// If enabled a debugger is attached to the current process upon the task execution.
-        /// </summary>
-        public bool DebuggerAttach { get; set; } = false;
-
-        /// <summary></summary>
         public string DebugType { get; set; }
 
-        /// <summary></summary>
         public string EntryPoint { get; set; }
 
-        /// <summary></summary>
         public bool GenerateFullPaths { get; set; }
 
-        public string[] Macros { get; set; }
+        public string[] MacroReferences { get; set; }
 
-        /// <summary></summary>
         public string NetFrameworkPath { get; set; }
 
-        /// <summary></summary>
         public string NoWarn { get; set; }
 
         /// <summary>
@@ -45,50 +34,35 @@ namespace Backlang.NET.Sdk
         /// Can be a boolean value (true/false), an integer specifying the level(0-9), or an optimization name (debug, release).</summary>
         public string Optimization { get; set; } = bool.TrueString;
 
-        /// <summary></summary>
         [Required]
         public string OutputName { get; set; }
 
-        /// <summary></summary>
         [Required]
         public string OutputPath { get; set; }
 
-        /// <summary></summary>
         public string OutputTree { get; set; }
 
-        /// <summary></summary>
         public string OutputType { get; set; }
 
         public string Path { get; set; }
 
-        /// <summary></summary>
         public string[] ReferencePath { get; set; }
 
-        /// <summary></summary>
         public ITaskItem[] Resources { get; set; }
 
-        /// <summary></summary>
         [Required]
         public string TargetFramework { get; set; }
 
-        /// <summary></summary>
         [Required]
         public string TempOutputPath { get; set; }
 
-        /// <summary></summary>
         public string Version { get; set; }
 
-        /// <summary>
-        /// Cancels the task nicely.
-        /// </summary>
         public void Cancel()
         {
             _cancellation.Cancel();
         }
 
-        // empty, true, false
-        // TODO: embed
-        /// <summary></summary>
         public override bool Execute()
         {
             _cancellation = new CancellationTokenSource();
@@ -137,6 +111,7 @@ namespace Backlang.NET.Sdk
                     {
                         sb.AppendLine(node.ToString());
                     }
+
                     File.WriteAllText(System.IO.Path.Combine(TempOutputPath, OutputName + ".dll"), sb.ToString());
                 }
 
@@ -149,9 +124,6 @@ namespace Backlang.NET.Sdk
             }
         }
 
-        /// <summary>
-        /// Gets value indicating user has canceled the task.
-        /// </summary>
         public bool IsCanceled()
         {
             return _cancellation != null && _cancellation.IsCancellationRequested;
