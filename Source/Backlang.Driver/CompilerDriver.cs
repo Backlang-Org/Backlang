@@ -25,6 +25,8 @@ public class CompilerDriver
            cfg.When(_ => _.OutputTree, _ => {
                _.Add<EmitTreeStage>();
            });
+
+           cfg.Add<CompileTargetStage>();
        }
        );
 
