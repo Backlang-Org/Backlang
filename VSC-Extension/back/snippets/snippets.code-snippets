@@ -31,19 +31,32 @@
   
   "Function": {
     "prefix": ["fn", "func"],
-    "body": ["func ${1:name} () {", "\t$0", "}"],
+    "body": ["func ${1:name}($2) {", "\t$0", "}"],
     "description": "A function."
   },
 
   "Static Function": {
     "prefix": ["fnstatic", "funcstatic"],
-    "body": ["func ${1:name} () static {", "\t$0", "}"],
+    "body": ["func ${1:name}($2) static {", "\t$0", "}"],
     "description": "A static function."
   },
   
   "Main Function": {
     "prefix": ["main"],
-    "body": ["func main() static -> int32 {", "\t$0", "\treturn 0;", "}"]
+    "body": ["func main() static -> i32 {", "\t$0", "\treturn 0;", "}"],
+    "description": "A snippet for making the main function."
+  },
+
+  "Macro Definition": {
+    "prefix": ["macro"],
+    "body": ["macro ${1:name}($2) -> LNode {", "\t$0", "}"],
+    "description": "A simple macro."
+  },
+
+  "Quote Macro Definition": {
+    "prefix": ["macroq", "qmacro"],
+    "body": ["macro ${1:name}($2) -> LNode {", "\t#quote {", "\t\t$0", "\t}", "}"],
+    "description": "A macro definition with the quote macro inside."
   },
 
   "Console WriteLine": {
