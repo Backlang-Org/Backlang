@@ -41,6 +41,11 @@
     "description": "A static function."
   },
   
+  "Main Function": {
+    "prefix": ["main"],
+    "body": ["func main() static -> int32 {", "\t$0", "\treturn 0;", "}"]
+  },
+
   "Console WriteLine": {
     "prefix": ["cw"],
     "body": ["Console::WriteLine(${1:output});"],
@@ -52,4 +57,5 @@
     "body": ["struct ${1:name} {", "\t$0", "}"],
     "description": "A struct."
   },
+
 }
