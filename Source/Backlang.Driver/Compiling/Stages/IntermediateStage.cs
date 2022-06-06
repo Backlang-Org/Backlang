@@ -7,7 +7,6 @@ using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -94,7 +93,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
 
         //block.Flow = new ReturnFlow(
-           //     Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+        //     Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
 
         // Finish up the method body.
         return new MethodBody(
@@ -177,7 +176,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        context.Assembly = new DescribedAssembly(new QualifiedName("Example"));
+        context.Assembly = new DescribedAssembly(new QualifiedName("Compilation"));
         context.ExtensionsType = new DescribedType(new SimpleName("__Extensions").Qualify(context.Assembly.Name), context.Assembly);
 
         foreach (var tree in context.Trees)

@@ -31,7 +31,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
                 AssemblyContentDescription description = GetDescription(context);
 
                 var assembly = _targets[context.Target].Compile(description);
-                assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath, context.OutputFilename + ".dll")));
+                assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath, context.OutputFilename)));
             }
             else
             {
