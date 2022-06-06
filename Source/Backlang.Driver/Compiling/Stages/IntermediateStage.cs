@@ -67,7 +67,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                      Instruction.CreateAlloca(elementType));
 
                 var decl = node.Args[1];
-                if (decl.Args[1].HasValue)
+                if (decl.Args[1].Args[0].HasValue)
                 {
                     block.AppendInstruction(
                        Instruction.CreateStore(
@@ -93,8 +93,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             }
         }
 
-        block.Flow = new ReturnFlow(
-                Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+        //block.Flow = new ReturnFlow(
+           //     Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
 
         // Finish up the method body.
         return new MethodBody(
@@ -163,7 +163,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     {
         if (type == LNode.Missing) return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
-        var name = type.Args[0].Name.ToString();
+        var name = type.Args[0].Name.ToString().Replace("#", "");
 
         if (typenameTable.ContainsKey(name))
         {

@@ -31,7 +31,7 @@ public sealed class CompilerContext
     [Option('r', "reference", Required = false, HelpText = "References of the assembly")]
     public IEnumerable<string> References { get; set; } = Array.Empty<string>();
 
-    [Option("target", Required = true, HelpText = "For which platform to compile to")]
+    [Option("target", Required = false, HelpText = "For which platform to compile to")]
     public string Target { get; set; }
 
     public string TempOutputPath { get; set; }
