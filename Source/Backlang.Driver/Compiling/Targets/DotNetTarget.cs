@@ -8,6 +8,6 @@ public class DotNetTarget : ITarget
 
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
-        throw new NotImplementedException();
+        return new DotNetAssembly(contents);
     }
 }
