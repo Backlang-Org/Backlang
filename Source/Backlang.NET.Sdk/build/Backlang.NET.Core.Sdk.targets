@@ -173,7 +173,6 @@
 				   Compile="@(Compile)"
 				   MacroReferences="@(MacroReference)"
 				   Resources="@(EmbeddedResource)"
-				   DebuggerAttach="$(DebuggerAttach)"
 				   GenerateFullPaths="$(GenerateFullPaths)" />
 
 		<Copy SourceFiles="%(IntermediateAssembly.Filename).runtimeconfig.json" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
