@@ -30,7 +30,6 @@ public class DotNetAssembly : ITargetAssembly
 
         SetTargetFramework();
 
-        //_assemblyDefinition.MainModule.AssemblyReferences.Add(new AssemblyNameReference("mscorlib", new Version(4, 0, 0, 0)));
         _assemblyDefinition.MainModule.AssemblyReferences.Add(new AssemblyNameReference("System.Private.CoreLib", new Version(7, 0, 0, 0)));
     }
 
