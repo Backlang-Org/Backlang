@@ -1,4 +1,5 @@
 ﻿using Backlang.Core.CompilerService;
+using Backlang.Driver.Compiling.Targets;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
@@ -11,10 +12,20 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 {
     private Dictionary<string, ITarget> _targets = new();
 
+    public CompileTargetStage()
+    {
+        AddTarget<DotNetTarget>();
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         if (!context.Messages.Any())
         {
+            if (string.IsNullOrEmpty(context.Target))
+            {
+                context.Target = "dotnet";
+            }
+
             if (_targets.ContainsKey(context.Target))
             {
                 AssemblyContentDescription description = GetDescription(context);
@@ -49,5 +60,12 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         return context.Assembly.Types
             .First(_ => _.Name.ToString() == Names.ProgramClass)
             .Methods.First(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+    }
+
+    private void AddTarget<T>()
+                    where T : ITarget, new()
+    {
+        var target = new T();
+        _targets.Add(target.Name, target);
     }
 }
