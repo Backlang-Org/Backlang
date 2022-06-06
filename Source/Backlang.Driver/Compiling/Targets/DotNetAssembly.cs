@@ -5,6 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
+using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets;
 
@@ -22,11 +23,14 @@ public class DotNetAssembly : ITargetAssembly
         var name = new AssemblyNameDefinition(_assembly.FullName.ToString(),
             new Version(1, 0));
 
-        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, "Module", ModuleKind.Console);
+        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, "Module", ModuleKind.Dll);
+
         _description = description;
         _environment = description.Environment;
 
-        _assemblyDefinition.MainModule.AssemblyReferences.Add(new AssemblyNameReference("mscorlib", new Version(4, 0, 0, 0)));
+        SetTargetFramework();
+
+        //_assemblyDefinition.MainModule.AssemblyReferences.Add(new AssemblyNameReference("mscorlib", new Version(4, 0, 0, 0)));
         _assemblyDefinition.MainModule.AssemblyReferences.Add(new AssemblyNameReference("System.Private.CoreLib", new Version(7, 0, 0, 0)));
     }
 
@@ -50,6 +54,10 @@ public class DotNetAssembly : ITargetAssembly
                 {
                     clrType.BaseType = Resolve(type.BaseTypes.First().FullName);
                 }
+            }
+            else
+            {
+                clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(System.Object));
             }
 
             foreach (DescribedBodyMethod m in type.Methods)
@@ -83,5 +91,16 @@ public class DotNetAssembly : ITargetAssembly
     private TypeReference Resolve(QualifiedName name)
     {
         return _assemblyDefinition.MainModule.ImportReference(Type.GetType(name.ToString()));
+    }
+
+    private void SetTargetFramework()
+    {
+        var tf = _assemblyDefinition.MainModule.ImportReference(typeof(TargetFrameworkAttribute).GetConstructors().First());
+
+        var item = new CustomAttribute(tf);
+        item.ConstructorArguments.Add(
+            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)), ".NETCoreApp,Version=v6.0"));
+
+        _assemblyDefinition.CustomAttributes.Add(item);
     }
 }

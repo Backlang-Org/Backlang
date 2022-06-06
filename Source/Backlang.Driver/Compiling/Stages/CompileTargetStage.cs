@@ -24,6 +24,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             if (string.IsNullOrEmpty(context.Target))
             {
                 context.Target = "dotnet";
+                context.OutputFilename += ".dll";
             }
 
             if (_targets.ContainsKey(context.Target))
