@@ -8,6 +8,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="compilation.runtimeconfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="compilation.runtimeconfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Flo" Version="0.3.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.10" />

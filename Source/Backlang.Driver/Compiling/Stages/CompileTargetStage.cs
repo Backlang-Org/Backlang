@@ -33,6 +33,14 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
                 var assembly = _targets[context.Target].Compile(description);
                 assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath, context.OutputFilename)));
+
+                var runtimeConfigStream = typeof(CompileTargetStage).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
+                var jsonStream = File.OpenWrite($"{context.OutputFilename}.runtimeconfig.json");
+
+                runtimeConfigStream.CopyTo(jsonStream);
+
+                jsonStream.Close();
+                runtimeConfigStream.Close();
             }
             else
             {
