@@ -52,7 +52,8 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             attributes = new AttributeMap(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(MacroLibAttribute))));
         }
 
-        return new(context.Assembly.Name.Qualify(), attributes, context.Assembly, GetEntryPoint(context));
+        return new(context.Assembly.Name.Qualify(),
+            attributes, context.Assembly, GetEntryPoint(context), context.Environment);
     }
 
     private static IMethod GetEntryPoint(CompilerContext context)
