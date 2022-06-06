@@ -1,4 +1,4 @@
-using Furesoft.Core.CodeDom.Backends.CLR.Emit;
+﻿using Furesoft.Core.CodeDom.Backends.CLR.Emit;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -23,7 +23,7 @@ public class DotNetAssembly : ITargetAssembly
 
         _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, "Module", ModuleKind.Console);
         _description = description;
-        this._environment = description.Environment;
+        _environment = description.Environment;
     }
 
     public void WriteTo(Stream output)
@@ -44,8 +44,7 @@ public class DotNetAssembly : ITargetAssembly
                     _assemblyDefinition.EntryPoint = clrMethod;
                 }
 
-                MethodDefinition body = new(m.FullName.ToString(), clrMethod.Attributes, clrMethod.ReturnType);
-                clrMethod.Body = new Mono.Cecil.Cil.MethodBody(body);
+                clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
 
                 clrType.Methods.Add(clrMethod);
             }
