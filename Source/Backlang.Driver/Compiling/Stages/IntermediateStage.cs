@@ -232,14 +232,14 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             DescribedType type;
 
-            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == context.Assembly.Name + ".__Program"))
+            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
             {
-                type = new DescribedType(new SimpleName("__Program").Qualify(context.Assembly.Name), context.Assembly);
+                type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(context.Assembly.Name), context.Assembly);
                 context.Assembly.AddType(type);
             }
             else
             {
-                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == context.Assembly.Name + ".__Program");
+                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
             }
 
             var method = ConvertFunction(context, type, function);

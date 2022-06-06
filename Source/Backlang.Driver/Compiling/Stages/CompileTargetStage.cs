@@ -46,6 +46,8 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
     private static IMethod GetEntryPoint(CompilerContext context)
     {
-        return context.Assembly.Types.First(_ => _.Name.ToString() == "__Program").Methods.First(_ => _.Name.ToString() == "main" && _.IsStatic);
+        return context.Assembly.Types
+            .First(_ => _.Name.ToString() == Names.ProgramClass)
+            .Methods.First(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
     }
 }
