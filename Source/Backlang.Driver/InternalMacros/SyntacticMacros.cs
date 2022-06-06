@@ -1,27 +1,39 @@
-﻿using LeMP;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
+using LeMP;
 using Loyc;
 using Loyc.Syntax;
 
-namespace Backlang.Core.Macros;
+namespace Backlang.Driver.InternalMacros;
 
-public static partial class BuiltInMacros
+[ContainsMacros]
+public static class SyntacticMacros
 {
-    [LexicalMacro("^hat", "Gets a handle for the variable", "'^", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode HandleOperator(LNode @operator, IMacroContext context)
+    public static readonly Dictionary<Symbol, string> TypenameTable = new()
     {
-        if (!@operator.Args[0].IsId) context.Error("Expected Identifier for HandleOperator");
+        [CodeSymbols.Object] = "obj",
 
-        return LNode.Call(
-            LNode.Call(LNode.Id("::"), LNode.List(
-                LNode.Call(CodeSymbols.Dot, LNode.List(
-                    LNode.Call(CodeSymbols.Dot, LNode.List(
-                        LNode.Call(CodeSymbols.Dot, LNode.List(
-                            LNode.Id("System"), LNode.Id("Runtime"))).SetStyle(NodeStyle.Operator), 
-                        LNode.Id("InteropServices"))).SetStyle(NodeStyle.Operator), 
-                    LNode.Id("GCHandle"))).SetStyle(NodeStyle.Operator), 
-                LNode.Id("Alloc"))).SetStyle(NodeStyle.Operator),
-            LNode.List(@operator.Args[0]));
-    }
+        [CodeSymbols.Bool] = "bool",
+
+        [CodeSymbols.UInt8] = "u8",
+        [CodeSymbols.UInt16] = "u16",
+        [CodeSymbols.UInt32] = "u32",
+        [CodeSymbols.UInt64] = "u64",
+
+        [CodeSymbols.Int8] = "i8",
+        [CodeSymbols.Int16] = "i16",
+        [CodeSymbols.Int32] = "i32",
+        [CodeSymbols.Int64] = "i64",
+
+        [Symbols.Float16] = "f16",
+        [Symbols.Float32] = "f32",
+        [Symbols.Float64] = "f64",
+
+        [CodeSymbols.Char] = "char",
+        [CodeSymbols.String] = "string",
+    };
+
+    private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
     public static LNode AutoFree(LNode @operator, IMacroContext context)
@@ -40,6 +52,11 @@ public static partial class BuiltInMacros
         return body.WithArgs(LNode.List().AddRange(body.Args).AddRange(freeCalls));
     }
 
+    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode DivEquals(LNode @operator, IMacroContext context)
+    {
+        return ConverToAssignment(@operator, CodeSymbols.Div);
+    }
 
     [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
@@ -62,6 +79,23 @@ public static partial class BuiltInMacros
         return @operator;
     }
 
+    [LexicalMacro("^hat", "Gets a handle for the variable", "'^", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode HandleOperator(LNode @operator, IMacroContext context)
+    {
+        if (!@operator.Args[0].IsId) context.Error("Expected Identifier for HandleOperator");
+
+        return LNode.Call(
+            LNode.Call(LNode.Id("::"), LNode.List(
+                LNode.Call(CodeSymbols.Dot, LNode.List(
+                    LNode.Call(CodeSymbols.Dot, LNode.List(
+                        LNode.Call(CodeSymbols.Dot, LNode.List(
+                            LNode.Id("System"), LNode.Id("Runtime"))).SetStyle(NodeStyle.Operator),
+                        LNode.Id("InteropServices"))).SetStyle(NodeStyle.Operator),
+                    LNode.Id("GCHandle"))).SetStyle(NodeStyle.Operator),
+                LNode.Id("Alloc"))).SetStyle(NodeStyle.Operator),
+            LNode.List(@operator.Args[0]));
+    }
+
     [LexicalMacro("Point::new()", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Instantiation(LNode node, IMacroContext context)
     {
@@ -82,12 +116,6 @@ public static partial class BuiltInMacros
         return node;
     }
 
-    [LexicalMacro("left += right;", "Convert to left = left + something", "'+=", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode PlusEquals(LNode @operator, IMacroContext context)
-    {
-        return ConverToAssignment(@operator, CodeSymbols.Add);
-    }
-
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
@@ -100,10 +128,36 @@ public static partial class BuiltInMacros
         return ConverToAssignment(@operator, CodeSymbols.Mul);
     }
 
-    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode DivEquals(LNode @operator, IMacroContext context)
+    [LexicalMacro("left += right;", "Convert to left = left + something", "'+=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode PlusEquals(LNode @operator, IMacroContext context)
     {
-        return ConverToAssignment(@operator, CodeSymbols.Div);
+        return ConverToAssignment(@operator, CodeSymbols.Add);
+    }
+
+    [LexicalMacro("#var", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode TypeInferenceForLet(LNode node, IMacroContext context)
+    {
+        if (node.ArgCount == 0)
+        {
+            return node;
+        }
+
+        var typename = node.Args[0];
+
+        if (!typename.Calls(Symbols.TypeLiteral))
+        {
+            var definiton = node.Args[1];
+            var value = definiton.Args[1];
+
+            if (TypenameTable.ContainsKey(value.Name))
+            {
+                var newType = SyntaxTree.Type(TypenameTable[value.Name], LNode.List());
+
+                return node.WithArgChanged(0, newType);
+            }
+        }
+
+        return node;
     }
 
     private static LNode ConverToAssignment(LNode @operator, Symbol symbol)

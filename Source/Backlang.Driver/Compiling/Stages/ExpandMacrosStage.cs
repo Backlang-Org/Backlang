@@ -1,5 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Core.Macros;
+using Backlang.Driver.InternalMacros;
 using Flo;
 using LeMP;
 using Loyc;
@@ -18,7 +19,9 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
         //_macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
         _macroProcessor.AddMacros(typeof(BuiltInMacros).Assembly, false);
+        _macroProcessor.AddMacros(typeof(SyntacticMacros).Assembly, true);
         _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(BuiltInMacros).Namespace);
+        _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(SyntacticMacros).Namespace);
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)

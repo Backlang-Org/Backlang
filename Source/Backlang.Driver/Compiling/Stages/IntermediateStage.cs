@@ -18,7 +18,7 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static readonly Dictionary<string, Type> typenameTable = new()
+    public static readonly Dictionary<string, Type> TypenameTable = new()
     {
         ["obj"] = typeof(object),
 
@@ -164,9 +164,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         var name = type.Args[0].Name.ToString().Replace("#", "");
 
-        if (typenameTable.ContainsKey(name))
+        if (TypenameTable.ContainsKey(name))
         {
-            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typenameTable[name]);
+            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, TypenameTable[name]);
         }
         else
         {
