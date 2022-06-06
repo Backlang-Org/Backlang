@@ -54,7 +54,7 @@
   },
 
   "Quote Macro Definition": {
-    "prefix": ["marcoq", "qmacro"],
+    "prefix": ["macroq", "qmacro"],
     "body": ["macro ${1:name}($2) -> LNode {", "\t#quote {", "\t\t$0", "\t}", "}"],
     "description": "A macro definition with the quote macro inside."
   },
