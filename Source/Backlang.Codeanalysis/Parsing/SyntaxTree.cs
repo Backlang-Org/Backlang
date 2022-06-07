@@ -150,6 +150,15 @@ public static class SyntaxTree
         return LNode.Call(CodeSymbols.Sizeof, LNode.List(type));
     }
 
+    public static LNode Class(string name, LNodeList inheritances, LNodeList members)
+    {
+        return LNode.Call(CodeSymbols.Class,
+            LNode.List(
+                LNode.Id((Symbol)name),
+                LNode.Call(Symbols.Inheritance, inheritances),
+                LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode Struct(string name, LNodeList inheritances, LNodeList members)
     {
         return LNode.Call(CodeSymbols.Struct,

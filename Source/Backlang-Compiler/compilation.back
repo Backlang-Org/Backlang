@@ -2,12 +2,12 @@
 
 }
 
-struct Point {
+class Point {
 	x: i32;
 	y: i32;
 	z: i32;
 }
 
-struct Location : Point {
-	worldName: string = "world";
+class Location : Point {
+	worldName: string = "world"; 
 }
