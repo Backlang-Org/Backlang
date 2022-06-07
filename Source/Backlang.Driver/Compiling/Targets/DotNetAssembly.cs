@@ -139,6 +139,13 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         clrMethod.IsStatic = m.IsStatic;
+        if(m.IsConstructor)
+        {
+            clrMethod.IsRuntimeSpecialName = true;
+            clrMethod.IsSpecialName = true;
+            clrMethod.Name = ".ctor";
+            clrMethod.IsStatic = false;
+        }
         return clrMethod;
     }
 
