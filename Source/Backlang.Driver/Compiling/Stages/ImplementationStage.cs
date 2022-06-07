@@ -36,12 +36,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 {
                     if (targetType.Parent.Assembly == context.Assembly)
                     {
-                        var fn = IntermediateStage.ConvertFunction(context, targetType, node);
+                        var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node);
                         targetType.AddMethod(fn);
                     }
                     else
                     {
-                        var fn = IntermediateStage.ConvertFunction(context, context.ExtensionsType, node);
+                        var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node);
 
                         var thisParameter = new Parameter(targetType, "this");
                         var param = (IList<Parameter>)fn.Parameters;

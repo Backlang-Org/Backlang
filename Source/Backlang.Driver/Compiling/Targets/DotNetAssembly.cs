@@ -42,16 +42,19 @@ public class DotNetAssembly : ITargetAssembly
 
             if (type.BaseTypes.Any())
             {
-                if (type.BaseTypes.First().Name.ToString() == "ValueType")
+                foreach (var t in type.BaseTypes)
                 {
-                    clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(System.ValueType));
+                    if (t.Name.ToString() == "ValueType")
+                    {
+                        clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(ValueType));
 
-                    clrType.ClassSize = 1;
-                    clrType.PackingSize = 0;
-                }
-                else
-                {
-                    clrType.BaseType = Resolve(type.BaseTypes.First().FullName);
+                        clrType.ClassSize = 1;
+                        clrType.PackingSize = 0;
+                    }
+                    else
+                    {
+                        clrType.BaseType = Resolve(t.FullName);
+                    }
                 }
             }
             else
@@ -67,9 +70,11 @@ public class DotNetAssembly : ITargetAssembly
 
             foreach (DescribedBodyMethod m in type.Methods)
             {
+                var returnType = m.ReturnParameter.Type;
+
                 var clrMethod = new MethodDefinition(m.Name.ToString(),
                     MethodAttributes.Public | MethodAttributes.Static,
-                    _assemblyDefinition.MainModule.ImportReference(Type.GetType(m.ReturnParameter.Type == null ? "System.Void" : m.ReturnParameter.Type.FullName.ToString())));
+                   Resolve(returnType == null ? new SimpleName("System").Qualify("Void") : returnType.FullName));
 
                 if (m == _description.EntryPoint)
                 {
@@ -97,7 +102,16 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(QualifiedName name)
     {
-        return _assemblyDefinition.MainModule.ImportReference(Type.GetType(name.ToString()));
+        var type = Type.GetType(name.ToString());
+
+        if (type == null)
+        {
+            return new TypeReference(name.Qualifier.ToString(),
+                name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, null);
+        }
+
+        var resolvedType = _assemblyDefinition.MainModule.ImportReference(type);
+        return resolvedType;
     }
 
     private void SetTargetFramework()

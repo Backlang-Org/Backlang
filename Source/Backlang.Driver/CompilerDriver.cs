@@ -19,6 +19,7 @@ public class CompilerDriver
 
            cfg.Add<ExpandMacrosStage>();
            cfg.Add<IntermediateStage>();
+           cfg.Add<TypeInheritanceStage>();
            cfg.Add<ExpandImplementationStage>();
            cfg.Add<ImplementationStage>();
 
