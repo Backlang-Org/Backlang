@@ -71,4 +71,16 @@
     "description": "A struct."
   },
 
+  "Class" : {
+    "prefix": ["class"],
+    "body": ["class ${1:name} {", "\t$0", "}"],
+    "description": "A class."
+  },
+
+  "Interface": {
+    "prefix": ["interface"],
+    "body": ["interface ${1:name} {", "\t$0", "}"],
+    "description": "An interface."
+  },
+
 }

@@ -7,11 +7,8 @@ using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Flow;
-using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
-using Loyc;
 using Loyc.Syntax;
 using System.Runtime.CompilerServices;
 
@@ -31,6 +28,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
+        /*
         foreach (var node in function.Args[3].Args)
         {
             if (!node.IsCall) continue;
@@ -71,11 +69,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         block.Flow = new ReturnFlow(
              Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
-
+        */
         // Finish up the method body.
         return new MethodBody(
-            new Parameter(),
-            new Parameter(),
+            new Parameter(parentType),
+            new Parameter(parentType),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
     }
