@@ -166,6 +166,46 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
+
+        foreach (var enu in enums)
+        {
+            var name = enu.Args[0].Name;
+            var members = enu.Args[2];
+
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
+
+            foreach (var member in members.Args)
+            {
+                if (member.Name == CodeSymbols.Var)
+                {
+                    IType mtype;
+                    if (member.Args[0] == LNode.Missing)
+                    {
+                        mtype = context.Environment.Int32;
+                    }
+                    else
+                    {
+                        mtype = IntermediateStage.GetType(member.Args[0], context);
+                    }
+
+                    var mname = member.Args[1].Args[0].Name;
+
+                    var field = new DescribedField(type, new SimpleName(mname.Name), true, mtype);
+
+                    type.AddField(field);
+                }
+            }
+
+            var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
+            valueField.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+
+            type.AddField(valueField);
+        }
+    }
+
     private static Instruction ConvertExpression(IType elementType, object value)
     {
         if (value is uint i)
@@ -290,41 +330,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             else
             {
                 ConvertInterfaceMethods(members, type, context);
-            }
-        }
-    }
-
-    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
-    {
-        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
-
-        foreach (var enu in enums)
-        {
-            var name = enu.Args[0].Name;
-            var members = enu.Args[2];
-
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
-
-            foreach (var member in members.Args)
-            {
-                if (member.Name == CodeSymbols.Var)
-                {
-                    IType mtype;
-                    if (member.Args[0] == LNode.Missing)
-                    {
-                        mtype = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(int));
-                    } else
-                    {
-                        mtype = IntermediateStage.GetType(member.Args[0], context);
-                    }
-
-
-                    var mname = member.Args[1].Args[0].Name;
-
-                    var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
-
-                    type.AddField(field);
-                }
             }
         }
     }
