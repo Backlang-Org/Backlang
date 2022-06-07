@@ -106,6 +106,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         AddParameters(method, function, context);
         SetReturnType(method, function, context);
 
+        if (methodName == "new" && method.IsStatic)
+        {
+            method.IsConstructor = true;
+        }
+
         var sourceBody = CompileBody(function, context, type);
 
         var body = sourceBody.WithImplementation(
