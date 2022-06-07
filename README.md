@@ -3,4 +3,4 @@ A new Rust, C# inspired language for .Net and other platforms like backseatsafes
 
 Backlang constist of Language Orientated Programming, has a macro system, syntax sugar for common tasks like unions, bitfields.
 
-Backlnag does not force you to strict OOP. 
+Backlang does not force you to strict OOP. 
