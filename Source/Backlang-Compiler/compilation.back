@@ -30,7 +30,7 @@ implement Location {
 	}
 	
 	func toBytes() -> u8 {
-		
+		x |> isLetter() |> print();
 	}
 }
 

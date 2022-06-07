@@ -131,6 +131,10 @@ public enum TokenType
     [Lexeme("=>")]
     GoesTo,
 
+    [Lexeme("|>")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.PipeOperator)]
+    Pipe,
+
     [Lexeme(",")]
     Comma,
 
