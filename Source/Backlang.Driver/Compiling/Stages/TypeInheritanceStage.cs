@@ -231,7 +231,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var structs = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Struct);
+        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class));
 
         foreach (var st in structs)
         {

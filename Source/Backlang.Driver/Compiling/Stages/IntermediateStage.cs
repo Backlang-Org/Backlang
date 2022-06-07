@@ -85,7 +85,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var structs = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Struct);
+        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class));
 
         foreach (var st in structs)
         {
@@ -94,7 +94,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var members = st.Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+            if(st.Name == CodeSymbols.Struct)
+            {
+                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+            }
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 
