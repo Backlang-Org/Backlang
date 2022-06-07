@@ -59,6 +59,12 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(System.Object));
             }
 
+            foreach (var field in type.Fields)
+            {
+                var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, Resolve(field.FieldType.FullName));
+                clrType.Fields.Add(fieldDefinition);
+            }
+
             foreach (DescribedBodyMethod m in type.Methods)
             {
                 var clrMethod = new MethodDefinition(m.Name.ToString(),

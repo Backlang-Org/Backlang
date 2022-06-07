@@ -16,7 +16,7 @@
     <Description>The MSBuild SDK containing build targets and runtime.</Description>    
     <AssemblyVersion>$(Version)</AssemblyVersion>    
     <FileVersion>$(Version)</FileVersion>    
-    <Version>1.0.26</Version>
+    <Version>1.0.27</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
