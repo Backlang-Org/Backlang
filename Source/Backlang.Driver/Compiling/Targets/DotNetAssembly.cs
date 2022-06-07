@@ -23,7 +23,7 @@ public class DotNetAssembly : ITargetAssembly
         var name = new AssemblyNameDefinition(_assembly.FullName.ToString(),
             new Version(1, 0));
 
-        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, "Module", ModuleKind.Dll);
+        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
 
         _description = description;
         _environment = description.Environment;
@@ -40,23 +40,31 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class | TypeAttributes.Public);
 
+            if (type.IsInterfaceType())
+            {
+                clrType.IsInterface = true;
+            }
+
             if (type.BaseTypes.Any())
             {
-                if (type.BaseTypes.First().Name.ToString() == "ValueType")
+                foreach (var t in type.BaseTypes)
                 {
-                    clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(System.ValueType));
+                    if (t.Name.ToString() == "ValueType")
+                    {
+                        clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(ValueType));
 
-                    clrType.ClassSize = 1;
-                    clrType.PackingSize = 0;
-                }
-                else
-                {
-                    clrType.BaseType = Resolve(type.BaseTypes.First().FullName);
+                        clrType.ClassSize = 1;
+                        clrType.PackingSize = 0;
+                    }
+                    else
+                    {
+                        clrType.BaseType = Resolve(t.FullName);
+                    }
                 }
             }
             else
             {
-                clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(System.Object));
+                clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(object));
             }
 
             foreach (var field in type.Fields)
@@ -67,22 +75,14 @@ public class DotNetAssembly : ITargetAssembly
 
             foreach (DescribedBodyMethod m in type.Methods)
             {
-                var clrMethod = new MethodDefinition(m.Name.ToString(),
-                    MethodAttributes.Public | MethodAttributes.Static,
-                    _assemblyDefinition.MainModule.ImportReference(Type.GetType(m.ReturnParameter.Type == null ? "System.Void" : m.ReturnParameter.Type.FullName.ToString())));
+                var returnType = m.ReturnParameter.Type;
+                var clrMethod = GetMethodDefinition(m, returnType);
 
-                if (m == _description.EntryPoint)
+                if (m.Body != null)
                 {
-                    _assemblyDefinition.EntryPoint = clrMethod;
+                    clrMethod.HasThis = false;
+                    clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
                 }
-
-                foreach (var p in m.Parameters)
-                {
-                    clrMethod.Parameters.Add(new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None,
-                        Resolve(p.Type.FullName)));
-                }
-
-                clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
 
                 clrType.Methods.Add(clrMethod);
             }
@@ -95,9 +95,65 @@ public class DotNetAssembly : ITargetAssembly
         output.Close();
     }
 
+    private static MethodAttributes GetMethodAttributes(IMember member)
+    {
+        MethodAttributes attr = 0;
+
+        var mod = member.GetAccessModifier();
+
+        if (mod.HasFlag(AccessModifier.Public))
+        {
+            attr |= MethodAttributes.Public;
+        }
+        else if (mod.HasFlag(AccessModifier.Protected))
+        {
+            attr |= MethodAttributes.Family;
+        }
+        else if (mod.HasFlag(AccessModifier.Private))
+        {
+            attr |= MethodAttributes.Private;
+        }
+        else
+        {
+            attr |= MethodAttributes.Assembly;
+        }
+
+        return attr;
+    }
+
+    private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)
+    {
+        var clrMethod = new MethodDefinition(m.Name.ToString(),
+                                GetMethodAttributes(m),
+                               Resolve(returnType == null ? new SimpleName("Void").Qualify("System") : returnType.FullName));
+
+        if (m == _description.EntryPoint)
+        {
+            _assemblyDefinition.EntryPoint = clrMethod;
+        }
+
+        foreach (var p in m.Parameters)
+        {
+            clrMethod.Parameters.Add(new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None,
+                Resolve(p.Type.FullName)));
+        }
+
+        clrMethod.IsStatic = m.IsStatic;
+        return clrMethod;
+    }
+
     private TypeReference Resolve(QualifiedName name)
     {
-        return _assemblyDefinition.MainModule.ImportReference(Type.GetType(name.ToString()));
+        var type = Type.GetType(name.ToString());
+
+        if (type == null)
+        {
+            return new TypeReference(name.Qualifier.ToString(),
+                name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, null);
+        }
+
+        var resolvedType = _assemblyDefinition.MainModule.ImportReference(type);
+        return resolvedType;
     }
 
     private void SetTargetFramework()

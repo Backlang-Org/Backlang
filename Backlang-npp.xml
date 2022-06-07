@@ -24,7 +24,7 @@
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
-            <Keywords name="Keywords1">const global in continue return where type mut import module using as struct let implement of for switch case break if else match with while static operator private public func enum union bitfield default sizeof and or</Keywords>
+            <Keywords name="Keywords1">const global in continue return where type mut import module using as struct class interface let implement of for switch case break if else match with while static operator private public func enum union bitfield default sizeof and or</Keywords>
             <Keywords name="Keywords2">true false none error nameof default</Keywords>
             <Keywords name="Keywords3">#</Keywords>
             <Keywords name="Keywords4"></Keywords>

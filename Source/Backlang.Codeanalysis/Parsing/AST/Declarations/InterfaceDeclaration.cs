@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class StructDeclaration : IParsePoint<LNode>
+public sealed class InterfaceDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
@@ -23,11 +23,13 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 
         while (iterator.Current.Type != TokenType.CloseCurly)
         {
-            members.Add(StructMemberDeclaration.Parse(iterator, parser));
+            iterator.Match(TokenType.Function);
+            members.Add(Signature.Parse(parser));
+            iterator.Match(TokenType.Semicolon);
         }
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Struct(name, inheritances, members);
+        return SyntaxTree.Interface(name, inheritances, members);
     }
 }
