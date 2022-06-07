@@ -282,9 +282,14 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         foreach (var st in structs)
         {
             var name = st.Args[0].Name;
+            var inheritances = st.Args[1];
             var members = st.Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
+            foreach (var inheritance in inheritances.Args)
+            {
+                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName(inheritance.Name.Name).Qualify(context.Assembly.Name)).First());
+            }
             type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));

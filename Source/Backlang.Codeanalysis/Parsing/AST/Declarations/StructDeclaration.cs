@@ -7,7 +7,7 @@ public sealed class StructDeclaration : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var name = iterator.Match(TokenType.Identifier).Text;
-        var interfaces = new LNodeList();
+        var inheritances = new LNodeList();
         var members = new LNodeList();
 
         if(iterator.Current.Type == TokenType.Colon)
@@ -15,7 +15,7 @@ public sealed class StructDeclaration : IParsePoint<LNode>
             do
             {
                 iterator.NextToken();
-                interfaces.Add(Expression.Parse(parser));
+                inheritances.Add(Expression.Parse(parser));
             } while (iterator.Current.Type == TokenType.Comma);
         }
 
@@ -28,6 +28,6 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Struct(name, interfaces, members);
+        return SyntaxTree.Struct(name, inheritances, members);
     }
 }
