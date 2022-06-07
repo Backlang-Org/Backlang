@@ -175,7 +175,7 @@
 				   Resources="@(EmbeddedResource)"
 				   GenerateFullPaths="$(GenerateFullPaths)" />
 
-		<Copy SourceFiles="%(IntermediateAssembly.Filename).runtimeconfig.json" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
+		<Copy SourceFiles="$(TempOutputDir)%(IntermediateAssembly.Filename).runtimeconfig.json" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
 	</Target>
 
 	<!--End Required Task by .Common.target-->

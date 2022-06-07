@@ -19,7 +19,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
         //_macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
         _macroProcessor.AddMacros(typeof(BuiltInMacros).Assembly, false);
-        _macroProcessor.AddMacros(typeof(SyntacticMacros).Assembly, true);
+        _macroProcessor.AddMacros(typeof(SyntacticMacros).Assembly, false);
         _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(BuiltInMacros).Namespace);
         _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(SyntacticMacros).Namespace);
     }

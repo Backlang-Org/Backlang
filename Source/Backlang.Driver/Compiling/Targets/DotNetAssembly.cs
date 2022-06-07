@@ -85,6 +85,8 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         _assemblyDefinition.Write(output);
+
+        output.Close();
     }
 
     private TypeReference Resolve(QualifiedName name)
@@ -98,7 +100,7 @@ public class DotNetAssembly : ITargetAssembly
 
         var item = new CustomAttribute(tf);
         item.ConstructorArguments.Add(
-            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)), ".NETCoreApp,Version=v6.0"));
+            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)), ".NETCoreApp,Version=v7.0"));
 
         _assemblyDefinition.CustomAttributes.Add(item);
     }
