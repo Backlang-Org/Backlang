@@ -96,7 +96,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             if(st.Name == CodeSymbols.Struct)
             {
-                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
             }
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));

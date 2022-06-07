@@ -168,6 +168,15 @@ public static class SyntaxTree
                 LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
     }
 
+    public static LNode Interface(string name, LNodeList inheritances, LNodeList members)
+    {
+        return LNode.Call(CodeSymbols.Interface,
+            LNode.List(
+                LNode.Id((Symbol)name),
+                LNode.Call(Symbols.Inheritance, inheritances),
+                LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode Type(string name, LNodeList arguments)
     {
         return LNode.Call(Symbols.TypeLiteral, LNode.List(LNode.Id(name), LNode.Call(CodeSymbols.Of, arguments)));

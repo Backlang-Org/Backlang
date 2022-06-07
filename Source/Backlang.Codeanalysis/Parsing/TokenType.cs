@@ -196,6 +196,9 @@ public enum TokenType
     [Keyword("class")]
     Class,
 
+    [Keyword("interface")]
+    Interface,
+
     [Keyword("bitfield")]
     Bitfield,
 
