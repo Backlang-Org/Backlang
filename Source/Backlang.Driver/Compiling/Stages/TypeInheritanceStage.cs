@@ -37,7 +37,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                var elementType = IntermediateStage.GetType(node.Args[0], context);
+                context.Environment.TryMakeSignedIntegerType(32, out var elementType); // IntermediateStage.GetType(node.Args[0], context);
 
                 var local = block.AppendInstruction(
                      Instruction.CreateAlloca(elementType));
@@ -67,10 +67,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
             }
+            else if (node.Calls(CodeSymbols.Return))
+            {
+                block.Flow =
+                    new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, null));
+            }
         }
-
-        block.Flow = new ReturnFlow(
-             Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
 
         // Finish up the method body.
         return new MethodBody(
@@ -107,19 +109,19 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var sourceBody = CompileBody(function, context, type);
 
         var body = sourceBody.WithImplementation(
-            sourceBody.Implementation.Transform(
-                AllocaToRegister.Instance,
-                CopyPropagation.Instance,
-                new ConstantPropagation(),
-                GlobalValueNumbering.Instance,
-                CopyPropagation.Instance,
-                DeadValueElimination.Instance,
-                MemoryAccessElimination.Instance,
-                CopyPropagation.Instance,
-                new ConstantPropagation(),
-                DeadValueElimination.Instance,
-                ReassociateOperators.Instance,
-                DeadValueElimination.Instance));
+         sourceBody.Implementation.Transform(
+             AllocaToRegister.Instance,
+             CopyPropagation.Instance,
+             new ConstantPropagation(),
+             GlobalValueNumbering.Instance,
+             CopyPropagation.Instance,
+             DeadValueElimination.Instance,
+             MemoryAccessElimination.Instance,
+             CopyPropagation.Instance,
+             new ConstantPropagation(),
+             DeadValueElimination.Instance,
+             ReassociateOperators.Instance,
+             DeadValueElimination.Instance));
 
         method.Body = body;
 
