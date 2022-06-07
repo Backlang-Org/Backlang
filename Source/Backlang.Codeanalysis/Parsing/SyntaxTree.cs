@@ -28,27 +28,33 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
-    public static LNode Try(LNodeList body, LNodeList catches, LNodeList finallly)
-    {
-        return LNode.Call(CodeSymbols.Try, LNode.List(
-            LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock),
-            LNode.Call(CodeSymbols.Braces, catches).SetStyle(NodeStyle.StatementBlock),
-            LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, finallly).SetStyle(NodeStyle.StatementBlock)))));
-    }
-
     public static LNode Bitfield(string name, LNodeList members)
     {
         return LNode.Call(Symbols.Bitfield, LNode.Id(name)).WithAttrs(members);
     }
 
-    public static LNode Default()
+    public static LNode Case(LNode condition, LNodeList body)
     {
-        return Default(LNode.Missing);
+        return LNode.Call(CodeSymbols.Case, LNode.List(condition, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode Catch(IdNode exceptionType, IdNode exceptionValueName, LNodeList body)
     {
         return LNode.Call(CodeSymbols.Catch, LNode.List(exceptionType, exceptionValueName, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+    }
+
+    public static LNode Class(string name, LNodeList inheritances, LNodeList members)
+    {
+        return LNode.Call(CodeSymbols.Class,
+            LNode.List(
+                LNode.Id((Symbol)name),
+                LNode.Call(Symbols.Inheritance, inheritances),
+                LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
+    }
+
+    public static LNode Default()
+    {
+        return Default(LNode.Missing);
     }
 
     public static LNode Default(LNode type)
@@ -64,12 +70,6 @@ public static class SyntaxTree
                   members)));
     }
 
-    public static LNode Fn(LNode name, LNode type, LNodeList args, LNodeList body)
-    {
-        return LNode.Call(CodeSymbols.Fn, LNode.List(type, name,
-                LNode.Call(CodeSymbols.AltList, args), LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
-    }
-
     public static LNode For(LNode init, LNode arr, LNodeList body)
     {
         return LNode.Call(
@@ -80,21 +80,6 @@ public static class SyntaxTree
                             LNode.Call(CodeSymbols.AltList),
                                 LNode.Call(CodeSymbols.Braces,
                                     body).SetStyle(NodeStyle.StatementBlock)));
-    }
-
-    public static LNode Switch(LNode element, LNodeList cases)
-    {
-        return LNode.Call(CodeSymbols.SwitchStmt, LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
-    }
-
-    public static LNode Case(LNode condition, LNodeList body)
-    {
-        return LNode.Call(CodeSymbols.Case, LNode.List(condition, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
-    }
-
-    public static LNode When(LNode binOp, LNode rightHand, LNodeList body)
-    {
-        return LNode.Call(CodeSymbols.When, LNode.List(binOp, rightHand, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode If(LNode cond, LNodeList ifBody, LNodeList elseBody)
@@ -125,14 +110,18 @@ public static class SyntaxTree
         return LNode.Call(CodeSymbols.Import, LNode.List(expr));
     }
 
+    public static LNode Interface(string name, LNodeList inheritances, LNodeList members)
+    {
+        return LNode.Call(CodeSymbols.Interface,
+            LNode.List(
+                LNode.Id((Symbol)name),
+                LNode.Call(Symbols.Inheritance, inheritances),
+                LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
+    }
+
     public static LNode Module(LNode ns)
     {
         return LNode.Call(CodeSymbols.Namespace, LNode.List(ns));
-    }
-
-    public static LNode Using(LNode from, LNode to)
-    {
-        return LNode.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
     }
 
     public static LNode None()
@@ -145,18 +134,15 @@ public static class SyntaxTree
         return LNode.Call(Symbols.PointerType, LNode.List(type));
     }
 
+    public static LNode Signature(LNode name, LNode type, LNodeList args)
+    {
+        return LNode.Call(CodeSymbols.Fn, LNode.List(type, name,
+                LNode.Call(CodeSymbols.AltList, args)));
+    }
+
     public static LNode SizeOf(LNode type)
     {
         return LNode.Call(CodeSymbols.Sizeof, LNode.List(type));
-    }
-
-    public static LNode Class(string name, LNodeList inheritances, LNodeList members)
-    {
-        return LNode.Call(CodeSymbols.Class,
-            LNode.List(
-                LNode.Id((Symbol)name),
-                LNode.Call(Symbols.Inheritance, inheritances),
-                LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode Struct(string name, LNodeList inheritances, LNodeList members)
@@ -168,13 +154,17 @@ public static class SyntaxTree
                 LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
     }
 
-    public static LNode Interface(string name, LNodeList inheritances, LNodeList members)
+    public static LNode Switch(LNode element, LNodeList cases)
     {
-        return LNode.Call(CodeSymbols.Interface,
-            LNode.List(
-                LNode.Id((Symbol)name),
-                LNode.Call(Symbols.Inheritance, inheritances),
-                LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
+        return LNode.Call(CodeSymbols.SwitchStmt, LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
+    }
+
+    public static LNode Try(LNodeList body, LNodeList catches, LNodeList finallly)
+    {
+        return LNode.Call(CodeSymbols.Try, LNode.List(
+            LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock),
+            LNode.Call(CodeSymbols.Braces, catches).SetStyle(NodeStyle.StatementBlock),
+            LNode.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, finallly).SetStyle(NodeStyle.StatementBlock)))));
     }
 
     public static LNode Type(string name, LNodeList arguments)
@@ -185,6 +175,16 @@ public static class SyntaxTree
     public static LNode Unary(Symbol op, LNode arg)
     {
         return LNode.Call(op, LNode.List(arg)).SetStyle(NodeStyle.Operator);
+    }
+
+    public static LNode Using(LNode from, LNode to)
+    {
+        return LNode.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
+    }
+
+    public static LNode When(LNode binOp, LNode rightHand, LNodeList body)
+    {
+        return LNode.Call(CodeSymbols.When, LNode.List(binOp, rightHand, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode While(LNode cond, LNodeList body)
