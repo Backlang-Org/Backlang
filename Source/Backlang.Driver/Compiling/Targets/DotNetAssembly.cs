@@ -67,9 +67,28 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(object));
             }
 
-            foreach (var field in type.Fields)
+            foreach (DescribedField field in type.Fields)
             {
                 var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, Resolve(field.FieldType.FullName));
+
+                var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
+
+                fieldDefinition.IsRuntimeSpecialName = specialName != null;
+                fieldDefinition.IsSpecialName = specialName != null;
+                fieldDefinition.IsStatic = field.IsStatic;
+
+                if (clrType.IsEnum)
+                {
+                    fieldDefinition.Constant = field.InitialValue;
+
+                    if (field.Name.ToString() != "value__")
+                    {
+                        fieldDefinition.IsRuntimeSpecialName = false;
+                        fieldDefinition.IsSpecialName = false;
+                        fieldDefinition.IsLiteral = true;
+                    }
+                }
+
                 clrType.Fields.Add(fieldDefinition);
             }
 
@@ -139,7 +158,7 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         clrMethod.IsStatic = m.IsStatic;
-        if(m.IsConstructor)
+        if (m.IsConstructor)
         {
             clrMethod.IsRuntimeSpecialName = true;
             clrMethod.IsSpecialName = true;
