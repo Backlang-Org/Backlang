@@ -8,6 +8,10 @@ class Point {
 	z: i32;
 }
 
-class Location : Point {
+interface ISerializable {
+	func toBytes() -> byte[];
+}
+
+class Location : Point, ISerializable {
 	worldName: string = "world"; 
 }
