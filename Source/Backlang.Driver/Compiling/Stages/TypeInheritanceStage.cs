@@ -7,6 +7,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -18,7 +19,7 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static MethodBody CompileBody(LNode function, CompilerContext context)
+    public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType)
     {
         var graph = new FlowGraphBuilder();
         // Use a permissive exception delayability model to make the optimizer's
@@ -68,44 +69,24 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
-        //block.Flow = new ReturnFlow(
-        //     Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+        block.Flow = new ReturnFlow(
+             Instruction.CreateConstant(DefaultConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
 
         // Finish up the method body.
         return new MethodBody(
             new Parameter(),
-            default,
+            new Parameter(),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
     }
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function)
     {
-        var sourceBody = CompileBody(function, context);
-
-        var body = sourceBody.WithImplementation(
-            sourceBody.Implementation.Transform(
-                AllocaToRegister.Instance,
-                CopyPropagation.Instance,
-                new ConstantPropagation(),
-                GlobalValueNumbering.Instance,
-                CopyPropagation.Instance,
-                DeadValueElimination.Instance,
-                MemoryAccessElimination.Instance,
-                CopyPropagation.Instance,
-                new ConstantPropagation(),
-                DeadValueElimination.Instance,
-                ReassociateOperators.Instance,
-                DeadValueElimination.Instance));
-
         string methodName = function.Args[1].Name.Name;
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
-        {
-            Body = body
-        };
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
 
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
@@ -122,6 +103,25 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         AddParameters(method, function, context);
         SetReturnType(method, function, context);
+
+        var sourceBody = CompileBody(function, context, type);
+
+        var body = sourceBody.WithImplementation(
+            sourceBody.Implementation.Transform(
+                AllocaToRegister.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                GlobalValueNumbering.Instance,
+                CopyPropagation.Instance,
+                DeadValueElimination.Instance,
+                MemoryAccessElimination.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                DeadValueElimination.Instance,
+                ReassociateOperators.Instance,
+                DeadValueElimination.Instance));
+
+        method.Body = body;
 
         return method;
     }
@@ -146,7 +146,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return await next.Invoke(context);
     }
 
-    private static void AddParameters(DescribedMethod method, LNode function, CompilerContext context)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context)
     {
         var param = function.Args[2];
 
@@ -208,9 +208,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             if (function.Calls(CodeSymbols.Fn))
             {
                 string methodName = function.Args[1].Name.Name;
-                var method = new DescribedMethod(type,
+                var method = new DescribedBodyMethod(type,
                     new QualifiedName(methodName).FullyUnqualifiedName,
                     function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+                method.Body = null;
 
                 var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
                 if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
@@ -284,7 +285,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void SetReturnType(DescribedMethod method, LNode function, CompilerContext context)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
     {
         var retType = function.Args[0];
         method.ReturnParameter = new Parameter(IntermediateStage.GetType(retType, context));

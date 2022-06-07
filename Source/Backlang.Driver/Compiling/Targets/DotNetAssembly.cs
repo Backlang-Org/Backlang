@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Backends.CLR.Emit;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -72,33 +73,22 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Fields.Add(fieldDefinition);
             }
 
-            foreach (DescribedMethod m in type.Methods)
+            foreach (DescribedBodyMethod m in type.Methods)
             {
                 var returnType = m.ReturnParameter.Type;
-
-                var clrMethod = new MethodDefinition(m.Name.ToString(),
-                    GetMethodAttributes(m),
-                   Resolve(returnType == null ? new SimpleName("System").Qualify("Void") : returnType.FullName));
-
-                if (m == _description.EntryPoint)
-                {
-                    _assemblyDefinition.EntryPoint = clrMethod;
-                }
-
-                foreach (var p in m.Parameters)
-                {
-                    clrMethod.Parameters.Add(new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None,
-                        Resolve(p.Type.FullName)));
-                }
+                var clrMethod = GetMethodDefinition(m, returnType);
 
                 if (!type.IsInterfaceType())
                 {
-                    var bodyMethod = (DescribedBodyMethod)m;
                     //ToDo: fix function body
-                    //clrMethod.Body = ClrMethodBodyEmitter.Compile(bodyMethod.Body, clrMethod, _environment);
+                    try
+                    {
+                        clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
+                    }
+                    catch (Exception e)
+                    {
+                    }
                 }
-
-                clrMethod.IsStatic = m.IsStatic;
 
                 clrType.Methods.Add(clrMethod);
             }
@@ -135,6 +125,27 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         return attr;
+    }
+
+    private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)
+    {
+        var clrMethod = new MethodDefinition(m.Name.ToString(),
+                                GetMethodAttributes(m),
+                               Resolve(returnType == null ? new SimpleName("Void").Qualify("System") : returnType.FullName));
+
+        if (m == _description.EntryPoint)
+        {
+            _assemblyDefinition.EntryPoint = clrMethod;
+        }
+
+        foreach (var p in m.Parameters)
+        {
+            clrMethod.Parameters.Add(new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None,
+                Resolve(p.Type.FullName)));
+        }
+
+        clrMethod.IsStatic = m.IsStatic;
+        return clrMethod;
     }
 
     private TypeReference Resolve(QualifiedName name)

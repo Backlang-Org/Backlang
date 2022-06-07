@@ -81,7 +81,11 @@ namespace Backlang.NET.Sdk
                 context.OutputFilename = OutputName;
                 context.OutputType = OutputType;
                 context.TempOutputPath = TempOutputPath;
-                context.OutputTree = bool.Parse(OutputTree);
+
+                if (!string.IsNullOrEmpty(OutputTree))
+                {
+                    context.OutputTree = bool.Parse(OutputTree);
+                }
 
                 CompilerDriver.Compile(context);
 

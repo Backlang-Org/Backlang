@@ -57,7 +57,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var tree in context.Trees)
         {
-            ConvertStructs(context, tree);
+            ConvertTypesOrInterfaces(context, tree);
         }
 
         context.Assembly.AddType(context.ExtensionsType);
@@ -66,11 +66,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
+        var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
 
-        foreach (var st in structs)
+        foreach (var st in types)
         {
             var name = st.Args[0].Name;
             var inheritances = st.Args[1];
