@@ -5,6 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets;
@@ -77,7 +78,7 @@ public class DotNetAssembly : ITargetAssembly
                 fieldDefinition.IsSpecialName = specialName != null;
                 fieldDefinition.IsStatic = field.IsStatic;
 
-                if (clrType.IsEnum)
+                if (clrType.IsEnum || field.InitialValue != null)
                 {
                     fieldDefinition.Constant = field.InitialValue;
 

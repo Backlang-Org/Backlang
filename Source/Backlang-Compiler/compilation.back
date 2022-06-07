@@ -3,8 +3,8 @@
 }
 
 class Point {
-	x: i32;
-	y: i32;
+	x: i32 = 0;
+	y: i32 = 1;
 	z: i32;
 }
 
@@ -33,5 +33,5 @@ implement u8 {
 }
 
 enum Days {
-	Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+	Monday = 1, Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
 }
