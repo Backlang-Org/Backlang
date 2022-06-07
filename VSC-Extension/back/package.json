@@ -32,6 +32,29 @@
                 "language": "back",
                 "path": "./snippets/snippets.code-snippets"
             }
-        ]
+        ],
+        "commands": [
+                {
+                    "command": "back.updateTemplates",
+                    "title": "Update Backlang Templates"
+                }
+            ],
+        "main": "./out/extension.js",
+        "activationEvents": ["onCommand:back.updateTemplates"],
+        "menus": {
+            "commandPalette": [
+                    {
+                        "command": "back.updateTemplates"
+                    }
+                ]
+            },
+        "devDependencies": {
+            "@types/vscode": "^0.10.x",
+            "typescript": "^1.6.2"
+        },
+        "scripts": {
+            "vscode:prepublish": "npm run compile",
+            "compile": "tsc -p ./"
+	    }
     }
 }
