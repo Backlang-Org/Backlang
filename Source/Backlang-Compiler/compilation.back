@@ -33,5 +33,5 @@ implement u8 {
 }
 
 enum Days {
-	Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+	Monday = 1, Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
 }

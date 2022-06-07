@@ -177,9 +177,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
 
-            for (var i = 0; i < members.Args.Count; i++)
+            var i = -1;
+            foreach (var member in members.Args)
             {
-                var member = members.Args[i];
                 if (member.Name == CodeSymbols.Var)
                 {
                     IType mtype;
@@ -193,6 +193,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                     }
 
                     var mname = member.Args[1].Args[0].Name;
+                    var mvalue = member.Args[1].Args[1];
+
+                    if(mvalue == LNode.Missing)
+                    {
+                        i++;
+                    } else
+                    {
+                        i = (int)mvalue.Args[0].Value;
+                    }
 
                     var field = new DescribedField(type, new SimpleName(mname.Name), true, mtype);
                     field.InitialValue = i;
