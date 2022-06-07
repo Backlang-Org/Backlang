@@ -23,7 +23,7 @@ implement Location {
 }
 
 implement u8 {
-	func hello() {
+	func hello(some : u8) {
 	
 	}
 }

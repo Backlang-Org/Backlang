@@ -23,7 +23,7 @@ public class DotNetAssembly : ITargetAssembly
         var name = new AssemblyNameDefinition(_assembly.FullName.ToString(),
             new Version(1, 0));
 
-        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, "Module", ModuleKind.Dll);
+        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
 
         _description = description;
         _environment = description.Environment;
@@ -64,7 +64,7 @@ public class DotNetAssembly : ITargetAssembly
             }
             else
             {
-                clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(System.Object));
+                clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(object));
             }
 
             foreach (var field in type.Fields)
@@ -78,16 +78,10 @@ public class DotNetAssembly : ITargetAssembly
                 var returnType = m.ReturnParameter.Type;
                 var clrMethod = GetMethodDefinition(m, returnType);
 
-                if (!type.IsInterfaceType())
+                if (m.Body != null)
                 {
-                    //ToDo: fix function body
-                    try
-                    {
-                        clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
-                    }
-                    catch (Exception e)
-                    {
-                    }
+                    clrMethod.HasThis = false;
+                    clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
                 }
 
                 clrType.Methods.Add(clrMethod);
