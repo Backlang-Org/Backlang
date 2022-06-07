@@ -2,6 +2,14 @@
 
 }
 
+struct Person {
+	name: string;
+}
+
+implement Person {
+	
+}
+
 class Point {
 	x: i32 = 0;
 	y: i32 = 1;

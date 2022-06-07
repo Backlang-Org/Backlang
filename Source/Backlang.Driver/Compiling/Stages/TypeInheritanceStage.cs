@@ -348,6 +348,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 ConvertInterfaceMethods(members, type, context);
             }
+
         }
     }
 
