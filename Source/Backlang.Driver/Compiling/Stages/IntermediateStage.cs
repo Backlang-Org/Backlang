@@ -65,27 +65,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ConvertStructMembers(LNode members, DescribedType type, CompilerContext context)
-    {
-        foreach (var member in members.Args)
-        {
-            if (member.Name == CodeSymbols.Var)
-            {
-                var mtype = GetType(member.Args[0], context);
-
-                var mvar = member.Args[1];
-                var mname = mvar.Args[0].Name;
-
-                var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
-
-                type.AddField(field);
-            }
-        }
-    }
-
     private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class));
+        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
 
         foreach (var st in structs)
         {
@@ -97,6 +79,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             if(st.Name == CodeSymbols.Struct)
             {
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
+            } else if(st.Name == CodeSymbols.Interface)
+            {
+                type.AddAttribute(FlagAttribute.InterfaceType);
             }
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));

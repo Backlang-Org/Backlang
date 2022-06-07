@@ -40,6 +40,11 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class | TypeAttributes.Public);
 
+            if(type.IsInterfaceType())
+            {
+                clrType.IsInterface = true;
+            }
+
             if (type.BaseTypes.Any())
             {
                 foreach (var t in type.BaseTypes)

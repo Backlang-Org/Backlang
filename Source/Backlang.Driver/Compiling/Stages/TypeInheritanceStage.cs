@@ -229,9 +229,19 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void ConvertInterfaceMethods(LNode methods, DescribedType type, CompilerContext context)
+    {
+        foreach (var method in methods.Args)
+        {
+            if (method.Calls(CodeSymbols.Fn)) {
+
+            }
+        }
+    }
+
     private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class));
+        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
 
         foreach (var st in structs)
         {
@@ -246,7 +256,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName(inheritance.Name.Name).Qualify(context.Assembly.Name)).First());
             }
 
-            ConvertStructMembers(members, type, context);
+            if(st.Name != CodeSymbols.Interface)
+            {
+                ConvertStructMembers(members, type, context);
+            } else
+            {
+                ConvertInterfaceMethods(members, type, context);
+            }
         }
     }
 
