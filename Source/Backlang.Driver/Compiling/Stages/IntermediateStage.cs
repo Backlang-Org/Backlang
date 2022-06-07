@@ -58,6 +58,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         foreach (var tree in context.Trees)
         {
             ConvertTypesOrInterfaces(context, tree);
+            ConvertEnums(context, tree);
         }
 
         context.Assembly.AddType(context.ExtensionsType);
@@ -85,6 +86,24 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             {
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }
+
+            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+
+            context.Assembly.AddType(type);
+        }
+    }
+
+    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
+
+        foreach (var enu in enums)
+        {
+            var name = enu.Args[0].Name;
+            var members = enu.Args[2];
+
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 

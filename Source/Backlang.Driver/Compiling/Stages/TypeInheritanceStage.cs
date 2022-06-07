@@ -148,6 +148,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             ConvertTypesOrInterface(context, tree);
 
             ConvertFreeFunctions(context, tree);
+
+            ConvertEnums(context, tree);
         }
 
         return await next.Invoke(context);
@@ -288,6 +290,41 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             else
             {
                 ConvertInterfaceMethods(members, type, context);
+            }
+        }
+    }
+
+    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
+
+        foreach (var enu in enums)
+        {
+            var name = enu.Args[0].Name;
+            var members = enu.Args[2];
+
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
+
+            foreach (var member in members.Args)
+            {
+                if (member.Name == CodeSymbols.Var)
+                {
+                    IType mtype;
+                    if (member.Args[0] == LNode.Missing)
+                    {
+                        mtype = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(int));
+                    } else
+                    {
+                        mtype = IntermediateStage.GetType(member.Args[0], context);
+                    }
+
+
+                    var mname = member.Args[1].Args[0].Name;
+
+                    var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                    type.AddField(field);
+                }
             }
         }
     }
