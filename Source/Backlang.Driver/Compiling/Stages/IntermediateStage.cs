@@ -35,7 +35,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     public static IType GetType(LNode type, CompilerContext context)
     {
-        if (type == LNode.Missing) return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+        //function without return type set
+        if (type == LNode.Missing || type.Args[0].Name.Name == "#") return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
         var name = type.Args[0].Name.ToString().Replace("#", "");
 
@@ -76,10 +77,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var members = st.Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
-            if(st.Name == CodeSymbols.Struct)
+            if (st.Name == CodeSymbols.Struct)
             {
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
-            } else if(st.Name == CodeSymbols.Interface)
+            }
+            else if (st.Name == CodeSymbols.Interface)
             {
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }

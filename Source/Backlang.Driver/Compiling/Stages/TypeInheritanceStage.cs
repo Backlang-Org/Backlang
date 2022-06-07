@@ -138,7 +138,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         foreach (var tree in context.Trees)
         {
-            ConvertStructs(context, tree);
+            ConvertTypesOrInterface(context, tree);
 
             ConvertFreeFunctions(context, tree);
         }
@@ -146,7 +146,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return await next.Invoke(context);
     }
 
-    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context)
+    private static void AddParameters(DescribedMethod method, LNode function, CompilerContext context)
     {
         var param = function.Args[2];
 
@@ -201,6 +201,33 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void ConvertInterfaceMethods(LNode methods, DescribedType type, CompilerContext context)
+    {
+        foreach (var function in methods.Args)
+        {
+            if (function.Calls(CodeSymbols.Fn))
+            {
+                string methodName = function.Args[1].Name.Name;
+                var method = new DescribedMethod(type,
+                    new QualifiedName(methodName).FullyUnqualifiedName,
+                    function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+
+                var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
+                if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+                {
+                    modifier = AccessModifierAttribute.Create(AccessModifier.Private);
+                }
+
+                method.AddAttribute(modifier);
+
+                AddParameters(method, function, context);
+                SetReturnType(method, function, context);
+
+                type.AddMethod(method);
+            }
+        }
+    }
+
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
     {
         var type = IntermediateStage.GetType(p.Args[0], context);
@@ -229,21 +256,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertInterfaceMethods(LNode methods, DescribedType type, CompilerContext context)
+    private static void ConvertTypesOrInterface(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        foreach (var method in methods.Args)
-        {
-            if (method.Calls(CodeSymbols.Fn)) {
+        var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
 
-            }
-        }
-    }
-
-    private static void ConvertStructs(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
-    {
-        var structs = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
-
-        foreach (var st in structs)
+        foreach (var st in types)
         {
             var name = st.Args[0].Name;
             var inheritances = st.Args[1];
@@ -256,17 +273,18 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName(inheritance.Name.Name).Qualify(context.Assembly.Name)).First());
             }
 
-            if(st.Name != CodeSymbols.Interface)
+            if (st.Name != CodeSymbols.Interface)
             {
                 ConvertStructMembers(members, type, context);
-            } else
+            }
+            else
             {
                 ConvertInterfaceMethods(members, type, context);
             }
         }
     }
 
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
+    private static void SetReturnType(DescribedMethod method, LNode function, CompilerContext context)
     {
         var retType = function.Args[0];
         method.ReturnParameter = new Parameter(IntermediateStage.GetType(retType, context));

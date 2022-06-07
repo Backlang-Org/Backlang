@@ -1,5 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Backends.CLR.Emit;
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -40,7 +39,7 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class | TypeAttributes.Public);
 
-            if(type.IsInterfaceType())
+            if (type.IsInterfaceType())
             {
                 clrType.IsInterface = true;
             }
@@ -73,12 +72,12 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Fields.Add(fieldDefinition);
             }
 
-            foreach (DescribedBodyMethod m in type.Methods)
+            foreach (DescribedMethod m in type.Methods)
             {
                 var returnType = m.ReturnParameter.Type;
 
                 var clrMethod = new MethodDefinition(m.Name.ToString(),
-                    MethodAttributes.Public | MethodAttributes.Static,
+                    GetMethodAttributes(m),
                    Resolve(returnType == null ? new SimpleName("System").Qualify("Void") : returnType.FullName));
 
                 if (m == _description.EntryPoint)
@@ -92,7 +91,14 @@ public class DotNetAssembly : ITargetAssembly
                         Resolve(p.Type.FullName)));
                 }
 
-                clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
+                if (!type.IsInterfaceType())
+                {
+                    var bodyMethod = (DescribedBodyMethod)m;
+                    //ToDo: fix function body
+                    //clrMethod.Body = ClrMethodBodyEmitter.Compile(bodyMethod.Body, clrMethod, _environment);
+                }
+
+                clrMethod.IsStatic = m.IsStatic;
 
                 clrType.Methods.Add(clrMethod);
             }
@@ -103,6 +109,32 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition.Write(output);
 
         output.Close();
+    }
+
+    private static MethodAttributes GetMethodAttributes(IMember member)
+    {
+        MethodAttributes attr = 0;
+
+        var mod = member.GetAccessModifier();
+
+        if (mod.HasFlag(AccessModifier.Public))
+        {
+            attr |= MethodAttributes.Public;
+        }
+        else if (mod.HasFlag(AccessModifier.Protected))
+        {
+            attr |= MethodAttributes.Family;
+        }
+        else if (mod.HasFlag(AccessModifier.Private))
+        {
+            attr |= MethodAttributes.Private;
+        }
+        else
+        {
+            attr |= MethodAttributes.Assembly;
+        }
+
+        return attr;
     }
 
     private TypeReference Resolve(QualifiedName name)

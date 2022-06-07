@@ -9,9 +9,21 @@ class Point {
 }
 
 interface ISerializable {
-	func toBytes() -> byte[];
+	func toBytes() -> u8;
 }
 
 class Location : Point, ISerializable {
 	worldName: string = "world"; 
+}
+
+implement Location {
+	func toBytes() -> u8 {
+		
+	}
+}
+
+implement u8 {
+	func hello() {
+	
+	}
 }
