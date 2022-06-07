@@ -309,8 +309,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var mvar = member.Args[1];
                 var mname = mvar.Args[0].Name;
+                var mvalue = mvar.Args[1];
 
                 var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                if(mvalue != LNode.Missing)
+                {
+                    field.InitialValue = mvalue.Args[0].Value;
+                }
 
                 type.AddField(field);
             }
