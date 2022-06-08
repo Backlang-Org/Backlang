@@ -3,7 +3,7 @@
 }
 
 struct Person {
-	let mut name: string;
+	let name: string;
 }
 
 implement Person {
