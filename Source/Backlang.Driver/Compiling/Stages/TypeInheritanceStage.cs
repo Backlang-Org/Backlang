@@ -318,9 +318,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 {
                     field.InitialValue = mvalue.Args[0].Value;
                 }
-                if(!member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+                if(member.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
-                    // make readonly
+                    field.AddAttribute(Attributes.Mutable);
                 }
 
                 type.AddField(field);
