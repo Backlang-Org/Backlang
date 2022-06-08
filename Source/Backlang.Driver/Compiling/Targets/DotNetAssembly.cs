@@ -79,7 +79,7 @@ public class DotNetAssembly : ITargetAssembly
                 fieldDefinition.IsStatic = field.IsStatic;
                 fieldDefinition.IsInitOnly = !IsMutable(field);
 
-                if (clrType.IsEnum || field.InitialValue != null)
+                if (clrType.IsEnum)
                 {
                     fieldDefinition.Constant = field.InitialValue;
 
