@@ -1,4 +1,5 @@
-﻿using Backlang.Driver.Compiling.Typesystem;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -316,6 +317,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 if(mvalue != LNode.Missing)
                 {
                     field.InitialValue = mvalue.Args[0].Value;
+                }
+                if(member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+                {
+                    field.AddAttribute(Attributes.Mutable);
                 }
 
                 type.AddField(field);

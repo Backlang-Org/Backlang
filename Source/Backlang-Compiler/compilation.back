@@ -3,7 +3,7 @@
 }
 
 struct Person {
-	name: string;
+	let name: string;
 }
 
 implement Person {
@@ -11,9 +11,9 @@ implement Person {
 }
 
 class Point {
-	x: i32 = 0;
-	y: i32 = 1;
-	z: i32;
+	let mut x: i32 = 0;
+	let mut y: i32 = 1;
+	let mut z: i32;
 }
 
 interface ISerializable {
@@ -21,7 +21,7 @@ interface ISerializable {
 }
 
 class Location : Point, ISerializable {
-	worldName: string = "world"; 
+	let worldName: string = "world"; 
 }
 
 implement Location {

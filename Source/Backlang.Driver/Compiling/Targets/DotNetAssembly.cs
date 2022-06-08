@@ -77,6 +77,7 @@ public class DotNetAssembly : ITargetAssembly
                 fieldDefinition.IsRuntimeSpecialName = specialName != null;
                 fieldDefinition.IsSpecialName = specialName != null;
                 fieldDefinition.IsStatic = field.IsStatic;
+                fieldDefinition.IsInitOnly = !IsMutable(field);
 
                 if (clrType.IsEnum || field.InitialValue != null)
                 {
@@ -113,6 +114,11 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition.Write(output);
 
         output.Close();
+    }
+
+    private static bool IsMutable(IField field)
+    {
+        return field.Attributes.GetAll().Contains(Attributes.Mutable);
     }
 
     private static MethodAttributes GetMethodAttributes(IMember member)

@@ -23,7 +23,7 @@ public sealed class ClassDeclaration : IParsePoint<LNode>
 
         while (iterator.Current.Type != TokenType.CloseCurly)
         {
-            members.Add(StructMemberDeclaration.Parse(iterator, parser));
+            members.Add(TypeMemberDeclaration.Parse(iterator, parser));
         }
 
         iterator.Match(TokenType.CloseCurly);
