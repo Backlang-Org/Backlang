@@ -1,6 +1,8 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
@@ -81,10 +83,25 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                     ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
                 }
 
+                
+
                 ctorMethod.Body = null; // ToDo: Make body set members
 
                 type.AddMethod(ctorMethod);
             }
         }
+    }
+
+    private void GetConstructorBody()
+    {
+        var graph = new FlowGraphBuilder();
+        // Use a permissive exception delayability model to make the optimizer's
+        // life easier.
+        graph.AddAnalysis(
+            new ConstantAnalysis<ExceptionDelayability>(
+                PermissiveExceptionDelayability.Instance));
+
+        // Grab the entry point block.
+        var block = graph.EntryPoint;
     }
 }
