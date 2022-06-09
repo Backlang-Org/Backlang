@@ -41,7 +41,7 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
-            if(type.IsPrivate)
+            if (type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
             }
@@ -55,7 +55,7 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Sealed;
             }
 
-            if(type.IsAbstract)
+            if (type.IsAbstract)
             {
                 clrType.Attributes |= TypeAttributes.Abstract;
             }
@@ -129,6 +129,11 @@ public class DotNetAssembly : ITargetAssembly
                 {
                     foreach (var attr in attributes)
                     {
+                        if (attr.AttributeType.Name.ToString() == AccessModifierAttribute.AttributeName)
+                        {
+                            continue;
+                        }
+
                         if (attr.AttributeType.Name.ToString() == "ExtensionAttribute")
                         {
                             var attrCtor = _assemblyDefinition.MainModule.ImportReference(typeof(ExtensionAttribute).GetConstructors().First());
