@@ -1,0 +1,11 @@
+<Project Sdk="Backlang.NET.Sdk/1.0.19">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Description>TestConsole</Description>
+    <TargetFramework>net7</TargetFramework>
+    <AssemblyName>TestConsole</AssemblyName>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+  </PropertyGroup>
+  
+</Project>

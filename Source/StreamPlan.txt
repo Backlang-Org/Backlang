@@ -2,7 +2,7 @@ StreamPlan Backseat-Montag:
 	
 	- Scopes implementieren
 
-	- compileTime macro implementieren um algorithmen während der übersetzungszeit auszuführen
+	- compileTime macro implementieren um algorithmen wï¿½hrend der ï¿½bersetzungszeit auszufï¿½hren
 
 	- eigene macros definieren
 	macro test(node : LNode, context : MacroContext) {

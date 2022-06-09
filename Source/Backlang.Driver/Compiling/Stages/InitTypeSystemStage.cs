@@ -37,7 +37,6 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
                 && method.IsStatic
                 && method.ReturnParameter.Type == context.Environment.Void
                 && method.Parameters.Count == 1);
-
         return await next.Invoke(context);
     }
 }

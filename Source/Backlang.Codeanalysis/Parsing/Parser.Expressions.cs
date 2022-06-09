@@ -91,6 +91,11 @@ public sealed partial class Parser
         return LNode.Call(CodeSymbols.Char, LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]))).WithRange(Iterator.Peek(-1));
     }
 
+    private LNode ParseChar()
+    {
+        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]);
+    }
+
     private LNode ParseHexNumber()
     {
         var valueToken = Iterator.NextToken();
