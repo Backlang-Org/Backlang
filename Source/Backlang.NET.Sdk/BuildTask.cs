@@ -39,8 +39,10 @@ namespace Backlang.NET.Sdk
         public string OutputTree { get; set; }
         public string OutputType { get; set; }
         public string Path { get; set; }
+        public string ProjectFile { get; set; }
         public string[] ReferencePath { get; set; }
         public ITaskItem[] Resources { get; set; }
+        public string ResultingOutputPath { get; set; }
         public string Target { get; set; }
 
         [Required]
@@ -82,6 +84,9 @@ namespace Backlang.NET.Sdk
                 context.OutputType = OutputType;
                 context.TempOutputPath = TempOutputPath;
                 context.OutputPath = OutputPath;
+                context.MacroReferences = MacroReferences;
+                context.ResultingOutputPath = ResultingOutputPath;
+                context.ProjectFile = ProjectFile;
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {

@@ -170,7 +170,9 @@
 				   ReferencePath="@(ReferencePath)"
 				   OutputTree="$(OutputTree)"
 				   Target="$(Target)"
+				   ResultingOutputPath="$(OutputPath)"
 				   Compile="@(Compile)"
+				   ProjectFile="$(MSBuildProjectFullPath)"
 				   MacroReferences="@(MacroReference)"
 				   Resources="@(EmbeddedResource)"
 				   GenerateFullPaths="$(GenerateFullPaths)" />
