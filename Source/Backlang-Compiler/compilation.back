@@ -1,23 +1,55 @@
-﻿using Console::WriteLine as println;
-using Console::Error::WriteLine as errorln;
+﻿func main() static -> none {
+	//hello world
 
-func main() static -> none {
-	let uh = 1uL;
-	let cool = 3f;
-	
-	//let msg : string = concatId(a, b, c);
-	//let name : string = nameof(msg);
-	let k = 1.2;
+	/*
 
-	let s = Point::new();
-	let handle = ^s;
-	let another = ^s;
-	#autofree(handle, another) {
-		println(&handle);
-	}
-
-	
 
 }
 
-/*
+class abstract Person {
+	let name: string;
+
+	func hehe() abstract -> string;
+}
+
+class private VeryImportantPerson : Person {
+	
+}
+
+implement VeryImportantPerson {
+	func hehe() override -> string { }
+}
+
+class static private Point {
+	let mut x: i32 = 0;
+	let mut y: i32 = 1;
+	let mut z: i32;
+}
+
+interface ISerializable {
+	func toBytes() -> u8;
+}
+
+class Location : Point, ISerializable {
+	let worldName: string = "world"; 
+}
+
+implement Location {
+	func new(x: i32, y: i32, z: i32, worldName: string) static -> Location {
+		
+	}
+	
+	func toBytes() -> u8 {
+		x |> isLetter() |> print();
+	}
+}
+
+implement u8 {
+	func hello(some : u8) {
+	
+	}
+}
+
+enum Days {
+	Monday = 1, Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
+}

@@ -27,6 +27,11 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
                 context.OutputFilename += ".dll";
             }
 
+            if (context.OutputType == "dotnet")
+            {
+                context.OutputType = "Exe";
+            }
+
             if (_targets.ContainsKey(context.Target))
             {
                 AssemblyContentDescription description = GetDescription(context);
@@ -68,6 +73,11 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
     private static IMethod GetEntryPoint(CompilerContext context)
     {
+        if (context.OutputType != "Exe")
+        {
+            return null;
+        }
+
         return context.Assembly.Types
             .First(_ => _.Name.ToString() == Names.ProgramClass)
             .Methods.First(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);

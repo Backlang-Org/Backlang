@@ -3,7 +3,7 @@
     "displayName": "Backstention",
     "description": "Backlang For Backseat System",
     "icon": "media/logo.png",
-    "version": "0.0.47",
+    "version": "0.0.49",
     "publisher": "furesoft",
     "engines": {
         "vscode": "^1.66.0"
@@ -32,6 +32,29 @@
                 "language": "back",
                 "path": "./snippets/snippets.code-snippets"
             }
-        ]
+        ],
+        "commands": [
+                {
+                    "command": "back.updateTemplates",
+                    "title": "Update Backlang Templates"
+                }
+            ],
+        "main": "./out/extension.js",
+        "activationEvents": ["onCommand:back.updateTemplates"],
+        "menus": {
+            "commandPalette": [
+                    {
+                        "command": "back.updateTemplates"
+                    }
+                ]
+            },
+        "devDependencies": {
+            "@types/vscode": "^0.10.x",
+            "typescript": "^1.6.2"
+        },
+        "scripts": {
+            "vscode:prepublish": "npm run compile",
+            "compile": "tsc -p ./"
+	    }
     }
 }

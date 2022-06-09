@@ -18,7 +18,9 @@ public enum BinaryOpPrecedences
     
     FunctionCalls = 7, // . ::
 
-    OperationShortcuts = 8, // += -= *= /=
+    PipeOperator = 8, // |>
+
+    OperationShortcuts = 9, // += -= *= /=
     Equals = OperationShortcuts,
 
 }

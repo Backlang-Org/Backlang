@@ -27,6 +27,11 @@ public sealed class Message
         return new Message(document, MessageSeverity.Error, message, line, column);
     }
 
+    public static Message Error(string message)
+    {
+        return Error(null, message, -1, -1);
+    }
+
     public static Message Info(SourceDocument document, string message, int line, int column)
     {
         return new Message(document, MessageSeverity.Info, message, line, column);

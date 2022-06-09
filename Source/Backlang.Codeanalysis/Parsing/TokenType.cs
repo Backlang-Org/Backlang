@@ -131,6 +131,10 @@ public enum TokenType
     [Lexeme("=>")]
     GoesTo,
 
+    [Lexeme("|>")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.PipeOperator)]
+    Pipe,
+
     [Lexeme(",")]
     Comma,
 
@@ -193,6 +197,12 @@ public enum TokenType
     [Keyword("struct")]
     Struct,
 
+    [Keyword("class")]
+    Class,
+
+    [Keyword("interface")]
+    Interface,
+
     [Keyword("bitfield")]
     Bitfield,
 
@@ -249,6 +259,12 @@ public enum TokenType
 
     [Keyword("static")]
     Static,
+
+    [Keyword("abstract")]
+    Abstract,
+
+    [Keyword("override")]
+    Override,
 
     [Keyword("of")]
     Of,
