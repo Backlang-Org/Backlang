@@ -1,8 +1,8 @@
 ﻿using Loyc.Syntax;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class VariableDeclaration : IParsePoint<LNode>
+public class VariableStatement : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
