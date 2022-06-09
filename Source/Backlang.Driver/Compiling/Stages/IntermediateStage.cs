@@ -98,7 +98,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             if(st.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
             {
-                type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Static));
+                type.IsStatic = true;
             }
 
             context.Assembly.AddType(type);

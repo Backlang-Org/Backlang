@@ -36,7 +36,7 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
-        foreach (var type in _assembly.Types)
+        foreach (DescribedType type in _assembly.Types)
         {
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
@@ -48,7 +48,7 @@ public class DotNetAssembly : ITargetAssembly
             {
                 clrType.Attributes |= TypeAttributes.Public;
             }
-            if(type.GetAccessModifier().HasFlag(AccessModifier.Static))
+            if(type.IsStatic)
             {
                 clrType.Attributes |= TypeAttributes.Abstract;
                 clrType.Attributes |= TypeAttributes.Sealed;
