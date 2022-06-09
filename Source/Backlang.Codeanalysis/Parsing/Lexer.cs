@@ -309,6 +309,7 @@ public sealed class Lexer : BaseLexer
             if (Current() == '\0')
             {
                 Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
+                return;
             }
 
             if (IsMatch("*/"))
@@ -318,6 +319,11 @@ public sealed class Lexer : BaseLexer
 
                 Advance();
                 _column++;
+            }
+            else
+            {
+                Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
+                return;
             }
 
             SkipWhitespaces();

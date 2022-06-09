@@ -2,14 +2,14 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public abstract class Statement
+public static class Statement
 {
     public static LNodeList ParseBlock(Parser parser)
     {
         parser.Iterator.Match(TokenType.OpenCurly);
 
         var body = new List<LNode>();
-        while (!parser.Iterator.IsMatch(TokenType.CloseCurly))
+        while (!parser.Iterator.IsMatch(TokenType.CloseCurly) && !parser.Iterator.IsMatch(TokenType.EOF))
         {
             body.Add(parser.InvokeStatementParsePoint());
         }
@@ -24,7 +24,8 @@ public abstract class Statement
         if (parser.Iterator.IsMatch(TokenType.OpenCurly))
         {
             return ParseBlock(parser);
-        } else
+        }
+        else
         {
             return LNode.List(parser.InvokeStatementParsePoint());
         }
