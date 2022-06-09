@@ -45,6 +45,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                     {
                         var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node);
 
+                        fn.IsStatic = true;
+
                         var thisParameter = new Parameter(targetType, "this");
                         var param = (IList<Parameter>)fn.Parameters;
 
