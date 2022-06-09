@@ -25,27 +25,13 @@ public sealed class Signature
 
         LNode returnType = LNode.Missing;
 
-        LNodeList attributes = new();
-
         iterator.Match(TokenType.OpenParen);
 
         var parameters = ParseParameterDeclarations(iterator, parser);
 
         iterator.Match(TokenType.CloseParen);
 
-        if (iterator.Current.Type == TokenType.Static)
-        {
-            iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Static));
-        }
-
-        if (iterator.Current.Type == TokenType.Private)
-        {
-            iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Private));
-        }
+        LNodeList attributes = ParseAttributes(parser);
 
         if (iterator.Current.Type == TokenType.Operator)
         {
@@ -84,5 +70,26 @@ public sealed class Signature
         }
 
         return parameters;
+    }
+
+    public static LNodeList ParseAttributes(Parser parser)
+    {
+        LNodeList attributes = new();
+
+        if (parser.Iterator.Current.Type == TokenType.Static)
+        {
+            parser.Iterator.NextToken();
+
+            attributes.Add(LNode.Id(CodeSymbols.Static));
+        }
+
+        if (parser.Iterator.Current.Type == TokenType.Private)
+        {
+            parser.Iterator.NextToken();
+
+            attributes.Add(LNode.Id(CodeSymbols.Private));
+        }
+
+        return attributes;
     }
 }
