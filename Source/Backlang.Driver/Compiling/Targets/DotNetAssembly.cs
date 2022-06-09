@@ -53,6 +53,10 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Abstract;
                 clrType.Attributes |= TypeAttributes.Sealed;
             }
+            if(type.IsAbstract())
+            {
+                clrType.Attributes |= TypeAttributes.Abstract;
+            }
 
             if (type.IsInterfaceType())
             {

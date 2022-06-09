@@ -100,6 +100,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             {
                 type.IsStatic = true;
             }
+            if(st.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+            {
+                type.AddAttribute(FlagAttribute.Abstract);
+            }
 
             context.Assembly.AddType(type);
         }
