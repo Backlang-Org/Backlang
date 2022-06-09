@@ -6,6 +6,7 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var keywordToken = iterator.Peek(-1);
         var nameToken = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.OpenCurly);
@@ -31,11 +32,13 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
                 iterator.Match(TokenType.Comma);
             }
 
-            members.Add(SyntaxTree.Factory.Var(LNode.Missing, LNode.Id(memberNameToken.Text), value));
+            members.Add(SyntaxTree.Factory.Var(LNode.Missing, LNode.Id(memberNameToken.Text), value)
+                .WithRange(memberNameToken, iterator.Peek(-1)));
         }
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members);
+        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members)
+            .WithRange(keywordToken, iterator.Peek(-1));
     }
 }

@@ -171,7 +171,7 @@ public enum TokenType
     Function,
 
     [Keyword("let")]
-    Declare,
+    Let,
 
     [Keyword("mut")]
     Mutable,

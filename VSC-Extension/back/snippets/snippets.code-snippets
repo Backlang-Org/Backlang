@@ -26,7 +26,7 @@
   "Switch Statement": {
     "prefix": ["switch"],
     "body": ["switch ${1:element} {", "\tcase ${2:value}: $0", "}"],
-    "description": "An switch statement with one case."
+    "description": "A switch statement with one case."
   },
   
   "Function": {

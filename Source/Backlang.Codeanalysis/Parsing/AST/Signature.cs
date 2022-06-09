@@ -9,6 +9,7 @@ public sealed class Signature
     public static LNode Parse(Parser parser)
     {
         var iterator = parser.Iterator;
+        var fnToken = iterator.Peek(-1);
 
         string name = null;
         if (iterator.Current.Type == TokenType.Identifier)
@@ -41,7 +42,7 @@ public sealed class Signature
         }
 
         return SyntaxTree.Signature(LNode.Id((Symbol)name), returnType, parameters)
-            .WithAttrs(attributes);
+            .WithAttrs(attributes).WithRange(fnToken, iterator.Peek(-1));
     }
 
     private static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)

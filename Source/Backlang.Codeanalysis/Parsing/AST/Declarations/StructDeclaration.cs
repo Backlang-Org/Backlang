@@ -6,12 +6,13 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var keywordToken = iterator.Peek(-1);
         var attributes = Signature.ParseAttributes(parser);
         var name = iterator.Match(TokenType.Identifier).Text;
         var inheritances = new LNodeList();
         var members = new LNodeList();
 
-        if(iterator.Current.Type == TokenType.Colon)
+        if (iterator.Current.Type == TokenType.Colon)
         {
             do
             {
@@ -29,6 +30,8 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Struct(name, inheritances, members).WithAttrs(attributes);
+        return SyntaxTree.Struct(name, inheritances, members)
+            .WithAttrs(attributes)
+            .WithRange(keywordToken, iterator.Peek(-1));
     }
 }

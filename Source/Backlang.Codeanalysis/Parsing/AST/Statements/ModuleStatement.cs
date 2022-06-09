@@ -1,6 +1,6 @@
 ﻿using Loyc.Syntax;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
 public sealed class ModuleDeclaration : IParsePoint<LNode>
 {
@@ -8,8 +8,8 @@ public sealed class ModuleDeclaration : IParsePoint<LNode>
     {
         //module <identifier>
         //module <identifier>.<identifier>
-        var keywordToken = iterator.Peek(-1);
-        var tree = SyntaxTree.Module(Expression.Parse(parser)).WithRange(keywordToken, iterator.Current);
+
+        var tree = SyntaxTree.Module(Expression.Parse(parser));
 
         iterator.Match(TokenType.Semicolon);
 

@@ -8,6 +8,7 @@ public sealed class DefaultExpression : IParsePoint<LNode>
     {
         //default<i32>
         //default
+        var defaultToken = iterator.Peek(1);
         if (iterator.Current.Type == TokenType.LessThan)
         {
             iterator.NextToken();
@@ -16,9 +17,9 @@ public sealed class DefaultExpression : IParsePoint<LNode>
 
             iterator.Match(TokenType.GreaterThan);
 
-            return SyntaxTree.Default(type);
+            return SyntaxTree.Default(type).WithRange(defaultToken, iterator.Current);
         }
 
-        return SyntaxTree.Default();
+        return SyntaxTree.Default().WithRange(iterator.Current);
     }
 }

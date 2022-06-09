@@ -7,7 +7,9 @@ public sealed class TypeMemberDeclaration
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        iterator.Match(TokenType.Declare);
-        return VariableStatement.Parse(iterator, parser);
+        var keywordToken = iterator.Match(TokenType.Let);
+
+        return VariableDeclaration.Parse(iterator, parser)
+            .WithRange(keywordToken, iterator.Peek(-1));
     }
 }

@@ -7,6 +7,7 @@ public sealed class InitializerListExpression : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var elements = new LNodeList();
+        var openBracketToken = iterator.Peek(-1);
 
         do
         {
@@ -25,6 +26,6 @@ public sealed class InitializerListExpression : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseSquare);
 
-        return SyntaxTree.ArrayInstantiation(elements);
+        return SyntaxTree.ArrayInstantiation(elements).WithRange(openBracketToken, iterator.Peek(-1));
     }
 }

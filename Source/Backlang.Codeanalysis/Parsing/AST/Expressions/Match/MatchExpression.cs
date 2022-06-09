@@ -13,6 +13,7 @@ public sealed class MatchExpression : IParsePoint<LNode>
 
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var matchToken = iterator.Peek(-1);
         var matchArgument = Expression.Parse(parser);
 
         iterator.Match(TokenType.With);
@@ -33,6 +34,7 @@ public sealed class MatchExpression : IParsePoint<LNode>
             }
         }
 
-        return SyntaxTree.Factory.Call(LNode.Id(Symbols.Match), matchArgument).WithAttrs(conditions);
+        return SyntaxTree.Factory.Call(LNode.Id(Symbols.Match), matchArgument)
+            .WithAttrs(conditions).WithRange(matchToken, iterator.Peek(-1));
     }
 }

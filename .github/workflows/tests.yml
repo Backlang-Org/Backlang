@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+    branches:    
+      - '*'         # matches every branch that doesn't contain a '/'
+      - '*/*'       # matches every branch containing a single '/'
+      - '**'        # matches every branch
+  pull_request:
+    branches:    
+      - '*'         # matches every branch that doesn't contain a '/'
+      - '*/*'       # matches every branch containing a single '/'
+      - '**'        # matches every branch
+
+jobs:
+  build:
+    runs-on: windows-latest                                                   # For a list of available runner types, refer to https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    env:
+      Solution_Name: Source/Backlang-Compiler.sln                             # Replace with your solution name, i.e. MyWpfApp.sln.
+      Test_Project_Path: Source/TestProject1/TestProject1.csproj              # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 7.0.x
+        include-prerelease: true
+    
+    - name: Build
+      run: dotnet build $env:Solution_Name --configuration Release
+
+    - name: Execute unit tests
+      run: dotnet test $env:Test_Project_Path --configuration Release --no-build
