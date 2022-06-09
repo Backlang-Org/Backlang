@@ -3,6 +3,9 @@
 	"name": "Backlang",
 	"patterns": [
 		{
+            "include": "#comments"
+        },
+		{
 			"include": "#keywords"
 		},
 		{
@@ -28,6 +31,30 @@
 		}
 	],
 	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"begin": "//",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.back"
+						}
+					},
+					"end": "$",
+					"name": "comment.line.double-slash.back"
+				},
+				{
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.back"
+						}
+					},
+					"end": "\\*/",
+					"name": "comment.line.block.back"
+				}
+			]
+		},
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.other.back",
