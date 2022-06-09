@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>1.0.32</PackageVersion>
+    <PackageVersion>1.0.33</PackageVersion>
     <PackageId>Backlang.Templates</PackageId>
     <Title>Backlang Templates</Title>
     <Authors>furesoft</Authors>
