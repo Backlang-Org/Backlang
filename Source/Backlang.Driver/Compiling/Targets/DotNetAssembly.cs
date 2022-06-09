@@ -118,10 +118,15 @@ public class DotNetAssembly : ITargetAssembly
                 var returnType = m.ReturnParameter.Type;
                 var clrMethod = GetMethodDefinition(m, returnType);
 
-                if (m.Attributes.GetAll().Contains(Attributes.Override))
+                var attributes = m.Attributes.GetAll();
+                if (attributes.Contains(Attributes.Override))
                 {
                     clrMethod.IsHideBySig = true;
                     clrMethod.IsVirtual = true;
+                }
+                if(attributes.Contains(FlagAttribute.Abstract))
+                {
+                    clrMethod.IsAbstract = true;
                 }
 
                 if (m.Body != null)
@@ -130,7 +135,6 @@ public class DotNetAssembly : ITargetAssembly
                     clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
                 }
 
-                var attributes = m.Attributes.GetAll();
                 if (attributes.Any())
                 {
                     foreach (var attr in attributes)

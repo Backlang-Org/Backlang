@@ -271,34 +271,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertInterfaceMethods(LNode methods, DescribedType type, CompilerContext context)
-    {
-        foreach (var function in methods.Args)
-        {
-            if (function.Calls(CodeSymbols.Fn))
-            {
-                string methodName = function.Args[1].Name.Name;
-                var method = new DescribedBodyMethod(type,
-                    new QualifiedName(methodName).FullyUnqualifiedName,
-                    function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
-                method.Body = null;
-
-                var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
-                if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-                {
-                    modifier = AccessModifierAttribute.Create(AccessModifier.Private);
-                }
-
-                method.AddAttribute(modifier);
-
-                AddParameters(method, function, context);
-                SetReturnType(method, function, context);
-
-                type.AddMethod(method);
-            }
-        }
-    }
-
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
     {
         var type = IntermediateStage.GetType(p.Args[0], context);
@@ -309,7 +281,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return new Parameter(type, name.ToString());
     }
 
-    private static void ConvertStructMembers(LNode members, DescribedType type, CompilerContext context)
+    private static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
     {
         foreach (var member in members.Args)
         {
@@ -333,6 +305,30 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
 
                 type.AddField(field);
+            } else if (member.Calls(CodeSymbols.Fn))
+            {
+                string methodName = member.Args[1].Name.Name;
+                var method = new DescribedBodyMethod(type,
+                    new QualifiedName(methodName).FullyUnqualifiedName,
+                    member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+                method.Body = null;
+
+                var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
+                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+                {
+                    modifier = AccessModifierAttribute.Create(AccessModifier.Private);
+                }
+                method.AddAttribute(modifier);
+
+                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+                {
+                    method.AddAttribute(FlagAttribute.Abstract);
+                }
+
+                AddParameters(method, member, context);
+                SetReturnType(method, member, context);
+
+                type.AddMethod(method);
             }
         }
     }
@@ -354,14 +350,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName(inheritance.Name.Name).Qualify(context.Assembly.Name)).First());
             }
 
-            if (st.Name != CodeSymbols.Interface)
-            {
-                ConvertStructMembers(members, type, context);
-            }
-            else
-            {
-                ConvertInterfaceMethods(members, type, context);
-            }
+            ConvertTypeMembers(members, type, context);
         }
     }
 
