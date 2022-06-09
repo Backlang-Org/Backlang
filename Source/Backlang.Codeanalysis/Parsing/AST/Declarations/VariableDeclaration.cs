@@ -6,6 +6,8 @@ public class VariableDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var keywordToken = iterator.Peek(-1);
+
         bool isMutable = false;
         LNode type = LNode.Missing;
         LNode value = LNode.Missing;
@@ -35,7 +37,7 @@ public class VariableDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        var node = SyntaxTree.Factory.Var(type, name, value);
+        var node = SyntaxTree.Factory.Var(type, name, value).WithRange(keywordToken, iterator.Peek(-1));
 
         return isMutable ? node.WithAttrs(LNode.Id(Symbols.Mutable)) : node;
     }

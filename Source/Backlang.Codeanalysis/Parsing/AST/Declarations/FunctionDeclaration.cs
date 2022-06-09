@@ -9,6 +9,10 @@ public sealed class FunctionDeclaration : IParsePoint<LNode>
     {
         var signature = Signature.Parse(parser);
 
-        return signature.PlusArg(LNode.Call(CodeSymbols.Braces, Statement.ParseBlock(parser)).SetStyle(NodeStyle.StatementBlock));
+        return signature
+            .PlusArg(LNode.Call(CodeSymbols.Braces,
+                Statement.ParseBlock(parser))
+            .SetStyle(NodeStyle.StatementBlock))
+            .WithRange(signature.Range.StartIndex, iterator.Peek(-1).End);
     }
 }

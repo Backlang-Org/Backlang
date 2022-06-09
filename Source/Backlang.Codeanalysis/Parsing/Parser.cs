@@ -41,7 +41,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddStatementParsePoint<BreakStatement>(TokenType.Break);
         AddStatementParsePoint<ContinueStatement>(TokenType.Continue);
         AddStatementParsePoint<ReturnStatement>(TokenType.Return);
-        AddStatementParsePoint<VariableDeclaration>(TokenType.Declare);
+        AddStatementParsePoint<VariableDeclaration>(TokenType.Let);
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);

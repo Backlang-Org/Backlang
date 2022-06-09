@@ -7,11 +7,11 @@ public sealed class TryStatement : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         // try {} catch (Exception e) {} catch (Exception e) {} finally {}
-
+        var keywordToken = iterator.Peek(-1);
         var body = Statement.ParseOneOrBlock(parser);
         LNodeList catches = new(LNode.Missing);
 
-        if(iterator.Current.Type != TokenType.Catch)
+        if (iterator.Current.Type != TokenType.Catch)
         {
             parser.Messages.Add(Message.Error(parser.Document, "Expected at least one catch block at try statement", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
         }
@@ -24,13 +24,13 @@ public sealed class TryStatement : IParsePoint<LNode>
         }
 
         LNodeList finallly = new(LNode.Missing);
-        if(iterator.IsMatch(TokenType.Finally))
+        if (iterator.IsMatch(TokenType.Finally))
         {
             iterator.Match(TokenType.Finally);
             finallly = Statement.ParseOneOrBlock(parser);
         }
 
-        return SyntaxTree.Try(body, catches, finallly);
+        return SyntaxTree.Try(body, catches, finallly).WithRange(keywordToken, iterator.Peek(-1));
     }
 
     private static LNode ParseCatch(Parser parser)

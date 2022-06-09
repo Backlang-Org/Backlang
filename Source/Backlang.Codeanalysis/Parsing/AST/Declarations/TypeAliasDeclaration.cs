@@ -7,6 +7,7 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         //type int = i32;
+        var keywordToken = iterator.Peek(-1);
         var typeAliasDeclaration = new TypeAliasDeclaration();
         var aliasName = LNode.Id(iterator.NextToken().Text);
 
@@ -16,6 +17,7 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return LNode.Call(CodeSymbols.Alias, LNode.List(aliasName, toAlias));
+        return LNode.Call(CodeSymbols.Alias, LNode.List(aliasName, toAlias))
+            .WithRange(keywordToken, iterator.Peek(-1));
     }
 }

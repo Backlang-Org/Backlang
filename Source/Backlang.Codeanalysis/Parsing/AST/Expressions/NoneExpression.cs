@@ -6,6 +6,6 @@ public sealed class NoneExpression : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        return SyntaxTree.None();
+        return SyntaxTree.None().WithRange(iterator.Peek(-1));
     }
 }

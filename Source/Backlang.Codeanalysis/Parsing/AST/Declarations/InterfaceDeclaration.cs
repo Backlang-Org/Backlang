@@ -6,11 +6,12 @@ public sealed class InterfaceDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var keywordToken = iterator.Peek(-1);
         var name = iterator.Match(TokenType.Identifier).Text;
         var inheritances = new LNodeList();
         var members = new LNodeList();
 
-        if(iterator.Current.Type == TokenType.Colon)
+        if (iterator.Current.Type == TokenType.Colon)
         {
             do
             {
@@ -30,6 +31,7 @@ public sealed class InterfaceDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Interface(name, inheritances, members);
+        return SyntaxTree.Interface(name, inheritances, members)
+            .WithRange(keywordToken, iterator.Peek(-1));
     }
 }

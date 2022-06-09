@@ -8,6 +8,7 @@ public sealed class GlobalVariableDeclaration : IParsePoint<LNode>
     {
         var decl = VariableDeclaration.Parse(iterator, parser);
 
-        return decl.WithAttrs(LNode.Id(Symbols.Global));
+        return decl.WithAttrs(LNode.Id(Symbols.Global))
+            .WithRange(decl.Range.StartIndex, iterator.Peek(-1).End);
     }
 }

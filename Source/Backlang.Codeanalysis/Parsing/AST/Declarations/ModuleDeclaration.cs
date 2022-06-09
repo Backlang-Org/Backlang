@@ -8,8 +8,8 @@ public sealed class ModuleDeclaration : IParsePoint<LNode>
     {
         //module <identifier>
         //module <identifier>.<identifier>
-
-        var tree = SyntaxTree.Module(Expression.Parse(parser));
+        var keywordToken = iterator.Peek(-1);
+        var tree = SyntaxTree.Module(Expression.Parse(parser)).WithRange(keywordToken, iterator.Current);
 
         iterator.Match(TokenType.Semicolon);
 

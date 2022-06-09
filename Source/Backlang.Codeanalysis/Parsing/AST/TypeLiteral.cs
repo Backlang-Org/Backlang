@@ -6,7 +6,8 @@ public sealed class TypeLiteral
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var typename = iterator.Match(TokenType.Identifier).Text;
+        var typenameToken = iterator.Match(TokenType.Identifier);
+        var typename = typenameToken.Text;
         var args = new LNodeList();
 
         var typeNode = SyntaxTree.Type($"#{typename}", new());
@@ -15,11 +16,11 @@ public sealed class TypeLiteral
         {
             iterator.NextToken();
 
-            return SyntaxTree.Pointer(typeNode);
+            return SyntaxTree.Pointer(typeNode).WithRange(iterator.Peek(-1));
         }
         else if (iterator.Current.Type == TokenType.OpenSquare)
         {
-            iterator.NextToken();
+            var openSquareToken = iterator.NextToken();
 
             var dimensions = 1;
 
@@ -32,7 +33,7 @@ public sealed class TypeLiteral
 
             iterator.Match(TokenType.CloseSquare);
 
-            return SyntaxTree.Array(typeNode, dimensions);
+            return SyntaxTree.Array(typeNode, dimensions).WithRange(openSquareToken, iterator.Peek(-1));
         }
         else if (iterator.Current.Type == TokenType.LessThan)
         {
@@ -53,7 +54,7 @@ public sealed class TypeLiteral
 
             iterator.Match(TokenType.GreaterThan);
 
-            return typeNode.WithArgs(args);
+            return typeNode.WithArgs(args).WithRange(typenameToken, iterator.Peek(-1));
         }
 
         return typeNode;
