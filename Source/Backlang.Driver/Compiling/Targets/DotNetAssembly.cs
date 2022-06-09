@@ -41,7 +41,7 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
-            if (type.GetAccessModifier().HasFlag(AccessModifier.Private))
+            if(type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
             }
@@ -54,12 +54,13 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Abstract;
                 clrType.Attributes |= TypeAttributes.Sealed;
             }
-            if (type.IsAbstract())
+
+            if(type.IsAbstract)
             {
                 clrType.Attributes |= TypeAttributes.Abstract;
             }
 
-            if (type.IsInterfaceType())
+            if (type.IsInterfaceType)
             {
                 clrType.IsInterface = true;
             }
