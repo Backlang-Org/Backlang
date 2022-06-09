@@ -48,6 +48,11 @@ public class DotNetAssembly : ITargetAssembly
             {
                 clrType.Attributes |= TypeAttributes.Public;
             }
+            if(type.GetAccessModifier().HasFlag(AccessModifier.Static))
+            {
+                clrType.Attributes |= TypeAttributes.Abstract;
+                clrType.Attributes |= TypeAttributes.Sealed;
+            }
 
             if (type.IsInterfaceType())
             {

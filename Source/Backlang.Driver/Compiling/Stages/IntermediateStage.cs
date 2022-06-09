@@ -87,13 +87,19 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }
 
+            #region Access Modifier
             var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
             if (st.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
             {
                 modifier = AccessModifierAttribute.Create(AccessModifier.Private);
             }
-
             type.AddAttribute(modifier);
+            #endregion
+
+            if(st.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
+            {
+                type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Static));
+            }
 
             context.Assembly.AddType(type);
         }
