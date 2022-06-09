@@ -3,5 +3,5 @@
 public static class Names
 {
     public static readonly string MainMethod = "main";
-    public static readonly string ProgramClass = "__Program";
+    public static readonly string ProgramClass = "Program";
 }
