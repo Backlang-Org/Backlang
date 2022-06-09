@@ -87,6 +87,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         string methodName = function.Args[1].Name.Name;
 
+        if (methodName == "main") methodName = "Main";
+
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
             function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
