@@ -33,13 +33,6 @@ public sealed class Signature
 
         LNodeList attributes = ParseAttributes(parser);
 
-        if (iterator.Current.Type == TokenType.Operator)
-        {
-            iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Operator));
-        }
-
         if (iterator.Current.Type == TokenType.Arrow)
         {
             iterator.NextToken();
@@ -72,22 +65,26 @@ public sealed class Signature
         return parameters;
     }
 
+    private static Dictionary<TokenType, Symbol> possibleAttributes = new() {
+        { TokenType.Static, CodeSymbols.Static },
+        { TokenType.Private, CodeSymbols.Private },
+        { TokenType.Operator, CodeSymbols.Operator }
+    };
     public static LNodeList ParseAttributes(Parser parser)
     {
         LNodeList attributes = new();
 
-        if (parser.Iterator.Current.Type == TokenType.Static)
+        TokenType current;
+        while (possibleAttributes.ContainsKey(current = parser.Iterator.Current.Type))
         {
+            var attrib = LNode.Id(possibleAttributes[current]);
             parser.Iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Static));
-        }
-
-        if (parser.Iterator.Current.Type == TokenType.Private)
-        {
-            parser.Iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Private));
+            if(attributes.Contains(attrib))
+            {
+                parser.Messages.Add(Message.Error(parser.Document, $"Modifier '{attrib.Name.Name}' is already applied", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+                continue;
+            }
+            attributes.Add(attrib);
         }
 
         return attributes;
