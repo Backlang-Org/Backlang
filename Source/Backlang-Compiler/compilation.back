@@ -7,7 +7,7 @@ struct abstract Person {
 }
 
 implement Person {
-	
+	func hehe() override -> string { }
 }
 
 class static private Point {

@@ -263,6 +263,9 @@ public enum TokenType
     [Keyword("abstract")]
     Abstract,
 
+    [Keyword("override")]
+    Override,
+
     [Keyword("of")]
     Of,
 

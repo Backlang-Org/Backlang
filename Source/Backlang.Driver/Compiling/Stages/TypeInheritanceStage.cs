@@ -97,6 +97,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
+        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
+        {
+            method.AddAttribute(Attributes.Override);
+        }
 
         var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))

@@ -69,7 +69,8 @@ public sealed class Signature
         { TokenType.Static, CodeSymbols.Static },
         { TokenType.Private, CodeSymbols.Private },
         { TokenType.Operator, CodeSymbols.Operator },
-        { TokenType.Abstract, CodeSymbols.Abstract }
+        { TokenType.Abstract, CodeSymbols.Abstract },
+        { TokenType.Override, CodeSymbols.Override }
     };
     public static LNodeList ParseAttributes(Parser parser)
     {
