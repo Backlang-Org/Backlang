@@ -167,7 +167,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree)
     {
         var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
 
@@ -196,10 +196,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                     var mname = member.Args[1].Args[0].Name;
                     var mvalue = member.Args[1].Args[1];
 
-                    if(mvalue == LNode.Missing)
+                    if (mvalue == LNode.Missing)
                     {
                         i++;
-                    } else
+                    }
+                    else
                     {
                         i = (int)mvalue.Args[0].Value;
                     }
@@ -238,7 +239,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                                            elementType);
     }
 
-    private static void ConvertFreeFunctions(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
     {
         var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
 
@@ -249,6 +250,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
             {
                 type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(context.Assembly.Name), context.Assembly);
+                type.IsStatic = true;
+
                 context.Assembly.AddType(type);
             }
             else
@@ -314,11 +317,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
 
-                if(mvalue != LNode.Missing)
+                if (mvalue != LNode.Missing)
                 {
                     field.InitialValue = mvalue.Args[0].Value;
                 }
-                if(member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+                if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
                     field.AddAttribute(Attributes.Mutable);
                 }
@@ -328,7 +331,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertTypesOrInterface(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree)
     {
         var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
 
@@ -353,7 +356,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 ConvertInterfaceMethods(members, type, context);
             }
-
         }
     }
 
