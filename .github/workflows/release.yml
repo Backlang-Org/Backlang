@@ -44,17 +44,8 @@ jobs:
         release_name="Backc-$tag-${{ matrix.target }}"
 
         # Build everything
-        dotnet publish Source/Backlang-Compiler/Backlang-Compiler.csproj --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-
-        # Pack files
-        if [ "${{ matrix.target }}" == "win-x64" ]; then
-          7z a -tzip "${release_name}.zip" "./${release_name}/*"
-        else
-          tar czvf "${release_name}.tar.gz" "$release_name"
-        fi
-
-        # Delete output directory
-        rm -r "$release_name"
+        dotnet publish Source/Backlang-Compiler/Backlang-Compiler.csproj --runtime "${{ matrix.target }}" -p:PublishSingleFile=true -c Release -o "$release_name"
+      
     - name: Publish
       uses: softprops/action-gh-release@v1
       with:
