@@ -1,9 +1,15 @@
-﻿using Loyc.Syntax;
+﻿using Loyc;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
 
 public static class Extensions
 {
+    public static bool Contains(this LNodeList attrs, Symbol symbol)
+    {
+        return attrs.Any(_ => _.Name == symbol);
+    }
+
     public static LNode WithRange(this LNode node, int start, int length)
     {
         return node.WithRange(new SourceRange(null, start, length));

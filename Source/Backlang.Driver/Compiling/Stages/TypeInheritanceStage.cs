@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -196,10 +197,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                     var mname = member.Args[1].Args[0].Name;
                     var mvalue = member.Args[1].Args[1];
 
-                    if(mvalue == LNode.Missing)
+                    if (mvalue == LNode.Missing)
                     {
                         i++;
-                    } else
+                    }
+                    else
                     {
                         i = (int)mvalue.Args[0].Value;
                     }
@@ -314,11 +316,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
 
-                if(mvalue != LNode.Missing)
+                if (mvalue != LNode.Missing)
                 {
                     field.InitialValue = mvalue.Args[0].Value;
                 }
-                if(member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+                if (member.Attrs.Contains(Symbols.Mutable))
                 {
                     field.AddAttribute(Attributes.Mutable);
                 }
@@ -353,7 +355,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 ConvertInterfaceMethods(members, type, context);
             }
-
         }
     }
 
