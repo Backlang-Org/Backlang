@@ -2,11 +2,17 @@
 
 }
 
-struct abstract Person {
+class abstract Person {
 	let name: string;
+
+	func hehe() abstract -> string;
 }
 
-implement Person {
+class private VeryImportantPerson : Person {
+	
+}
+
+implement VeryImportantPerson {
 	func hehe() override -> string { }
 }
 
