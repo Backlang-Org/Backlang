@@ -323,10 +323,6 @@ public sealed class Lexer : BaseLexer
             } else
             {
                 Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
-            }
-            else
-            {
-                Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
                 return;
             }
 

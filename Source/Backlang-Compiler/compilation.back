@@ -46,8 +46,8 @@ implement Location {
 
 implement u8 {
 	func hello(some : u8) {
-	
-	}
+		// hello
+	} /*
 }
 
 enum Days {
