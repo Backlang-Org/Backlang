@@ -116,6 +116,12 @@ public class DotNetAssembly : ITargetAssembly
                 var returnType = m.ReturnParameter.Type;
                 var clrMethod = GetMethodDefinition(m, returnType);
 
+                if (m.Attributes.GetAll().Contains(Attributes.Override))
+                {
+                    clrMethod.IsHideBySig = true;
+                    clrMethod.IsVirtual = true;
+                }
+
                 if (m.Body != null)
                 {
                     clrMethod.HasThis = false;
