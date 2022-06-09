@@ -96,7 +96,7 @@ public class DotNetAssembly : ITargetAssembly
                 fieldDefinition.IsRuntimeSpecialName = specialName != null;
                 fieldDefinition.IsSpecialName = specialName != null;
                 fieldDefinition.IsStatic = field.IsStatic;
-                fieldDefinition.IsInitOnly = !IsMutable(field);
+                fieldDefinition.IsInitOnly = !field.Owns(Attributes.Mutable);
 
                 if (clrType.IsEnum || field.InitialValue != null)
                 {
@@ -118,13 +118,12 @@ public class DotNetAssembly : ITargetAssembly
                 var returnType = m.ReturnParameter.Type;
                 var clrMethod = GetMethodDefinition(m, returnType);
 
-                var attributes = m.Attributes.GetAll();
-                if (attributes.Contains(Attributes.Override))
+                if (m.IsOverride)
                 {
                     clrMethod.IsHideBySig = true;
                     clrMethod.IsVirtual = true;
                 }
-                if(attributes.Contains(FlagAttribute.Abstract))
+                if(m.IsAbstract)
                 {
                     clrMethod.IsAbstract = true;
                 }
@@ -135,6 +134,7 @@ public class DotNetAssembly : ITargetAssembly
                     clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
                 }
 
+                var attributes = m.Attributes.GetAll();
                 if (attributes.Any())
                 {
                     foreach (var attr in attributes)
@@ -191,11 +191,6 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         return attr;
-    }
-
-    private static bool IsMutable(IField field)
-    {
-        return field.Attributes.GetAll().Contains(Attributes.Mutable);
     }
 
     private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)
