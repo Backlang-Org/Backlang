@@ -82,16 +82,6 @@ public static class SyntaxTree
                                     body).SetStyle(NodeStyle.StatementBlock)));
     }
 
-    public static LNode Switch(LNode element, LNodeList cases)
-    {
-        return LNode.Call(CodeSymbols.SwitchStmt, LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
-    }
-
-    public static LNode Case(LNode condition, LNodeList body)
-    {
-        return LNode.Call(CodeSymbols.Case, LNode.List(condition, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
-    }
-
     public static LNode If(LNode cond, LNodeList ifBody, LNodeList elseBody)
     {
         return LNode.Call(CodeSymbols.If,

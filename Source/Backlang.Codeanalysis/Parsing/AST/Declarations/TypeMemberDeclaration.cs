@@ -9,7 +9,7 @@ public sealed class TypeMemberDeclaration
     {
         var keywordToken = iterator.Match(TokenType.Let);
 
-        return VariableDeclaration.Parse(iterator, parser)
+        return VariableStatement.Parse(iterator, parser)
             .WithRange(keywordToken, iterator.Peek(-1));
     }
 }
