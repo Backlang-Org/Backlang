@@ -81,6 +81,7 @@ namespace Backlang.NET.Sdk
                 context.OutputFilename = OutputName;
                 context.OutputType = OutputType;
                 context.TempOutputPath = TempOutputPath;
+                context.OutputPath = OutputPath;
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {

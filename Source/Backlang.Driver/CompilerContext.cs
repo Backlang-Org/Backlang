@@ -22,6 +22,8 @@ public sealed class CompilerContext
     [Option('o', "output", Required = true, HelpText = "Output filename")]
     public string OutputFilename { get; set; }
 
+    public string OutputPath { get; set; }
+
     [Option('p', "print-tree", Required = false, HelpText = "Output files as tree")]
     public bool OutputTree { get; set; }
 

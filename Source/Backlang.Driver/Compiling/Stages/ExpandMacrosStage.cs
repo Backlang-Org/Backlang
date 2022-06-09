@@ -6,6 +6,8 @@ using LeMP;
 using Loyc;
 using Loyc.Collections;
 using Loyc.Syntax;
+using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -26,6 +28,11 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
+        var loadContext = new AssemblyLoadContext(context.OutputPath);
+        var assembly = loadContext.LoadFromAssemblyName(AssemblyName.GetAssemblyName("Backlang.Core.dll"));
+        _macroProcessor.AddMacros(assembly, false);
+        _macroProcessor.PreOpenedNamespaces.Add((Symbol)assembly.FullName);
+
         foreach (var tree in context.Trees)
         {
             tree.Body = _macroProcessor.ProcessSynchronously(new VList<LNode>(tree.Body));
