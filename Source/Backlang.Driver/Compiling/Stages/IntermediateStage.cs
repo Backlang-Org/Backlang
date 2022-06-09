@@ -53,7 +53,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName("Compilation"));
-        context.ExtensionsType = new DescribedType(new SimpleName("__Extensions").Qualify(context.Assembly.Name), context.Assembly);
+        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
+        {
+            IsStatic = true
+        };
 
         foreach (var tree in context.Trees)
         {
@@ -65,6 +68,24 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         context.Binder.AddAssembly(context.Assembly);
 
         return await next.Invoke(context);
+    }
+
+    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    {
+        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
+
+        foreach (var enu in enums)
+        {
+            var name = enu.Args[0].Name;
+            var members = enu.Args[2];
+
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
+
+            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+
+            context.Assembly.AddType(type);
+        }
     }
 
     private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
@@ -87,37 +108,21 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }
 
-            #region Access Modifier
             var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
             if (st.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
             {
                 modifier = AccessModifierAttribute.Create(AccessModifier.Private);
             }
             type.AddAttribute(modifier);
-            #endregion
 
-            if(st.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
+            if (st.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
             {
-                type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Static));
+                type.IsStatic = true;
             }
-
-            context.Assembly.AddType(type);
-        }
-    }
-
-    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
-    {
-        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
-
-        foreach (var enu in enums)
-        {
-            var name = enu.Args[0].Name;
-            var members = enu.Args[2];
-
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
-
-            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+            if(st.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+            {
+                type.AddAttribute(FlagAttribute.Abstract);
+            }
 
             context.Assembly.AddType(type);
         }

@@ -260,6 +260,9 @@ public enum TokenType
     [Keyword("static")]
     Static,
 
+    [Keyword("abstract")]
+    Abstract,
+
     [Keyword("of")]
     Of,
 
