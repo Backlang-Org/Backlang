@@ -22,6 +22,7 @@
 		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.15" />
 		<PackageReference Include="LeMP" Version="29.0.3" />
 		<PackageReference Include="Loyc.Syntax" Version="29.0.3" />
+		<PackageReference Include="System.Runtime" Version="4.3.1" />
 		<PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2" />
 	</ItemGroup>
 

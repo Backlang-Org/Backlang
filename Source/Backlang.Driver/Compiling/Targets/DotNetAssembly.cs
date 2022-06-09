@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets;
@@ -44,15 +44,17 @@ public class DotNetAssembly : ITargetAssembly
             if(type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
-            } else
+            }
+            else
             {
                 clrType.Attributes |= TypeAttributes.Public;
             }
-            if(type.IsStatic)
+            if (type.IsStatic)
             {
                 clrType.Attributes |= TypeAttributes.Abstract;
                 clrType.Attributes |= TypeAttributes.Sealed;
             }
+
             if(type.IsAbstract)
             {
                 clrType.Attributes |= TypeAttributes.Abstract;
@@ -122,6 +124,23 @@ public class DotNetAssembly : ITargetAssembly
                     clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
                 }
 
+                var attributes = m.Attributes.GetAll();
+                if (attributes.Any())
+                {
+                    foreach (var attr in attributes)
+                    {
+                        if (attr.AttributeType.Name.ToString() == "ExtensionAttribute")
+                        {
+                            var attrCtor = _assemblyDefinition.MainModule.ImportReference(typeof(ExtensionAttribute).GetConstructors().First());
+                            var ca = new CustomAttribute(attrCtor);
+                            clrType.IsBeforeFieldInit = false;
+                            clrMethod.IsHideBySig = true;
+
+                            clrMethod.CustomAttributes.Add(ca);
+                        }
+                    }
+                }
+
                 clrType.Methods.Add(clrMethod);
             }
 
@@ -131,11 +150,6 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition.Write(output);
 
         output.Close();
-    }
-
-    private static bool IsMutable(IField field)
-    {
-        return field.Attributes.GetAll().Contains(Attributes.Mutable);
     }
 
     private static MethodAttributes GetMethodAttributes(IMember member)
@@ -162,6 +176,11 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         return attr;
+    }
+
+    private static bool IsMutable(IField field)
+    {
+        return field.Attributes.GetAll().Contains(Attributes.Mutable);
     }
 
     private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)
