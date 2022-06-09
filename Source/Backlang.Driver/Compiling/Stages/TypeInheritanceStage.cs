@@ -99,7 +99,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
         if(function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
         {
-            method.AddAttribute(Attributes.Override);
+            method.IsOverride = true;
         }
 
         var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
@@ -313,12 +313,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                     member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
                 method.Body = null;
 
-                var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
                 if (member.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
                 {
-                    modifier = AccessModifierAttribute.Create(AccessModifier.Private);
+                    method.IsPrivate = true;
+                } else
+                {
+                    method.IsPublic = true;
                 }
-                method.AddAttribute(modifier);
 
                 if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
                 {
