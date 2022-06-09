@@ -6,6 +6,7 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var attributes = Signature.ParseAttributes(parser);
         var name = iterator.Match(TokenType.Identifier).Text;
         var inheritances = new LNodeList();
         var members = new LNodeList();
@@ -28,6 +29,6 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Struct(name, inheritances, members);
+        return SyntaxTree.Struct(name, inheritances, members).WithAttrs(attributes);
     }
 }
