@@ -39,7 +39,15 @@ public class DotNetAssembly : ITargetAssembly
         foreach (var type in _assembly.Types)
         {
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
-                type.Name.ToString(), TypeAttributes.Class | TypeAttributes.Public);
+                type.Name.ToString(), TypeAttributes.Class);
+
+            if(type.GetAccessModifier().HasFlag(AccessModifier.Private))
+            {
+                clrType.Attributes |= TypeAttributes.NestedPrivate;
+            } else
+            {
+                clrType.Attributes |= TypeAttributes.Public;
+            }
 
             if (type.IsInterfaceType())
             {
