@@ -40,12 +40,16 @@ public class CompilerDriver
                _.Add<ImplementationStage>();
            });
 
-           cfg.When(_ => _.OutputTree, _ => {
+           cfg.When(_ => !_.Messages.Any() && _.OutputTree, _ => {
                _.Add<EmitTreeStage>();
            });
 
-           cfg.When(_ => _.OutputTree, _ => {
+           cfg.When(_ => !_.Messages.Any(), _ => {
                _.Add<CompileTargetStage>();
+           });
+
+           cfg.When(_ => _.Messages.Any(), _ => {
+               _.Add<ReportErrorStage>();
            });
        }
        );
