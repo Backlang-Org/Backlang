@@ -108,12 +108,13 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }
 
-            var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
             if (st.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
             {
-                modifier = AccessModifierAttribute.Create(AccessModifier.Private);
+                type.IsPrivate = true;
+            } else
+            {
+                type.IsPublic = true;
             }
-            type.AddAttribute(modifier);
 
             if (st.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
             {
@@ -121,7 +122,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             }
             if(st.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
             {
-                type.AddAttribute(FlagAttribute.Abstract);
+                type.IsAbstract = true;
             }
 
             context.Assembly.AddType(type);
