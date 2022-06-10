@@ -3,6 +3,9 @@
 	"name": "Backlang",
 	"patterns": [
 		{
+            "include": "#comments"
+        },
+		{
 			"include": "#keywords"
 		},
 		{
@@ -18,6 +21,9 @@
 			"include": "#operators"
 		},
 		{
+			"include": "#annotations"
+		},
+		{
 			"include": "#identifiers"
 		},
 		{
@@ -28,6 +34,30 @@
 		}
 	],
 	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"begin": "//",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.back"
+						}
+					},
+					"end": "$",
+					"name": "comment.line.double-slash.back"
+				},
+				{
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.back"
+						}
+					},
+					"end": "\\*/",
+					"name": "comment.line.block.back"
+				}
+			]
+		},
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.other.back",
@@ -62,6 +92,12 @@
 			"patterns": [{
 				"name": "keyword.control.back",
 				"match": "\\b(obj|u8|u16|u32|i32|i8|i16|i32|i64|f32|f64|f16|fraction|bool|string|char|SELF)\\b"
+			}]
+		},
+		"annotations": {
+			"patterns": [{
+				"name": "storage.type.annotation.back",
+				"match": "@\\w*"
 			}]
 		},
 		"strings": {
