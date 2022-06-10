@@ -1,4 +1,8 @@
-﻿func main() static -> none {
+﻿func cool(isCool: bool = true) static -> bool {
+	
+}
+
+func main() static -> none {
 	//hello world
 
 
@@ -44,7 +48,7 @@ implement Location {
 
 implement u8 {
 	func hello(some : u8) {
-		/*
+		
 	} 
 }
 
