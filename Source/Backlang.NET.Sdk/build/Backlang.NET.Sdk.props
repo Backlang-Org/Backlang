@@ -7,7 +7,7 @@
 		<BacklangToolFullPath Condition=" '$(BacklangToolFullPath)'=='' ">$(MSBuildThisFileDirectory)/../tools/Backlang.NET.Sdk.dll</BacklangToolFullPath>
 
 		<!-- project guid used by dotnet sln add -->
-		<!--TODO DefaultProjectTypeGuid Condition=" '$(DefaultProjectTypeGuid)' == '' ">{F2A71F9B-5D33-465A-A702-920D77279786}</DefaultProjectTypeGuid -->
+		<DefaultProjectTypeGuid Condition=" '$(DefaultProjectTypeGuid)' == '' ">{F2A71F9B-5D33-465A-A702-920D77279786}</DefaultProjectTypeGuid>
 
 		<!-- imported by common targets -->
 		<LanguageTargets>$(MSBuildThisFileDirectory)Backlang.NET.Current.Sdk.targets</LanguageTargets>

@@ -59,7 +59,7 @@ public sealed partial class Parser
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", parsePoints.Keys)}");
+            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(", ", parsePoints.Keys)}");
         }
     }
 
@@ -125,14 +125,16 @@ public sealed partial class Parser
             }
 
             Iterator.NextToken();
-        } else if (result.Value is double)
+        }
+        else if (result.Value is double)
         {
             result = LNode.Call(Symbols.Float64, LNode.List(result));
-        } else
+        }
+        else
         {
             result = LNode.Call(CodeSymbols.Int32, LNode.List(result));
         }
-        
+
         return result;
     }
 
