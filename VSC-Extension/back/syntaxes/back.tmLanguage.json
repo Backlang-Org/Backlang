@@ -96,8 +96,8 @@
 		},
 		"annotations": {
 			"patterns": [{
-				"name": "storage.type.annotation.back",
-				"match": "@\\w*"
+				"name": "storage.type.back",
+				"match": "@\\w*(\\([^)]*\\))?"
 			}]
 		},
 		"strings": {
