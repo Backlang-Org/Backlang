@@ -6,6 +6,7 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var keywordToken = iterator.Prev;
         var nameToken = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.OpenCurly);
@@ -38,6 +39,6 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members);
+        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members).WithRange(keywordToken, iterator.Prev);
     }
 }
