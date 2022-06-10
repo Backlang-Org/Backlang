@@ -20,7 +20,6 @@ public static class MethodBodyCompiler
             if (i.Prototype is CallPrototype callPrototype)
             {
                 var load = item.PreviousInstructionOrNull;
-                var constant = (ConstantPrototype)load.PreviousInstructionOrNull.Prototype;
                 var method = GetPrintMethod(load);
 
                 ilProcessor.Append(Instruction.Create(OpCodes.Call,
@@ -34,6 +33,23 @@ public static class MethodBodyCompiler
                 var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
 
                 AppendConstant(ilProcessor, consProto);
+            }
+            else if (i.Prototype is AllocaPrototype allocA)
+            {
+                var variable =
+                    new VariableDefinition(_assemblyDefinition.MainModule.ImportReference(typeof(int))); //ToDo: Resolve Variable Type
+
+                clrMethod.Body.Variables.Add(variable);
+
+                var store = item.NextInstructionOrNull?.Prototype;
+
+                if (store is ConstantPrototype sp)
+                {
+                    AppendConstant(ilProcessor, sp);
+                    ilProcessor.Append(Instruction.Create(OpCodes.Stloc, variable));
+
+                    clrMethod.Body.InitLocals = true;
+                }
             }
         }
 

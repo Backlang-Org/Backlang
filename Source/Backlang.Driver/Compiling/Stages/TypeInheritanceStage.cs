@@ -39,10 +39,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 context.Environment.TryMakeSignedIntegerType(32, out var elementType); // IntermediateStage.GetType(node.Args[0], context);
 
-                var local = block.AppendInstruction(
-                     Instruction.CreateAlloca(elementType));
-
                 var decl = node.Args[1];
+
+                var instruction = Instruction.CreateAlloca(elementType);
+                var local = block.AppendInstruction(instruction);
+
                 if (decl.Args[1].Args[0].HasValue)
                 {
                     block.AppendInstruction(
