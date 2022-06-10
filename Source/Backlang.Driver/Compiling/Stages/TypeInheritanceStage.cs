@@ -238,45 +238,39 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static Instruction ConvertExpression(IType elementType, object value)
     {
-        if (value is uint i)
+        Constant constant;
+        switch (value)
         {
-            return Instruction.CreateConstant(
-                                           new IntegerConstant(i, IntegerSpec.UInt32),
-                                           elementType);
-        }
-        else if (value is int intt)
-        {
-            return Instruction.CreateConstant(
-                                           new IntegerConstant(intt, IntegerSpec.Int32),
-                                           elementType);
-        }
-        else if (value is float ft)
-        {
-            return Instruction.CreateConstant(
-                                           new Float32Constant(ft),
-                                           elementType);
-        }
-        else if (value is double dt)
-        {
-            return Instruction.CreateConstant(
-                                           new Float64Constant(dt),
-                                           elementType);
-        }
-        else if (value is string str)
-        {
-            return Instruction.CreateConstant(
-                                           new StringConstant(str),
-                                           elementType);
-        }
-        else if (value is bool b)
-        {
-            return Instruction.CreateConstant(
-                                           BooleanConstant.Create(b),
-                                           elementType);
+            case uint i:
+                constant = new IntegerConstant(i, IntegerSpec.UInt32);
+                break;
+
+            case int intt:
+                constant = new IntegerConstant(intt, IntegerSpec.Int32);
+                break;
+
+            case float ft:
+                constant = new Float32Constant(ft);
+                break;
+
+            case double dt:
+                constant = new Float64Constant(dt);
+                break;
+
+            case string str:
+                constant = new StringConstant(str);
+                break;
+
+            case bool b:
+                constant = BooleanConstant.Create(b);
+                break;
+
+            default:
+                constant = NullConstant.Instance;
+                break;
         }
 
-        return Instruction.CreateConstant(
-                                           new IntegerConstant(0, IntegerSpec.UInt32),
+        return Instruction.CreateConstant(constant,
                                            elementType);
     }
 

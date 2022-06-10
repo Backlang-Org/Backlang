@@ -32,52 +32,58 @@ public static class MethodBodyCompiler
             }
             else if (i.Prototype is LoadPrototype ld)
             {
-                var vP = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
-                dynamic v = vP.Value;
+                var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
 
-                if (vP.ResultType.Name.ToString() == "String")
-                {
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, v.Value));
-                }
-                else if (vP.ResultType.Name.ToString() == "Byte")
-                {
-                    var ccc = (IntegerConstant)v;
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt8()));
-                }
-                else if (vP.ResultType.Name.ToString() == "Int16")
-                {
-                    var ccc = (IntegerConstant)v;
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt16()));
-                }
-                else if (vP.ResultType.Name.ToString() == "Int32")
-                {
-                    var ccc = (IntegerConstant)v;
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt32()));
-                }
-                else if (vP.ResultType.Name.ToString() == "Int64")
-                {
-                    var ccc = (IntegerConstant)v;
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I8, ccc.ToInt64()));
-                }
-                else if (vP.ResultType.Name.ToString() == "Float")
-                {
-                    var ccc = (Float32Constant)v;
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R4, ccc.Value));
-                }
-                else if (vP.ResultType.Name.ToString() == "Double")
-                {
-                    var ccc = (Float64Constant)v;
-                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R8, ccc.Value));
-                }
-                else if (vP.ResultType.Name.ToString() == "Boolean")
-                {
-                    ilProcessor.Append(Instruction.Create(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
-                }
+                AppendInstruction(ilProcessor, consProto);
             }
         }
 
         ilProcessor.Append(Instruction.Create(OpCodes.Ret));
 
         clrMethod.Body.MaxStackSize = 7;
+    }
+
+    private static void AppendInstruction(ILProcessor ilProcessor, ConstantPrototype consProto)
+    {
+        dynamic v = consProto.Value;
+
+        if (consProto.ResultType.Name.ToString() == "String")
+        {
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, v.Value));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Byte")
+        {
+            var ccc = (IntegerConstant)v;
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt8()));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Int16")
+        {
+            var ccc = (IntegerConstant)v;
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt16()));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Int32")
+        {
+            var ccc = (IntegerConstant)v;
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt32()));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Int64")
+        {
+            var ccc = (IntegerConstant)v;
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I8, ccc.ToInt64()));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Float")
+        {
+            var ccc = (Float32Constant)v;
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R4, ccc.Value));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Double")
+        {
+            var ccc = (Float64Constant)v;
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R8, ccc.Value));
+        }
+        else if (consProto.ResultType.Name.ToString() == "Boolean")
+        {
+            ilProcessor.Append(Instruction.Create(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
+        }
     }
 }
