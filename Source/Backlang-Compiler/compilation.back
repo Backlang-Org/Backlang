@@ -1,9 +1,12 @@
-﻿func main() static -> none {
+﻿
+@Log
+func main() static -> none {
 	//hello world
 
 
 }
 
+@Derive(Something)
 class abstract Person {
 	let name: string;
 
@@ -44,7 +47,7 @@ implement Location {
 
 implement u8 {
 	func hello(some : u8) {
-		/*
+		
 	} 
 }
 
