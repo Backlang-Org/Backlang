@@ -79,7 +79,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
 
             if (hasAnnotation)
             {
-                item = item.PlusAttr(annotation);
+                item = item.PlusAttrs(annotation);
             }
 
             body.Add(item);

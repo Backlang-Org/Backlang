@@ -16,26 +16,22 @@ public sealed class Annotation
             iterator.NextToken();
 
             args = Expression.ParseList(parser, TokenType.CloseParen);
-
-        
         }
 
         return SyntaxTree.Annotation(LNode.Call((Symbol)nameToken.Text, args));
     }
 
-    public static bool TryParse(Parser parser, out LNode node)
+    public static bool TryParse(Parser parser, out LNodeList node)
     {
-        var isAnnotation = parser.Iterator.IsMatch(TokenType.At) && parser.Iterator.Peek(1).Type == TokenType.Identifier;
+        var annotations = new LNodeList();
+        var isAnnotation = () => parser.Iterator.IsMatch(TokenType.At) && parser.Iterator.Peek(1).Type == TokenType.Identifier;
 
-        if (isAnnotation)
+        while (isAnnotation())
         {
-            node = Parse(parser.Iterator, parser);
+            annotations.Add(Parse(parser.Iterator, parser));
         }
-        else
-        {
-            node = LNode.Missing;
-        }
+        node = annotations;
 
-        return isAnnotation;
+        return annotations.Count > 0;
     }
 }
