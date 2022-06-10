@@ -7,6 +7,7 @@ func main() static -> none {
 }
 
 @Derive(Something)
+@DoSomeWork
 class abstract Person {
 	let name: string;
 
@@ -21,7 +22,8 @@ implement VeryImportantPerson {
 	func hehe() override -> string { }
 }
 
-class static private Point {
+struct static private Point {
+	@Useful
 	let mut x: i32 = 0;
 	let mut y: i32 = 1;
 	let mut z: i32;
@@ -32,11 +34,12 @@ interface ISerializable {
 }
 
 class Location : Point, ISerializable {
+	@Transform
 	let worldName: string = "world"; 
 }
 
 implement Location {
-	func new(x: i32, y: i32, z: i32, worldName: string) static -> Location {
+	func new(@FieldTransform() x: i32, y: i32, z: i32, worldName: string) static -> Location {
 		
 	}
 	
@@ -52,5 +55,7 @@ implement u8 {
 }
 
 enum Days {
-	Monday = 1, Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
+	@Description("First Day Of Week")
+	Monday = 1, 
+	Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
 }
