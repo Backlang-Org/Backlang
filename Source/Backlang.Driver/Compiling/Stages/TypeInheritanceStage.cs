@@ -37,9 +37,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                context.Environment.TryMakeSignedIntegerType(32, out var elementType); // IntermediateStage.GetType(node.Args[0], context);
-
                 var decl = node.Args[1];
+
+                //ToDo: Fix IR Typ resolving
+                var elementType = new DescribedType(new SimpleName(node.Args[0].Args[0].Name.ToString().Replace("#", "")).Qualify("System"), parentType.GetDefiningAssemblyOrNull());
 
                 var instruction = Instruction.CreateAlloca(elementType);
                 var local = block.AppendInstruction(instruction);

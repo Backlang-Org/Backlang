@@ -1,15 +1,15 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Reflection;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static void Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition _assemblyDefinition)
+    public static void Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
@@ -20,10 +20,10 @@ public static class MethodBodyCompiler
             if (i.Prototype is CallPrototype callPrototype)
             {
                 var load = item.PreviousInstructionOrNull;
-                var method = GetPrintMethod(load);
+                var method = GetPrintMethod(assemblyDefinition, load);
 
                 ilProcessor.Append(Instruction.Create(OpCodes.Call,
-                    _assemblyDefinition.MainModule.ImportReference(
+                    assemblyDefinition.MainModule.ImportReference(
                         method
                         )
                     ));
@@ -36,9 +36,10 @@ public static class MethodBodyCompiler
             }
             else if (i.Prototype is AllocaPrototype allocA)
             {
-                var variable =
-                    new VariableDefinition(_assemblyDefinition.MainModule.ImportReference(typeof(int))); //ToDo: Resolve Variable Type
+                var elementType = ImportType(assemblyDefinition, allocA.ElementType);
 
+                var variable =
+                    new VariableDefinition(assemblyDefinition.MainModule.ImportReference(elementType));
                 clrMethod.Body.Variables.Add(variable);
 
                 var store = item.NextInstructionOrNull?.Prototype;
@@ -132,15 +133,17 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static MethodInfo GetPrintMethod(Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
+    private static MethodReference GetPrintMethod(AssemblyDefinition assemblyDefinition, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
     {
         var callPrototype = (CallPrototype)load.NextInstructionOrNull.Prototype;
 
-        foreach (var method in typeof(Console).GetMethods())
-        {
-            var parameters = method.GetParameters();
+        var parentType = ImportType(assemblyDefinition, callPrototype.Callee.ParentType).Resolve();
 
-            if (method.Name == callPrototype.Callee.Name.ToString() && parameters.Length == 1)
+        foreach (var method in parentType.Methods)
+        {
+            var parameters = method.Parameters;
+
+            if (method.Name == callPrototype.Callee.Name.ToString() && parameters.Count == 1)
             {
                 if (MatchesParameters(parameters, load))
                 {
@@ -152,10 +155,30 @@ public static class MethodBodyCompiler
         return null;
     }
 
-    private static bool MatchesParameters(ParameterInfo[] parameters, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
+    //ToDo: only works for types from corlib - primitive types must be converted to clr types
+    private static TypeReference ImportType(AssemblyDefinition _assemblyDefinition, IType type)
+    {
+        foreach (var ar in _assemblyDefinition.MainModule.AssemblyReferences)
+        {
+            var tr = new TypeReference(type.FullName.Qualifier.ToString(), type.Name.ToString(),
+            _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar,
+                 new ReaderParameters()).MainModule, ar).Resolve();
+
+            if (tr != null)
+            {
+                return tr;
+            }
+        }
+
+        return new TypeReference(type.FullName.Qualifier.ToString(), type.Name.ToString(),
+            _assemblyDefinition.MainModule.AssemblyResolver.Resolve(_assemblyDefinition.MainModule.AssemblyReferences.First(),
+                 new ReaderParameters()).MainModule, _assemblyDefinition.MainModule.AssemblyReferences.First());
+    }
+
+    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
     {
         bool matches = false;
-        for (int i = 0; i < parameters.Length; i++)
+        for (int i = 0; i < parameters.Count; i++)
         {
             if (parameters[i].ParameterType.Name == load.ResultType.Name.ToString())
             {
