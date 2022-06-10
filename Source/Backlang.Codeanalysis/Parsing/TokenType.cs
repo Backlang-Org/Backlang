@@ -161,6 +161,9 @@ public enum TokenType
     [Lexeme("]")]
     CloseSquare,
 
+    [Lexeme("@")]
+    At,
+
     [Keyword("true")]
     TrueLiteral,
 
