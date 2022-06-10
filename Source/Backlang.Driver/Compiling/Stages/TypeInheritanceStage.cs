@@ -278,7 +278,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var name = assignment.Args[0].Name;
 
-        return new Parameter(type, name.ToString());
+        var param = new Parameter(type, name.ToString());
+
+        if (!assignment.Args[1].Args.IsEmpty)
+        {
+            param.HasDefault = true;
+            param.DefaultValue = assignment.Args[1].Args[0].Value;
+        }
+
+        return param;
     }
 
     private static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)

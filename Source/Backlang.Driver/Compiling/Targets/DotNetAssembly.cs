@@ -206,8 +206,13 @@ public class DotNetAssembly : ITargetAssembly
 
         foreach (var p in m.Parameters)
         {
-            clrMethod.Parameters.Add(new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None,
-                Resolve(p.Type.FullName)));
+            var param = new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None, Resolve(p.Type.FullName));
+            if (p.HasDefault)
+            {
+                param.Constant = p.DefaultValue;
+                param.IsOptional = true;
+            }
+            clrMethod.Parameters.Add(param);
         }
 
         clrMethod.IsStatic = m.IsStatic;
