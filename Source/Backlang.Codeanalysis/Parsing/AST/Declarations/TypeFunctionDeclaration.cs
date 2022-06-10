@@ -10,6 +10,6 @@ public sealed class TypeFunctionDeclaration
         var result = Signature.Parse(parser);
         iterator.Match(TokenType.Semicolon);
 
-        return result.WithRange(keywordToken, iterator.Prev);
+        return result;
     }
 }

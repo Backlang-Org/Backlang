@@ -56,7 +56,7 @@ public sealed partial class Parser
         {
             Iterator.NextToken();
 
-            return parsePoints[type](Iterator, this).WithRange(token, Iterator.Current);
+            return parsePoints[type](Iterator, this);
         }
         else
         {
@@ -78,22 +78,20 @@ public sealed partial class Parser
             result += (int)Math.Pow(2, i);
         }
 
-        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result)))
-            .WithRange(Iterator.Prev);
+        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result)));
     }
 
     private LNode ParseBooleanLiteral(bool value)
     {
         Iterator.NextToken();
 
-        return LNode.Call(CodeSymbols.Bool, LNode.List(SyntaxTree.Factory.Literal(value)))
-            .WithRange(Iterator.Prev);
+        return LNode.Call(CodeSymbols.Bool, LNode.List(SyntaxTree.Factory.Literal(value)));
     }
 
     private LNode ParseChar()
     {
         return LNode.Call(CodeSymbols.Char,
-            LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]))).WithRange(Iterator.Prev);
+            LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0])));
     }
 
     private LNode ParseHexNumber()
@@ -101,8 +99,7 @@ public sealed partial class Parser
         var valueToken = Iterator.NextToken();
 
         return LNode.Call(CodeSymbols.Int32,
-            LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber))))
-            .WithRange(Iterator.Prev);
+            LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber))));
     }
 
     private LNode ParseNumber()
@@ -112,12 +109,11 @@ public sealed partial class Parser
         LNode result;
         if (text.Contains('.'))
         {
-            result = SyntaxTree.Factory.Literal(double.Parse(text, CultureInfo.InvariantCulture))
-                .WithRange(Iterator.Prev);
+            result = SyntaxTree.Factory.Literal(double.Parse(text, CultureInfo.InvariantCulture));
         }
         else
         {
-            result = SyntaxTree.Factory.Literal(int.Parse(text)).WithRange(Iterator.Prev);
+            result = SyntaxTree.Factory.Literal(int.Parse(text));
         }
 
         if (Iterator.Current.Type == TokenType.Identifier)
@@ -125,7 +121,7 @@ public sealed partial class Parser
             if (_lits.ContainsKey(Iterator.Current.Text.ToLower()))
             {
                 result = LNode.Call(_lits[Iterator.Current.Text.ToLower()],
-                    LNode.List(result)).WithRange(Iterator.Prev, Iterator.Current);
+                    LNode.List(result));
             }
             else
             {
@@ -152,7 +148,6 @@ public sealed partial class Parser
     private LNode ParseString()
     {
         var valueToken = Iterator.NextToken();
-        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(valueToken.Text)))
-            .WithRange(valueToken);
+        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(valueToken.Text)));
     }
 }

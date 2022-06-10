@@ -9,6 +9,6 @@ public sealed class BreakStatement : IParsePoint<LNode>
         var keywordToken = iterator.Prev;
         iterator.Match(TokenType.Semicolon);
 
-        return LNode.Call(CodeSymbols.Break).WithRange(keywordToken, iterator.Prev);
+        return LNode.Call(CodeSymbols.Break);
     }
 }

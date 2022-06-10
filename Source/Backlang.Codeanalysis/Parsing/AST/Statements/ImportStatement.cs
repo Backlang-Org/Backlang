@@ -13,6 +13,6 @@ public sealed class ImportStatement : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return tree.WithRange(keywordToken, iterator.Prev);
+        return tree;
     }
 }

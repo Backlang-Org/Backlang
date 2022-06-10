@@ -80,7 +80,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         return context.Assembly.Types
             .First(_ => _.Name.ToString() == Names.ProgramClass)
-            .Methods.First(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+            .Methods.First(_ => _.Name.ToString().Equals(Names.MainMethod) && _.IsStatic);
     }
 
     private void AddTarget<T>()

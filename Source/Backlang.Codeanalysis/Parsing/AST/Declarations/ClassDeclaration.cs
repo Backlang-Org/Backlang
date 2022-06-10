@@ -40,6 +40,6 @@ public sealed class ClassDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Class(name, inheritances, members).WithAttrs(attributes).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Class(name, inheritances, members).WithAttrs(attributes);
     }
 }

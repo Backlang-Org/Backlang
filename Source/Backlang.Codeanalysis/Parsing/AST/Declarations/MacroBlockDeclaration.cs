@@ -6,7 +6,7 @@ public sealed class MacroBlockDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var nameExpression = LNode.Id(iterator.Current.Text).WithRange(iterator.Current);
+        var nameExpression = LNode.Id(iterator.Current.Text);
         iterator.NextToken();
 
         if (iterator.Current.Type == TokenType.OpenParen)

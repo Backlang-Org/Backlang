@@ -29,6 +29,6 @@ public sealed class InterfaceDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Interface(name, inheritances, members).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Interface(name, inheritances, members);
     }
 }

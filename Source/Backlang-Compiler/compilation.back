@@ -1,8 +1,11 @@
+class static kkkkkkk {}
+
+
 func cool(isCool: bool = true) static -> bool {
 	
 }
 
-@Log
+
 func main() static -> none {
 	//hello world
 

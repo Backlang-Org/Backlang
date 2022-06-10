@@ -49,7 +49,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         parser.Iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Switch(element, cases).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Switch(element, cases);
     }
 
     private static LNode ParseCase(Parser parser, bool autoBreak)
@@ -65,7 +65,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         if (autoBreak)
             body = body.Add(LNode.Call(CodeSymbols.Break));
 
-        return SyntaxTree.Case(condition, body).WithRange(keywordToken, parser.Iterator.Prev);
+        return SyntaxTree.Case(condition, body);
     }
 
     private static LNode ParseDefault(Parser parser, bool autoBreak)

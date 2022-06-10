@@ -25,7 +25,6 @@ public sealed class ForStatement : IParsePoint<LNode>
         var collExpr = Expression.Parse(parser);
         var body = Statement.ParseOneOrBlock(parser);
 
-        return SyntaxTree.For(SyntaxTree.Factory.Tuple(varExpr, type), collExpr, body)
-            .WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.For(SyntaxTree.Factory.Tuple(varExpr, type), collExpr, body);
     }
 }

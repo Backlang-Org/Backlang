@@ -55,6 +55,6 @@ public class ImplementationDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.ImplDecl(target, body, isStatic).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.ImplDecl(target, body, isStatic);
     }
 }

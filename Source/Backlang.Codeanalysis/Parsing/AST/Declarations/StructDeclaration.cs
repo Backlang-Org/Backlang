@@ -39,7 +39,6 @@ public sealed class StructDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Struct(name, inheritances, members).WithAttrs(attributes)
-            .WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Struct(name, inheritances, members).WithAttrs(attributes);
     }
 }

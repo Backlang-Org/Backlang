@@ -10,7 +10,7 @@ public sealed class FunctionDeclaration : IParsePoint<LNode>
         var keywordToken = iterator.Prev;
         var signature = Signature.Parse(parser);
 
-        return signature.PlusArg(LNode.Call(CodeSymbols.Braces, Statement.ParseBlock(parser))
-            .SetStyle(NodeStyle.StatementBlock)).WithRange(keywordToken, iterator.Prev);
+        return signature.WithAttrs(signature.Attrs).PlusArg(LNode.Call(CodeSymbols.Braces, Statement.ParseBlock(parser))
+            .SetStyle(NodeStyle.StatementBlock));
     }
 }

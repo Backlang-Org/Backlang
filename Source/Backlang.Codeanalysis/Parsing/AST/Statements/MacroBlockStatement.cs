@@ -22,7 +22,7 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
                 arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
                 return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
-                    .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
+                    .SetStyle(NodeStyle.Special);
             }
 
             return LNode.Call(nameExpression, arguments);
@@ -35,7 +35,7 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
             arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
             return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
-                .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
+                .SetStyle(NodeStyle.Special);
         }
 
         return LNode.Missing;

@@ -26,6 +26,6 @@ public sealed class BitFieldDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Bitfield(name, members).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Bitfield(name, members);
     }
 }

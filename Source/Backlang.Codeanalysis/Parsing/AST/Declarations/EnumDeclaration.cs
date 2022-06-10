@@ -39,6 +39,6 @@ public sealed class EnumDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Enum(LNode.Id(nameToken.Text), members);
     }
 }

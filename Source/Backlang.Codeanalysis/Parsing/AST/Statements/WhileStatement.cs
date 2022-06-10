@@ -12,6 +12,6 @@ public sealed class WhileStatement : IParsePoint<LNode>
         var cond = Expression.Parse(parser);
         var body = Statement.ParseOneOrBlock(parser);
 
-        return SyntaxTree.While(cond, body).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.While(cond, body);
     }
 }

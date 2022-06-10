@@ -24,7 +24,6 @@ public sealed class ParameterDeclaration : IParsePoint<LNode>
             defaultValue = Expression.Parse(parser);
         }
 
-        return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations)
-            .WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations);
     }
 }

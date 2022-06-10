@@ -29,6 +29,6 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return SyntaxTree.Using(from, LNode.Id((Symbol)to)).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Using(from, LNode.Id((Symbol)to));
     }
 }

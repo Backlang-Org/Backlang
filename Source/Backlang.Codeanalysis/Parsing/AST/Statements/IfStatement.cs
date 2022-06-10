@@ -19,6 +19,6 @@ public sealed class IfStatement : IParsePoint<LNode>
             elseBlock = Statement.ParseOneOrBlock(parser);
         }
 
-        return SyntaxTree.If(cond, body, elseBlock).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.If(cond, body, elseBlock);
     }
 }
