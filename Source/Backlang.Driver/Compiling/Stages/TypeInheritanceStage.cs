@@ -51,7 +51,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                            elementType,
                            local,
                            block.AppendInstruction(
-                               ConvertExpression(elementType, decl.Args[1].Value))));
+                               ConvertExpression(elementType, decl.Args[1].Args[0].Value))));
                 }
             }
             else if (node.Name == (Symbol)"print")
@@ -147,8 +147,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     public static IType GetLiteralType(object value, TypeResolver resolver)
     {
         if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
-        if (value is IdNode id) { } //todo: symbol table
+        else if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
+        else if (value is byte) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
+        else if (value is short) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
+        else if (value is int) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
+        else if (value is long) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
+        else if (value is float) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
+        else if (value is double) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
+        else if (value is IdNode id) { } //todo: symbol table
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
     }
@@ -236,6 +242,24 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             return Instruction.CreateConstant(
                                            new IntegerConstant(i, IntegerSpec.UInt32),
+                                           elementType);
+        }
+        else if (value is int intt)
+        {
+            return Instruction.CreateConstant(
+                                           new IntegerConstant(intt, IntegerSpec.Int32),
+                                           elementType);
+        }
+        else if (value is float ft)
+        {
+            return Instruction.CreateConstant(
+                                           new Float32Constant(ft),
+                                           elementType);
+        }
+        else if (value is double dt)
+        {
+            return Instruction.CreateConstant(
+                                           new Float64Constant(dt),
                                            elementType);
         }
         else if (value is string str)

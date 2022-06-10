@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Instructions;
+﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -37,6 +38,36 @@ public static class MethodBodyCompiler
                 if (vP.ResultType.Name.ToString() == "String")
                 {
                     ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, v.Value));
+                }
+                else if (vP.ResultType.Name.ToString() == "Byte")
+                {
+                    var ccc = (IntegerConstant)v;
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt8()));
+                }
+                else if (vP.ResultType.Name.ToString() == "Int16")
+                {
+                    var ccc = (IntegerConstant)v;
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt16()));
+                }
+                else if (vP.ResultType.Name.ToString() == "Int32")
+                {
+                    var ccc = (IntegerConstant)v;
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt32()));
+                }
+                else if (vP.ResultType.Name.ToString() == "Int64")
+                {
+                    var ccc = (IntegerConstant)v;
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I8, ccc.ToInt64()));
+                }
+                else if (vP.ResultType.Name.ToString() == "Float")
+                {
+                    var ccc = (Float32Constant)v;
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R4, ccc.Value));
+                }
+                else if (vP.ResultType.Name.ToString() == "Double")
+                {
+                    var ccc = (Float64Constant)v;
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R8, ccc.Value));
                 }
                 else if (vP.ResultType.Name.ToString() == "Boolean")
                 {
