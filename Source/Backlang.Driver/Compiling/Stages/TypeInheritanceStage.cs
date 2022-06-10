@@ -59,12 +59,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 var method = context.writeMethods.FirstOrDefault();
                 var constant = block.AppendInstruction(
                     ConvertExpression(
-                        GetLiteralType(node.Args[0].Value, context.Binder),
-                    node.Args[0].Value.ToString()));
+                        GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
+                    node.Args[0].Args[0].Value.ToString()));
 
                 var str = block.AppendInstruction(
                     Instruction.CreateLoad(
-                        GetLiteralType(node.Args[0].Value, context.Binder), constant));
+                        GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
 
                 block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
             }
@@ -97,11 +97,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
-        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
         {
             method.IsOverride = true;
         }
-        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
         {
             method.SetAttr(true, Attributes.Extern);
         }
@@ -317,7 +317,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
 
                 type.AddField(field);
-            } else if (member.Calls(CodeSymbols.Fn))
+            }
+            else if (member.Calls(CodeSymbols.Fn))
             {
                 string methodName = member.Args[1].Name.Name;
                 var method = new DescribedBodyMethod(type,
@@ -328,7 +329,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 if (member.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
                 {
                     method.IsPrivate = true;
-                } else
+                }
+                else
                 {
                     method.IsPublic = true;
                 }
