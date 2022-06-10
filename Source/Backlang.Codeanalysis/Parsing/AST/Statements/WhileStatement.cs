@@ -7,10 +7,11 @@ public sealed class WhileStatement : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         // while true { 42; }
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
+
         var cond = Expression.Parse(parser);
         var body = Statement.ParseOneOrBlock(parser);
 
-        return SyntaxTree.While(cond, body).WithRange(keywordToken, iterator.Peek(-1));
+        return SyntaxTree.While(cond, body).WithRange(keywordToken, iterator.Prev);
     }
 }

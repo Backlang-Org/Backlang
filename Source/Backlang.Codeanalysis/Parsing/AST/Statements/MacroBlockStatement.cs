@@ -21,9 +21,8 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
                 var body = Statement.ParseBlock(parser);
                 arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
-                return LNode.Call(nameExpression, arguments)
-                    .SetStyle(NodeStyle.StatementBlock).SetStyle(NodeStyle.Special)
-                    .WithRange(nameToken, iterator.Peek(-1));
+                return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
+                    .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
             }
 
             return LNode.Call(nameExpression, arguments).WithRange(nameToken, iterator.Peek(-1));
@@ -35,9 +34,8 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
             var arguments = LNode.List(LNode.Missing);
             arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
-            return LNode.Call(nameExpression, arguments)
-                .SetStyle(NodeStyle.StatementBlock).SetStyle(NodeStyle.Special)
-                .WithRange(nameToken, iterator.Peek(-1));
+            return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
+                .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
         }
 
         return LNode.Missing;

@@ -6,7 +6,7 @@ public sealed class InterfaceDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         var name = iterator.Match(TokenType.Identifier).Text;
         var inheritances = new LNodeList();
         var members = new LNodeList();
@@ -24,14 +24,11 @@ public sealed class InterfaceDeclaration : IParsePoint<LNode>
 
         while (iterator.Current.Type != TokenType.CloseCurly)
         {
-            iterator.Match(TokenType.Function);
-            members.Add(Signature.Parse(parser));
-            iterator.Match(TokenType.Semicolon);
+            members.Add(TypeFunctionDeclaration.Parse(iterator, parser));
         }
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Interface(name, inheritances, members)
-            .WithRange(keywordToken, iterator.Peek(-1));
+        return SyntaxTree.Interface(name, inheritances, members).WithRange(keywordToken, iterator.Prev);
     }
 }

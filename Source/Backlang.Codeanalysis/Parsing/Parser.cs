@@ -27,7 +27,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
         AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
-        AddDeclarationParsePoint<UsingDeclaration>(TokenType.Using);
+        AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Using);
         AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Hash);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
@@ -41,7 +41,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddStatementParsePoint<BreakStatement>(TokenType.Break);
         AddStatementParsePoint<ContinueStatement>(TokenType.Continue);
         AddStatementParsePoint<ReturnStatement>(TokenType.Return);
-        AddStatementParsePoint<VariableDeclaration>(TokenType.Let);
+        AddStatementParsePoint<VariableStatement>(TokenType.Declare);
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
@@ -73,7 +73,15 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         var body = new LNodeList();
         while (Iterator.Current.Type != terminator)
         {
+            var hasAnnotation = Annotation.TryParse(this, out var annotation);
+
             var item = InvokeParsePoint(DeclarationParsePoints);
+
+            if (hasAnnotation)
+            {
+                item = item.PlusAttrs(annotation);
+            }
+
             body.Add(item);
         }
 

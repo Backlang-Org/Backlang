@@ -6,7 +6,8 @@ public class ImplementationDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
+
         bool isStatic = false;
         if (iterator.Current.Type == TokenType.Static)
         {
@@ -54,6 +55,6 @@ public class ImplementationDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.ImplDecl(target, body, isStatic).WithRange(keywordToken, iterator.Peek(-1));
+        return SyntaxTree.ImplDecl(target, body, isStatic).WithRange(keywordToken, iterator.Prev);
     }
 }

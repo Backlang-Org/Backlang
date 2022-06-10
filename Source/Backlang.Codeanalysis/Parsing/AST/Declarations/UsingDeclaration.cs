@@ -3,12 +3,12 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class UsingDeclaration : IParsePoint<LNode>
+public sealed class TypeAliasDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         // using <expression> as <identifier>
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         var from = Expression.Parse(parser);
 
         iterator.Match(TokenType.As);
@@ -29,6 +29,6 @@ public sealed class UsingDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return SyntaxTree.Using(from, LNode.Id((Symbol)to)).WithRange(keywordToken, iterator.Peek(-1));
+        return SyntaxTree.Using(from, LNode.Id((Symbol)to)).WithRange(keywordToken, iterator.Prev);
     }
 }

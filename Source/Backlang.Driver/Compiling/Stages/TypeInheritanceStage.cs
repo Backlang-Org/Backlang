@@ -88,6 +88,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         string methodName = function.Args[1].Name.Name;
 
+        if (methodName == "main") methodName = "Main";
+
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
             function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
@@ -95,6 +97,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
             method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+        }
+        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
+        {
+            method.IsOverride = true;
+        }
+        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
+        {
+            method.SetAttr(true, Attributes.Extern);
         }
 
         var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
@@ -168,7 +178,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree)
     {
         var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
 
@@ -240,7 +250,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                                            elementType);
     }
 
-    private static void ConvertFreeFunctions(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
     {
         var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
 
@@ -251,6 +261,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
             {
                 type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(context.Assembly.Name), context.Assembly);
+                type.IsStatic = true;
+
                 context.Assembly.AddType(type);
             }
             else
@@ -264,34 +276,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertInterfaceMethods(LNode methods, DescribedType type, CompilerContext context)
-    {
-        foreach (var function in methods.Args)
-        {
-            if (function.Calls(CodeSymbols.Fn))
-            {
-                string methodName = function.Args[1].Name.Name;
-                var method = new DescribedBodyMethod(type,
-                    new QualifiedName(methodName).FullyUnqualifiedName,
-                    function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
-                method.Body = null;
-
-                var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
-                if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-                {
-                    modifier = AccessModifierAttribute.Create(AccessModifier.Private);
-                }
-
-                method.AddAttribute(modifier);
-
-                AddParameters(method, function, context);
-                SetReturnType(method, function, context);
-
-                type.AddMethod(method);
-            }
-        }
-    }
-
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
     {
         var type = IntermediateStage.GetType(p.Args[0], context);
@@ -299,10 +283,18 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var name = assignment.Args[0].Name;
 
-        return new Parameter(type, name.ToString());
+        var param = new Parameter(type, name.ToString());
+
+        if (!assignment.Args[1].Args.IsEmpty)
+        {
+            param.HasDefault = true;
+            param.DefaultValue = assignment.Args[1].Args[0].Value;
+        }
+
+        return param;
     }
 
-    private static void ConvertStructMembers(LNode members, DescribedType type, CompilerContext context)
+    private static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
     {
         foreach (var member in members.Args)
         {
@@ -320,17 +312,42 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 {
                     field.InitialValue = mvalue.Args[0].Value;
                 }
-                if (member.Attrs.Contains(Symbols.Mutable))
+                if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
                     field.AddAttribute(Attributes.Mutable);
                 }
 
                 type.AddField(field);
+            } else if (member.Calls(CodeSymbols.Fn))
+            {
+                string methodName = member.Args[1].Name.Name;
+                var method = new DescribedBodyMethod(type,
+                    new QualifiedName(methodName).FullyUnqualifiedName,
+                    member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+                method.Body = null;
+
+                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+                {
+                    method.IsPrivate = true;
+                } else
+                {
+                    method.IsPublic = true;
+                }
+
+                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+                {
+                    method.AddAttribute(FlagAttribute.Abstract);
+                }
+
+                AddParameters(method, member, context);
+                SetReturnType(method, member, context);
+
+                type.AddMethod(method);
             }
         }
     }
 
-    private static void ConvertTypesOrInterface(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree)
     {
         var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
 
@@ -347,14 +364,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName(inheritance.Name.Name).Qualify(context.Assembly.Name)).First());
             }
 
-            if (st.Name != CodeSymbols.Interface)
-            {
-                ConvertStructMembers(members, type, context);
-            }
-            else
-            {
-                ConvertInterfaceMethods(members, type, context);
-            }
+            ConvertTypeMembers(members, type, context);
         }
     }
 

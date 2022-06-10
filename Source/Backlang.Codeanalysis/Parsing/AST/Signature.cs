@@ -26,34 +26,13 @@ public sealed class Signature
 
         LNode returnType = LNode.Missing;
 
-        LNodeList attributes = new();
-
         iterator.Match(TokenType.OpenParen);
 
         var parameters = ParseParameterDeclarations(iterator, parser);
 
         iterator.Match(TokenType.CloseParen);
 
-        if (iterator.Current.Type == TokenType.Static)
-        {
-            iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Static));
-        }
-
-        if (iterator.Current.Type == TokenType.Private)
-        {
-            iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Private));
-        }
-
-        if (iterator.Current.Type == TokenType.Operator)
-        {
-            iterator.NextToken();
-
-            attributes.Add(LNode.Id(CodeSymbols.Operator));
-        }
+        LNodeList attributes = ParseAttributes(parser);
 
         if (iterator.Current.Type == TokenType.Arrow)
         {
@@ -85,5 +64,33 @@ public sealed class Signature
         }
 
         return parameters;
+    }
+
+    private static Dictionary<TokenType, Symbol> possibleAttributes = new() {
+        { TokenType.Static, CodeSymbols.Static },
+        { TokenType.Private, CodeSymbols.Private },
+        { TokenType.Operator, CodeSymbols.Operator },
+        { TokenType.Abstract, CodeSymbols.Abstract },
+        { TokenType.Override, CodeSymbols.Override },
+        { TokenType.Extern, CodeSymbols.Extern }
+    };
+    public static LNodeList ParseAttributes(Parser parser)
+    {
+        LNodeList attributes = new();
+
+        TokenType current;
+        while (possibleAttributes.ContainsKey(current = parser.Iterator.Current.Type))
+        {
+            var attrib = LNode.Id(possibleAttributes[current]);
+            parser.Iterator.NextToken();
+            if(attributes.Contains(attrib))
+            {
+                parser.Messages.Add(Message.Error(parser.Document, $"Modifier '{attrib.Name.Name}' is already applied", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+                continue;
+            }
+            attributes.Add(attrib);
+        }
+
+        return attributes;
     }
 }

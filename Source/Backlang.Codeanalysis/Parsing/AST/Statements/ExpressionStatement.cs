@@ -10,6 +10,6 @@ public sealed class ExpressionStatement : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return expr.WithRange(expr.Range.StartIndex, iterator.Peek(-1).End);
+        return expr.WithRange(expr.Range.StartIndex, iterator.Prev.End);
     }
 }

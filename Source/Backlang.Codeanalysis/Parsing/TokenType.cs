@@ -161,6 +161,9 @@ public enum TokenType
     [Lexeme("]")]
     CloseSquare,
 
+    [Lexeme("@")]
+    At,
+
     [Keyword("true")]
     TrueLiteral,
 
@@ -259,6 +262,15 @@ public enum TokenType
 
     [Keyword("static")]
     Static,
+
+    [Keyword("abstract")]
+    Abstract,
+
+    [Keyword("extern")]
+    Extern,
+
+    [Keyword("override")]
+    Override,
 
     [Keyword("of")]
     Of,

@@ -14,6 +14,7 @@ public sealed class TokenIterator
     }
 
     public Token Current => Peek(0);
+    public Token Prev => Peek(-1);
 
     public bool IsMatch(TokenType kind)
     {

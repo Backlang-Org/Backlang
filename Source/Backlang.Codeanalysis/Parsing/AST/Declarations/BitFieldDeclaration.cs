@@ -6,7 +6,7 @@ public sealed class BitFieldDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         var name = iterator.Match(TokenType.Identifier).Text;
 
         iterator.Match(TokenType.OpenCurly);
@@ -26,6 +26,6 @@ public sealed class BitFieldDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Bitfield(name, members).WithRange(keywordToken, iterator.Peek(-1));
+        return SyntaxTree.Bitfield(name, members).WithRange(keywordToken, iterator.Prev);
     }
 }

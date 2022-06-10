@@ -8,12 +8,11 @@ public sealed class ImportStatement : IParsePoint<LNode>
     {
         //import <identifier>
         //import <identifier>.<identifier>
-
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         var tree = SyntaxTree.Import(Expression.Parse(parser));
 
         iterator.Match(TokenType.Semicolon);
 
-        return tree.WithRange(keywordToken, iterator.Peek(-1));
+        return tree.WithRange(keywordToken, iterator.Prev);
     }
 }

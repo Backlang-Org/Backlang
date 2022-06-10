@@ -3,12 +3,11 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class ConstVariableDeclaration : IParsePoint<LNode>
+public sealed class TypeFieldDeclaration
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var decl = VariableStatement.Parse(iterator, parser);
-
-        return decl.WithAttrs(LNode.Id(CodeSymbols.Const));
+        iterator.Match(TokenType.Declare);
+        return VariableStatement.Parse(iterator, parser);
     }
 }

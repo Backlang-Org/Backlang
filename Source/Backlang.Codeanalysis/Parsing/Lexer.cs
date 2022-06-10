@@ -291,6 +291,8 @@ public sealed class Lexer : BaseLexer
                 Advance();
                 _column++;
             }
+
+            SkipWhitespaces();
         }
         else if (IsMatch("/*"))
         {
@@ -301,14 +303,14 @@ public sealed class Lexer : BaseLexer
             _column++;
             _column++;
 
-            while (!IsMatch("*/") && Current() != '\0')
+            while (!IsMatch("*/"))
             {
+                if(Current() == '\0')
+                {
+                    break;
+                }
                 Advance();
-            }
-
-            if (Current() == '\0')
-            {
-                Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
+                _column++;
             }
 
             if (IsMatch("*/"))
@@ -318,6 +320,10 @@ public sealed class Lexer : BaseLexer
 
                 Advance();
                 _column++;
+            } else
+            {
+                Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
+                return;
             }
 
             SkipWhitespaces();

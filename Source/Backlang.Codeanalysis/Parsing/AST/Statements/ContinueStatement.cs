@@ -6,9 +6,9 @@ public sealed class ContinueStatement : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         iterator.Match(TokenType.Semicolon);
 
-        return LNode.Call(CodeSymbols.Continue).WithRange(keywordToken, iterator.Peek(-1));
+        return LNode.Call(CodeSymbols.Continue).WithRange(keywordToken, iterator.Prev);
     }
 }

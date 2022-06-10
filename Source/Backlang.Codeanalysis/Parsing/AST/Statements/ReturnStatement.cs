@@ -6,7 +6,7 @@ public sealed class ReturnStatement : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         var arguments = LNode.List();
 
         if (!iterator.IsMatch(TokenType.Semicolon))
@@ -16,6 +16,6 @@ public sealed class ReturnStatement : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return LNode.Call(CodeSymbols.Return, arguments).WithRange(keywordToken, iterator.Peek(-1));
+        return LNode.Call(CodeSymbols.Return, arguments).WithRange(keywordToken, iterator.Prev);
     }
 }

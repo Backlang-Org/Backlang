@@ -8,6 +8,11 @@ public static class SyntaxTree
 {
     public static LNodeFactory Factory = new(EmptySourceFile.Unknown);
 
+    public static LNode Annotation(LNode call)
+    {
+        return LNode.Call(Symbols.Annotation, LNode.List(call));
+    }
+
     public static LNode Array(LNode typeNode, int dimensions)
     {
         return LNode.Call(CodeSymbols.Array, LNode.List(typeNode, LNode.Literal(dimensions)));

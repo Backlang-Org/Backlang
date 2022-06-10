@@ -7,7 +7,7 @@ public sealed class TryStatement : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         // try {} catch (Exception e) {} catch (Exception e) {} finally {}
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
         var body = Statement.ParseOneOrBlock(parser);
         LNodeList catches = new(LNode.Missing);
 
@@ -30,7 +30,7 @@ public sealed class TryStatement : IParsePoint<LNode>
             finallly = Statement.ParseOneOrBlock(parser);
         }
 
-        return SyntaxTree.Try(body, catches, finallly).WithRange(keywordToken, iterator.Peek(-1));
+        return SyntaxTree.Try(body, catches, finallly).WithRange(keywordToken, iterator.Prev);
     }
 
     private static LNode ParseCatch(Parser parser)

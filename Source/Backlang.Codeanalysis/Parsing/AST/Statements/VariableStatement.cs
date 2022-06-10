@@ -1,12 +1,12 @@
 ﻿using Loyc.Syntax;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
+namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class VariableDeclaration : IParsePoint<LNode>
+public class VariableStatement : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var keywordToken = iterator.Peek(-1);
+        var keywordToken = iterator.Prev;
 
         bool isMutable = false;
         LNode type = LNode.Missing;
@@ -37,7 +37,7 @@ public class VariableDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        var node = SyntaxTree.Factory.Var(type, name, value).WithRange(keywordToken, iterator.Peek(-1));
+        var node = SyntaxTree.Factory.Var(type, name, value).WithRange(keywordToken, iterator.Prev);
 
         return isMutable ? node.WithAttrs(LNode.Id(Symbols.Mutable)) : node;
     }

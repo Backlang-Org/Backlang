@@ -50,16 +50,18 @@ public sealed partial class Parser
 
     private LNode InvokeExpressionParsePoint(ParsePoints<LNode> parsePoints)
     {
-        var type = Iterator.Current.Type;
+        var token = Iterator.Current;
+        var type = token.Type;
         if (parsePoints.ContainsKey(type))
         {
             Iterator.NextToken();
 
-            return parsePoints[type](Iterator, this);
+            return parsePoints[type](Iterator, this).WithRange(token, Iterator.Current);
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(",", parsePoints.Keys)}");
+            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(", ",
+                parsePoints.Keys)}");
         }
     }
 
@@ -76,31 +78,31 @@ public sealed partial class Parser
             result += (int)Math.Pow(2, i);
         }
 
-        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result))).WithRange(valueToken);
+        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result)))
+            .WithRange(Iterator.Prev);
     }
 
     private LNode ParseBooleanLiteral(bool value)
     {
         Iterator.NextToken();
 
-        return LNode.Call(CodeSymbols.Bool, LNode.List(SyntaxTree.Factory.Literal(value))).WithRange(Iterator.Peek(-1));
+        return LNode.Call(CodeSymbols.Bool, LNode.List(SyntaxTree.Factory.Literal(value)))
+            .WithRange(Iterator.Prev);
     }
 
     private LNode ParseChar()
     {
-        return LNode.Call(CodeSymbols.Char, LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]))).WithRange(Iterator.Peek(-1));
-    }
-
-    private LNode ParseChar()
-    {
-        return SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]);
+        return LNode.Call(CodeSymbols.Char,
+            LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]))).WithRange(Iterator.Prev);
     }
 
     private LNode ParseHexNumber()
     {
         var valueToken = Iterator.NextToken();
 
-        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber)))).WithRange(valueToken);
+        return LNode.Call(CodeSymbols.Int32,
+            LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber))))
+            .WithRange(Iterator.Prev);
     }
 
     private LNode ParseNumber()
@@ -111,22 +113,26 @@ public sealed partial class Parser
         LNode result;
         if (text.Contains('.'))
         {
-            result = SyntaxTree.Factory.Literal(double.Parse(text, CultureInfo.InvariantCulture)).WithRange(token);
+            result = SyntaxTree.Factory.Literal(double.Parse(text, CultureInfo.InvariantCulture))
+                .WithRange(Iterator.Prev);
         }
         else
         {
-            result = SyntaxTree.Factory.Literal(int.Parse(text)).WithRange(token);
+            result = SyntaxTree.Factory.Literal(int.Parse(text)).WithRange(Iterator.Prev);
         }
 
         if (Iterator.Current.Type == TokenType.Identifier)
         {
             if (_lits.ContainsKey(Iterator.Current.Text.ToLower()))
             {
-                result = LNode.Call(_lits[Iterator.Current.Text.ToLower()], LNode.List(result)).WithRange(token);
+                result = LNode.Call(_lits[Iterator.Current.Text.ToLower()],
+                    LNode.List(result)).WithRange(Iterator.Prev, Iterator.Current);
             }
             else
             {
-                Messages.Add(Message.Error(Document, $"Unknown Literal {Iterator.Current.Text}", Iterator.Current.Line, Iterator.Current.Column));
+                Messages.Add(Message.Error(Document, $"Unknown Literal {Iterator.Current.Text}",
+                    Iterator.Current.Line, Iterator.Current.Column));
+
                 result = LNode.Missing;
             }
 
@@ -134,11 +140,11 @@ public sealed partial class Parser
         }
         else if (result.Value is double)
         {
-            result = LNode.Call(Symbols.Float64, LNode.List(result)).WithRange(token);
+            result = LNode.Call(Symbols.Float64, LNode.List(result)).WithRange(result.Range);
         }
         else
         {
-            result = LNode.Call(CodeSymbols.Int32, LNode.List(result)).WithRange(token);
+            result = LNode.Call(CodeSymbols.Int32, LNode.List(result)).WithRange(result.Range);
         }
 
         return result;
@@ -146,7 +152,8 @@ public sealed partial class Parser
 
     private LNode ParseString()
     {
-        return LNode.Call(CodeSymbols.String,
-            LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text))).WithRange(Iterator.Peek(-1));
+        var valueToken = Iterator.NextToken();
+        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(valueToken.Text)))
+            .WithRange(valueToken);
     }
 }
