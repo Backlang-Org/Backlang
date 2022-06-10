@@ -5,12 +5,14 @@ func cool(isCool: bool = true) static -> bool {
 @Log
 func main() static -> none {
 	//hello world
+	let msg : string = "hello world";
 
-	let k : i32 = 42;
-	print(42);
-	print(3.14);
-	print(false);
 	print(true);
+	print(1);
+	print(3.14);
+	print('c');
+	print("Hello");
+
 
 }
 

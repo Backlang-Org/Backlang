@@ -10,7 +10,6 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
@@ -122,23 +121,25 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.IsConstructor = true;
         }
 
-        var sourceBody = CompileBody(function, context, type);
+        var body = CompileBody(function, context, type);
 
-        var body = sourceBody.WithImplementation(
-         sourceBody.Implementation.Transform(
-             AllocaToRegister.Instance,
-             CopyPropagation.Instance,
-             new ConstantPropagation(),
-             GlobalValueNumbering.Instance,
-             CopyPropagation.Instance,
-             DeadValueElimination.Instance,
-             MemoryAccessElimination.Instance,
-             CopyPropagation.Instance,
-             new ConstantPropagation(),
-             DeadValueElimination.Instance,
-             ReassociateOperators.Instance,
-             DeadValueElimination.Instance));
-
+        /*
+        body = body.WithImplementation(
+                body.Implementation.Transform(
+                AllocaToRegister.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                GlobalValueNumbering.Instance,
+                CopyPropagation.Instance,
+                DeadValueElimination.Instance,
+                MemoryAccessElimination.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                DeadValueElimination.Instance,
+                ReassociateOperators.Instance,
+                DeadValueElimination.Instance
+            ));
+        */
         method.Body = body;
 
         return method;
@@ -147,11 +148,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     public static IType GetLiteralType(object value, TypeResolver resolver)
     {
         if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        else if (value is char) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
         else if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
         else if (value is byte) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
         else if (value is short) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
+        else if (value is ushort) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
         else if (value is int) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
+        else if (value is uint) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
         else if (value is long) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
+        else if (value is ulong) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
         else if (value is float) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
         else if (value is double) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
         else if (value is IdNode id) { } //todo: symbol table
@@ -241,28 +246,52 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         Constant constant;
         switch (value)
         {
-            case uint i:
-                constant = new IntegerConstant(i, IntegerSpec.UInt32);
+            case uint v:
+                constant = new IntegerConstant(v);
                 break;
 
-            case int intt:
-                constant = new IntegerConstant(intt, IntegerSpec.Int32);
+            case int v:
+                constant = new IntegerConstant(v);
                 break;
 
-            case float ft:
-                constant = new Float32Constant(ft);
+            case long v:
+                constant = new IntegerConstant(v);
                 break;
 
-            case double dt:
-                constant = new Float64Constant(dt);
+            case ulong v:
+                constant = new IntegerConstant(v);
                 break;
 
-            case string str:
-                constant = new StringConstant(str);
+            case byte v:
+                constant = new IntegerConstant(v);
                 break;
 
-            case bool b:
-                constant = BooleanConstant.Create(b);
+            case short v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case ushort v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case float v:
+                constant = new Float32Constant(v);
+                break;
+
+            case double v:
+                constant = new Float64Constant(v);
+                break;
+
+            case string v:
+                constant = new StringConstant(v);
+                break;
+
+            case char v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case bool v:
+                constant = BooleanConstant.Create(v);
                 break;
 
             default:

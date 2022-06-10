@@ -3,6 +3,7 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Reflection;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
@@ -16,13 +17,11 @@ public static class MethodBodyCompiler
         {
             var i = item.Instruction;
 
-            if (i.Prototype is CallPrototype cp)
+            if (i.Prototype is CallPrototype callPrototype)
             {
                 var load = item.PreviousInstructionOrNull;
                 var constant = (ConstantPrototype)load.PreviousInstructionOrNull.Prototype;
-                var method = typeof(Console).GetMethods().FirstOrDefault(_ =>
-                   _.Name == "WriteLine" && _.GetParameters().Length == 1 && _.GetParameters()[0].ParameterType.Name == load.ResultType.Name.ToString()
-                );
+                var method = GetPrintMethod(load);
 
                 ilProcessor.Append(Instruction.Create(OpCodes.Call,
                     _assemblyDefinition.MainModule.ImportReference(
@@ -34,7 +33,7 @@ public static class MethodBodyCompiler
             {
                 var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
 
-                AppendInstruction(ilProcessor, consProto);
+                AppendConstant(ilProcessor, consProto);
             }
         }
 
@@ -43,47 +42,111 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
     }
 
-    private static void AppendInstruction(ILProcessor ilProcessor, ConstantPrototype consProto)
+    private static void AppendConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
     {
         dynamic v = consProto.Value;
 
-        if (consProto.ResultType.Name.ToString() == "String")
+        if (v is StringConstant str)
         {
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, v.Value));
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, str.Value));
         }
-        else if (consProto.ResultType.Name.ToString() == "Byte")
+        else if (v is Float32Constant f32)
         {
-            var ccc = (IntegerConstant)v;
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt8()));
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R4, f32.Value));
         }
-        else if (consProto.ResultType.Name.ToString() == "Int16")
+        else if (v is Float64Constant f64)
         {
-            var ccc = (IntegerConstant)v;
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt16()));
+            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R8, f64.Value));
         }
-        else if (consProto.ResultType.Name.ToString() == "Int32")
+        else if (v is IntegerConstant ic)
         {
-            var ccc = (IntegerConstant)v;
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ccc.ToInt32()));
+            switch (ic.Spec.Size)
+            {
+                case 1:
+                    ilProcessor.Append(Instruction.Create(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
+                    break;
+
+                case 8:
+                    if (ic.Spec.IsSigned)
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToInt8()));
+                    }
+                    else
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt8()));
+                    }
+                    break;
+
+                case 16:
+                    if (ic.Spec.IsSigned)
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToInt16()));
+                    }
+                    else
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt16()));
+                    }
+                    break;
+
+                case 32:
+                    if (ic.Spec.IsSigned)
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToInt32()));
+                    }
+                    else
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt32()));
+                    }
+                    break;
+
+                case 64:
+                    if (ic.Spec.IsSigned)
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I8, ic.ToInt64()));
+                    }
+                    else
+                    {
+                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt64()));
+                    }
+                    break;
+
+                default:
+                    break;
+            }
         }
-        else if (consProto.ResultType.Name.ToString() == "Int64")
+    }
+
+    private static MethodInfo GetPrintMethod(Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
+    {
+        var callPrototype = (CallPrototype)load.NextInstructionOrNull.Prototype;
+
+        foreach (var method in typeof(Console).GetMethods())
         {
-            var ccc = (IntegerConstant)v;
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I8, ccc.ToInt64()));
+            var parameters = method.GetParameters();
+
+            if (method.Name == callPrototype.Callee.Name.ToString() && parameters.Length == 1)
+            {
+                if (MatchesParameters(parameters, load))
+                {
+                    return method;
+                }
+            }
         }
-        else if (consProto.ResultType.Name.ToString() == "Float")
+
+        return null;
+    }
+
+    private static bool MatchesParameters(ParameterInfo[] parameters, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
+    {
+        bool matches = false;
+        for (int i = 0; i < parameters.Length; i++)
         {
-            var ccc = (Float32Constant)v;
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R4, ccc.Value));
+            if (parameters[i].ParameterType.Name == load.ResultType.Name.ToString())
+            {
+                matches = (matches || i == 0) && parameters[i].ParameterType.Name == load.ResultType.Name.ToString();
+            }
         }
-        else if (consProto.ResultType.Name.ToString() == "Double")
-        {
-            var ccc = (Float64Constant)v;
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R8, ccc.Value));
-        }
-        else if (consProto.ResultType.Name.ToString() == "Boolean")
-        {
-            ilProcessor.Append(Instruction.Create(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
-        }
+
+        return matches;
     }
 }
