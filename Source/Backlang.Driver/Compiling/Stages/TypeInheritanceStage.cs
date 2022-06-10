@@ -60,7 +60,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 var constant = block.AppendInstruction(
                     ConvertExpression(
                         GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
-                    node.Args[0].Args[0].Value.ToString()));
+                    node.Args[0].Args[0].Value));
 
                 var str = block.AppendInstruction(
                     Instruction.CreateLoad(
@@ -147,6 +147,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     public static IType GetLiteralType(object value, TypeResolver resolver)
     {
         if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
         if (value is IdNode id) { } //todo: symbol table
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
@@ -241,6 +242,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             return Instruction.CreateConstant(
                                            new StringConstant(str),
+                                           elementType);
+        }
+        else if (value is bool b)
+        {
+            return Instruction.CreateConstant(
+                                           BooleanConstant.Create(b),
                                            elementType);
         }
 

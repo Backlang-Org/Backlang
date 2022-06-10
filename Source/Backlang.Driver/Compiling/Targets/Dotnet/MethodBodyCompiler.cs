@@ -17,14 +17,31 @@ public static class MethodBodyCompiler
 
             if (i.Prototype is CallPrototype cp)
             {
-                ilProcessor.Append(Instruction.Create(OpCodes.Call, _assemblyDefinition.MainModule.ImportReference(typeof(Console).GetMethods().FirstOrDefault(_ => _.GetParameters().Length == 1 && _.GetParameters()[0].ParameterType.Name == "String"))));
+                var load = item.PreviousInstructionOrNull;
+                var constant = (ConstantPrototype)load.PreviousInstructionOrNull.Prototype;
+                var method = typeof(Console).GetMethods().FirstOrDefault(_ =>
+                   _.Name == "WriteLine" && _.GetParameters().Length == 1 && _.GetParameters()[0].ParameterType.Name == load.ResultType.Name.ToString()
+                );
+
+                ilProcessor.Append(Instruction.Create(OpCodes.Call,
+                    _assemblyDefinition.MainModule.ImportReference(
+                        method
+                        )
+                    ));
             }
             else if (i.Prototype is LoadPrototype ld)
             {
                 var vP = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
                 dynamic v = vP.Value;
 
-                ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, v.Value));
+                if (vP.ResultType.Name.ToString() == "String")
+                {
+                    ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, v.Value));
+                }
+                else if (vP.ResultType.Name.ToString() == "Boolean")
+                {
+                    ilProcessor.Append(Instruction.Create(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
+                }
             }
         }
 

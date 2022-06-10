@@ -5,7 +5,8 @@ func cool(isCool: bool = true) static -> bool {
 @Log
 func main() static -> none {
 	//hello world
-	print("Hello Linus");
+	print(false);
+	print(true);
 
 }
 
