@@ -127,6 +127,10 @@ public class DotNetAssembly : ITargetAssembly
                 {
                     clrMethod.IsAbstract = true;
                 }
+                if(m.Owns(Attributes.Mutable))
+                {
+                    clrMethod.IsHideBySig = true;
+                }
 
                 if (m.Body != null)
                 {

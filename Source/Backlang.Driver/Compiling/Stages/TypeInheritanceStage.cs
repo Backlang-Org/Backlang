@@ -101,6 +101,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.IsOverride = true;
         }
+        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
+        {
+            method.SetAttr(true, Attributes.Extern);
+        }
 
         var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
