@@ -7,7 +7,7 @@ public sealed class IfStatement : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         // if cond {} else {}
-
+        var keywordToken = iterator.Prev;
         var cond = Expression.Parse(parser);
         var body = Statement.ParseOneOrBlock(parser);
         LNodeList elseBlock = new();
@@ -19,6 +19,6 @@ public sealed class IfStatement : IParsePoint<LNode>
             elseBlock = Statement.ParseOneOrBlock(parser);
         }
 
-        return SyntaxTree.If(cond, body, elseBlock);
+        return SyntaxTree.If(cond, body, elseBlock).WithRange(keywordToken, iterator.Prev);
     }
 }

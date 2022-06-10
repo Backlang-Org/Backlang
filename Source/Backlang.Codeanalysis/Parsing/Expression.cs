@@ -62,7 +62,7 @@ public static class Expression
 
             var operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
-            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand);
+            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand).WithRange(operatorToken.Start, operand.Range.EndIndex);
         }
         else
         {
@@ -72,7 +72,7 @@ public static class Expression
             {
                 var operatorToken = parser.Iterator.NextToken();
 
-                left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), left);
+                left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), left).WithRange(left.Range.StartIndex, operatorToken.End);
             }
         }
 
@@ -87,7 +87,7 @@ public static class Expression
             var operatorToken = parser.Iterator.NextToken();
             var right = Parse(parser, parsePoints, precedence);
 
-            left = SyntaxTree.Binary(GSymbol.Get($"'{operatorToken.Text}"), left, right);
+            left = SyntaxTree.Binary(GSymbol.Get($"'{operatorToken.Text}"), left, right).WithRange(left.Range.StartIndex, right.Range.StartIndex);
         }
 
         return left;

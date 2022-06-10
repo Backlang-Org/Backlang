@@ -2,9 +2,9 @@
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+
 public sealed class SwitchStatement : IParsePoint<LNode>
 {
-
     /*
      * switch element {
      *  case cond: oneExpr;
@@ -16,8 +16,10 @@ public sealed class SwitchStatement : IParsePoint<LNode>
      *  default: { block; }
      * }
      */
+
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        var keywordToken = iterator.Prev;
         var element = Expression.Parse(parser);
 
         parser.Iterator.Match(TokenType.OpenCurly);
@@ -47,12 +49,12 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         parser.Iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Switch(element, cases);
+        return SyntaxTree.Switch(element, cases).WithRange(keywordToken, iterator.Prev);
     }
 
     private static LNode ParseCase(Parser parser, bool autoBreak)
     {
-        parser.Iterator.Match(TokenType.Case);
+        var keywordToken = parser.Iterator.Match(TokenType.Case);
 
         var condition = Expression.Parse(parser);
 
@@ -63,7 +65,21 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         if (autoBreak)
             body = body.Add(LNode.Call(CodeSymbols.Break));
 
-        return SyntaxTree.Case(condition, body);
+        return SyntaxTree.Case(condition, body).WithRange(keywordToken, parser.Iterator.Prev);
+    }
+
+    private static LNode ParseDefault(Parser parser, bool autoBreak)
+    {
+        parser.Iterator.Match(TokenType.Default);
+
+        parser.Iterator.Match(TokenType.Colon);
+
+        var body = Statement.ParseOneOrBlock(parser);
+
+        if (autoBreak)
+            body = body.Add(LNode.Call(CodeSymbols.Break));
+
+        return SyntaxTree.Case(LNode.Call(CodeSymbols.Default), body);
     }
 
     private static LNode ParseIf(Parser parser, bool autoBreak)
@@ -93,13 +109,14 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         {
             // with binary expression
             var operatorToken = parser.Iterator.NextToken();
-            
+
             right = Expression.Parse(parser);
             binOp = LNode.Call(GSymbol.Get($"'{operatorToken.Text}"));
-        } else
+        }
+        else
         {
             // with element function
-            if(!parser.Iterator.IsMatch(TokenType.Identifier))
+            if (!parser.Iterator.IsMatch(TokenType.Identifier))
             {
                 parser.Messages.Add(Message.Error(parser.Document, $"Expected {TokenType.Identifier} but got {parser.Iterator.Current.Type}", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
                 return LNode.Missing;
@@ -121,19 +138,4 @@ public sealed class SwitchStatement : IParsePoint<LNode>
 
         return SyntaxTree.When(binOp, right, body);
     }
-
-    private static LNode ParseDefault(Parser parser, bool autoBreak)
-    {
-        parser.Iterator.Match(TokenType.Default);
-
-        parser.Iterator.Match(TokenType.Colon);
-
-        var body = Statement.ParseOneOrBlock(parser);
-
-        if(autoBreak)
-            body = body.Add(LNode.Call(CodeSymbols.Break));
-
-        return SyntaxTree.Case(LNode.Call(CodeSymbols.Default), body);
-    }
-
 }

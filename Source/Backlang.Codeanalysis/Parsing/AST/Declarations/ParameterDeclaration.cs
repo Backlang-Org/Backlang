@@ -8,6 +8,7 @@ public sealed class ParameterDeclaration : IParsePoint<LNode>
     {
         Annotation.TryParse(parser, out var annotations);
 
+        var keywordToken = iterator.Current;
         var name = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.Colon);
@@ -23,6 +24,7 @@ public sealed class ParameterDeclaration : IParsePoint<LNode>
             defaultValue = Expression.Parse(parser);
         }
 
-        return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations);
+        return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations)
+            .WithRange(keywordToken, iterator.Prev);
     }
 }
