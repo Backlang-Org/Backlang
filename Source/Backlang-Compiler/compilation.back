@@ -7,6 +7,7 @@ func main() static -> none {
 }
 
 @Derive(Something)
+@DoSomeWork
 class abstract Person {
 	let name: string;
 
@@ -52,5 +53,7 @@ implement u8 {
 }
 
 enum Days {
-	Monday = 1, Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
+	@Description("First Day Of Week")
+	Monday = 1, 
+	Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
 }
