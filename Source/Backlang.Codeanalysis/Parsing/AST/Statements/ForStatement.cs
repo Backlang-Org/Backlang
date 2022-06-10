@@ -8,7 +8,7 @@ public sealed class ForStatement : IParsePoint<LNode>
     {
         //for x : i32 in 1..12
         //for x in arr
-
+        var keywordToken = iterator.Prev;
         var varExpr = Expression.Parse(parser);
 
         LNode type = LNode.Missing;
@@ -25,6 +25,7 @@ public sealed class ForStatement : IParsePoint<LNode>
         var collExpr = Expression.Parse(parser);
         var body = Statement.ParseOneOrBlock(parser);
 
-        return SyntaxTree.For(SyntaxTree.Factory.Tuple(varExpr, type), collExpr, body);
+        return SyntaxTree.For(SyntaxTree.Factory.Tuple(varExpr, type), collExpr, body)
+            .WithRange(keywordToken, iterator.Prev);
     }
 }

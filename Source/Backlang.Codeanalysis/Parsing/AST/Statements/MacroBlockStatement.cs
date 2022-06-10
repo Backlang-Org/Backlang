@@ -6,7 +6,8 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var nameExpression = LNode.Id(iterator.NextToken().Text);
+        var nameToken = iterator.NextToken();
+        var nameExpression = LNode.Id(nameToken.Text);
 
         if (iterator.Current.Type == TokenType.OpenParen)
         {
@@ -20,7 +21,8 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
                 var body = Statement.ParseBlock(parser);
                 arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
-                return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock).SetStyle(NodeStyle.Special);
+                return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
+                    .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
             }
 
             return LNode.Call(nameExpression, arguments);
@@ -32,7 +34,8 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
             var arguments = LNode.List(LNode.Missing);
             arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
-            return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock).SetStyle(NodeStyle.Special);
+            return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
+                .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
         }
 
         return LNode.Missing;
