@@ -6,6 +6,8 @@ public sealed class ParameterDeclaration : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
+        Annotation.TryParse(parser, out var annotations);
+
         var name = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.Colon);
@@ -21,6 +23,6 @@ public sealed class ParameterDeclaration : IParsePoint<LNode>
             defaultValue = Expression.Parse(parser);
         }
 
-        return SyntaxTree.Factory.Var(type, name.Text, defaultValue);
+        return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations);
     }
 }
