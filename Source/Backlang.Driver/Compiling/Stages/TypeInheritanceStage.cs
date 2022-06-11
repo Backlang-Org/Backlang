@@ -10,7 +10,6 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
@@ -38,44 +37,22 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                context.Environment.TryMakeSignedIntegerType(32, out var elementType); // IntermediateStage.GetType(node.Args[0], context);
-
-                var local = block.AppendInstruction(
-                     Instruction.CreateAlloca(elementType));
-
-                var decl = node.Args[1];
-                if (decl.Args[1].Args[0].HasValue)
-                {
-                    block.AppendInstruction(
-                       Instruction.CreateStore(
-                           elementType,
-                           local,
-                           block.AppendInstruction(
-                               ConvertExpression(elementType, decl.Args[1].Value))));
-                }
+                AppendVariableDeclaration(context, block, node);
             }
             else if (node.Name == (Symbol)"print")
             {
-                var method = context.writeMethods.FirstOrDefault();
-                var constant = block.AppendInstruction(
-                    ConvertExpression(
-                        GetLiteralType(node.Args[0].Value, context.Binder),
-                    node.Args[0].Value.ToString()));
-
-                var str = block.AppendInstruction(
-                    Instruction.CreateLoad(
-                        GetLiteralType(node.Args[0].Value, context.Binder), constant));
-
-                block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
+                AppendPrint(context, block, node);
             }
             else if (node.Calls(CodeSymbols.Return))
             {
+                var valueNode = node.Args[0].Args[0];
+                var rt = ConvertExpression(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
+
                 block.Flow =
-                    new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, null));
+                    new ReturnFlow(rt);
             }
         }
 
-        // Finish up the method body.
         return new MethodBody(
             new Parameter(parentType),
             new Parameter(parentType),
@@ -97,11 +74,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
-        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
         {
             method.IsOverride = true;
         }
-        if(function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
         {
             method.SetAttr(true, Attributes.Extern);
         }
@@ -122,23 +99,25 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.IsConstructor = true;
         }
 
-        var sourceBody = CompileBody(function, context, type);
+        var body = CompileBody(function, context, type);
 
-        var body = sourceBody.WithImplementation(
-         sourceBody.Implementation.Transform(
-             AllocaToRegister.Instance,
-             CopyPropagation.Instance,
-             new ConstantPropagation(),
-             GlobalValueNumbering.Instance,
-             CopyPropagation.Instance,
-             DeadValueElimination.Instance,
-             MemoryAccessElimination.Instance,
-             CopyPropagation.Instance,
-             new ConstantPropagation(),
-             DeadValueElimination.Instance,
-             ReassociateOperators.Instance,
-             DeadValueElimination.Instance));
-
+        /*
+        body = body.WithImplementation(
+                body.Implementation.Transform(
+                AllocaToRegister.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                GlobalValueNumbering.Instance,
+                CopyPropagation.Instance,
+                DeadValueElimination.Instance,
+                MemoryAccessElimination.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                DeadValueElimination.Instance,
+                ReassociateOperators.Instance,
+                DeadValueElimination.Instance
+            ));
+        */
         method.Body = body;
 
         return method;
@@ -147,7 +126,18 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     public static IType GetLiteralType(object value, TypeResolver resolver)
     {
         if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        if (value is IdNode id) { } //todo: symbol table
+        else if (value is char) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
+        else if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
+        else if (value is byte) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
+        else if (value is short) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
+        else if (value is ushort) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
+        else if (value is int) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
+        else if (value is uint) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+        else if (value is long) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
+        else if (value is ulong) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
+        else if (value is float) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
+        else if (value is double) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
+        else if (value is IdNode id) { } //todo: symbol table
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
     }
@@ -174,6 +164,43 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             var pa = ConvertParameter(p, context);
             method.AddParameter(pa);
+        }
+    }
+
+    private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
+    {
+        var method = context.writeMethods.FirstOrDefault();
+        var constant = block.AppendInstruction(
+            ConvertExpression(
+                GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
+            node.Args[0].Args[0].Value));
+
+        var str = block.AppendInstruction(
+            Instruction.CreateLoad(
+                GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
+
+        block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
+    }
+
+    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node)
+    {
+        var decl = node.Args[1];
+
+        //ToDo: Fix IR Typ resolving
+        var types = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, node.Args[0].Args[0].Name.ToString().Replace("#", "")));
+        var elementType = types.First();
+
+        var instruction = Instruction.CreateAlloca(elementType);
+        var local = block.AppendInstruction(instruction);
+
+        if (decl.Args[1].Args[0].HasValue)
+        {
+            block.AppendInstruction(
+               Instruction.CreateStore(
+                   elementType,
+                   local,
+                   block.AppendInstruction(
+                       ConvertExpression(elementType, decl.Args[1].Args[0].Value))));
         }
     }
 
@@ -231,22 +258,86 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static Instruction ConvertExpression(IType elementType, object value)
     {
-        if (value is uint i)
+        Constant constant;
+        switch (value)
         {
-            return Instruction.CreateConstant(
-                                           new IntegerConstant(i, IntegerSpec.UInt32),
-                                           elementType);
-        }
-        else if (value is string str)
-        {
-            return Instruction.CreateConstant(
-                                           new StringConstant(str),
-                                           elementType);
+            case uint v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case int v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case long v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case ulong v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case byte v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case short v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case ushort v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case float v:
+                constant = new Float32Constant(v);
+                break;
+
+            case double v:
+                constant = new Float64Constant(v);
+                break;
+
+            case string v:
+                constant = new StringConstant(v);
+                break;
+
+            case char v:
+                constant = new IntegerConstant(v);
+                break;
+
+            case bool v:
+                constant = BooleanConstant.Create(v);
+                break;
+
+            default:
+                constant = NullConstant.Instance;
+                break;
         }
 
-        return Instruction.CreateConstant(
-                                           new IntegerConstant(0, IntegerSpec.UInt32),
+        return Instruction.CreateConstant(constant,
                                            elementType);
+    }
+
+    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member)
+    {
+        var mtype = IntermediateStage.GetType(member.Args[0], context);
+
+        var mvar = member.Args[1];
+        var mname = mvar.Args[0].Name;
+        var mvalue = mvar.Args[1];
+
+        var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+        if (mvalue != LNode.Missing)
+        {
+            field.InitialValue = mvalue.Args[0].Value;
+        }
+        if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+        {
+            field.AddAttribute(Attributes.Mutable);
+        }
+
+        type.AddField(field);
     }
 
     private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
@@ -275,6 +366,28 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void ConvertFunctions(DescribedType type, CompilerContext context, LNode member)
+    {
+        string methodName = member.Args[1].Name.Name;
+        var method = new DescribedBodyMethod(type,
+            new QualifiedName(methodName).FullyUnqualifiedName,
+            member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+        method.Body = null;
+
+        method.IsPrivate = member.Attrs.Contains(LNode.Id(CodeSymbols.Private));
+        method.IsPublic = !method.IsPrivate;
+
+        if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+        {
+            method.AddAttribute(FlagAttribute.Abstract);
+        }
+
+        AddParameters(method, member, context);
+        SetReturnType(method, member, context);
+
+        type.AddMethod(method);
+    }
+
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
     {
         var type = IntermediateStage.GetType(p.Args[0], context);
@@ -299,49 +412,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             if (member.Name == CodeSymbols.Var)
             {
-                var mtype = IntermediateStage.GetType(member.Args[0], context);
-
-                var mvar = member.Args[1];
-                var mname = mvar.Args[0].Name;
-                var mvalue = mvar.Args[1];
-
-                var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
-
-                if (mvalue != LNode.Missing)
-                {
-                    field.InitialValue = mvalue.Args[0].Value;
-                }
-                if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
-                {
-                    field.AddAttribute(Attributes.Mutable);
-                }
-
-                type.AddField(field);
-            } else if (member.Calls(CodeSymbols.Fn))
+                ConvertFields(type, context, member);
+            }
+            else if (member.Calls(CodeSymbols.Fn))
             {
-                string methodName = member.Args[1].Name.Name;
-                var method = new DescribedBodyMethod(type,
-                    new QualifiedName(methodName).FullyUnqualifiedName,
-                    member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
-                method.Body = null;
-
-                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-                {
-                    method.IsPrivate = true;
-                } else
-                {
-                    method.IsPublic = true;
-                }
-
-                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
-                {
-                    method.AddAttribute(FlagAttribute.Abstract);
-                }
-
-                AddParameters(method, member, context);
-                SetReturnType(method, member, context);
-
-                type.AddMethod(method);
+                ConvertFunctions(type, context, member);
             }
         }
     }
@@ -365,6 +440,34 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             ConvertTypeMembers(members, type, context);
         }
+    }
+
+    private static QualifiedName GetNameOfPrimitiveType(TypeResolver binder, string name)
+    {
+        var aliases = new Dictionary<string, string>()
+        {
+            ["bool"] = "Boolean",
+
+            ["i8"] = "Byte",
+            ["i16"] = "Int16",
+            ["i32"] = "Int32",
+            ["i64"] = "Int64",
+
+            ["u16"] = "UInt16",
+            ["u32"] = "UInt32",
+            ["u64"] = "UInt64",
+
+            ["char"] = "Char",
+            ["string"] = "String",
+            ["none"] = "Void",
+        };
+
+        if (aliases.ContainsKey(name))
+        {
+            name = aliases[name];
+        }
+
+        return ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System").FullName;
     }
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
