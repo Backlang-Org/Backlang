@@ -30,7 +30,6 @@ public class DotNetAssembly : ITargetAssembly
 
         var console = typeof(Console).Assembly.GetName();
         _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(console.FullName));
-        _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(typeof(ExtensionAttribute).Assembly.GetName().FullName));
     }
 
     public void WriteTo(Stream output)
