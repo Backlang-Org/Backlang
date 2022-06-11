@@ -60,10 +60,7 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Abstract;
             }
 
-            if (type.IsInterfaceType)
-            {
-                clrType.IsInterface = true;
-            }
+            clrType.IsInterface = type.IsInterfaceType;
 
             if (type.BaseTypes.Any())
             {
@@ -123,14 +120,9 @@ public class DotNetAssembly : ITargetAssembly
                     clrMethod.IsHideBySig = true;
                     clrMethod.IsVirtual = true;
                 }
-                if (m.IsAbstract)
-                {
-                    clrMethod.IsAbstract = true;
-                }
-                if (m.Owns(Attributes.Mutable))
-                {
-                    clrMethod.IsHideBySig = true;
-                }
+
+                clrMethod.IsAbstract = m.IsAbstract;
+                clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
 
                 if (m.Body != null)
                 {

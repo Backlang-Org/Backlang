@@ -2,8 +2,9 @@
 @Log
 func main() static -> none {
 	//hello world
-	let msg : Int32 = 24;
-	let dd : String = "Hello World";
+	let msg : i32 = 24;
+	let dd : string = "Hello World";
+	let ff : bool = true;
 
 	print(true);
 	print(1);

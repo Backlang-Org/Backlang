@@ -37,37 +37,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                var decl = node.Args[1];
-
-                //ToDo: Fix IR Typ resolving
-                var elementType = new DescribedType(new SimpleName(node.Args[0].Args[0].Name.ToString().Replace("#", "")).Qualify("System"), parentType.GetDefiningAssemblyOrNull());
-
-                var instruction = Instruction.CreateAlloca(elementType);
-                var local = block.AppendInstruction(instruction);
-
-                if (decl.Args[1].Args[0].HasValue)
-                {
-                    block.AppendInstruction(
-                       Instruction.CreateStore(
-                           elementType,
-                           local,
-                           block.AppendInstruction(
-                               ConvertExpression(elementType, decl.Args[1].Args[0].Value))));
-                }
+                AppendVariableDeclaration(context, block, node);
             }
             else if (node.Name == (Symbol)"print")
             {
-                var method = context.writeMethods.FirstOrDefault();
-                var constant = block.AppendInstruction(
-                    ConvertExpression(
-                        GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
-                    node.Args[0].Args[0].Value));
-
-                var str = block.AppendInstruction(
-                    Instruction.CreateLoad(
-                        GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
-
-                block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
+                AppendPrint(context, block, node);
             }
             else if (node.Calls(CodeSymbols.Return))
             {
@@ -191,6 +165,43 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
+    {
+        var method = context.writeMethods.FirstOrDefault();
+        var constant = block.AppendInstruction(
+            ConvertExpression(
+                GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
+            node.Args[0].Args[0].Value));
+
+        var str = block.AppendInstruction(
+            Instruction.CreateLoad(
+                GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
+
+        block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
+    }
+
+    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node)
+    {
+        var decl = node.Args[1];
+
+        //ToDo: Fix IR Typ resolving
+        var types = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, node.Args[0].Args[0].Name.ToString().Replace("#", "")));
+        var elementType = types.First();
+
+        var instruction = Instruction.CreateAlloca(elementType);
+        var local = block.AppendInstruction(instruction);
+
+        if (decl.Args[1].Args[0].HasValue)
+        {
+            block.AppendInstruction(
+               Instruction.CreateStore(
+                   elementType,
+                   local,
+                   block.AppendInstruction(
+                       ConvertExpression(elementType, decl.Args[1].Args[0].Value))));
+        }
+    }
+
     private static void ConvertEnums(CompilerContext context, CompilationUnit tree)
     {
         var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
@@ -305,6 +316,28 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                                            elementType);
     }
 
+    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member)
+    {
+        var mtype = IntermediateStage.GetType(member.Args[0], context);
+
+        var mvar = member.Args[1];
+        var mname = mvar.Args[0].Name;
+        var mvalue = mvar.Args[1];
+
+        var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+        if (mvalue != LNode.Missing)
+        {
+            field.InitialValue = mvalue.Args[0].Value;
+        }
+        if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+        {
+            field.AddAttribute(Attributes.Mutable);
+        }
+
+        type.AddField(field);
+    }
+
     private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
     {
         var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
@@ -331,6 +364,28 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void ConvertFunctions(DescribedType type, CompilerContext context, LNode member)
+    {
+        string methodName = member.Args[1].Name.Name;
+        var method = new DescribedBodyMethod(type,
+            new QualifiedName(methodName).FullyUnqualifiedName,
+            member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+        method.Body = null;
+
+        method.IsPrivate = member.Attrs.Contains(LNode.Id(CodeSymbols.Private));
+        method.IsPublic = !method.IsPrivate;
+
+        if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+        {
+            method.AddAttribute(FlagAttribute.Abstract);
+        }
+
+        AddParameters(method, member, context);
+        SetReturnType(method, member, context);
+
+        type.AddMethod(method);
+    }
+
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
     {
         var type = IntermediateStage.GetType(p.Args[0], context);
@@ -355,51 +410,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             if (member.Name == CodeSymbols.Var)
             {
-                var mtype = IntermediateStage.GetType(member.Args[0], context);
-
-                var mvar = member.Args[1];
-                var mname = mvar.Args[0].Name;
-                var mvalue = mvar.Args[1];
-
-                var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
-
-                if (mvalue != LNode.Missing)
-                {
-                    field.InitialValue = mvalue.Args[0].Value;
-                }
-                if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
-                {
-                    field.AddAttribute(Attributes.Mutable);
-                }
-
-                type.AddField(field);
+                ConvertFields(type, context, member);
             }
             else if (member.Calls(CodeSymbols.Fn))
             {
-                string methodName = member.Args[1].Name.Name;
-                var method = new DescribedBodyMethod(type,
-                    new QualifiedName(methodName).FullyUnqualifiedName,
-                    member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
-                method.Body = null;
-
-                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-                {
-                    method.IsPrivate = true;
-                }
-                else
-                {
-                    method.IsPublic = true;
-                }
-
-                if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
-                {
-                    method.AddAttribute(FlagAttribute.Abstract);
-                }
-
-                AddParameters(method, member, context);
-                SetReturnType(method, member, context);
-
-                type.AddMethod(method);
+                ConvertFunctions(type, context, member);
             }
         }
     }
@@ -423,6 +438,34 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             ConvertTypeMembers(members, type, context);
         }
+    }
+
+    private static QualifiedName GetNameOfPrimitiveType(TypeResolver binder, string name)
+    {
+        var aliases = new Dictionary<string, string>()
+        {
+            ["bool"] = "Boolean",
+
+            ["i8"] = "Byte",
+            ["i16"] = "Int16",
+            ["i32"] = "Int32",
+            ["i64"] = "Int64",
+
+            ["u16"] = "UInt16",
+            ["u32"] = "UInt32",
+            ["u64"] = "UInt64",
+
+            ["char"] = "Char",
+            ["string"] = "String",
+            ["none"] = "Void",
+        };
+
+        if (aliases.ContainsKey(name))
+        {
+            name = aliases[name];
+        }
+
+        return ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System").FullName;
     }
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)

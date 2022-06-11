@@ -19,38 +19,17 @@ public static class MethodBodyCompiler
 
             if (i.Prototype is CallPrototype callPrototype)
             {
-                var load = item.PreviousInstructionOrNull;
-                var method = GetPrintMethod(assemblyDefinition, load);
-
-                ilProcessor.Append(Instruction.Create(OpCodes.Call,
-                    assemblyDefinition.MainModule.ImportReference(
-                        method
-                        )
-                    ));
+                EmitCall(assemblyDefinition, ilProcessor, item);
             }
             else if (i.Prototype is LoadPrototype ld)
             {
                 var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
 
-                AppendConstant(ilProcessor, consProto);
+                EmitConstant(ilProcessor, consProto);
             }
             else if (i.Prototype is AllocaPrototype allocA)
             {
-                var elementType = ImportType(assemblyDefinition, allocA.ElementType);
-
-                var variable =
-                    new VariableDefinition(assemblyDefinition.MainModule.ImportReference(elementType));
-                clrMethod.Body.Variables.Add(variable);
-
-                var store = item.NextInstructionOrNull?.Prototype;
-
-                if (store is ConstantPrototype sp)
-                {
-                    AppendConstant(ilProcessor, sp);
-                    ilProcessor.Append(Instruction.Create(OpCodes.Stloc, variable));
-
-                    clrMethod.Body.InitLocals = true;
-                }
+                EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
             }
         }
 
@@ -59,7 +38,19 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
     }
 
-    private static void AppendConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
+    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item)
+    {
+        var load = item.PreviousInstructionOrNull;
+        var method = GetPrintMethod(assemblyDefinition, load);
+
+        ilProcessor.Append(Instruction.Create(OpCodes.Call,
+            assemblyDefinition.MainModule.ImportReference(
+                method
+                )
+            ));
+    }
+
+    private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
     {
         dynamic v = consProto.Value;
 
@@ -130,6 +121,25 @@ public static class MethodBodyCompiler
                 default:
                     break;
             }
+        }
+    }
+
+    private static void EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
+    {
+        var elementType = ImportType(assemblyDefinition, allocA.ElementType);
+
+        var variable =
+            new VariableDefinition(assemblyDefinition.MainModule.ImportReference(elementType));
+        clrMethod.Body.Variables.Add(variable);
+
+        var store = item.NextInstructionOrNull?.Prototype;
+
+        if (store is ConstantPrototype sp)
+        {
+            EmitConstant(ilProcessor, sp);
+            ilProcessor.Append(Instruction.Create(OpCodes.Stloc, variable));
+
+            clrMethod.Body.InitLocals = true;
         }
     }
 
