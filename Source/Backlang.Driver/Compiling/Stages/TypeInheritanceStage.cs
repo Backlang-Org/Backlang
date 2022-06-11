@@ -45,12 +45,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (node.Calls(CodeSymbols.Return))
             {
+                var valueNode = node.Args[0].Args[0];
+                var rt = ConvertExpression(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
+
                 block.Flow =
-                    new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, null));
+                    new ReturnFlow(rt);
             }
         }
 
-        // Finish up the method body.
         return new MethodBody(
             new Parameter(parentType),
             new Parameter(parentType),

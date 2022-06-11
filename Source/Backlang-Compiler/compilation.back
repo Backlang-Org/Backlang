@@ -14,7 +14,7 @@ func main() static -> none {
 }
 
 func cool(isCool: bool = true) static -> bool {
-	
+	return false;
 }
 
 

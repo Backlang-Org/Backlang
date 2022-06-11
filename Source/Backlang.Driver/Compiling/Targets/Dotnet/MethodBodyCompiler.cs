@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
@@ -33,7 +34,17 @@ public static class MethodBodyCompiler
             }
         }
 
-        ilProcessor.Append(Instruction.Create(OpCodes.Ret));
+        if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
+        {
+            EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+
+            ilProcessor.Emit(OpCodes.Ret);
+        }
+
+        if (clrMethod.ReturnType.Name == "Void")
+        {
+            ilProcessor.Append(Instruction.Create(OpCodes.Ret));
+        }
 
         clrMethod.Body.MaxStackSize = 7;
     }
