@@ -52,7 +52,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        context.Assembly = new DescribedAssembly(new QualifiedName("Compilation"));
+        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename));
         context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
         {
             IsStatic = true
@@ -111,7 +111,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             if (st.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
             {
                 type.IsPrivate = true;
-            } else
+            }
+            else
             {
                 type.IsPublic = true;
             }
@@ -120,7 +121,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             {
                 type.IsStatic = true;
             }
-            if(st.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+            if (st.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
             {
                 type.IsAbstract = true;
             }

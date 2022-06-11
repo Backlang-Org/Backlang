@@ -1,5 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Backends.CLR.Emit;
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -8,13 +7,12 @@ using Mono.Cecil;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 
-namespace Backlang.Driver.Compiling.Targets;
+namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class DotNetAssembly : ITargetAssembly
 {
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
-    private readonly TypeEnvironment _environment;
     private AssemblyDefinition _assemblyDefinition;
 
     public DotNetAssembly(AssemblyContentDescription description)
@@ -27,11 +25,11 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
 
         _description = description;
-        _environment = description.Environment;
 
         SetTargetFramework();
 
-        _assemblyDefinition.MainModule.AssemblyReferences.Add(new AssemblyNameReference("System.Private.CoreLib", new Version(7, 0, 0, 0)));
+        var console = typeof(Console).Assembly.GetName();
+        _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(console.FullName));
     }
 
     public void WriteTo(Stream output)
@@ -60,10 +58,7 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Abstract;
             }
 
-            if (type.IsInterfaceType)
-            {
-                clrType.IsInterface = true;
-            }
+            clrType.IsInterface = type.IsInterfaceType;
 
             if (type.BaseTypes.Any())
             {
@@ -123,15 +118,14 @@ public class DotNetAssembly : ITargetAssembly
                     clrMethod.IsHideBySig = true;
                     clrMethod.IsVirtual = true;
                 }
-                if(m.IsAbstract)
-                {
-                    clrMethod.IsAbstract = true;
-                }
+
+                clrMethod.IsAbstract = m.IsAbstract;
+                clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
 
                 if (m.Body != null)
                 {
                     clrMethod.HasThis = false;
-                    clrMethod.Body = ClrMethodBodyEmitter.Compile(m.Body, clrMethod, _environment);
+                    MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
                 }
 
                 var attributes = m.Attributes.GetAll();

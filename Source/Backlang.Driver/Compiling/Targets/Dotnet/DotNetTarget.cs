@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Pipeline;
 
-namespace Backlang.Driver.Compiling.Targets;
+namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class DotNetTarget : ITarget
 {
