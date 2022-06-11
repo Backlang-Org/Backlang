@@ -1,5 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -137,7 +136,7 @@ public static class MethodBodyCompiler
 
     private static void EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
     {
-        var elementType = ImportType(assemblyDefinition, allocA.ElementType);
+        var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 
         var variable =
             new VariableDefinition(assemblyDefinition.MainModule.ImportReference(elementType));
@@ -158,7 +157,7 @@ public static class MethodBodyCompiler
     {
         var callPrototype = (CallPrototype)load.NextInstructionOrNull.Prototype;
 
-        var parentType = ImportType(assemblyDefinition, callPrototype.Callee.ParentType).Resolve();
+        var parentType = assemblyDefinition.ImportType(callPrototype.Callee.ParentType).Resolve();
 
         foreach (var method in parentType.Methods)
         {
@@ -174,26 +173,6 @@ public static class MethodBodyCompiler
         }
 
         return null;
-    }
-
-    //ToDo: only works for types from corlib - primitive types must be converted to clr types
-    private static TypeReference ImportType(AssemblyDefinition _assemblyDefinition, IType type)
-    {
-        foreach (var ar in _assemblyDefinition.MainModule.AssemblyReferences)
-        {
-            var tr = new TypeReference(type.FullName.Qualifier.ToString(), type.Name.ToString(),
-            _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar,
-                 new ReaderParameters()).MainModule, ar).Resolve();
-
-            if (tr != null)
-            {
-                return tr;
-            }
-        }
-
-        return new TypeReference(type.FullName.Qualifier.ToString(), type.Name.ToString(),
-            _assemblyDefinition.MainModule.AssemblyResolver.Resolve(_assemblyDefinition.MainModule.AssemblyReferences.First(),
-                 new ReaderParameters()).MainModule, _assemblyDefinition.MainModule.AssemblyReferences.First());
     }
 
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
