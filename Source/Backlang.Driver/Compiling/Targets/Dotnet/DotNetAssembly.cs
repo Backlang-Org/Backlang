@@ -13,7 +13,6 @@ public class DotNetAssembly : ITargetAssembly
 {
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
-    private readonly TypeEnvironment _environment;
     private AssemblyDefinition _assemblyDefinition;
 
     public DotNetAssembly(AssemblyContentDescription description)
@@ -26,12 +25,12 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
 
         _description = description;
-        _environment = description.Environment;
 
         SetTargetFramework();
 
         var console = typeof(Console).Assembly.GetName();
         _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(console.FullName));
+        _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(typeof(ExtensionAttribute).Assembly.GetName().FullName));
     }
 
     public void WriteTo(Stream output)
