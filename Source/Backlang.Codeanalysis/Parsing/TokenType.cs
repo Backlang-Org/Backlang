@@ -147,6 +147,7 @@ public enum TokenType
     EqualsEquals,
 
     [Lexeme("<->")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.SwapOperator)]
     SwapOperator,
 
     [Lexeme("_")]
