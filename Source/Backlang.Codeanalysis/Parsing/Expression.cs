@@ -31,7 +31,7 @@ public static class Expression
 
     public static int GetBinaryOperatorPrecedence(TokenType kind)
     {
-        for (var i = 0; i < Operators.Count - 1; i++)
+        for (var i = 0; i < Operators.Count; i++)
         {
             if (Operators[i].TokenType == kind && !Operators[i].IsUnary)
             {
@@ -117,7 +117,7 @@ public static class Expression
 
     private static int GetUnaryOperatorPrecedence(TokenType kind)
     {
-        for (var i = 0; i < Operators.Count - 1; i++)
+        for (var i = 0; i < Operators.Count; i++)
         {
             if (Operators[i].TokenType == kind && Operators[i].IsUnary)
             {
@@ -130,7 +130,7 @@ public static class Expression
 
     private static bool IsPostUnary(TokenType kind)
     {
-        for (var i = 0; i < Operators.Count - 1; i++)
+        for (var i = 0; i < Operators.Count; i++)
         {
             if (Operators[i].TokenType == kind && Operators[i].IsUnary)
             {
