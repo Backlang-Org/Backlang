@@ -82,7 +82,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
         {
-            method.SetAttr(true, Attributes.Extern);
+            method.IsExtern = true;
         }
 
         AddParameters(method, function, context);
