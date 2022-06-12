@@ -70,6 +70,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             new QualifiedName(methodName).FullyUnqualifiedName,
             function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
 
+        SetAccessModifier(function, method);
+
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
             method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
@@ -82,14 +84,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.SetAttr(true, Attributes.Extern);
         }
-
-        var modifier = AccessModifierAttribute.Create(AccessModifier.Public);
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-        {
-            modifier = AccessModifierAttribute.Create(AccessModifier.Private);
-        }
-
-        method.AddAttribute(modifier);
 
         AddParameters(method, function, context);
         SetReturnType(method, function, context);
@@ -121,6 +115,22 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         method.Body = body;
 
         return method;
+    }
+
+    private static void SetAccessModifier(LNode node, DescribedMethod type)
+    {
+        if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+        {
+            type.IsPrivate = true;
+        }
+        else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Protected)))
+        {
+            type.IsProtected = true;
+        }
+        else
+        {
+            type.IsPublic = true;
+        }
     }
 
     public static IType GetLiteralType(object value, TypeResolver resolver)
@@ -374,8 +384,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
         method.Body = null;
 
-        method.IsPrivate = member.Attrs.Contains(LNode.Id(CodeSymbols.Private));
-        method.IsPublic = !method.IsPrivate;
+        SetAccessModifier(member, method);
 
         if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {

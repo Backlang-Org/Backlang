@@ -282,6 +282,12 @@ public enum TokenType
     [Keyword("operator")]
     Operator,
 
+    [Keyword("public")]
+    Public,
+
+    [Keyword("protected")]
+    Protected,
+
     [Keyword("private")]
     Private,
 

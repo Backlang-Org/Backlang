@@ -42,8 +42,10 @@ public class DotNetAssembly : ITargetAssembly
             if (type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
-            }
-            else
+            } else if(type.IsProtected)
+            {
+                clrType.Attributes |= TypeAttributes.NestedFamily;
+            } else
             {
                 clrType.Attributes |= TypeAttributes.Public;
             }

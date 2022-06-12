@@ -108,25 +108,35 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }
 
-            if (st.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-            {
-                type.IsPrivate = true;
-            }
-            else
-            {
-                type.IsPublic = true;
-            }
-
-            if (st.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
-            {
-                type.IsStatic = true;
-            }
-            if (st.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
-            {
-                type.IsAbstract = true;
-            }
+            SetAccessModifier(st, type);
+            SetOtherModifiers(st, type);
 
             context.Assembly.AddType(type);
+        }
+    }
+    private static void SetAccessModifier(LNode node, DescribedType type)
+    {
+        if(node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+        {
+            type.IsPrivate = true;
+        } else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Protected)))
+        {
+            type.IsProtected = true;
+        } else
+        {
+            type.IsPublic = true;
+        }
+    }
+
+    private static void SetOtherModifiers(LNode node, DescribedType type)
+    {
+        if (node.Attrs.Contains(LNode.Id(CodeSymbols.Static)))
+        {
+            type.IsStatic = true;
+        }
+        if (node.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+        {
+            type.IsAbstract = true;
         }
     }
 }
