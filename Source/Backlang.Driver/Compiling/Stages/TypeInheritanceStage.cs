@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -60,11 +61,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             graph.ToImmutable());
     }
 
-    public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function)
+    public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function, string methodName = null, bool hasBody = true)
     {
-        string methodName = function.Args[1].Name.Name;
-
-        if (methodName == "main") methodName = "Main";
+        if (methodName == null) methodName = function.Args[1].Name.Name;
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
@@ -84,6 +83,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.IsExtern = true;
         }
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
+        {
+            method.AddAttribute(FlagAttribute.Abstract);
+        }
 
         AddParameters(method, function, context);
         SetReturnType(method, function, context);
@@ -93,7 +96,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.IsConstructor = true;
         }
 
-        var body = CompileBody(function, context, type);
+        MethodBody body = null;
+        if (hasBody)
+        {
+            body = CompileBody(function, context, type);
+        }
 
         /*
         body = body.WithImplementation(
@@ -113,6 +120,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             ));
         */
         method.Body = body;
+
+        if (type.Methods.Any(_ => _.FullName.FullName.Equals(method.FullName.FullName)))
+        {
+            context.Messages.Add(Message.Error("Function '" + method.FullName + "' is already defined."));
+            return null;
+        }
 
         return method;
     }
@@ -354,31 +367,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
             }
 
-            var method = ConvertFunction(context, type, function);
+            string methodName = function.Args[1].Name.Name;
+            if (methodName == "main") methodName = "Main";
 
-            type.AddMethod(method);
+            var method = ConvertFunction(context, type, function, methodName: methodName);
+
+            if(method != null) type.AddMethod(method);
         }
-    }
-
-    private static void ConvertFunctions(DescribedType type, CompilerContext context, LNode member)
-    {
-        string methodName = member.Args[1].Name.Name;
-        var method = new DescribedBodyMethod(type,
-            new QualifiedName(methodName).FullyUnqualifiedName,
-            member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
-        method.Body = null;
-
-        Utils.SetAccessModifier(member, method);
-
-        if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
-        {
-            method.AddAttribute(FlagAttribute.Abstract);
-        }
-
-        AddParameters(method, member, context);
-        SetReturnType(method, member, context);
-
-        type.AddMethod(method);
     }
 
     private static Parameter ConvertParameter(LNode p, CompilerContext context)
@@ -409,7 +404,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (member.Calls(CodeSymbols.Fn))
             {
-                ConvertFunctions(type, context, member);
+                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
             }
         }
     }

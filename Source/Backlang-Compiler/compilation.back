@@ -16,6 +16,10 @@ func main() public static -> none {
 	print("Hello");
 }
 
+func main() static -> none {}
+func main() static -> none {}
+
+
 func cool(isCool: bool = true) protected static -> bool {
 	return false;
 }

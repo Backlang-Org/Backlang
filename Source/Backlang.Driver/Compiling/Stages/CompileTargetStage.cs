@@ -1,4 +1,5 @@
-﻿using Backlang.Core.CompilerService;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Core.CompilerService;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
@@ -78,9 +79,16 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             return null;
         }
 
-        return context.Assembly.Types
-            .First(_ => _.Name.ToString() == Names.ProgramClass)
-            .Methods.First(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+        var entryPoint = context.Assembly.Types
+            .FirstOrDefault(_ => _.Name.ToString() == Names.ProgramClass)
+            .Methods.FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+
+        if(entryPoint == null)
+        {
+            context.Messages.Add(Message.Error("Got OutputType 'Exe' but couldn't find entry point."));
+        }
+
+        return entryPoint;
     }
 
     private void AddTarget<T>()
