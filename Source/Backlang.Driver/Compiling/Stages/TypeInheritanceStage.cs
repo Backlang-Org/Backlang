@@ -70,7 +70,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             new QualifiedName(methodName).FullyUnqualifiedName,
             function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
 
-        SetAccessModifier(function, method);
+        Utils.SetAccessModifier(function, method);
 
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
@@ -115,22 +115,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         method.Body = body;
 
         return method;
-    }
-
-    private static void SetAccessModifier(LNode node, DescribedMethod type)
-    {
-        if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-        {
-            type.IsPrivate = true;
-        }
-        else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Protected)))
-        {
-            type.IsProtected = true;
-        }
-        else
-        {
-            type.IsPublic = true;
-        }
     }
 
     public static IType GetLiteralType(object value, TypeResolver resolver)
@@ -384,7 +368,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             member.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
         method.Body = null;
 
-        SetAccessModifier(member, method);
+        Utils.SetAccessModifier(member, method);
 
         if (member.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {

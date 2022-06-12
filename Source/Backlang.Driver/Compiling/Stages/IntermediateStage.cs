@@ -108,23 +108,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 type.AddAttribute(FlagAttribute.InterfaceType);
             }
 
-            SetAccessModifier(st, type);
+            Utils.SetAccessModifier(st, type);
             SetOtherModifiers(st, type);
 
             context.Assembly.AddType(type);
-        }
-    }
-    private static void SetAccessModifier(LNode node, DescribedType type)
-    {
-        if(node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
-        {
-            type.IsPrivate = true;
-        } else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Protected)))
-        {
-            type.IsProtected = true;
-        } else
-        {
-            type.IsPublic = true;
         }
     }
 
