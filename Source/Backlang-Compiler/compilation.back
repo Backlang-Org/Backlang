@@ -1,6 +1,6 @@
 
 @Log
-func main() static -> none {
+func main() public static -> none {
 	//hello world
 	let msg : i32 = 24;
 	let dd : string = "Hello World";
@@ -16,14 +16,14 @@ func main() static -> none {
 	print("Hello");
 }
 
-func cool(isCool: bool = true) static -> bool {
+func cool(isCool: bool = true) protected static -> bool {
 	return false;
 }
 
 
 @Derive(Something)
 @DoSomeWork
-class abstract Person {
+class protected abstract Person {
 	let name: string;
 
 	func hehe() abstract -> string;

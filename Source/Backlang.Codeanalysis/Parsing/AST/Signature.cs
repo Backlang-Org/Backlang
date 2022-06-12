@@ -67,11 +67,13 @@ public sealed class Signature
 
     private static Dictionary<TokenType, Symbol> possibleAttributes = new() {
         { TokenType.Static, CodeSymbols.Static },
+        { TokenType.Public, CodeSymbols.Public },
+        { TokenType.Protected, CodeSymbols.Protected },
         { TokenType.Private, CodeSymbols.Private },
         { TokenType.Operator, CodeSymbols.Operator },
         { TokenType.Abstract, CodeSymbols.Abstract },
         { TokenType.Override, CodeSymbols.Override },
-        { TokenType.Extern, CodeSymbols.Extern }
+        { TokenType.Extern, CodeSymbols.Extern },
     };
     public static LNodeList ParseAttributes(Parser parser)
     {
