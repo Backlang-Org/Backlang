@@ -1,4 +1,4 @@
-<Project Sdk="Backlang.NET.Sdk/1.0.38">
+<Project Sdk="Backlang.NET.Sdk/1.0.40">
 
   <PropertyGroup>
     <Description>TestConsole</Description>
