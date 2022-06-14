@@ -37,13 +37,13 @@
 
   "Static Function": {
     "prefix": ["fnstatic", "funcstatic"],
-    "body": ["static func ${1:name}($2) {", "\t$0", "}"],
+    "body": ["func ${1:name}($2) static {", "\t$0", "}"],
     "description": "A static function."
   },
   
   "Main Function": {
     "prefix": ["main"],
-    "body": ["public static func main() -> i32 {", "\t$0", "\treturn 0;", "}"],
+    "body": ["func main() static -> i32 {", "\t$0", "\treturn 0;", "}"],
     "description": "A snippet for making the main function."
   },
 
@@ -76,12 +76,6 @@
     "body": ["class ${1:name} {", "\t$0", "}"],
     "description": "A class."
   },
-  
-  "Singleton Class": {
-    "prefix": ["singleton"],
-    "body": ["static class ${1:name} {", "\t$0", "}"],
-    "description": "A static class / singleton."
-  }
 
   "Interface": {
     "prefix": ["interface"],
