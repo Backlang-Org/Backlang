@@ -8,7 +8,7 @@ public class UsingTests : ParserTestBase
     [TestMethod]
     public void IntUsing_Should_Pass()
     {
-        var src = "using int as i32;";
+        var src = "using i32 as int;";
         var node = ParseAndGetNodes(src);
     }
 }
