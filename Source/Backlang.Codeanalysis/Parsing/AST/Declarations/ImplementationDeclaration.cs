@@ -50,7 +50,10 @@ public class ImplementationDeclaration : IParsePoint<LNode>
         LNodeList body = new();
         while (iterator.Current.Type != TokenType.EOF && iterator.Current.Type != TokenType.CloseCurly)
         {
-            body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints));
+            Annotation.TryParse(parser, out var annotations);
+            Modifier.TryParse(parser, out var modifiers);
+
+            body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints).PlusAttrs(annotations).PlusAttrs(modifiers));
         }
 
         iterator.Match(TokenType.CloseCurly);

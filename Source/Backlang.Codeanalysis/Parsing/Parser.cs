@@ -73,14 +73,10 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         var body = new LNodeList();
         while (Iterator.Current.Type != terminator)
         {
-            var hasAnnotation = Annotation.TryParse(this, out var annotation);
+            Annotation.TryParse(this, out var annotation);
+            Modifier.TryParse(this, out var modifiers);
 
-            var item = InvokeParsePoint(DeclarationParsePoints);
-
-            if (hasAnnotation)
-            {
-                item = item.PlusAttrs(annotation);
-            }
+            var item = InvokeParsePoint(DeclarationParsePoints).PlusAttrs(annotation).PlusAttrs(modifiers);
 
             body.Add(item);
         }
