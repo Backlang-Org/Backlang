@@ -3,12 +3,12 @@
 namespace TestProject1.AST.Declarations;
 
 [TestClass]
-public class TypeAliasTests : ParserTestBase
+public class UsingTests : ParserTestBase
 {
     [TestMethod]
-    public void IntAlias_Should_Pass()
+    public void IntUsing_Should_Pass()
     {
-        var src = "type int = i32;";
+        var src = "using int as i32;";
         var node = ParseAndGetNodes(src);
     }
 }
