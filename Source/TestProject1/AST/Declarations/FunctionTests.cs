@@ -41,9 +41,16 @@ public class FunctionTests : ParserTestBase
     }
 
     [TestMethod]
-    public void FunctionDeclarationWithoutParameters_Should_Pass()
+    public void FunctionDeclaration_Without_Parameters_Should_Pass()
     {
         var src = "func test() -> i32 { 123; }";
+        var statement = ParseAndGetNodes(src);
+    }
+
+    [TestMethod]
+    public void FunctionDeclaration_With_Modifiers_Should_Pass()
+    {
+        var src = "public static func test() -> i32 { 123; }";
         var statement = ParseAndGetNodes(src);
     }
 }
