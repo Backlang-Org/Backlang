@@ -38,6 +38,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         //function without return type set
         if (type == LNode.Missing || type.Args[0].Name.Name == "#") return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
+        if (type.Name == CodeSymbols.Fn)
+        {
+            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)); // TODO: Resolve Functions as Types
+        }
+
         var name = type.Args[0].Name.ToString().Replace("#", "");
 
         if (TypenameTable.ContainsKey(name))
