@@ -44,6 +44,7 @@ public sealed class Message
 
     public override string ToString()
     {
+        if(Document == null) return Text;
         return $"{Document.Filename}:{Line}:{Column} {Text}";
     }
 }
