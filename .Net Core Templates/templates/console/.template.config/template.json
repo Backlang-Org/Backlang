@@ -1,10 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
-  "author": "Me",
+  "author": "Backseat-Comitee",
   "classifications": [ "Common", "Console", "Backlang" ],
   "identity": "Backlang.ConsoleProject",
   "name": "Backlang console project",
-  "shortName": "console",
+  "shortName": "backconsole",
   "tags": {
     "language": "Backlang",
     "type": "project"
