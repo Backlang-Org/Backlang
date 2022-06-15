@@ -15,19 +15,19 @@ public sealed class TypeLiteral
 
             typeNode = SyntaxTree.Type($"#{typename}", new());
 
-            if (iterator.Current.Type == TokenType.Star)
+            if (iterator.IsMatch(TokenType.Star))
             {
                 iterator.NextToken();
 
                 typeNode = SyntaxTree.Pointer(typeNode);
             }
-            else if (iterator.Current.Type == TokenType.OpenSquare)
+            else if (iterator.IsMatch(TokenType.OpenSquare))
             {
                 iterator.NextToken();
 
                 var dimensions = 1;
 
-                while (iterator.Current.Type == TokenType.Comma)
+                while (iterator.IsMatch(TokenType.Comma))
                 {
                     dimensions++;
 
@@ -38,18 +38,18 @@ public sealed class TypeLiteral
 
                 typeNode = SyntaxTree.Array(typeNode, dimensions);
             }
-            else if (iterator.Current.Type == TokenType.LessThan)
+            else if (iterator.IsMatch(TokenType.LessThan))
             {
                 iterator.NextToken();
 
-                while (iterator.Current.Type != TokenType.GreaterThan)
+                while (!iterator.IsMatch(TokenType.GreaterThan))
                 {
-                    if (iterator.Current.Type == TokenType.Identifier)
+                    if (iterator.IsMatch(TokenType.Identifier))
                     {
                         args.Add(Parse(iterator, parser));
                     }
 
-                    if (iterator.Current.Type != TokenType.GreaterThan)
+                    if (!iterator.IsMatch(TokenType.GreaterThan))
                     {
                         iterator.Match(TokenType.Comma);
                     }
@@ -59,6 +59,11 @@ public sealed class TypeLiteral
 
                 typeNode = typeNode.WithArgs(args);
             }
+        }
+        else if (iterator.IsMatch(TokenType.None))
+        {
+            typeNode = LNode.Missing; // Missing is the normal type for none
+            iterator.NextToken();
         }
         else if (iterator.IsMatch(TokenType.OpenParen))
         {
