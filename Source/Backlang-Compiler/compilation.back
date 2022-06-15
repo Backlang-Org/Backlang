@@ -20,6 +20,9 @@ protected static func cool(isCool: bool = true) -> bool {
 	return false;
 }
 
+private func queue(myCoolCode: (i32) -> none) {
+	
+}
 
 @Derive(Something)
 @DoSomeWork
