@@ -1,4 +1,4 @@
-<Project Sdk="Backlang.NET.Sdk/1.0.41">
+<Project Sdk="Backlang.NET.Sdk/1.0.42">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>

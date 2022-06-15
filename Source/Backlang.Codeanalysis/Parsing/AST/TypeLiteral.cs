@@ -6,54 +6,87 @@ public sealed class TypeLiteral
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var typename = iterator.Match(TokenType.Identifier).Text;
-        var args = new LNodeList();
+        LNode typeNode;
 
-        var typeNode = SyntaxTree.Type($"#{typename}", new());
-
-        if (iterator.Current.Type == TokenType.Star)
+        if (iterator.IsMatch(TokenType.Identifier))
         {
-            iterator.NextToken();
+            var typename = iterator.Match(TokenType.Identifier).Text;
+            var args = new LNodeList();
 
-            return SyntaxTree.Pointer(typeNode);
-        }
-        else if (iterator.Current.Type == TokenType.OpenSquare)
-        {
-            iterator.NextToken();
+            typeNode = SyntaxTree.Type($"#{typename}", new());
 
-            var dimensions = 1;
-
-            while (iterator.Current.Type == TokenType.Comma)
+            if (iterator.IsMatch(TokenType.Star))
             {
-                dimensions++;
-
                 iterator.NextToken();
+
+                typeNode = SyntaxTree.Pointer(typeNode);
             }
-
-            iterator.Match(TokenType.CloseSquare);
-
-            return SyntaxTree.Array(typeNode, dimensions);
-        }
-        else if (iterator.Current.Type == TokenType.LessThan)
-        {
-            iterator.NextToken();
-
-            while (iterator.Current.Type != TokenType.GreaterThan)
+            else if (iterator.IsMatch(TokenType.OpenSquare))
             {
-                if (iterator.Current.Type == TokenType.Identifier)
+                iterator.NextToken();
+
+                var dimensions = 1;
+
+                while (iterator.IsMatch(TokenType.Comma))
                 {
-                    args.Add(Parse(iterator, parser));
+                    dimensions++;
+
+                    iterator.NextToken();
                 }
 
-                if (iterator.Current.Type != TokenType.GreaterThan)
+                iterator.Match(TokenType.CloseSquare);
+
+                typeNode = SyntaxTree.Array(typeNode, dimensions);
+            }
+            else if (iterator.IsMatch(TokenType.LessThan))
+            {
+                iterator.NextToken();
+
+                while (!iterator.IsMatch(TokenType.GreaterThan))
                 {
-                    iterator.Match(TokenType.Comma);
+                    if (iterator.IsMatch(TokenType.Identifier))
+                    {
+                        args.Add(Parse(iterator, parser));
+                    }
+
+                    if (!iterator.IsMatch(TokenType.GreaterThan))
+                    {
+                        iterator.Match(TokenType.Comma);
+                    }
                 }
+
+                iterator.Match(TokenType.GreaterThan);
+
+                typeNode = typeNode.WithArgs(args);
+            }
+        }
+        else if (iterator.IsMatch(TokenType.None))
+        {
+            typeNode = LNode.Missing; // Missing is the normal type for none
+            iterator.NextToken();
+        }
+        else if (iterator.IsMatch(TokenType.OpenParen))
+        {
+            LNode returnType = LNode.Missing;
+
+            iterator.Match(TokenType.OpenParen);
+
+            var parameters = Expression.ParseList(parser, TokenType.CloseParen);
+
+            if (iterator.Current.Type == TokenType.Arrow)
+            {
+                iterator.NextToken();
+
+                returnType = TypeLiteral.Parse(iterator, parser);
             }
 
-            iterator.Match(TokenType.GreaterThan);
-
-            return typeNode.WithArgs(args);
+            typeNode = LNode.Call(CodeSymbols.Fn, LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters)));
+        }
+        else
+        {
+            parser.Messages.Add(Message.Error(parser.Document, "Expected Identifier or Function-Signature as TypeLiteral, but got " + iterator.Current.Type, parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+            typeNode = LNode.Missing;
+            iterator.NextToken();
         }
 
         return typeNode;

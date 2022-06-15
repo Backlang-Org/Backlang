@@ -38,6 +38,20 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         //function without return type set
         if (type == LNode.Missing || type.Args[0].Name.Name == "#") return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
+        if (type.Name == CodeSymbols.Fn)
+        {
+            string typename = string.Empty;
+            typename = type.Args[0] == LNode.Missing ? "Action" : "Func`" + (type.Args[2].ArgCount + 1);
+
+            var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typename, "System");
+            foreach (var garg in type.Args[2])
+            {
+                fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
+            }
+
+            return fnType;
+        }
+
         var name = type.Args[0].Name.ToString().Replace("#", "");
 
         if (TypenameTable.ContainsKey(name))

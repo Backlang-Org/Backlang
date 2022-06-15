@@ -41,7 +41,7 @@ public sealed class Signature
         return SyntaxTree.Signature(LNode.Id((Symbol)name), returnType, parameters);
     }
 
-    private static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)
+    public static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)
     {
         var parameters = new LNodeList();
         while (iterator.Current.Type != TokenType.CloseParen)
