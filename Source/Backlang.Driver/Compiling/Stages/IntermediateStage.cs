@@ -41,7 +41,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         if (type.Name == CodeSymbols.Fn)
         {
             string typename = string.Empty;
-            typename = type.Args[0] == LNode.Missing ? "Action" : "Func`" + (type.Args[2].ArgCount + 1);
+            typename = type.Args[0] == LNode.Missing ? "Action`" + (type.Args[2].ArgCount) : "Func`" + (type.Args[2].ArgCount + 1);
 
             var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typename, "System");
             foreach (var garg in type.Args[2])
