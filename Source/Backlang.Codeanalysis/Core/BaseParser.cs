@@ -32,16 +32,16 @@ public abstract class BaseParser<TLexer, TParser>
 
         var parser = (TParser)Activator.CreateInstance(typeof(TParser), document, tokens, lexer.Messages);
 
-        return (parser.Program(), parser.Messages);
+        return parser.Program();
     }
 
-    public LNodeList Program()
+    public (LNodeList, List<Message>) Program()
     {
         var node = Start();
 
         Iterator.Match(TokenType.EOF);
 
-        return node.Body;
+        return (node.Body, node.Messages);
     }
 
     internal abstract LNode ParsePrimary(ParsePoints<LNode> parsePoints = null);

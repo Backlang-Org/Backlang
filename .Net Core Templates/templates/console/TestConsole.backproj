@@ -1,6 +1,7 @@
-<Project Sdk="Backlang.NET.Sdk/1.0.38">
+<Project Sdk="Backlang.NET.Sdk/1.0.40">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <Description>TestConsole</Description>
     <TargetFramework>net7</TargetFramework>
     <AssemblyName>TestConsole</AssemblyName>

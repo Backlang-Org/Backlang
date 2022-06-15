@@ -18,4 +18,11 @@ public class StructTests : ParserTestBase
         var src = "struct Point { X : i32 = 24; Y : i32 = 42; }";
         var declaration = ParseAndGetNodes(src);
     }
+
+    [TestMethod]
+    public void Struct_With_Modifiers_Should_Pass()
+    {
+        var src = "protected abstract struct Component { }";
+        var declaration = ParseAndGetNodes(src);
+    }
 }

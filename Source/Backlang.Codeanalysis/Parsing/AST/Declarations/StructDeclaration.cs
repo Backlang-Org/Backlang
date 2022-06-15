@@ -7,7 +7,6 @@ public sealed class StructDeclaration : IParsePoint<LNode>
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var keywordToken = iterator.Prev;
-        var attributes = Signature.ParseAttributes(parser);
         var name = iterator.Match(TokenType.Identifier).Text;
         var inheritances = new LNodeList();
         var members = new LNodeList();
@@ -26,20 +25,21 @@ public sealed class StructDeclaration : IParsePoint<LNode>
         while (iterator.Current.Type != TokenType.CloseCurly)
         {
             Annotation.TryParse(parser, out var annotations);
+            Modifier.TryParse(parser, out var modifiers);
 
             if (iterator.Current.Type == TokenType.Function)
             {
-                members.Add(TypeFunctionDeclaration.Parse(iterator, parser).PlusAttrs(annotations));
+                members.Add(TypeFunctionDeclaration.Parse(iterator, parser).PlusAttrs(annotations).PlusAttrs(modifiers));
             }
             else
             {
-                members.Add(TypeFieldDeclaration.Parse(iterator, parser).PlusAttrs(annotations));
+                members.Add(TypeFieldDeclaration.Parse(iterator, parser).PlusAttrs(annotations).PlusAttrs(modifiers));
             }
         }
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Struct(name, inheritances, members).WithAttrs(attributes)
+        return SyntaxTree.Struct(name, inheritances, members)
             .WithRange(keywordToken, iterator.Prev);
     }
 }
