@@ -24,6 +24,10 @@ private func queue(myCoolCode: (i32) -> none) {
 	
 }
 
+private func queue2(myCoolCode2: (bool) -> bool) {
+	
+}
+
 @Derive(Something)
 @DoSomeWork
 protected abstract class Person {
