@@ -95,6 +95,20 @@ public static partial class BuiltInMacros
         return null;
     }
 
+    [LexicalMacro("left <-> right", "Swaps the values of the two variables", "'<->", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Swap(LNode node, IMacroContext context)
+    {
+        var left = node.Args[0];
+        var right = node.Args[1];
+        var temp = GenerateId(null, context);
+
+        return LNode.Call(CodeSymbols.Braces, LNode.List(
+            LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(temp, left)))),
+            LNode.Call(CodeSymbols.Assign, LNode.List(left, right)),
+            LNode.Call(CodeSymbols.Assign, LNode.List(right, temp))
+            )).SetStyle(NodeStyle.StatementBlock);
+    }
+
     [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)", "generateId", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode GenerateId(LNode generateID, IMacroContext context)
     {

@@ -15,6 +15,7 @@ public enum BinaryOpPrecedences
     Percent = DottedOps,
     Or = Percent,
     Comparisons = Or, // < <= >= >
+    SwapOperator = 2,
     
     FunctionCalls = 7, // . ::
 

@@ -1,10 +1,13 @@
 
 @Log
-func main() static -> none {
+public static func main() -> none {
 	//hello world
 	let msg : i32 = 24;
 	let dd : string = "Hello World";
-	let ff : bool = true;
+	let mut ff : bool = true;
+	let mut another : bool = false;
+
+	ff <-> another;
 
 	print(true);
 	print(1);
@@ -13,30 +16,30 @@ func main() static -> none {
 	print("Hello");
 }
 
-func cool(isCool: bool = true) static -> bool {
+protected static func cool(isCool: bool = true) -> bool {
 	return false;
 }
 
 
 @Derive(Something)
 @DoSomeWork
-class abstract Person {
+protected abstract class Person {
 	let name: string;
 
-	func hehe() abstract -> string;
+	abstract func hehe() -> string;
 
-	func notHere() extern -> bool;
+	extern func notHere() -> bool;
 }
 
-class private VeryImportantPerson : Person {
+private class VeryImportantPerson : Person {
 	
 }
 
 implement VeryImportantPerson {
-	func hehe() override -> string { }
+	override func hehe() -> string { }
 }
 
-struct static private Point {
+private static struct Point {
 	@Useful
 	let mut x: i32 = 0;
 	let mut y: i32 = 1;
@@ -53,7 +56,7 @@ class Location : Point, ISerializable {
 }
 
 implement Location {
-	func new(@FieldTransform() x: i32, y: i32, z: i32, worldName: string) static -> Location {
+	static func new(@FieldTransform() x: i32, y: i32, z: i32, worldName: string) {
 		
 	}
 	

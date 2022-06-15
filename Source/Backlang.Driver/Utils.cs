@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Loyc.Syntax;
+using System.Text;
 
 namespace Backlang.Driver;
 
@@ -16,5 +18,20 @@ public sealed class Utils
         }
 
         return sb.ToString();
+    }
+    public static void SetAccessModifier(LNode node, DescribedMember type)
+    {
+        if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
+        {
+            type.IsPrivate = true;
+        }
+        else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Protected)))
+        {
+            type.IsProtected = true;
+        }
+        else
+        {
+            type.IsPublic = true;
+        }
     }
 }

@@ -18,4 +18,18 @@ public class ImplementationTests : ParserTestBase
         var src = "implement u8 { func something() {  } }";
         var node = ParseAndGetNodes(src);
     }
+
+    [TestMethod]
+    public void Impl_Function_With_Annotations_Should_Pass()
+    {
+        var src = "implement u8 { @Log func something() {  } }";
+        var node = ParseAndGetNodes(src);
+    }
+
+    [TestMethod]
+    public void Impl_Function_With_Modifiers_Should_Pass()
+    {
+        var src = "implement u8 { private override func something() {  } }";
+        var node = ParseAndGetNodes(src);
+    }
 }
