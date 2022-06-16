@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Backlang.Driver.Compiling.Stages;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -42,10 +43,12 @@ public class DotNetAssembly : ITargetAssembly
             if (type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
-            } else if(type.IsProtected)
+            }
+            else if (type.IsProtected)
             {
                 clrType.Attributes |= TypeAttributes.NestedFamily;
-            } else
+            }
+            else
             {
                 clrType.Attributes |= TypeAttributes.Public;
             }
@@ -202,7 +205,7 @@ public class DotNetAssembly : ITargetAssembly
 
         foreach (var p in m.Parameters)
         {
-            var param = new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None, Resolve(p.Type.FullName));
+            var param = new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None, Resolve(p.Type));
             if (p.HasDefault)
             {
                 param.Constant = p.DefaultValue;
@@ -222,14 +225,48 @@ public class DotNetAssembly : ITargetAssembly
         return clrMethod;
     }
 
+    private TypeReference Resolve(IType dtype)
+    {
+        var resolvedType = Resolve(dtype.FullName);
+        if (resolvedType.HasGenericParameters)
+        {
+            var genericType = new GenericInstanceType(resolvedType);
+
+            foreach (var gp in dtype.GenericParameters)
+            {
+                if (gp.Name.ToString() == "#" || gp.Name.ToString().StartsWith("T")
+                    || gp.Name.ToString().StartsWith("TResult")) continue;
+
+                var resolvedGeneric = Resolve(gp.Name.Qualify("System"));
+                genericType.GenericArguments.Add(resolvedGeneric);
+            }
+
+            if (dtype.Name.ToString().Contains("Func"))
+            {
+                genericType.GenericArguments.Add(_assemblyDefinition.MainModule.ImportReference(typeof(object)));
+            }
+
+            return genericType;
+        }
+
+        return resolvedType;
+    }
+
     private TypeReference Resolve(QualifiedName name)
     {
         var type = Type.GetType(name.ToString());
 
         if (type == null)
         {
-            return new TypeReference(name.Qualifier.ToString(),
-                name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, null);
+            if (IntermediateStage.TypenameTable.ContainsKey(name.Name.ToString()))
+            {
+                return _assemblyDefinition.MainModule.ImportReference(IntermediateStage.TypenameTable[name.Name.ToString()]);
+            }
+            else
+            {
+                return new TypeReference(name.Qualifier.ToString(),
+                    name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, _assemblyDefinition.MainModule);
+            }
         }
 
         var resolvedType = _assemblyDefinition.MainModule.ImportReference(type);
