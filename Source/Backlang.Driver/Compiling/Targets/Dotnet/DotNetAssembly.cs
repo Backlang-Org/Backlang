@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Backlang.Driver.Compiling.Stages;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -226,16 +227,26 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(IType dtype)
     {
-        var name = new SimpleName(dtype.Name.ToString().Replace("`1", "")).Qualify(dtype.FullName);//ToDo: Fix
-
-        var resolvedType = Resolve(name);
-
-        foreach (var gp in dtype.GenericParameters)
+        var resolvedType = Resolve(dtype.FullName);
+        if (resolvedType.HasGenericParameters)
         {
-            if (gp.Name.ToString() == "#" || gp.Name.ToString() == "T" || gp.Name.ToString() == "TResult") continue;
+            var genericType = new GenericInstanceType(resolvedType);
 
-            var resolvedGeneric = Resolve(gp.Name.Qualify("System"));
-            resolvedType.GenericParameters.Add(new GenericParameter(resolvedGeneric));
+            foreach (var gp in dtype.GenericParameters)
+            {
+                if (gp.Name.ToString() == "#" || gp.Name.ToString().StartsWith("T")
+                    || gp.Name.ToString().StartsWith("TResult")) continue;
+
+                var resolvedGeneric = Resolve(gp.Name.Qualify("System"));
+                genericType.GenericArguments.Add(resolvedGeneric);
+            }
+
+            if (dtype.Name.ToString().Contains("Func"))
+            {
+                genericType.GenericArguments.Add(_assemblyDefinition.MainModule.ImportReference(typeof(object)));
+            }
+
+            return genericType;
         }
 
         return resolvedType;
@@ -247,8 +258,15 @@ public class DotNetAssembly : ITargetAssembly
 
         if (type == null)
         {
-            return new TypeReference(name.Qualifier.ToString(),
-                name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, null);
+            if (IntermediateStage.TypenameTable.ContainsKey(name.Name.ToString()))
+            {
+                return _assemblyDefinition.MainModule.ImportReference(IntermediateStage.TypenameTable[name.Name.ToString()]);
+            }
+            else
+            {
+                return new TypeReference(name.Qualifier.ToString(),
+                    name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, _assemblyDefinition.MainModule);
+            }
         }
 
         var resolvedType = _assemblyDefinition.MainModule.ImportReference(type);

@@ -1,26 +1,6 @@
 
-@Log
-public static func main() -> none {
-	//hello world
-	let msg : i32 = 24;
-	let dd : string = "Hello World";
-	let mut ff : bool = true;
-	let mut another : bool = false;
 
-	ff <-> another;
-
-	print(true);
-	print(1);
-	print(3.14);
-	print('c');
-	print("Hello");
-}
-
-protected static func cool(isCool: bool = true) -> bool {
-	return false;
-}
-
-private func queue(myCoolCode: (Int32) -> none) {
+private func queue(myCoolCode: (i32, bool) -> none) {
 	
 }
 
