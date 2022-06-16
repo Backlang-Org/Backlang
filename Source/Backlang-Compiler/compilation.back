@@ -20,11 +20,11 @@ protected static func cool(isCool: bool = true) -> bool {
 	return false;
 }
 
-private func queue(myCoolCode: (i32) -> none) {
+private func queue(myCoolCode: (Int32) -> none) {
 	
 }
 
-private func queue2(myCoolCode2: (bool) -> bool) {
+private func queue2(myCoolCode2: (Boolean) -> bool) {
 	
 }
 

@@ -42,10 +42,12 @@ public class DotNetAssembly : ITargetAssembly
             if (type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
-            } else if(type.IsProtected)
+            }
+            else if (type.IsProtected)
             {
                 clrType.Attributes |= TypeAttributes.NestedFamily;
-            } else
+            }
+            else
             {
                 clrType.Attributes |= TypeAttributes.Public;
             }
@@ -202,7 +204,7 @@ public class DotNetAssembly : ITargetAssembly
 
         foreach (var p in m.Parameters)
         {
-            var param = new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None, Resolve(p.Type.FullName));
+            var param = new ParameterDefinition(p.Name.ToString(), ParameterAttributes.None, Resolve(p.Type));
             if (p.HasDefault)
             {
                 param.Constant = p.DefaultValue;
@@ -220,6 +222,23 @@ public class DotNetAssembly : ITargetAssembly
             clrMethod.IsStatic = false;
         }
         return clrMethod;
+    }
+
+    private TypeReference Resolve(IType dtype)
+    {
+        var name = new SimpleName(dtype.Name.ToString().Replace("`1", "")).Qualify(dtype.FullName);//ToDo: Fix
+
+        var resolvedType = Resolve(name);
+
+        foreach (var gp in dtype.GenericParameters)
+        {
+            if (gp.Name.ToString() == "#" || gp.Name.ToString() == "T" || gp.Name.ToString() == "TResult") continue;
+
+            var resolvedGeneric = Resolve(gp.Name.Qualify("System"));
+            resolvedType.GenericParameters.Add(new GenericParameter(resolvedGeneric));
+        }
+
+        return resolvedType;
     }
 
     private TypeReference Resolve(QualifiedName name)
