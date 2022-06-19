@@ -8,9 +8,9 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public static class Expression
 {
-    public static Dictionary<TokenType, int> BinaryOperators = new();
-    public static Dictionary<TokenType, int> PreUnaryOperators = new();
-    public static Dictionary<TokenType, int> PostUnaryOperators = new();
+    public static readonly Dictionary<TokenType, int> BinaryOperators = new();
+    public static readonly Dictionary<TokenType, int> PreUnaryOperators = new();
+    public static readonly Dictionary<TokenType, int> PostUnaryOperators = new();
 
     static Expression()
     {
