@@ -174,6 +174,9 @@ public enum TokenType
     [Keyword("func")]
     Function,
 
+    [Keyword("macro")]
+    Macro,
+
     [Keyword("let")]
     Declare,
 
