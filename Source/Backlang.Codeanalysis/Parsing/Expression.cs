@@ -8,7 +8,9 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public static class Expression
 {
-    public static IList<OperatorInfo> Operators = new List<OperatorInfo>();
+    public static Dictionary<TokenType, int> BinaryOperators = new();
+    public static Dictionary<TokenType, int> PreUnaryOperators = new();
+    public static Dictionary<TokenType, int> PostUnaryOperators = new();
 
     static Expression()
     {
@@ -16,31 +18,31 @@ public static class Expression
 
         foreach (var op in typeValues)
         {
-            var attributes = op.GetType()
-                .GetField(Enum.GetName(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
+            var attributes = op.GetType().GetField(Enum.GetName(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
 
             if (attributes != null && attributes.Any())
             {
                 foreach (var attribute in attributes)
                 {
-                    Operators.Add(new OperatorInfo(op, attribute.Precedence, attribute.IsUnary, attribute.IsPostUnary));
+                    if(attribute.IsUnary)
+                    {
+                        if(attribute.IsPostUnary)
+                        {
+                            PostUnaryOperators.Add(op, attribute.Precedence);
+                        } else
+                        {
+                            PreUnaryOperators.Add(op, attribute.Precedence);
+                        }
+                    } else
+                    {
+                        BinaryOperators.Add(op, attribute.Precedence);
+                    }
                 }
             }
         }
     }
 
-    public static int GetBinaryOperatorPrecedence(TokenType kind)
-    {
-        for (var i = 0; i < Operators.Count; i++)
-        {
-            if (Operators[i].TokenType == kind && !Operators[i].IsUnary)
-            {
-                return Operators[i].Precedence;
-            }
-        }
-
-        return 0;
-    }
+    public static int GetBinaryOperatorPrecedence(TokenType kind) => BinaryOperators.GetValueOrDefault(kind);
 
     //12L
     //3.14F
@@ -54,9 +56,9 @@ public static class Expression
         where TLexer : BaseLexer, new()
     {
         LNode left;
-        var unaryOperatorPrecedence = GetUnaryOperatorPrecedence(parser.Iterator.Current.Type);
+        var unaryOperatorPrecedence = GetPreUnaryOperatorPrecedence(parser.Iterator.Current.Type);
 
-        if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence && !IsPostUnary(parser.Iterator.Current.Type))
+        if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
             var operatorToken = parser.Iterator.NextToken();
 
@@ -115,29 +117,7 @@ public static class Expression
         return list;
     }
 
-    private static int GetUnaryOperatorPrecedence(TokenType kind)
-    {
-        for (var i = 0; i < Operators.Count; i++)
-        {
-            if (Operators[i].TokenType == kind && Operators[i].IsUnary)
-            {
-                return Operators[i].Precedence;
-            }
-        }
+    private static int GetPreUnaryOperatorPrecedence(TokenType kind) => PreUnaryOperators.GetValueOrDefault(kind);
 
-        return 0;
-    }
-
-    private static bool IsPostUnary(TokenType kind)
-    {
-        for (var i = 0; i < Operators.Count; i++)
-        {
-            if (Operators[i].TokenType == kind && Operators[i].IsUnary)
-            {
-                return Operators[i].IsPostUnary;
-            }
-        }
-
-        return false;
-    }
+    private static bool IsPostUnary(TokenType kind) => PostUnaryOperators.ContainsKey(kind);
 }
