@@ -6,7 +6,10 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var nameToken = iterator.NextToken();
+        var nameToken = iterator.Prev;
+
+        var currPos = iterator.Position - 1;
+
         var nameExpression = LNode.Id(nameToken.Text);
 
         if (iterator.Current.Type == TokenType.OpenParen)
@@ -22,10 +25,14 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
                 arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
                 return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
-                    .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
+                    .WithRange(nameToken, iterator.Prev);
             }
+            else
+            {
+                iterator.Position = currPos;
 
-            return LNode.Call(nameExpression, arguments);
+                return ExpressionStatement.Parse(iterator, parser);
+            }
         }
         else if (iterator.Current.Type == TokenType.OpenCurly)
         {
@@ -35,9 +42,13 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
             arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
             return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
-                .SetStyle(NodeStyle.Special).WithRange(nameToken, iterator.Prev);
+                .WithRange(nameToken, iterator.Prev);
         }
+        else
+        {
+            iterator.Position = currPos;
 
-        return LNode.Missing;
+            return ExpressionStatement.Parse(iterator, parser);
+        }
     }
 }

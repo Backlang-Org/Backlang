@@ -37,14 +37,11 @@ public static class TokenUtils
 
     public static bool IsOperator(this Token token)
     {
-        foreach (var opInfo in Expression.Operators)
-        {
-            if (opInfo.TokenType == token.Type)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        //var op = token.Type;
+        //var attributes = op.GetType().GetField(Enum.GetName(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
+        //return attributes != null && attributes.Any();
+        if(Expression.BinaryOperators.ContainsKey(token.Type)) return true;
+        if(Expression.PreUnaryOperators.ContainsKey(token.Type)) return true;
+        return Expression.PostUnaryOperators.ContainsKey(token.Type);
     }
 }
