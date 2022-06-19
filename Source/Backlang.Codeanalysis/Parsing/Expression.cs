@@ -9,8 +9,8 @@ namespace Backlang.Codeanalysis.Parsing;
 public static class Expression
 {
     public static readonly Dictionary<TokenType, int> BinaryOperators = new();
-    public static readonly Dictionary<TokenType, int> PreUnaryOperators = new();
     public static readonly Dictionary<TokenType, int> PostUnaryOperators = new();
+    public static readonly Dictionary<TokenType, int> PreUnaryOperators = new();
 
     static Expression()
     {
@@ -24,16 +24,18 @@ public static class Expression
             {
                 foreach (var attribute in attributes)
                 {
-                    if(attribute.IsUnary)
+                    if (attribute.IsUnary)
                     {
-                        if(attribute.IsPostUnary)
+                        if (attribute.IsPostUnary)
                         {
                             PostUnaryOperators.Add(op, attribute.Precedence);
-                        } else
+                        }
+                        else
                         {
                             PreUnaryOperators.Add(op, attribute.Precedence);
                         }
-                    } else
+                    }
+                    else
                     {
                         BinaryOperators.Add(op, attribute.Precedence);
                     }
@@ -43,9 +45,6 @@ public static class Expression
     }
 
     public static int GetBinaryOperatorPrecedence(TokenType kind) => BinaryOperators.GetValueOrDefault(kind);
-
-    //12L
-    //3.14F
 
     public static LNode Parse<TLexer, TParser>(
             Core.BaseParser<TLexer, TParser> parser,
@@ -104,7 +103,7 @@ public static class Expression
         var list = new LNodeList();
         while (parser.Iterator.Current.Type != terminator) //ToDo: implement option to disallow empty list
         {
-            list.Add(Expression.Parse(parser));
+            list.Add(Expression.Parse(parser, parsePoints));
 
             if (parser.Iterator.Current.Type != terminator)
             {
