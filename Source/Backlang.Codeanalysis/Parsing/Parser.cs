@@ -19,6 +19,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ClassDeclaration>(TokenType.Class);
         AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
+        AddDeclarationParsePoint<MacroDeclaration>(TokenType.Macro);
         AddDeclarationParsePoint<InterfaceDeclaration>(TokenType.Interface);
         AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.Implement);
         AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
