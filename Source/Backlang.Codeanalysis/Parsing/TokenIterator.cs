@@ -5,7 +5,6 @@ public sealed class TokenIterator
     public readonly List<Message> Messages = new();
     private readonly SourceDocument _document;
     private readonly List<Token> _tokens;
-    private int _position = 0;
 
     public TokenIterator(List<Token> tokens, SourceDocument document)
     {
@@ -14,6 +13,7 @@ public sealed class TokenIterator
     }
 
     public Token Current => Peek(0);
+    public int Position { get; set; }
     public Token Prev => Peek(-1);
 
     public bool IsMatch(TokenType kind)
@@ -35,13 +35,13 @@ public sealed class TokenIterator
     public Token NextToken()
     {
         var current = Current;
-        _position++;
+        Position++;
         return current;
     }
 
     public Token Peek(int offset)
     {
-        var index = _position + offset;
+        var index = Position + offset;
         if (index >= _tokens.Count)
             return _tokens[_tokens.Count - 1];
 

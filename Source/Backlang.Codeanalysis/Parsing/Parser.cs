@@ -28,7 +28,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
         AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
         AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Using);
-        AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Hash);
+        AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Identifier);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
         AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
@@ -47,7 +47,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddStatementParsePoint<WhileStatement>(TokenType.While);
         AddStatementParsePoint<TryStatement>(TokenType.Try);
         AddStatementParsePoint<ForStatement>(TokenType.For);
-        AddStatementParsePoint<MacroBlockStatement>(TokenType.Hash);
+        AddStatementParsePoint<MacroBlockStatement>(TokenType.Identifier);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)
