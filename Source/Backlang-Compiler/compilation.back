@@ -1,85 +1,17 @@
+union MyUnion {
+	a : f32 = 0;
+	b : i32 = 1;
+}
+
 
 @Log
 public static func main() -> none {
 	//hello world
-	let msg : i32 = 24;
+	let msg : i32 = 1*(2+3);
 	let dd : string = "Hello World";
 	let mut ff : bool = true;
 	let mut another : bool = false;
 
-	ff <-> another;
 
-	print(true);
-	print(1);
-	print(3.14);
-	print('c');
-	print("Hello");
 }
 
-macro Tralalala() {
-	print("HI");
-}
-
-private func queue(myCoolCode: (i32, bool) -> none) {
-	
-}
-
-private func queue2(myCoolCode2: (Boolean) -> bool) {
-	
-}
-
-@Derive(Something)
-@DoSomeWork
-protected abstract class Person {
-	let name: string;
-
-	abstract func hehe() -> string;
-
-	extern func notHere() -> bool;
-}
-
-private class VeryImportantPerson : Person {
-	
-}
-
-implement VeryImportantPerson {
-	override func hehe() -> string { }
-}
-
-private static struct Point {
-	@Useful
-	let mut x: i32 = 0;
-	let mut y: i32 = 1;
-	let mut z: i32;
-}
-
-interface ISerializable {
-	func toBytes() -> u8;
-}
-
-class Location : Point, ISerializable {
-	@Transform
-	let worldName: string = "world"; 
-}
-
-implement Location {
-	static func new(@FieldTransform() x: i32, y: i32, z: i32, worldName: string) {
-		
-	}
-	
-	func toBytes() -> u8 {
-		x |> isLetter() |> print();
-	}
-}
-
-implement u8 {
-	func hello(some : u8) {
-		
-	} 
-}
-
-enum Days {
-	@Description("First Day Of Week")
-	Monday = 1, 
-	Tuesday, Wednesday, Thursday, Friday, Saturday = 10, Sunday
-}
