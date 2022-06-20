@@ -316,4 +316,7 @@ public enum TokenType
 
     [Keyword("as")]
     As,
+
+    [Keyword("union")]
+    Union,
 }

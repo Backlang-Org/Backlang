@@ -192,6 +192,11 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(arg)).SetStyle(NodeStyle.Operator);
     }
 
+    public static LNode Union(string name, LNodeList members)
+    {
+        return LNode.Call((Symbol)name, members);
+    }
+
     public static LNode Using(LNode from, LNode to)
     {
         return LNode.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
