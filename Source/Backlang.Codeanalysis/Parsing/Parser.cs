@@ -16,6 +16,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
     public Parser(SourceDocument document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
     {
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
+        AddDeclarationParsePoint<UnionDeclaration>(TokenType.Union);
         AddDeclarationParsePoint<ClassDeclaration>(TokenType.Class);
         AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
