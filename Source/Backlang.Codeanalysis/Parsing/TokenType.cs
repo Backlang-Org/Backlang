@@ -110,6 +110,14 @@ public enum TokenType
     [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThanEqual,
 
+    [Lexeme("<<")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.ShiftOperator)]
+    ShiftLeft,
+
+    [Lexeme(">>")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.ShiftOperator)]
+    ShiftRight,
+
     [Lexeme(":")]
     Colon,
 
