@@ -5,6 +5,7 @@ public enum BinaryOpPrecedences
     Hat = 2,
 
     Ampersand = 3,
+    ShiftOperator = Ampersand,
 
     EqualsEquals = 4,
     DashedOps = EqualsEquals, // add, sub
@@ -20,7 +21,6 @@ public enum BinaryOpPrecedences
     FunctionCalls = 7, // . ::
 
     PipeOperator = 8, // |>
-    ShiftOperator = PipeOperator,
 
     OperationShortcuts = 9, // += -= *= /=
     Equals = OperationShortcuts,

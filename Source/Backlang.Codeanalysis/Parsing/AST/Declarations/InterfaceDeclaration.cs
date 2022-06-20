@@ -24,7 +24,7 @@ public sealed class InterfaceDeclaration : IParsePoint<LNode>
 
         while (iterator.Current.Type != TokenType.CloseCurly)
         {
-            members.Add(TypeFunctionDeclaration.Parse(iterator, parser));
+            members.Add(TypeMemberDeclaration.ParseFunction(iterator, parser));
         }
 
         iterator.Match(TokenType.CloseCurly);
