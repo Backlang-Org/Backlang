@@ -39,7 +39,7 @@ protected abstract class Person {
 }
 
 private class VeryImportantPerson : Person {
-	
+	public prop isCool: bool = true;
 }
 
 implement VeryImportantPerson {

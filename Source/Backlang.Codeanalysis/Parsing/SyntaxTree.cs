@@ -33,6 +33,16 @@ public static class SyntaxTree
         return LNode.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
+    public static LNode Property(LNode type, LNode name, LNode value)
+    {
+        if (value != null)
+        {
+            return LNode.Call(CodeSymbols.Property, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
+        }
+
+        return LNode.Call(CodeSymbols.Property, LNode.List(type, name));
+    }
+
     public static LNode Bitfield(string name, LNodeList members)
     {
         return LNode.Call(Symbols.Bitfield, LNode.Id(name)).WithAttrs(members);

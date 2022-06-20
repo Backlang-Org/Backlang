@@ -188,6 +188,9 @@ public enum TokenType
     [Keyword("let")]
     Declare,
 
+    [Keyword("prop")]
+    Property,
+
     [Keyword("mut")]
     Mutable,
 

@@ -31,6 +31,10 @@ public sealed class StructDeclaration : IParsePoint<LNode>
             {
                 members.Add(TypeFunctionDeclaration.Parse(iterator, parser).PlusAttrs(annotations).PlusAttrs(modifiers));
             }
+            else if (iterator.Current.Type == TokenType.Property)
+            {
+                members.Add(TypePropertyDeclaration.Parse(iterator, parser).PlusAttrs(annotations).PlusAttrs(modifiers));
+            }
             else
             {
                 members.Add(TypeFieldDeclaration.Parse(iterator, parser).PlusAttrs(annotations).PlusAttrs(modifiers));
