@@ -5,6 +5,10 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<LangVersion>preview</LangVersion>
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<FileVersion>1.0.42</FileVersion>
+	<AssemblyVersion>1.0.42</AssemblyVersion>
+	<Version>1.0.42</Version>
   </PropertyGroup>
 
 	<ItemGroup>
