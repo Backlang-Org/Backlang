@@ -169,7 +169,10 @@ public sealed partial class Parser
     private LNode ParseString()
     {
         var valueToken = Iterator.NextToken();
-        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(valueToken.Text)))
+
+        var unescaped = ParseHelpers.UnescapeCStyle(valueToken.Text).ToString();
+
+        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(unescaped)))
             .WithRange(valueToken);
     }
 }
