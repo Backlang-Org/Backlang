@@ -67,15 +67,13 @@ public sealed partial class Parser
 
     private LNode ParseBinNumber()
     {
-        var valueToken = Iterator.NextToken();
-        var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
+        var valueToken = (UString)Iterator.NextToken().Text;
 
-        int result = 0;
-        for (int i = 0; i < valueToken.Text.Length; i++)
+        var success = ParseHelpers.TryParseUInt(ref valueToken, out ulong result, 2, ParseNumberFlag.SkipUnderscores);
+
+        if (!success)
         {
-            if (chars[i] == '0') { continue; }
-
-            result += (int)Math.Pow(2, i);
+            return LNode.Missing;
         }
 
         return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result).WithStyle(NodeStyle.BinaryLiteral)))
@@ -92,8 +90,11 @@ public sealed partial class Parser
 
     private LNode ParseChar()
     {
+        var text = Iterator.NextToken().Text;
+        var unescaped = ParseHelpers.UnescapeCStyle(text);
+
         return LNode.Call(CodeSymbols.Char,
-            LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]))).WithRange(Iterator.Prev);
+            LNode.List(SyntaxTree.Factory.Literal(unescaped))).WithRange(Iterator.Prev);
     }
 
     private LNode ParseHexNumber()

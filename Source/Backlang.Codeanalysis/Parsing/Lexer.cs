@@ -168,7 +168,7 @@ public sealed class Lexer : BaseLexer
             return Token.Invalid;
         }
 
-        if (Peek() != '\'' && Peek() != '\0')
+        while (Peek() != '\'' && Peek() != '\0')
         {
             Advance();
             _column++;
@@ -305,7 +305,7 @@ public sealed class Lexer : BaseLexer
 
             while (!IsMatch("*/"))
             {
-                if(Current() == '\0')
+                if (Current() == '\0')
                 {
                     break;
                 }
@@ -320,7 +320,8 @@ public sealed class Lexer : BaseLexer
 
                 Advance();
                 _column++;
-            } else
+            }
+            else
             {
                 Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
                 return;
