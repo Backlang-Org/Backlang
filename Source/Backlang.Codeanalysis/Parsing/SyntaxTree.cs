@@ -139,10 +139,11 @@ public static class SyntaxTree
         return LNode.Call(Symbols.PointerType, LNode.List(type));
     }
 
-    public static LNode Signature(LNode name, LNode type, LNodeList args)
+    public static LNode Signature(LNode name, LNode type, LNodeList args, LNodeList generics)
     {
-        return LNode.Call(CodeSymbols.Fn, LNode.List(type, name,
-                LNode.Call(CodeSymbols.AltList, args)));
+        return LNode.Call(CodeSymbols.Fn, LNode.List(
+            type, name,
+            LNode.Call(CodeSymbols.AltList, args))).PlusAttr(LNode.Call(Symbols.Where, generics));
     }
 
     public static LNode SizeOf(LNode type)

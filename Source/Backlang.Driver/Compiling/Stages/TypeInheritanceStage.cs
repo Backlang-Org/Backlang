@@ -63,7 +63,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function, string methodName = null, bool hasBody = true)
     {
-        if (methodName == null) methodName = function.Args[1].Name.Name;
+        if (methodName == null) methodName = function.Args[1].Args[0].Name.Name;
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
@@ -367,7 +367,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
             }
 
-            string methodName = function.Args[1].Name.Name;
+            string methodName = function.Args[1].Args[0].Name.Name;
             if (methodName == "main") methodName = "Main";
 
             var method = ConvertFunction(context, type, function, methodName: methodName);
