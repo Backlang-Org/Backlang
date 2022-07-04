@@ -1,17 +1,14 @@
-union MyUnion {
-	a : f32 = 0;
-	b : i32 = 1;
-}
 
 
 @Log
 public static func main() -> none {
 	//hello world
-	let msg : i32 = 1*(2+3);
-	let dd : string = "Hello World";
-	let mut ff : bool = true;
 	let mut another : bool = false;
+	let endless = "dd";
+	let msg : i32 = 1*(2+3);
+	//let dd : string = "Hello World";
+	let mut ff : bool = true;
 
-
+	print("d")
 }
 
