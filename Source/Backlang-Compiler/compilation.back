@@ -1,7 +1,3 @@
-func abc<T>() where T : Person -> T {
-	
-}
-
 
 union MyUnion {
 	a : f32 = 0;
@@ -11,6 +7,7 @@ union MyUnion {
 
 @Log
 public static func main() -> none {
+
 	//hello world
 	let mut another : bool = false;
 	let endless = "dd";
@@ -18,7 +15,7 @@ public static func main() -> none {
 	//let dd : string = "Hello World";
 	let mut ff : bool = true;
 
-	print("d")
+	print("d");
 }
 
 class Person { }

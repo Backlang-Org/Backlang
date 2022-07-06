@@ -13,7 +13,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
     public readonly ParsePoints<LNode> ExpressionParsePoints = new();
     public readonly ParsePoints<LNode> StatementParsePoints = new();
 
-    public Parser(SourceDocument document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
+    public Parser(SourceFile<StreamCharSource> document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
     {
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
         AddDeclarationParsePoint<UnionDeclaration>(TokenType.Union);

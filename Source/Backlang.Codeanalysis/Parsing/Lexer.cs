@@ -34,7 +34,7 @@ public sealed class Lexer : BaseLexer
         SkipWhitespaces();
         SkipComments();
 
-        if (_position >= _document.Source.Length)
+        if (_position >= _document.Text.Count)
         {
             return new Token(TokenType.EOF, "\0", _position, _position, _line, _column);
         }
@@ -153,7 +153,7 @@ public sealed class Lexer : BaseLexer
             _column++;
         }
 
-        return new Token(TokenType.BinNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+        return new Token(TokenType.BinNumber, _document.Text.Slice(oldpos, _position - oldpos).ToString().Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
     }
 
     private Token LexCharLiteral()
@@ -176,7 +176,7 @@ public sealed class Lexer : BaseLexer
 
         _column += 2;
 
-        return new Token(TokenType.CharLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+        return new Token(TokenType.CharLiteral, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos - 1, ++_position, _line, oldColumn);
     }
 
     private Token LexDecimalNumber()
@@ -202,7 +202,7 @@ public sealed class Lexer : BaseLexer
             }
         }
 
-        return new Token(TokenType.Number, _document.Source.Substring(oldpos, _position - oldpos), oldpos, _position, _line, oldcolumn);
+        return new Token(TokenType.Number, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos, _position, _line, oldcolumn);
     }
 
     private Token LexDoubleQuoteString()
@@ -223,7 +223,7 @@ public sealed class Lexer : BaseLexer
 
         _column += 2;
 
-        return new Token(TokenType.StringLiteral, _document.Source.Substring(oldpos, _position - oldpos), oldpos - 1, ++_position, _line, oldColumn);
+        return new Token(TokenType.StringLiteral, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos - 1, ++_position, _line, oldColumn);
     }
 
     private Token LexHexNumber()
@@ -240,7 +240,7 @@ public sealed class Lexer : BaseLexer
             _column++;
         }
 
-        return new Token(TokenType.HexNumber, _document.Source.Substring(oldpos, _position - oldpos).Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+        return new Token(TokenType.HexNumber, _document.Text.Slice(oldpos, _position - oldpos).ToString().Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
     }
 
     private Token LexIdentifier()
@@ -254,7 +254,7 @@ public sealed class Lexer : BaseLexer
             _column++;
         }
 
-        var tokenText = _document.Source.Substring(oldpos, _position - oldpos);
+        var tokenText = _document.Text.Slice(oldpos, _position - oldpos).ToString();
 
         return new Token(TokenUtils.GetTokenType(tokenText), tokenText, oldpos, _position, _line, oldcolumn);
     }
@@ -266,7 +266,7 @@ public sealed class Lexer : BaseLexer
         _position += symbol.Key.Length;
         _column += symbol.Key.Length;
 
-        string text = _document.Source.Substring(oldpos, symbol.Key.Length);
+        var text = _document.Text.Slice(oldpos, symbol.Key.Length).ToString();
 
         return new Token(_symbolTokens[text], text, oldpos, _position, _line, _column);
     }
@@ -333,7 +333,7 @@ public sealed class Lexer : BaseLexer
 
     private void SkipWhitespaces()
     {
-        while (char.IsWhiteSpace(Current()) && _position <= _document.Source.Length)
+        while (char.IsWhiteSpace(Current()) && _position <= _document.Text.Count)
         {
             if (Current() == '\r')
             {

@@ -6,7 +6,7 @@ public static class LNodeExtensions
 {
     public static LNode WithRange(this LNode node, int start, int end)
     {
-        return node.WithRange(new SourceRange(null, start, end - start)).WithAttrs(node.Attrs);
+        return node.WithRange(new SourceRange(node.Source, start, Math.Abs(start - end))).WithAttrs(node.Attrs);
     }
 
     public static LNode WithRange(this LNode node, Token token)

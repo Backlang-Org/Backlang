@@ -1,12 +1,14 @@
-﻿namespace Backlang.Codeanalysis.Parsing;
+﻿using Loyc.Syntax;
+
+namespace Backlang.Codeanalysis.Parsing;
 
 public sealed class TokenIterator
 {
     public readonly List<Message> Messages = new();
-    private readonly SourceDocument _document;
+    private readonly SourceFile<StreamCharSource> _document;
     private readonly List<Token> _tokens;
 
-    public TokenIterator(List<Token> tokens, SourceDocument document)
+    public TokenIterator(List<Token> tokens, SourceFile<StreamCharSource> document)
     {
         _tokens = tokens;
         this._document = document;
