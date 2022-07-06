@@ -39,6 +39,10 @@ public static class MethodBodyCompiler
 
             ilProcessor.Emit(OpCodes.Ret);
         }
+        else if (m.Body.Implementation.EntryPoint.Flow is UnreachableFlow)
+        {
+            ilProcessor.Emit(OpCodes.Throw);
+        }
 
         if (clrMethod.ReturnType.Name == "Void")
         {

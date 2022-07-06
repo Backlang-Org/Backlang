@@ -1,5 +1,4 @@
-using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -51,6 +50,16 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 block.Flow =
                     new ReturnFlow(rt);
+            }
+            else if (node.Calls(CodeSymbols.Throw))
+            {
+                var valueNode = node.Args[0].Args[0];
+                var constant = block.AppendInstruction(ConvertConstant(
+                    GetLiteralType(node.Args[0].Args[0].Value, context.Binder), node.Args[0].Args[0].Value));
+
+                var str = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
+
+                block.Flow = UnreachableFlow.Instance;
             }
         }
 

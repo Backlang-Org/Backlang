@@ -311,4 +311,7 @@ public enum TokenType
 
     [Keyword("union")]
     Union,
+
+    [Keyword("throw")]
+    Throw,
 }

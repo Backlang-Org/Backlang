@@ -18,6 +18,11 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Array, LNode.List(typeNode, LNode.Literal(dimensions)));
     }
 
+    public static LNode Throw(LNode arg)
+    {
+        return Factory.Call(CodeSymbols.Throw, LNode.List(arg));
+    }
+
     public static LNode ArrayInstantiation(LNodeList elements)
     {
         return Factory.Call(CodeSymbols.Braces, elements);
