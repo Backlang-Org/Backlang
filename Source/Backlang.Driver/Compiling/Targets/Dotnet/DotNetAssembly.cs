@@ -6,6 +6,7 @@ using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -39,6 +40,8 @@ public class DotNetAssembly : ITargetAssembly
         {
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
+
+            //ConvertCustomAttributes(type, clrType);
 
             if (type.IsPrivate)
             {
@@ -109,6 +112,8 @@ public class DotNetAssembly : ITargetAssembly
                         fieldDefinition.IsLiteral = true;
                     }
                 }
+
+                ConvertCustomAttributes(field, fieldDefinition);
 
                 clrType.Fields.Add(fieldDefinition);
             }
@@ -190,6 +195,49 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         return attr;
+    }
+
+    private void ConvertCustomAttributes(DescribedType type, TypeDefinition clrType)
+    {
+        foreach (DescribedAttribute attr in type.Attributes.GetAll().Where(_ => _ is DescribedAttribute))
+        {
+            var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
+
+            var attrCtor = attrType.Methods.First(_ => _.IsConstructor);
+            var ca = new CustomAttribute(attrCtor);
+            clrType.IsBeforeFieldInit = false;
+
+            foreach (var arg in attr.ConstructorArguments)
+            {
+                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type), arg.Value));
+            }
+
+            clrType.CustomAttributes.Add(ca);
+        }
+    }
+
+    private void ConvertCustomAttributes(DescribedField field, FieldDefinition clrField)
+    {
+        foreach (DescribedAttribute attr in field.Attributes.GetAll().Where(_ => _ is DescribedAttribute))
+        {
+            if (attr.AttributeType.FullName.ToString() == typeof(FieldOffsetAttribute).FullName)
+            {
+                clrField.Offset = (int)attr.ConstructorArguments[0].Value;
+                continue;
+            }
+
+            var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
+
+            var attrCtor = attrType.Methods.First(_ => _.IsConstructor);
+            var ca = new CustomAttribute(attrCtor);
+
+            foreach (var arg in attr.ConstructorArguments)
+            {
+                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type), arg.Value));
+            }
+
+            clrField.CustomAttributes.Add(ca);
+        }
     }
 
     private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)

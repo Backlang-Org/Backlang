@@ -29,11 +29,16 @@ internal class LoweringStage : IHandler<CompilerContext, CompilerContext>
         if (node.Calls(Symbols.Union))
         {
             var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(ass.FullName.FullName), ass);
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First());
+            type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
 
             var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
 
             var attribute = new DescribedAttribute(attributeType);
+            attribute.ConstructorArguments.Add(
+                new AttributeArgument(
+                    ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(LayoutKind)),
+                    LayoutKind.Explicit)
+                );
 
             type.AddAttribute(attribute);
 
@@ -48,6 +53,16 @@ internal class LoweringStage : IHandler<CompilerContext, CompilerContext>
                     var mvalue = mvar.Args[1];
 
                     var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                    attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
+                    attribute = new DescribedAttribute(attributeType);
+                    attribute.ConstructorArguments.Add(
+                        new AttributeArgument(
+                            mtype,
+                            1) //ToDo: convert real field offset
+                        );
+
+                    field.AddAttribute(attribute);
 
                     type.AddField(field);
                 }
