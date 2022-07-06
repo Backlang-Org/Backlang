@@ -96,11 +96,13 @@ public sealed class TypeLiteral
     {
         var cursor = parser.Iterator.Position;
         node = Parse(parser.Iterator, parser);
-        if(node == LNode.Missing)
+
+        if (node == LNode.Missing)
         {
             parser.Iterator.Position = cursor;
             return false;
         }
+
         return true;
     }
 }
