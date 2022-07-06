@@ -76,8 +76,8 @@ public class DotNetAssembly : ITargetAssembly
                     {
                         clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(ValueType));
 
-                        clrType.ClassSize = 1;
-                        clrType.PackingSize = 0;
+                        //clrType.ClassSize = 1;
+                        //clrType.PackingSize = 0;
                     }
                     else
                     {

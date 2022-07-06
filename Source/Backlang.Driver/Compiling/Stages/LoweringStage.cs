@@ -59,7 +59,7 @@ internal class LoweringStage : IHandler<CompilerContext, CompilerContext>
                     attribute.ConstructorArguments.Add(
                         new AttributeArgument(
                             mtype,
-                            1) //ToDo: convert real field offset
+                            mvalue.Args[0].Value)
                         );
 
                     field.AddAttribute(attribute);
