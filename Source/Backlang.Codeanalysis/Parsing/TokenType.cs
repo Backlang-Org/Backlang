@@ -178,7 +178,7 @@ public enum TokenType
     Macro,
 
     [Keyword("let")]
-    Declare,
+    Let,
 
     [Keyword("mut")]
     Mutable,

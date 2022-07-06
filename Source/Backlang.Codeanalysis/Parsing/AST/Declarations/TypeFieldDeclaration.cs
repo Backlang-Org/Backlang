@@ -7,7 +7,7 @@ public sealed class TypeFieldDeclaration
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        iterator.Match(TokenType.Declare);
+        iterator.Match(TokenType.Let);
         return VariableStatement.Parse(iterator, parser);
     }
 }
