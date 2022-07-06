@@ -243,6 +243,9 @@ public enum TokenType
     [Keyword("when")]
     When,
 
+    [Keyword("where")]
+    Where,
+
     [Keyword("if")]
     If,
 

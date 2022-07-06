@@ -13,7 +13,7 @@ public sealed class TypeLiteral
             var typename = iterator.Match(TokenType.Identifier).Text;
             var args = new LNodeList();
 
-            typeNode = SyntaxTree.Type($"#{typename}", new());
+            typeNode = SyntaxTree.Type($"{typename}", new());
 
             if (iterator.IsMatch(TokenType.Star))
             {
@@ -57,7 +57,7 @@ public sealed class TypeLiteral
 
                 iterator.Match(TokenType.GreaterThan);
 
-                typeNode = typeNode.WithArgs(args);
+                typeNode = typeNode.PlusArgs(args);
             }
         }
         else if (iterator.IsMatch(TokenType.None))
@@ -90,5 +90,19 @@ public sealed class TypeLiteral
         }
 
         return typeNode;
+    }
+
+    public static bool TryParse(Parser parser, out LNode node)
+    {
+        var cursor = parser.Iterator.Position;
+        node = Parse(parser.Iterator, parser);
+
+        if (node == LNode.Missing)
+        {
+            parser.Iterator.Position = cursor;
+            return false;
+        }
+
+        return true;
     }
 }

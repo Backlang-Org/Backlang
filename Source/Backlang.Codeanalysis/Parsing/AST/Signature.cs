@@ -10,13 +10,8 @@ public sealed class Signature
     {
         var iterator = parser.Iterator;
 
-        string name = null;
-        if (iterator.Current.Type == TokenType.Identifier)
-        {
-            name = iterator.Current.Text;
-            iterator.NextToken();
-        }
-        else
+        LNode name;
+        if (!TypeLiteral.TryParse(parser, out name))
         {
             //error
             parser.Messages.Add(Message.Error(parser.Document,
@@ -24,6 +19,7 @@ public sealed class Signature
         }
 
         LNode returnType = LNode.Missing;
+        LNodeList generics = new();
 
         iterator.Match(TokenType.OpenParen);
 
@@ -31,14 +27,29 @@ public sealed class Signature
 
         iterator.Match(TokenType.CloseParen);
 
-        if (iterator.Current.Type == TokenType.Arrow)
+        while (iterator.IsMatch(TokenType.Where))
+        {
+            iterator.NextToken();
+            var genericName = LNode.Id(iterator.Match(TokenType.Identifier).Text);
+            iterator.Match(TokenType.Colon);
+            var bases = new LNodeList();
+            do
+            {
+                if (iterator.IsMatch(TokenType.Comma)) iterator.NextToken();
+                bases.Add(TypeLiteral.Parse(iterator, parser));
+            } while (iterator.IsMatch(TokenType.Comma));
+
+            generics.Add(LNode.Call(Symbols.Where, LNode.List(genericName, LNode.Call(CodeSymbols.Base, bases))));
+        }
+
+        if (iterator.IsMatch(TokenType.Arrow))
         {
             iterator.NextToken();
 
             returnType = TypeLiteral.Parse(iterator, parser);
         }
 
-        return SyntaxTree.Signature(LNode.Id((Symbol)name), returnType, parameters);
+        return SyntaxTree.Signature(name, returnType, parameters, generics);
     }
 
     public static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)
