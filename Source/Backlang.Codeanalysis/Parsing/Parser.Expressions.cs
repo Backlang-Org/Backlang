@@ -21,6 +21,16 @@ public sealed partial class Parser
         {"d", Symbols.Float64},
     };
 
+    public void AddError(string message, int line, int column)
+    {
+        Messages.Add(Message.Error(Document, message, line, column));
+    }
+
+    public void AddError(string message)
+    {
+        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
+    }
+
     internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
     {
         if (parsePoints == null)
@@ -43,7 +53,7 @@ public sealed partial class Parser
 
     private LNode Invalid(string message)
     {
-        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
+        AddError(message);
 
         return LNode.Call(CodeSymbols.Error, LNode.List(LNode.Literal(message)));
     }
@@ -60,8 +70,7 @@ public sealed partial class Parser
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(", ",
-                parsePoints.Keys)}");
+            return Invalid($"Unknown Expression {Iterator.Current.Text}");
         }
     }
 

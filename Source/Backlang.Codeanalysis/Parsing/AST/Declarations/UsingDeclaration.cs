@@ -22,8 +22,7 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
         else
         {
             //error
-            parser.Messages.Add(Message.Error(parser.Document,
-                $"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column));
+            parser.AddError($"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column);
             return LNode.Missing;
         }
 
