@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Typesystem;
 using Flo;
@@ -123,7 +123,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         if (type.Methods.Any(_ => _.FullName.FullName.Equals(method.FullName.FullName)))
         {
-            context.Messages.Add(Message.Error("Function '" + method.FullName + "' is already defined."));
+            context.AddError(function, "Function '" + method.FullName + "' is already defined.");
             return null;
         }
 

@@ -3,6 +3,7 @@ using Backlang.Codeanalysis.Parsing.AST;
 using CommandLine;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Loyc.Syntax;
 
 namespace Backlang.Driver;
 
@@ -48,4 +49,9 @@ public sealed class CompilerContext
     public string TempOutputPath { get; set; }
 
     public List<CompilationUnit> Trees { get; set; } = new();
+
+    public void AddError(LNode node, string msg)
+    {
+        Messages.Add(Message.Error((SourceFile<StreamCharSource>)node.Range.Source, msg, node.Range.Start.Line, node.Range.Start.Column));
+    }
 }
