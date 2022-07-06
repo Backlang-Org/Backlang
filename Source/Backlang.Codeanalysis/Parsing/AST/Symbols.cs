@@ -19,5 +19,6 @@ public static class Symbols
     public static readonly Symbol Range = GSymbol.Get("'..");
     public static readonly Symbol ToExpand = GSymbol.Get("'to_expand'");
     public static readonly Symbol TypeLiteral = GSymbol.Get("#type");
+    public static readonly Symbol Union = GSymbol.Get("#union");
     public static readonly Symbol Where = GSymbol.Get("#where");
 }

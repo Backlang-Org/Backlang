@@ -185,7 +185,7 @@ public static class SyntaxTree
 
     public static LNode Union(string name, LNodeList members)
     {
-        return LNode.Call((Symbol)name, members);
+        return LNode.Call(Symbols.Union, LNode.List(LNode.Id(name)).Add(LNode.Call(CodeSymbols.AltList, members)));
     }
 
     public static LNode Using(LNode from, LNode to)

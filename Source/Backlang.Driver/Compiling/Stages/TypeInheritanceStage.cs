@@ -130,6 +130,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return method;
     }
 
+    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
+    {
+        foreach (var member in members.Args)
+        {
+            if (member.Name == CodeSymbols.Var)
+            {
+                ConvertFields(type, context, member);
+            }
+            else if (member.Calls(CodeSymbols.Fn))
+            {
+                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
+            }
+        }
+    }
+
     public static IType GetLiteralType(object value, TypeResolver resolver)
     {
         if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
@@ -392,21 +407,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
 
         return param;
-    }
-
-    private static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
-    {
-        foreach (var member in members.Args)
-        {
-            if (member.Name == CodeSymbols.Var)
-            {
-                ConvertFields(type, context, member);
-            }
-            else if (member.Calls(CodeSymbols.Fn))
-            {
-                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
-            }
-        }
     }
 
     private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree)
