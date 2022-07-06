@@ -21,6 +21,17 @@ public sealed class TokenIterator
         return Current.Type == kind;
     }
 
+    public bool IsMatch(params TokenType[] kinds)
+    {
+        bool result = false;
+        foreach (var kind in kinds)
+        {
+            result |= IsMatch(kind);
+        }
+
+        return result;
+    }
+
     public Token Match(TokenType kind)
     {
         if (Current.Type == kind)
