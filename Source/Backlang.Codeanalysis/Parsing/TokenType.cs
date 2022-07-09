@@ -53,6 +53,10 @@ public enum TokenType
     [Lexeme("*")]
     Star,
 
+    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
+    [Lexeme("**")]
+    StarStar,
+
     [BinaryOperatorInfo(BinaryOpPrecedences.Percent)]
     [Lexeme("%")]
     Percent,

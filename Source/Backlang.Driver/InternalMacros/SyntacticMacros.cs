@@ -160,6 +160,19 @@ public static class SyntacticMacros
         return node;
     }
 
+    [LexicalMacro("**", "Power Operator", "'**", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode PowerOperator(LNode node, IMacroContext context)
+    {
+        var left = node.Args[0];
+        var right = node.Args[1];
+
+        var powCall = F.Call(F.Call(CodeSymbols.Dot, LNode.List(
+            LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol)"System"), LNode.Id((Symbol)"Math"))).SetStyle(NodeStyle.Operator),
+            LNode.Id((Symbol)"Pow"))).SetStyle(NodeStyle.Operator), LNode.List(left, right));
+
+        return powCall.WithRange(node.Range);
+    }
+
     private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)
     {
         var arg1 = @operator.Args[0];
