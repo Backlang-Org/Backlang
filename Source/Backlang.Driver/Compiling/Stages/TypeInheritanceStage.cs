@@ -528,6 +528,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
     {
         var retType = function.Args[0];
+
         method.ReturnParameter = new Parameter(IntermediateStage.GetType(retType, context));
     }
 }

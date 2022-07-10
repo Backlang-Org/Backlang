@@ -41,7 +41,7 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
-            //ConvertCustomAttributes(type, clrType);
+            ConvertCustomAttributes(type, clrType);
 
             if (type.IsPrivate)
             {
@@ -201,6 +201,27 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (DescribedAttribute attr in type.Attributes.GetAll().Where(_ => _ is DescribedAttribute))
         {
+            if (attr.AttributeType.FullName.ToString() == "System.Runtime.InteropServices.StructLayoutAttribute")
+            {
+                var layout = (LayoutKind)attr.ConstructorArguments[0].Value;
+
+                switch (layout)
+                {
+                    case LayoutKind.Sequential:
+                        clrType.IsSequentialLayout = true;
+                        break;
+
+                    case LayoutKind.Explicit:
+                        clrType.IsExplicitLayout = true;
+                        break;
+
+                    default:
+                        break;
+                }
+
+                continue;
+            }
+
             var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
 
             var attrCtor = attrType.Methods.First(_ => _.IsConstructor);
