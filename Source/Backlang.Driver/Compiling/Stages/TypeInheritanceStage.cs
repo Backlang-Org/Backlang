@@ -14,6 +14,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -182,6 +183,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             ConvertFreeFunctions(context, tree);
 
             ConvertEnums(context, tree);
+
+            ConvertUnions(context, tree);
         }
 
         return await next.Invoke(context);
@@ -441,6 +444,56 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
 
             ConvertTypeMembers(members, type, context);
+        }
+    }
+
+    private static void ConvertUnions(CompilerContext context, CompilationUnit tree)
+    {
+        var types = tree.Body.Where(_ => _.IsCall && _.Name == Symbols.Union);
+
+        foreach (var node in types)
+        {
+            var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(context.Assembly.FullName.FullName), context.Assembly);
+            type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
+
+            var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
+
+            var attribute = new DescribedAttribute(attributeType);
+            attribute.ConstructorArguments.Add(
+                new AttributeArgument(
+                    ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(LayoutKind)),
+                    LayoutKind.Explicit)
+                );
+
+            type.AddAttribute(attribute);
+
+            foreach (var member in node.Args[1].Args)
+            {
+                if (member.Name == CodeSymbols.Var)
+                {
+                    var mtype = IntermediateStage.GetType(member.Args[0], context);
+
+                    var mvar = member.Args[1];
+                    var mname = mvar.Args[0].Name;
+                    var mvalue = mvar.Args[1];
+
+                    var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                    attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
+                    attribute = new DescribedAttribute(attributeType);
+                    attribute.ConstructorArguments.Add(
+                        new AttributeArgument(
+                            mtype,
+                            mvalue.Args[0].Value)
+                        );
+
+                    field.AddAttribute(attribute);
+
+                    type.AddField(field);
+                }
+            }
+
+            context.Assembly.AddType(type);
         }
     }
 

@@ -12,6 +12,8 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
+        context.Trees = null;
+
         if (!context.Messages.Any())
         {
             AssemblyContentDescription description = GetDescription(context);

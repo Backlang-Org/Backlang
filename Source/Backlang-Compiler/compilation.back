@@ -2,6 +2,11 @@ struct hello {
 	public let k : i32 = 42;
 }
 
+union Some {
+	hello : hello = 0;
+	world : f32 = 0;
+}
+
 public static func main() -> i32 {
 	print("Hello Backlang!");
 	let mut m : i32 = 12;
