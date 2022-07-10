@@ -1,21 +1,5 @@
-
-union MyUnion {
-	a : f32 = 0;
-	b : i32 = 1;
+public static func main() -> i32 {
+	print("Hello Backlang!");
+    
+    return 0;
 }
-
-
-@Log
-public static func main() -> none {
-
-	//hello world
-	let mut another : bool = false;
-	let endless = "dd";
-	let msg : i32 = 1*(2+3);
-	//let dd : string = "Hello World";
-	let mut ff : bool = true;
-
-	print("d");
-}
-
-class Person { }

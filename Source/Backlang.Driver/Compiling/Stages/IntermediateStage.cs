@@ -109,8 +109,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         foreach (var st in types)
         {
             var name = st.Args[0].Name;
-            var inheritances = st.Args[1];
-            var members = st.Args[2];
+            var inheritances = st.Args[0].Args[1];
+            var members = st.Args[0].Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             if (st.Name == CodeSymbols.Struct)

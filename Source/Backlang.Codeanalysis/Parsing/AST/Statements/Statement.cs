@@ -4,9 +4,9 @@ namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
 public static class Statement
 {
-    public static LNodeList ParseBlock(Parser parser)
+    public static LNode ParseBlock(Parser parser)
     {
-        parser.Iterator.Match(TokenType.OpenCurly);
+        var openCurlyToken = parser.Iterator.Match(TokenType.OpenCurly);
 
         var body = new List<LNode>();
         while (!parser.Iterator.IsMatch(TokenType.CloseCurly) && !parser.Iterator.IsMatch(TokenType.EOF))
@@ -16,10 +16,10 @@ public static class Statement
 
         parser.Iterator.Match(TokenType.CloseCurly);
 
-        return LNode.List(body);
+        return SyntaxTree.Factory.Braces(body).WithStyle(NodeStyle.StatementBlock).WithRange(openCurlyToken, parser.Iterator.Prev);
     }
 
-    public static LNodeList ParseOneOrBlock(Parser parser)
+    public static LNode ParseOneOrBlock(Parser parser)
     {
         if (parser.Iterator.IsMatch(TokenType.OpenCurly))
         {
@@ -27,7 +27,9 @@ public static class Statement
         }
         else
         {
-            return LNode.List(parser.InvokeStatementParsePoint());
+            var node = parser.InvokeStatementParsePoint();
+
+            return SyntaxTree.Factory.Braces(node).WithStyle(NodeStyle.StatementBlock).WithRange(node.Range);
         }
     }
 }

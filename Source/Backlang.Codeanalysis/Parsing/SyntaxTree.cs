@@ -43,20 +43,20 @@ public static class SyntaxTree
         return Factory.Call(Symbols.Bitfield, LNode.Id(name)).WithAttrs(members);
     }
 
-    public static LNode Case(LNode condition, LNodeList body)
+    public static LNode Case(LNode condition, LNode body)
     {
-        return Factory.Call(CodeSymbols.Case, LNode.List(condition, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+        return Factory.Call(CodeSymbols.Case, LNode.List(condition, body));
     }
 
-    public static LNode Catch(IdNode exceptionType, IdNode exceptionValueName, LNodeList body)
+    public static LNode Catch(IdNode exceptionType, IdNode exceptionValueName, LNode body)
     {
-        return Factory.Call(CodeSymbols.Catch, LNode.List(exceptionType, exceptionValueName, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+        return Factory.Call(CodeSymbols.Catch, LNode.List(exceptionType, exceptionValueName, body));
     }
 
     public static LNode Class(string name, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Class,
-            Factory.AltList(
+            Factory.List(
                 Factory.Id((Symbol)name),
                 Factory.Call(Symbols.Inheritance, inheritances),
                 Factory.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
@@ -80,25 +80,19 @@ public static class SyntaxTree
                   members)));
     }
 
-    public static LNode For(LNode init, LNode arr, LNodeList body)
+    public static LNode For(LNode init, LNode arr, LNode body)
     {
         return Factory.Call(
             CodeSymbols.For,
-                Factory.AltList(Factory.Call(CodeSymbols.AltList,
-                    Factory.AltList(LNode.Call(CodeSymbols.In,
-                        Factory.AltList(init, arr)).SetStyle(NodeStyle.Operator))), LNode.Missing,
-                            Factory.Call(CodeSymbols.AltList),
-                                Factory.Call(CodeSymbols.Braces,
-                                    body).SetStyle(NodeStyle.StatementBlock)));
+                Factory.List(Factory.AltList(
+                    Factory.List(LNode.Call(CodeSymbols.In,
+                        Factory.List(init, arr)).SetStyle(NodeStyle.Operator))), LNode.Missing,
+                            Factory.AltList(), body));
     }
 
-    public static LNode If(LNode cond, LNodeList ifBody, LNodeList elseBody)
+    public static LNode If(LNode cond, LNode ifBody, LNode elseBody)
     {
-        return Factory.Call(CodeSymbols.If,
-            Factory.AltList(cond, LNode.Call(CodeSymbols.Braces,
-                ifBody).SetStyle(NodeStyle.StatementBlock),
-                    Factory.Call(CodeSymbols.Braces,
-                        elseBody).SetStyle(NodeStyle.StatementBlock)));
+        return Factory.Call(CodeSymbols.If, Factory.List(cond, ifBody, elseBody));
     }
 
     public static LNode ImplDecl(LNode target, LNodeList body, bool isStatic)
@@ -111,7 +105,7 @@ public static class SyntaxTree
         }
 
         return Factory.Call(Symbols.Implementation,
-           Factory.AltList(target, LNode.Call(CodeSymbols.Braces,
+           Factory.List(target, LNode.Call(CodeSymbols.Braces,
                body).SetStyle(NodeStyle.StatementBlock))).WithAttrs(attributes);
     }
 
@@ -123,7 +117,7 @@ public static class SyntaxTree
     public static LNode Interface(string name, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Interface,
-            LNode.List(
+            Factory.List(
                 Factory.Id((Symbol)name),
                 LNode.Call(Symbols.Inheritance, inheritances),
                 LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
@@ -148,7 +142,7 @@ public static class SyntaxTree
     {
         return Factory.Call(CodeSymbols.Fn, LNode.List(
             type, name,
-            Factory.Call(CodeSymbols.AltList, args))).PlusAttr(LNode.Call(Symbols.Where, generics));
+            Factory.AltList(args))).PlusAttr(LNode.Call(Symbols.Where, generics));
     }
 
     public static LNode SizeOf(LNode type)
@@ -170,17 +164,17 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.SwitchStmt, LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
     }
 
-    public static LNode Try(LNodeList body, LNodeList catches, LNodeList finallly)
+    public static LNode Try(LNode body, LNode catches, LNode finallly)
     {
         return Factory.Call(CodeSymbols.Try, LNode.List(
-            Factory.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock),
-            Factory.Call(CodeSymbols.Braces, catches).SetStyle(NodeStyle.StatementBlock),
-            Factory.Call(CodeSymbols.Finally, LNode.List(LNode.Call(CodeSymbols.Braces, finallly).SetStyle(NodeStyle.StatementBlock)))));
+            body,
+            catches,
+            Factory.Call(CodeSymbols.Finally, LNode.List(finallly))));
     }
 
     public static LNode Type(string name, LNodeList arguments)
     {
-        return Factory.Call(Symbols.TypeLiteral, LNode.List(LNode.Id(name), LNode.Call(CodeSymbols.Of, arguments)));
+        return Factory.Call(Symbols.TypeLiteral, Factory.List(LNode.Id(name), LNode.Call(CodeSymbols.Of, arguments)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)
@@ -198,17 +192,15 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
     }
 
-    public static LNode When(LNode binOp, LNode rightHand, LNodeList body)
+    public static LNode When(LNode binOp, LNode rightHand, LNode body)
     {
-        return Factory.Call(CodeSymbols.When, LNode.List(binOp, rightHand, LNode.Call(CodeSymbols.Braces, body).SetStyle(NodeStyle.StatementBlock)));
+        return Factory.Call(CodeSymbols.When, LNode.List(binOp, rightHand, body));
     }
 
-    public static LNode While(LNode cond, LNodeList body)
+    public static LNode While(LNode cond, LNode body)
     {
         return Factory.Call(
             CodeSymbols.While,
-                LNode.List(cond,
-                    Factory.Call(CodeSymbols.Braces,
-                        body).SetStyle(NodeStyle.StatementBlock)));
+                Factory.List(cond, body));
     }
 }

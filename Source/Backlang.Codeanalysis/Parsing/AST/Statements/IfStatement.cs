@@ -10,7 +10,7 @@ public sealed class IfStatement : IParsePoint<LNode>
         var keywordToken = iterator.Prev;
         var cond = Expression.Parse(parser);
         var body = Statement.ParseOneOrBlock(parser);
-        LNodeList elseBlock = new();
+        LNode elseBlock = LNode.Missing;
 
         if (iterator.Current.Type == TokenType.Else)
         {
