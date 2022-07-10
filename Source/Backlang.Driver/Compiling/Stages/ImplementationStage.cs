@@ -30,7 +30,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         foreach (var st in implementations)
         {
             var targetType = (DescribedType)IntermediateStage.GetType(st.Args[0], context);
-            var body = st.Args[1].Args;
+            var body = st.Args[0].Args[1].Args;
 
             foreach (var node in body)
             {

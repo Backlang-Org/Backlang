@@ -36,9 +36,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public static IType GetType(LNode type, CompilerContext context)
     {
         //function without return type set
-        type = type.Args[0];
+        if (type.ArgCount > 0)
+            type = type.Args[0].Args[0];
 
-        if (type == LNode.Missing || type.Args[0].Name.Name == "#") return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+        if (type == LNode.Missing || type.ArgCount > 0 && type.Args[0].Name.Name == "#")
+            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
         if (type.Name == CodeSymbols.Fn)
         {
@@ -54,7 +56,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             return fnType;
         }
 
-        var name = type.Args[0].Name.ToString().Replace("#", "");
+        var name = type.ArgCount > 0 ? type.Args[0].Name.ToString().Replace("#", "") : type.Name.ToString();
 
         if (TypenameTable.ContainsKey(name))
         {

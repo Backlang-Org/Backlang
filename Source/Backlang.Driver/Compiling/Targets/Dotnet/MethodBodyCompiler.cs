@@ -41,12 +41,14 @@ public static class MethodBodyCompiler
         }
         else if (m.Body.Implementation.EntryPoint.Flow is UnreachableFlow)
         {
-            ilProcessor.Emit(OpCodes.Throw);
-        }
-
-        if (clrMethod.ReturnType.Name == "Void")
-        {
-            ilProcessor.Append(Instruction.Create(OpCodes.Ret));
+            if (clrMethod.ReturnType.Name == "Void")
+            {
+                ilProcessor.Append(Instruction.Create(OpCodes.Ret));
+            }
+            else
+            {
+                ilProcessor.Emit(OpCodes.Throw);
+            }
         }
 
         clrMethod.Body.MaxStackSize = 7;

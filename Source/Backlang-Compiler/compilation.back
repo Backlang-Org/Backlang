@@ -13,3 +13,9 @@ public static func main() -> i32 {
 	
 	return 0;
 }
+
+implement u8 {
+    func DoBacklang() -> none {
+        
+    }
+}

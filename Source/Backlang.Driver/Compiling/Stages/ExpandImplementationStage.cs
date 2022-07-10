@@ -29,7 +29,7 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
     {
         foreach (var tree in context.Trees)
         {
-            ExpandImplemtations(context, tree);
+            ExpandImplementations(context, tree);
         }
 
         return await next.Invoke(context);
@@ -47,16 +47,21 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
         return LNode.Call(Symbols.ToExpand, LNode.List(Enumerable.Range(minIndex, difference + 1).Select(i => SyntaxTree.Type(_primitiveTypes[i].Name, LNode.List())).ToArray()));
     }
 
-    private void ExpandImplemtations(CompilerContext context, CompilationUnit tree)
+    private void ExpandImplementations(CompilerContext context, CompilationUnit tree)
     {
         var newBody = new LNodeList();
 
-        foreach (var node in tree.Body)
+        for (var i = 0; i < tree.Body.Count; i++)
         {
+            var node = tree.Body[i];
+
             if (node.IsCall && node.Name == Symbols.Implementation)
             {
-                var targets = GetTargets(node.Args[0]);
-                var body = node.Args[1].Args;
+                //node = node.Args[0];
+
+                var targets = GetTargets(node.Args[0].Args[0]);
+
+                var body = node.Args[0].Args[1].Args;
 
                 if (targets.Name != Symbols.ToExpand)
                 {

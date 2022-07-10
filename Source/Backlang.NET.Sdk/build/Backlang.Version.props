@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 <PropertyGroup>
-<BacklangVersion Condition=" '$(BacklangVersion)'=='' ">1.0.46</BacklangVersion>
+<BacklangVersion Condition=" '$(BacklangVersion)'=='' ">1.0.47</BacklangVersion>
 </PropertyGroup>
 </Project>
