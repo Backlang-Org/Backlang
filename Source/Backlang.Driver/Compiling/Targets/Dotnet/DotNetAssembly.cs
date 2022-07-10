@@ -197,27 +197,32 @@ public class DotNetAssembly : ITargetAssembly
         return attr;
     }
 
+    private static void ApplyStructLayout(TypeDefinition clrType, DescribedAttribute attr)
+    {
+        var layout = (LayoutKind)attr.ConstructorArguments[0].Value;
+
+        switch (layout)
+        {
+            case LayoutKind.Sequential:
+                clrType.IsSequentialLayout = true;
+                break;
+
+            case LayoutKind.Explicit:
+                clrType.IsExplicitLayout = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
     private void ConvertCustomAttributes(DescribedType type, TypeDefinition clrType)
     {
         foreach (DescribedAttribute attr in type.Attributes.GetAll().Where(_ => _ is DescribedAttribute))
         {
             if (attr.AttributeType.FullName.ToString() == "System.Runtime.InteropServices.StructLayoutAttribute")
             {
-                var layout = (LayoutKind)attr.ConstructorArguments[0].Value;
-
-                switch (layout)
-                {
-                    case LayoutKind.Sequential:
-                        clrType.IsSequentialLayout = true;
-                        break;
-
-                    case LayoutKind.Explicit:
-                        clrType.IsExplicitLayout = true;
-                        break;
-
-                    default:
-                        break;
-                }
+                ApplyStructLayout(clrType, attr);
 
                 continue;
             }
