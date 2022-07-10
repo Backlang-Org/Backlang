@@ -1,38 +1,41 @@
-﻿using Backlang.Core;
-using Backlang.Driver.Compiling.Typesystem;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using System.Collections.Specialized;
-using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerContext>
 {
+    private readonly Dictionary<string, ICompilationTarget> _targets = new();
+
+    public InitTypeSystemStage()
+    {
+        AddTarget<DotNetTarget>();
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Binder = new TypeResolver();
 
-        var corLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(uint).Assembly);
-        var runtimeLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(ExtensionAttribute).Assembly);
-        var consoleLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Console).Assembly);
-        var collectionsLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(BitVector32).Assembly);
-        var coreLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Result<>).Assembly);
+        if (string.IsNullOrEmpty(context.Target))
+        {
+            context.Target = "dotnet";
+            context.OutputFilename += ".dll";
+        }
 
-        context.Binder.AddAssembly(corLib);
-        context.Binder.AddAssembly(coreLib);
-        context.Binder.AddAssembly(consoleLib);
-        context.Binder.AddAssembly(collectionsLib);
-        context.Binder.AddAssembly(runtimeLib);
+        if (context.OutputType == "dotnet")
+        {
+            context.OutputType = "Exe";
+        }
 
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(uint).Assembly, context.Binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(Console).Assembly, context.Binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(ExtensionAttribute).Assembly, context.Binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(BitVector32).Assembly, context.Binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, context.Binder);
+        if (_targets.ContainsKey(context.Target))
+        {
+            var compilationTarget = _targets[context.Target];
 
-        context.Environment = new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corLib);
+            context.CompilationTarget = compilationTarget;
+            context.Environment = compilationTarget.Init(context.Binder);
+        }
 
         var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
 
@@ -43,5 +46,12 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
                 && method.Parameters.Count == 1);
 
         return await next.Invoke(context);
+    }
+
+    private void AddTarget<T>()
+                    where T : ICompilationTarget, new()
+    {
+        var target = new T();
+        _targets.Add(target.Name, target);
     }
 }

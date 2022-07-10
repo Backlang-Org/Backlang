@@ -36,6 +36,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public static IType GetType(LNode type, CompilerContext context)
     {
         //function without return type set
+        type = type.Args[0];
+
         if (type == LNode.Missing || type.Args[0].Name.Name == "#") return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
         if (type.Name == CodeSymbols.Fn)
@@ -66,7 +68,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename));
+        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
         context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
         {
             IsStatic = true
@@ -109,8 +111,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         foreach (var st in types)
         {
             var name = st.Args[0].Name;
-            var inheritances = st.Args[0].Args[1];
-            var members = st.Args[0].Args[2];
+            var inheritances = st.Args[1];
+            var members = st.Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             if (st.Name == CodeSymbols.Struct)

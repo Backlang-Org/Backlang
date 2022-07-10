@@ -1,5 +1,4 @@
 ﻿using Loyc.Syntax;
-using System.Text;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
@@ -11,12 +10,7 @@ public sealed class CompilationUnit
 
     public static CompilationUnit FromFile(string filename)
     {
-        var filebody = File.ReadAllBytes(filename);
-
-        var document = new SourceFile<StreamCharSource>(new(new MemoryStream(filebody)), filename);
-
-        SyntaxTree.Factory = new(document);
-
+        var document = new SourceDocument(filename);
         var result = Parser.Parse(document);
 
         return new CompilationUnit { Body = result.Tree, Messages = result.Messages, Document = document };
@@ -24,8 +18,7 @@ public sealed class CompilationUnit
 
     public static CompilationUnit FromText(string text)
     {
-        var body = Encoding.Default.GetBytes(text);
-        var document = new SourceFile<StreamCharSource>(new(new MemoryStream(body)), "inline.txt");
+        var document = new SourceDocument("inline.txt", text);
 
         var result = Parser.Parse(document);
 

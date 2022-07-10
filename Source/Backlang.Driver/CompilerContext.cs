@@ -11,6 +11,7 @@ public sealed class CompilerContext
 {
     public IEnumerable<IMethod> writeMethods;
 
+    public ICompilationTarget CompilationTarget;
     public DescribedAssembly Assembly { get; set; }
 
     public TypeResolver Binder { get; set; } = new();
@@ -47,7 +48,6 @@ public sealed class CompilerContext
     public string Target { get; set; }
 
     public string TempOutputPath { get; set; }
-
     public List<CompilationUnit> Trees { get; set; } = new();
 
     public void AddError(LNode node, string msg)
