@@ -18,10 +18,11 @@ public sealed class Modifier
 
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        TokenType current = parser.Iterator.Current.Type;
-        var mod = LNode.Id(possibleModifiers[current]);
-        parser.Iterator.NextToken();
-        return mod;
+        var currentToken = iterator.Current;
+        var mod = SyntaxTree.Factory.Id(possibleModifiers[currentToken.Type]);
+        iterator.NextToken();
+
+        return mod.WithRange(currentToken);
     }
 
     public static bool TryParse(Parser parser, out LNodeList node)
