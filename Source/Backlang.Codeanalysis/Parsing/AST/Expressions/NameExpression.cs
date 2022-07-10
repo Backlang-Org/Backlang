@@ -20,7 +20,7 @@ public sealed class NameExpression : IParsePoint<LNode>
 
             var arguments = Expression.ParseList(parser, TokenType.CloseParen);
 
-            return LNode.Call(nameExpression, arguments);
+            return SyntaxTree.Factory.Call(nameExpression, arguments);
         }
 
         return nameExpression;

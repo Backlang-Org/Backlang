@@ -1,5 +1,6 @@
 public static func main() -> i32 {
 	print("Hello Backlang!");
+    let mut m : i32 = 12;
     
     return 0;
 }

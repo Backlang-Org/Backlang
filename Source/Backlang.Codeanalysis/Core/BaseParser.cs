@@ -20,8 +20,10 @@ public abstract class BaseParser<TLexer, TParser>
     public SourceFile<StreamCharSource> Document { get; }
     public TokenIterator Iterator { get; set; }
 
-    public static (LNodeList Tree, List<Message> Messages) Parse(SourceFile<StreamCharSource> document)
+    public static (LNodeList Tree, List<Message> Messages) Parse(SourceDocument src)
     {
+        SourceFile<StreamCharSource> document = src;
+
         if (document.Text == null)
         {
             return (LNode.List(LNode.Missing), new() { Message.Error(document, "Empty File", 0, 0) });
