@@ -18,7 +18,7 @@ public class LiteralTests
         Assert.IsNotNull(ptrType);
         Assert.IsTrue(ptrType.Calls(Symbols.PointerType));
         Assert.IsTrue(type.Calls(Symbols.TypeLiteral));
-        Assert.AreEqual("int32", literal.Name.Name);
+        Assert.AreEqual("int32", literal.Args[0].Name.Name);
     }
 
     [TestMethod]
@@ -28,7 +28,7 @@ public class LiteralTests
         var literal = literalType.Args[0];
 
         Assert.IsNotNull(literalType);
-        Assert.AreEqual("int32", literal.Name.Name);
+        Assert.AreEqual("int32", literal.Args[0].Name.Name);
     }
 
     [TestMethod]
