@@ -1,3 +1,11 @@
+public struct kek : IBlob {
+
+}
+
+public interface IBlob {
+
+}
+
 public static func main() -> i32 {
 	print("Hello Backlang! {0}", 42);
 

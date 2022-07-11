@@ -117,7 +117,7 @@ public static class SyntaxTree
     public static LNode Interface(string name, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Interface,
-            Factory.List(
+            LNode.List(
                 Factory.Id((Symbol)name),
                 LNode.Call(Symbols.Inheritance, inheritances),
                 LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));

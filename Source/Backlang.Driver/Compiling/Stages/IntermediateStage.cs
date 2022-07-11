@@ -91,12 +91,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        foreach (var enu in tree.Body)
+        foreach (var @enum in tree.Body)
         {
-            if (!(enu.IsCall && enu.Name == CodeSymbols.Enum)) continue;
+            if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) continue;
 
-            var name = enu.Args[0].Name;
-            var members = enu.Args[2];
+            var name = @enum.Args[0].Name;
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
@@ -114,8 +113,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
 
             var name = st.Args[0].Name;
-            var inheritances = st.Args[1];
-            var members = st.Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             if (st.Name == CodeSymbols.Struct)
