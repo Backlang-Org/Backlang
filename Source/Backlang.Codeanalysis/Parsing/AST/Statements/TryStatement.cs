@@ -23,14 +23,14 @@ public sealed class TryStatement : IParsePoint<LNode>
             catches.Add(ParseCatch(parser));
         }
 
-        LNodeList finallly = new(LNode.Missing);
+        LNode finallly = LNode.Missing;
         if (iterator.IsMatch(TokenType.Finally))
         {
             iterator.Match(TokenType.Finally);
             finallly = Statement.ParseOneOrBlock(parser);
         }
 
-        return SyntaxTree.Try(body, catches, finallly).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Try(body, SyntaxTree.Factory.AltList(catches), finallly).WithRange(keywordToken, iterator.Prev);
     }
 
     private static LNode ParseCatch(Parser parser)

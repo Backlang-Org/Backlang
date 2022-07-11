@@ -1,16 +1,8 @@
-union MyUnion {
-	a : f32 = 0;
-	b : i32 = 1;
+public struct kek : IBlob {
+
 }
 
-
-@Log
-public static func main() -> none {
-	//hello world
-	let msg : i32 = 1*(2+3);
-	let dd : string = "Hello World";
-	let mut ff : bool = true;
-	let mut another : bool = false;
+public interface IBlob {
 
 }
 
@@ -18,3 +10,8 @@ private class VeryImportantPerson {
 	public prop isCool: bool = true;
 }
 
+public static func main() -> i32 {
+	print("Hello Backlang! {0}", 42);
+
+	return 0;
+}

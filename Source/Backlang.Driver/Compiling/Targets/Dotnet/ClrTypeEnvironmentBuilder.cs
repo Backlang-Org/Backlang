@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Backlang.Driver.Compiling.Typesystem;
+namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class ClrTypeEnvironmentBuilder
 {
@@ -121,9 +121,13 @@ public class ClrTypeEnvironmentBuilder
     {
         foreach (var p in parameterInfos)
         {
-            var pa = new Parameter(resolver.ResolveTypes(new SimpleName(p.ParameterType.Name).Qualify(p.ParameterType.Namespace)).FirstOrDefault(), p.Name);
+            var type = resolver.ResolveTypes(new SimpleName(p.ParameterType.Name).Qualify(p.ParameterType.Namespace)).FirstOrDefault();
 
-            method.AddParameter(pa);
+            if (type != null)
+            {
+                var pa = new Parameter(type, p.Name);
+                method.AddParameter(pa);
+            }
         }
     }
 }

@@ -63,7 +63,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
-            body = body.Add(LNode.Call(CodeSymbols.Break));
+            body = body.PlusArg(LNode.Call(CodeSymbols.Break));
 
         return SyntaxTree.Case(condition, body).WithRange(keywordToken, parser.Iterator.Prev);
     }
@@ -77,7 +77,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
-            body = body.Add(LNode.Call(CodeSymbols.Break));
+            body = body.PlusArg(LNode.Call(CodeSymbols.Break));
 
         return SyntaxTree.Case(LNode.Call(CodeSymbols.Default), body);
     }
@@ -93,9 +93,9 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
-            body = body.Add(LNode.Call(CodeSymbols.Break));
+            body = body.PlusArg(LNode.Call(CodeSymbols.Break));
 
-        return SyntaxTree.If(condition, body, LNode.List());
+        return SyntaxTree.If(condition, body, SyntaxTree.Factory.Braces());
     }
 
     private static LNode ParseWhen(Parser parser, bool autoBreak)
@@ -134,7 +134,7 @@ public sealed class SwitchStatement : IParsePoint<LNode>
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
-            body = body.Add(LNode.Call(CodeSymbols.Break));
+            body = body.PlusArg(LNode.Call(CodeSymbols.Break));
 
         return SyntaxTree.When(binOp, right, body);
     }

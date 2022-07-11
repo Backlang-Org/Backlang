@@ -52,6 +52,12 @@ public static class SyntacticMacros
         return body.WithArgs(LNode.List().AddRange(body.Args).AddRange(freeCalls));
     }
 
+    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode DivEquals(LNode @operator, IMacroContext context)
+    {
+        return ConvertToAssignment(@operator, CodeSymbols.Div);
+    }
+
     [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
     {
@@ -110,12 +116,6 @@ public static class SyntacticMacros
         return node;
     }
 
-    [LexicalMacro("left += right;", "Convert to left = left + something", "'+=", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode PlusEquals(LNode @operator, IMacroContext context)
-    {
-        return ConvertToAssignment(@operator, CodeSymbols.Add);
-    }
-
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
@@ -128,10 +128,10 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Mul);
     }
 
-    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode DivEquals(LNode @operator, IMacroContext context)
+    [LexicalMacro("left += right;", "Convert to left = left + something", "'+=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode PlusEquals(LNode @operator, IMacroContext context)
     {
-        return ConvertToAssignment(@operator, CodeSymbols.Div);
+        return ConvertToAssignment(@operator, CodeSymbols.Add);
     }
 
     [LexicalMacro("#var", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
@@ -158,6 +158,19 @@ public static class SyntacticMacros
         }
 
         return node;
+    }
+
+    [LexicalMacro("**", "Power Operator", "'**", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode PowerOperator(LNode node, IMacroContext context)
+    {
+        var left = node.Args[0];
+        var right = node.Args[1];
+
+        var powCall = F.Call(F.Call(CodeSymbols.Dot, LNode.List(
+            LNode.Call(CodeSymbols.Dot, LNode.List(LNode.Id((Symbol)"System"), LNode.Id((Symbol)"Math"))).SetStyle(NodeStyle.Operator),
+            LNode.Id((Symbol)"Pow"))).SetStyle(NodeStyle.Operator), LNode.List(left, right));
+
+        return powCall.WithRange(node.Range);
     }
 
     private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)

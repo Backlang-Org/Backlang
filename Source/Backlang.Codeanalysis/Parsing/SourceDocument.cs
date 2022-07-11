@@ -1,19 +1,28 @@
-﻿namespace Backlang.Codeanalysis.Parsing;
+﻿using Loyc.Syntax;
+using System.Text;
+
+namespace Backlang.Codeanalysis.Parsing;
 
 public sealed class SourceDocument
 {
+    private SourceFile<StreamCharSource> _document;
+
     public SourceDocument(string filename)
     {
-        Filename = filename;
-        Source = File.ReadAllText(filename);
+        _document = new SourceFile<StreamCharSource>(new(File.OpenRead(filename)), filename);
     }
 
-    public SourceDocument(string filename, string source)
+    public SourceDocument(string filename, string content)
     {
-        Filename = filename;
-        Source = source;
+        var filebody = Encoding.Default.GetBytes(content);
+
+        _document = new SourceFile<StreamCharSource>(new(new MemoryStream(filebody)), filename);
     }
 
-    public string Filename { get; set; }
-    public string Source { get; set; }
+    public static implicit operator SourceFile<StreamCharSource>(SourceDocument doc)
+    {
+        SyntaxTree.Factory = new(doc._document);
+
+        return doc._document;
+    }
 }

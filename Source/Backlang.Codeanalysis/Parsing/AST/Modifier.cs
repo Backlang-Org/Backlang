@@ -15,12 +15,14 @@ public sealed class Modifier
         { TokenType.Override, CodeSymbols.Override },
         { TokenType.Extern, CodeSymbols.Extern },
     };
+
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        TokenType current = parser.Iterator.Current.Type;
-        var mod = LNode.Id(possibleModifiers[current]);
-        parser.Iterator.NextToken();
-        return mod;
+        var currentToken = iterator.Current;
+        var mod = SyntaxTree.Factory.Id(possibleModifiers[currentToken.Type]);
+        iterator.NextToken();
+
+        return mod.WithRange(currentToken);
     }
 
     public static bool TryParse(Parser parser, out LNodeList node)
@@ -32,7 +34,8 @@ public sealed class Modifier
             var modifier = Parse(parser.Iterator, parser);
             if (modifiers.Contains(modifier))
             {
-                parser.Messages.Add(Message.Error(parser.Document, $"Modifier '{modifier.Name.Name}' is already applied", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+                parser.AddError($"Modifier '{modifier.Name.Name}' is already applied");
+
                 continue;
             }
             modifiers.Add(modifier);

@@ -21,6 +21,16 @@ public sealed partial class Parser
         {"d", Symbols.Float64},
     };
 
+    public void AddError(string message, int line, int column)
+    {
+        Messages.Add(Message.Error(Document, message, line, column));
+    }
+
+    public void AddError(string message)
+    {
+        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
+    }
+
     internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
     {
         if (parsePoints == null)
@@ -43,7 +53,7 @@ public sealed partial class Parser
 
     private LNode Invalid(string message)
     {
-        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
+        AddError(message);
 
         return LNode.Call(CodeSymbols.Error, LNode.List(LNode.Literal(message)));
     }
@@ -60,25 +70,22 @@ public sealed partial class Parser
         }
         else
         {
-            return Invalid($"Unknown Expression. Expected String, Number, Boolean, {string.Join(", ",
-                parsePoints.Keys)}");
+            return Invalid($"Unknown Expression {Iterator.Current.Text}");
         }
     }
 
     private LNode ParseBinNumber()
     {
-        var valueToken = Iterator.NextToken();
-        var chars = valueToken.Text.ToCharArray().Reverse().ToArray();
+        var valueToken = (UString)Iterator.NextToken().Text;
 
-        int result = 0;
-        for (int i = 0; i < valueToken.Text.Length; i++)
+        var success = ParseHelpers.TryParseUInt(ref valueToken, out ulong result, 2, ParseNumberFlag.SkipUnderscores);
+
+        if (!success)
         {
-            if (chars[i] == '0') { continue; }
-
-            result += (int)Math.Pow(2, i);
+            return LNode.Missing;
         }
 
-        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result)))
+        return LNode.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result).WithStyle(NodeStyle.BinaryLiteral)))
             .WithRange(Iterator.Prev);
     }
 
@@ -92,13 +99,23 @@ public sealed partial class Parser
 
     private LNode ParseChar()
     {
+        var text = Iterator.NextToken().Text;
+        var unescaped = ParseHelpers.UnescapeCStyle(text);
+
         return LNode.Call(CodeSymbols.Char,
-            LNode.List(SyntaxTree.Factory.Literal(Iterator.NextToken().Text[0]))).WithRange(Iterator.Prev);
+            LNode.List(SyntaxTree.Factory.Literal(unescaped))).WithRange(Iterator.Prev);
     }
 
     private LNode ParseHexNumber()
     {
         var valueToken = Iterator.NextToken();
+
+        var parseSuccess = ParseHelpers.TryParseHex(valueToken.Text, out var result);
+
+        if (!parseSuccess)
+        {
+            return LNode.Missing;
+        }
 
         return LNode.Call(CodeSymbols.Int32,
             LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber))))
@@ -107,17 +124,27 @@ public sealed partial class Parser
 
     private LNode ParseNumber()
     {
-        var text = Iterator.NextToken().Text;
+        var text = (UString)Iterator.NextToken().Text;
 
         LNode result;
         if (text.Contains('.'))
         {
-            result = SyntaxTree.Factory.Literal(double.Parse(text, CultureInfo.InvariantCulture))
-                .WithRange(Iterator.Prev);
+            var value = ParseHelpers.TryParseDouble(ref text, 10, ParseNumberFlag.SkipUnderscores);
+
+            result = SyntaxTree.Factory.Literal(value).WithRange(Iterator.Prev);
         }
         else
         {
-            result = SyntaxTree.Factory.Literal(int.Parse(text)).WithRange(Iterator.Prev);
+            var success = ParseHelpers.TryParseInt(ref text, out int value, 10, ParseNumberFlag.SkipUnderscores);
+
+            if (!success)
+            {
+                result = LNode.Missing;
+            }
+            else
+            {
+                result = SyntaxTree.Factory.Literal(value).WithRange(Iterator.Prev);
+            }
         }
 
         if (Iterator.Current.Type == TokenType.Identifier)
@@ -152,7 +179,10 @@ public sealed partial class Parser
     private LNode ParseString()
     {
         var valueToken = Iterator.NextToken();
-        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(valueToken.Text)))
+
+        var unescaped = ParseHelpers.UnescapeCStyle(valueToken.Text).ToString();
+
+        return LNode.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(unescaped)))
             .WithRange(valueToken);
     }
 }

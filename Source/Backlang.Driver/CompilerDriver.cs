@@ -12,6 +12,10 @@ public class CompilerDriver
        cfg => {
            cfg.Add<ParsingStage>();
 
+           cfg.When(_ => !_.Messages.Any() && _.OutputTree, _ => {
+               _.Add<EmitTreeStage>();
+           });
+
            cfg.When(_ => !_.Messages.Any(), _ => {
                _.Add<InitTypeSystemStage>();
            });
@@ -38,10 +42,6 @@ public class CompilerDriver
 
            cfg.When(_ => !_.Messages.Any(), _ => {
                _.Add<ImplementationStage>();
-           });
-
-           cfg.When(_ => !_.Messages.Any() && _.OutputTree, _ => {
-               _.Add<EmitTreeStage>();
            });
 
            cfg.When(_ => !_.Messages.Any(), _ => {

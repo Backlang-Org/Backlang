@@ -1,7 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Core.CompilerService;
 using Backlang.Driver.Compiling.Targets.Dotnet;
-using Backlang.Driver.Compiling.Typesystem;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -11,49 +10,19 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerContext>
 {
-    private Dictionary<string, ITarget> _targets = new();
-
-    public CompileTargetStage()
-    {
-        AddTarget<DotNetTarget>();
-    }
-
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
+        context.Trees = null;
+
         if (!context.Messages.Any())
         {
-            if (string.IsNullOrEmpty(context.Target))
-            {
-                context.Target = "dotnet";
-                context.OutputFilename += ".dll";
-            }
+            AssemblyContentDescription description = GetDescription(context);
 
-            if (context.OutputType == "dotnet")
-            {
-                context.OutputType = "Exe";
-            }
+            var assembly = context.CompilationTarget.Compile(description);
+            assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath,
+                context.OutputFilename)));
 
-            if (_targets.ContainsKey(context.Target))
-            {
-                AssemblyContentDescription description = GetDescription(context);
-
-                var assembly = _targets[context.Target].Compile(description);
-                assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath,
-                    context.OutputFilename)));
-
-                var runtimeConfigStream = typeof(CompileTargetStage).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
-                var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.OutputFilename))}.runtimeconfig.json");
-
-                runtimeConfigStream.CopyTo(jsonStream);
-
-                jsonStream.Close();
-                runtimeConfigStream.Close();
-            }
-            else
-            {
-                Console.Error.WriteLine($"Target '{context.Target}' not found");
-                Environment.Exit(1);
-            }
+            context.CompilationTarget.AfterCompiling(context);
         }
 
         return await next.Invoke(context);
@@ -83,18 +52,11 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             .FirstOrDefault(_ => _.Name.ToString() == Names.ProgramClass)
             .Methods.FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
 
-        if(entryPoint == null)
+        if (entryPoint == null)
         {
             context.Messages.Add(Message.Error("Got OutputType 'Exe' but couldn't find entry point."));
         }
 
         return entryPoint;
-    }
-
-    private void AddTarget<T>()
-                    where T : ITarget, new()
-    {
-        var target = new T();
-        _targets.Add(target.Name, target);
     }
 }

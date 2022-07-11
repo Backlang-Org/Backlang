@@ -1,11 +1,12 @@
-﻿using Backlang.Driver.Compiling.Stages;
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -40,6 +41,8 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
+            ConvertCustomAttributes(type, clrType);
+
             if (type.IsPrivate)
             {
                 clrType.Attributes |= TypeAttributes.NestedPrivate;
@@ -73,8 +76,8 @@ public class DotNetAssembly : ITargetAssembly
                     {
                         clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(ValueType));
 
-                        clrType.ClassSize = 1;
-                        clrType.PackingSize = 0;
+                        //clrType.ClassSize = 1;
+                        //clrType.PackingSize = 0;
                     }
                     else
                     {
@@ -89,7 +92,8 @@ public class DotNetAssembly : ITargetAssembly
 
             foreach (DescribedField field in type.Fields)
             {
-                var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, Resolve(field.FieldType.FullName));
+                var fieldType = Resolve(field.FieldType.FullName);
+                var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
                 var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
 
@@ -109,6 +113,8 @@ public class DotNetAssembly : ITargetAssembly
                         fieldDefinition.IsLiteral = true;
                     }
                 }
+
+                ConvertCustomAttributes(field, fieldDefinition);
 
                 clrType.Fields.Add(fieldDefinition);
             }
@@ -130,7 +136,14 @@ public class DotNetAssembly : ITargetAssembly
                 if (m.Body != null)
                 {
                     clrMethod.HasThis = false;
-                    MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+
+                    var variables = MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+                    clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
+
+                    foreach (var variable in variables)
+                    {
+                        clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.definition, variable.name));
+                    }
                 }
 
                 var attributes = m.Attributes.GetAll();
@@ -190,6 +203,75 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         return attr;
+    }
+
+    private static void ApplyStructLayout(TypeDefinition clrType, DescribedAttribute attr)
+    {
+        var layout = (LayoutKind)attr.ConstructorArguments[0].Value;
+
+        switch (layout)
+        {
+            case LayoutKind.Sequential:
+                clrType.IsSequentialLayout = true;
+                break;
+
+            case LayoutKind.Explicit:
+                clrType.IsExplicitLayout = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void ConvertCustomAttributes(DescribedType type, TypeDefinition clrType)
+    {
+        foreach (DescribedAttribute attr in type.Attributes.GetAll().Where(_ => _ is DescribedAttribute))
+        {
+            if (attr.AttributeType.FullName.ToString() == "System.Runtime.InteropServices.StructLayoutAttribute")
+            {
+                ApplyStructLayout(clrType, attr);
+
+                continue;
+            }
+
+            var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
+
+            var attrCtor = attrType.Methods.First(_ => _.IsConstructor);
+            var ca = new CustomAttribute(attrCtor);
+            clrType.IsBeforeFieldInit = false;
+
+            foreach (var arg in attr.ConstructorArguments)
+            {
+                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type), arg.Value));
+            }
+
+            clrType.CustomAttributes.Add(ca);
+        }
+    }
+
+    private void ConvertCustomAttributes(DescribedField field, FieldDefinition clrField)
+    {
+        foreach (DescribedAttribute attr in field.Attributes.GetAll().Where(_ => _ is DescribedAttribute))
+        {
+            if (attr.AttributeType.FullName.ToString() == typeof(FieldOffsetAttribute).FullName)
+            {
+                clrField.Offset = (int)attr.ConstructorArguments[0].Value;
+                continue;
+            }
+
+            var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
+
+            var attrCtor = attrType.Methods.First(_ => _.IsConstructor);
+            var ca = new CustomAttribute(attrCtor);
+
+            foreach (var arg in attr.ConstructorArguments)
+            {
+                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type), arg.Value));
+            }
+
+            clrField.CustomAttributes.Add(ca);
+        }
     }
 
     private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)
@@ -254,23 +336,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(QualifiedName name)
     {
-        var type = Type.GetType(name.ToString());
-
-        if (type == null)
-        {
-            if (IntermediateStage.TypenameTable.ContainsKey(name.Name.ToString()))
-            {
-                return _assemblyDefinition.MainModule.ImportReference(IntermediateStage.TypenameTable[name.Name.ToString()]);
-            }
-            else
-            {
-                return new TypeReference(name.Qualifier.ToString(),
-                    name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, _assemblyDefinition.MainModule);
-            }
-        }
-
-        var resolvedType = _assemblyDefinition.MainModule.ImportReference(type);
-        return resolvedType;
+        return _assemblyDefinition.ImportType(name);
     }
 
     private void SetTargetFramework()

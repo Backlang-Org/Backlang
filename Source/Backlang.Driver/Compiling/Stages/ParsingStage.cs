@@ -22,7 +22,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
             else
             {
                 hasError = true;
-                context.Messages.Add(Message.Error(new SourceDocument(filename, ""), "File does not exists", 0, 0));
+                context.Messages.Add(Message.Error(null, $"File '{filename}' does not exists", 0, 0));
             }
         }
 

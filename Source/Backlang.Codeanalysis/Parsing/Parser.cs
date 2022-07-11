@@ -13,7 +13,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
     public readonly ParsePoints<LNode> ExpressionParsePoints = new();
     public readonly ParsePoints<LNode> StatementParsePoints = new();
 
-    public Parser(SourceDocument document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
+    public Parser(SourceFile<StreamCharSource> document, List<Token> tokens, List<Message> messages) : base(document, tokens, messages)
     {
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
         AddDeclarationParsePoint<UnionDeclaration>(TokenType.Union);
@@ -40,10 +40,11 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 
+        AddStatementParsePoint<ThrowStatement>(TokenType.Throw);
         AddStatementParsePoint<BreakStatement>(TokenType.Break);
         AddStatementParsePoint<ContinueStatement>(TokenType.Continue);
         AddStatementParsePoint<ReturnStatement>(TokenType.Return);
-        AddStatementParsePoint<VariableStatement>(TokenType.Declare);
+        AddStatementParsePoint<VariableStatement>(TokenType.Let);
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);

@@ -1,27 +1,36 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Mono.Cecil;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class TypeUtils
 {
-    //ToDo: only works for types from corlib - primitive types must be converted to clr types
     public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, IType type)
+    {
+        return ImportType(_assemblyDefinition, type.FullName);
+    }
+
+    public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, QualifiedName type)
+    {
+        return ImportType(_assemblyDefinition, type.Qualifier.ToString(), type.Name.ToString());
+    }
+
+    public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, string ns, string type)
     {
         foreach (var ar in _assemblyDefinition.MainModule.AssemblyReferences)
         {
-            var tr = new TypeReference(type.FullName.Qualifier.ToString(), type.Name.ToString(),
-            _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar,
-                 new ReaderParameters()).MainModule, ar).Resolve();
+            var ass = _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar, new ReaderParameters() { });
 
-            if (tr != null)
+            var tr = new TypeReference(ns, type, ass.MainModule, ass.MainModule).Resolve();
+
+            if (tr?.Resolve() != null)
             {
-                return tr;
+                return _assemblyDefinition.MainModule.ImportReference(tr);
             }
         }
 
-        return new TypeReference(type.FullName.Qualifier.ToString(), type.Name.ToString(),
-            _assemblyDefinition.MainModule.AssemblyResolver.Resolve(_assemblyDefinition.MainModule.AssemblyReferences.First(),
-                 new ReaderParameters()).MainModule, _assemblyDefinition.MainModule.AssemblyReferences.First());
+        return _assemblyDefinition.MainModule.ImportReference(
+            new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule)).Resolve();
     }
 }

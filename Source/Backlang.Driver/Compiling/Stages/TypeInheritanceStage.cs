@@ -1,6 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Driver.Compiling.Typesystem;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
@@ -14,7 +13,9 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -46,11 +47,31 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (node.Calls(CodeSymbols.Return))
             {
-                var valueNode = node.Args[0].Args[0];
-                var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
+                if (node.ArgCount == 1)
+                {
+                    var valueNode = node.Args[0].Args[0];
+                    var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
 
-                block.Flow =
-                    new ReturnFlow(rt);
+                    block.Flow = new ReturnFlow(rt);
+                }
+            }
+            else if (node.Calls(CodeSymbols.Throw))
+            {
+                var valueNode = node.Args[0].Args[0];
+                var constant = block.AppendInstruction(ConvertConstant(
+                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
+
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
+
+                if (node.Args[0].Name.Name == "#string")
+                {
+                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
+                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
+
+                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
+                }
+
+                block.Flow = UnreachableFlow.Instance;
             }
         }
 
@@ -63,7 +84,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function, string methodName = null, bool hasBody = true)
     {
-        if (methodName == null) methodName = function.Args[1].Name.Name;
+        if (methodName == null) methodName = GetMethodName(function);
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
@@ -123,11 +144,26 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         if (type.Methods.Any(_ => _.FullName.FullName.Equals(method.FullName.FullName)))
         {
-            context.Messages.Add(Message.Error("Function '" + method.FullName + "' is already defined."));
+            context.AddError(function, "Function '" + method.FullName + "' is already defined.");
             return null;
         }
 
         return method;
+    }
+
+    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
+    {
+        foreach (var member in members.Args)
+        {
+            if (member.Name == CodeSymbols.Var)
+            {
+                ConvertFields(type, context, member);
+            }
+            else if (member.Calls(CodeSymbols.Fn))
+            {
+                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
+            }
+        }
     }
 
     public static IType GetLiteralType(object value, TypeResolver resolver)
@@ -158,9 +194,16 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             ConvertFreeFunctions(context, tree);
 
             ConvertEnums(context, tree);
+
+            ConvertUnions(context, tree);
         }
 
         return await next.Invoke(context);
+    }
+
+    private static string GetMethodName(LNode function)
+    {
+        return function.Args[1].Args[0].Args[0].Name.Name;
     }
 
     private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context)
@@ -176,29 +219,68 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
     {
-        var method = context.writeMethods.FirstOrDefault();
-        var constant = block.AppendInstruction(
-            ConvertConstant(
-                GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
-            node.Args[0].Args[0].Value));
+        var argTypes = new List<IType>();
+        var callTags = new List<ValueTag>();
 
-        var str = block.AppendInstruction(
-            Instruction.CreateLoad(
-                GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
+        foreach (var arg in node.Args)
+        {
+            var type = GetLiteralType(arg.Args[0].Value, context.Binder);
+            argTypes.Add(type);
 
-        block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
+            var constant = block.AppendInstruction(
+            ConvertConstant(type, arg.Args[0].Value));
+
+            block.AppendInstruction(Instruction.CreateLoad(type, constant));
+
+            callTags.Add(constant);
+        }
+
+        var method = GetMatchingPrintMethod(context, argTypes);
+
+        var call = Instruction.CreateCall(method, MethodLookup.Static, callTags);
+
+        block.AppendInstruction(call);
+    }
+
+    private static IMethod GetMatchingPrintMethod(CompilerContext context, List<IType> argTypes)
+    {
+        foreach (var m in context.writeMethods)
+        {
+            if (m.Parameters.Count == argTypes.Count)
+            {
+                if (MatchesParameters(m, argTypes))
+                    return m;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool MatchesParameters(IMethod m, List<IType> argTypes)
+    {
+        bool matches = false;
+        for (int i = 0; i < m.Parameters.Count; i++)
+        {
+            if (m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString())
+            {
+                matches = (matches || i == 0) && m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString();
+            }
+        }
+
+        return matches;
     }
 
     private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node)
     {
         var decl = node.Args[1];
 
-        //ToDo: Fix IR Typ resolving
-        var types = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, node.Args[0].Args[0].Name.ToString().Replace("#", "")));
+        var types = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, node.Args[0].Args[0].Args[0].Name.ToString().Replace("#", "")));
         var elementType = types.First();
 
         var instruction = Instruction.CreateAlloca(elementType);
         var local = block.AppendInstruction(instruction);
+
+        block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
 
         if (decl.Args[1].Args[0].HasValue)
         {
@@ -275,10 +357,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertEnums(CompilerContext context, CompilationUnit tree)
     {
-        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
-
-        foreach (var enu in enums)
+        foreach (var enu in tree.Body)
         {
+            if (!(enu.IsCall && enu.Name == CodeSymbols.Enum)) continue;
+
             var name = enu.Args[0].Name;
             var members = enu.Args[2];
 
@@ -349,10 +431,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
     {
-        var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
-
-        foreach (var function in ff)
+        foreach (var function in tree.Body)
         {
+            if (!(function.IsCall && function.Name == CodeSymbols.Fn)) continue;
+
             DescribedType type;
 
             if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
@@ -367,7 +449,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
             }
 
-            string methodName = function.Args[1].Name.Name;
+            string methodName = GetMethodName(function);
             if (methodName == "main") methodName = "Main";
 
             var method = ConvertFunction(context, type, function, methodName: methodName);
@@ -394,27 +476,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return param;
     }
 
-    private static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
-    {
-        foreach (var member in members.Args)
-        {
-            if (member.Name == CodeSymbols.Var)
-            {
-                ConvertFields(type, context, member);
-            }
-            else if (member.Calls(CodeSymbols.Fn))
-            {
-                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
-            }
-        }
-    }
-
     private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree)
     {
-        var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
-
-        foreach (var st in types)
+        foreach (var st in tree.Body)
         {
+            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
+
             var name = st.Args[0].Name;
             var inheritances = st.Args[1];
             var members = st.Args[2];
@@ -430,29 +497,78 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static void ConvertUnions(CompilerContext context, CompilationUnit tree)
+    {
+        foreach (var node in tree.Body)
+        {
+            if (!(node.IsCall && node.Name == Symbols.Union)) continue;
+
+            var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(context.Assembly.FullName.FullName), context.Assembly);
+            type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
+
+            var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
+
+            var attribute = new DescribedAttribute(attributeType);
+            attribute.ConstructorArguments.Add(
+                new AttributeArgument(
+                    ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(LayoutKind)),
+                    LayoutKind.Explicit)
+                );
+
+            type.AddAttribute(attribute);
+
+            foreach (var member in node.Args[1].Args)
+            {
+                if (member.Name == CodeSymbols.Var)
+                {
+                    var mtype = IntermediateStage.GetType(member.Args[0], context);
+
+                    var mvar = member.Args[1];
+                    var mname = mvar.Args[0].Name;
+                    var mvalue = mvar.Args[1];
+
+                    var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+
+                    attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
+                    attribute = new DescribedAttribute(attributeType);
+                    attribute.ConstructorArguments.Add(
+                        new AttributeArgument(
+                            mtype,
+                            mvalue.Args[0].Value)
+                        );
+
+                    field.AddAttribute(attribute);
+
+                    type.AddField(field);
+                }
+            }
+
+            context.Assembly.AddType(type);
+        }
+    }
+
+    private static readonly ImmutableDictionary<string, string> Aliases = new Dictionary<string, string>()
+    {
+        ["bool"] = "Boolean",
+
+        ["i8"] = "Byte",
+        ["i16"] = "Int16",
+        ["i32"] = "Int32",
+        ["i64"] = "Int64",
+
+        ["u16"] = "UInt16",
+        ["u32"] = "UInt32",
+        ["u64"] = "UInt64",
+
+        ["char"] = "Char",
+        ["string"] = "String",
+        ["none"] = "Void",
+    }.ToImmutableDictionary();
     private static QualifiedName GetNameOfPrimitiveType(TypeResolver binder, string name)
     {
-        var aliases = new Dictionary<string, string>()
+        if (Aliases.ContainsKey(name))
         {
-            ["bool"] = "Boolean",
-
-            ["i8"] = "Byte",
-            ["i16"] = "Int16",
-            ["i32"] = "Int32",
-            ["i64"] = "Int64",
-
-            ["u16"] = "UInt16",
-            ["u32"] = "UInt32",
-            ["u64"] = "UInt64",
-
-            ["char"] = "Char",
-            ["string"] = "String",
-            ["none"] = "Void",
-        };
-
-        if (aliases.ContainsKey(name))
-        {
-            name = aliases[name];
+            name = Aliases[name];
         }
 
         return ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System").FullName;
@@ -461,6 +577,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
     {
         var retType = function.Args[0];
+
         method.ReturnParameter = new Parameter(IntermediateStage.GetType(retType, context));
     }
 }

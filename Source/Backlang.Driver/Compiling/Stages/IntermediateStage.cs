@@ -1,15 +1,16 @@
-﻿using Backlang.Driver.Compiling.Typesystem;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static readonly Dictionary<string, Type> TypenameTable = new()
+    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>()
     {
         ["obj"] = typeof(object),
 
@@ -31,12 +32,16 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         ["char"] = typeof(char),
         ["string"] = typeof(string),
-    };
+    }.ToImmutableDictionary();
 
     public static IType GetType(LNode type, CompilerContext context)
     {
         //function without return type set
-        if (type == LNode.Missing || type.Args[0].Name.Name == "#") return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+        if (type.ArgCount > 0)
+            type = type.Args[0].Args[0];
+
+        if (type == LNode.Missing || type.ArgCount > 0 && type.Args[0].Name.Name == "#")
+            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
 
         if (type.Name == CodeSymbols.Fn)
         {
@@ -52,7 +57,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             return fnType;
         }
 
-        var name = type.Args[0].Name.ToString().Replace("#", "");
+        var name = type.ArgCount > 0 ? type.Args[0].Name.ToString().Replace("#", "") : type.Name.ToString();
 
         if (TypenameTable.ContainsKey(name))
         {
@@ -66,7 +71,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename));
+        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
         context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
         {
             IsStatic = true
@@ -86,12 +91,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
-
-        foreach (var enu in enums)
+        foreach (var @enum in tree.Body)
         {
-            var name = enu.Args[0].Name;
-            var members = enu.Args[2];
+            if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) continue;
+
+            var name = @enum.Args[0].Name;
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
@@ -104,13 +108,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
-
-        foreach (var st in types)
+        foreach (var st in tree.Body)
         {
+            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
+
             var name = st.Args[0].Name;
-            var inheritances = st.Args[1];
-            var members = st.Args[2];
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
             if (st.Name == CodeSymbols.Struct)

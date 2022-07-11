@@ -10,19 +10,21 @@ public abstract class BaseParser<TLexer, TParser>
 {
     public readonly List<Message> Messages;
 
-    protected BaseParser(SourceDocument document, List<Token> tokens, List<Message> messages)
+    protected BaseParser(SourceFile<StreamCharSource> document, List<Token> tokens, List<Message> messages)
     {
         Document = document;
         Iterator = new(tokens, document);
         Messages = messages;
     }
 
-    public SourceDocument Document { get; }
+    public SourceFile<StreamCharSource> Document { get; }
     public TokenIterator Iterator { get; set; }
 
-    public static (LNodeList Tree, List<Message> Messages) Parse(SourceDocument document)
+    public static (LNodeList Tree, List<Message> Messages) Parse(SourceDocument src)
     {
-        if (string.IsNullOrEmpty(document.Source) || document.Source == null)
+        SourceFile<StreamCharSource> document = src;
+
+        if (document.Text == null)
         {
             return (LNode.List(LNode.Missing), new() { Message.Error(document, "Empty File", 0, 0) });
         }

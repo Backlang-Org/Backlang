@@ -53,6 +53,10 @@ public enum TokenType
     [Lexeme("*")]
     Star,
 
+    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
+    [Lexeme("**")]
+    StarStar,
+
     [BinaryOperatorInfo(BinaryOpPrecedences.Percent)]
     [Lexeme("%")]
     Percent,
@@ -186,7 +190,7 @@ public enum TokenType
     Macro,
 
     [Keyword("let")]
-    Declare,
+    Let,
 
     [Keyword("prop")]
     Property,
@@ -254,6 +258,9 @@ public enum TokenType
     [Keyword("when")]
     When,
 
+    [Keyword("where")]
+    Where,
+
     [Keyword("if")]
     If,
 
@@ -319,4 +326,7 @@ public enum TokenType
 
     [Keyword("union")]
     Union,
+
+    [Keyword("throw")]
+    Throw,
 }
