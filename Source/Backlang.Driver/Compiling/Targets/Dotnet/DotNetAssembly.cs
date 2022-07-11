@@ -5,7 +5,6 @@ using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -47,6 +46,8 @@ public class DotNetAssembly : ITargetAssembly
             SetBaseType(type, clrType);
             ConvertFields(type, clrType);
             ConvertMethods(type, clrType);
+
+            ConvertCustomAttributes(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
         }
@@ -177,30 +178,45 @@ public class DotNetAssembly : ITargetAssembly
                 }
             }
 
-            var attributes = m.Attributes.GetAll();
-            if (attributes.Any())
-            {
-                foreach (var attr in attributes)
-                {
-                    if (attr.AttributeType.Name.ToString() == AccessModifierAttribute.AttributeName)
-                    {
-                        continue;
-                    }
-
-                    if (attr.AttributeType.Name.ToString() == "ExtensionAttribute")
-                    {
-                        var attrCtor = _assemblyDefinition.MainModule.ImportReference(typeof(ExtensionAttribute).GetConstructors().First());
-                        var ca = new CustomAttribute(attrCtor);
-                        clrType.IsBeforeFieldInit = false;
-                        clrMethod.IsHideBySig = true;
-
-                        clrMethod.CustomAttributes.Add(ca);
-                    }
-                }
-            }
+            ConvertCustomAttributes(clrType, m, clrMethod);
 
             clrType.Methods.Add(clrMethod);
         }
+    }
+
+    private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
+    {
+        var attributes = m.Attributes.GetAll().Where(_ => _ is DescribedAttribute);
+        if (attributes.Any())
+        {
+            foreach (DescribedAttribute attr in attributes)
+            {
+                if (attr.AttributeType.Name.ToString() == AccessModifierAttribute.AttributeName)
+                {
+                    continue;
+                }
+
+                ConvertCustomAttribute(clrType, clrMethod, attr);
+            }
+        }
+    }
+
+    private void ConvertCustomAttribute(TypeDefinition clrType, MethodDefinition clrMethod, DescribedAttribute attr)
+    {
+        var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
+        var attrCtor = attrType.Methods.FirstOrDefault(_ => _.IsConstructor && attr.ConstructorArguments.Count == _.Parameters.Count);
+
+        var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(attrCtor));
+        clrType.IsBeforeFieldInit = false;
+        clrMethod.IsHideBySig = true;
+
+        foreach (var cattr in attr.ConstructorArguments)
+        {
+            ca.ConstructorArguments.Add(
+                new CustomAttributeArgument(_assemblyDefinition.ImportType(cattr.Type), cattr.Value));
+        }
+
+        clrMethod.CustomAttributes.Add(ca);
     }
 
     private void ConvertFields(DescribedType type, TypeDefinition clrType)
@@ -276,19 +292,28 @@ public class DotNetAssembly : ITargetAssembly
                 continue;
             }
 
-            var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
-
-            var attrCtor = attrType.Methods.First(_ => _.IsConstructor);
-            var ca = new CustomAttribute(attrCtor);
-            clrType.IsBeforeFieldInit = false;
-
-            foreach (var arg in attr.ConstructorArguments)
-            {
-                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type), arg.Value));
-            }
-
-            clrType.CustomAttributes.Add(ca);
+            ConvertCustomAttribute(clrType, type, attr);
         }
+    }
+
+    private void ConvertCustomAttribute(TypeDefinition clrType, DescribedType type, DescribedAttribute attr)
+    {
+        var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
+        var attrCtor = attrType.Methods
+                                        .FirstOrDefault(_ =>
+                                            _.IsConstructor
+                                            && attr.ConstructorArguments.Count == _.Parameters.Count);
+
+        var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(attrCtor));
+        clrType.IsBeforeFieldInit = false;
+
+        foreach (var cattr in attr.ConstructorArguments)
+        {
+            ca.ConstructorArguments.Add(
+                new CustomAttributeArgument(_assemblyDefinition.ImportType(cattr.Type), cattr.Value));
+        }
+
+        clrType.CustomAttributes.Add(ca);
     }
 
     private void ConvertCustomAttributes(DescribedField field, FieldDefinition clrField)
