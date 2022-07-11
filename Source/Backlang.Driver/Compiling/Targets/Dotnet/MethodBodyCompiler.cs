@@ -19,7 +19,7 @@ public static class MethodBodyCompiler
 
             if (i.Prototype is CallPrototype callPrototype)
             {
-                EmitCall(assemblyDefinition, ilProcessor, item);
+                EmitCall(assemblyDefinition, ilProcessor, callPrototype);
             }
             else if (i.Prototype is LoadPrototype ld)
             {
@@ -43,7 +43,7 @@ public static class MethodBodyCompiler
         {
             if (clrMethod.ReturnType.Name == "Void")
             {
-                ilProcessor.Append(Instruction.Create(OpCodes.Ret));
+                ilProcessor.Emit(OpCodes.Ret);
             }
             else
             {
@@ -51,27 +51,26 @@ public static class MethodBodyCompiler
             }
         }
 
-        //clrMethod.Body.MaxStackSize = 7;
+        clrMethod.Body.MaxStackSize = 7;
     }
 
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item)
+    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, CallPrototype callPrototype)
     {
-        var load = item.PreviousInstructionOrNull;
-        var method = GetPrintMethod(assemblyDefinition, load);
+        var method = GetPrintMethod(assemblyDefinition, callPrototype);
 
         foreach (var arg in method.Parameters)
         {
             if (arg.ParameterType.FullName == "System.Object")
             {
-                ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(load.ResultType));
+                //ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(load.ResultType));
             }
         }
 
-        ilProcessor.Append(Instruction.Create(OpCodes.Call,
+        ilProcessor.Emit(OpCodes.Call,
             assemblyDefinition.MainModule.ImportReference(
                 method
                 )
-            ));
+            );
     }
 
     private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
@@ -80,65 +79,65 @@ public static class MethodBodyCompiler
 
         if (v is StringConstant str)
         {
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldstr, str.Value));
+            ilProcessor.Emit(OpCodes.Ldstr, str.Value);
         }
         else if (v is Float32Constant f32)
         {
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R4, f32.Value));
+            ilProcessor.Emit(OpCodes.Ldc_R4, f32.Value);
         }
         else if (v is Float64Constant f64)
         {
-            ilProcessor.Append(Instruction.Create(OpCodes.Ldc_R8, f64.Value));
+            ilProcessor.Emit(OpCodes.Ldc_R8, f64.Value);
         }
         else if (v is IntegerConstant ic)
         {
             switch (ic.Spec.Size)
             {
                 case 1:
-                    ilProcessor.Append(Instruction.Create(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
+                    ilProcessor.Emit(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
                     break;
 
                 case 8:
                     if (ic.Spec.IsSigned)
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToInt8()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt8());
                     }
                     else
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt8()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt8());
                     }
                     break;
 
                 case 16:
                     if (ic.Spec.IsSigned)
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToInt16()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt16());
                     }
                     else
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt16()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt16());
                     }
                     break;
 
                 case 32:
                     if (ic.Spec.IsSigned)
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToInt32()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt32());
                     }
                     else
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt32()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt32());
                     }
                     break;
 
                 case 64:
                     if (ic.Spec.IsSigned)
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I8, ic.ToInt64()));
+                        ilProcessor.Emit(OpCodes.Ldc_I8, ic.ToInt64());
                     }
                     else
                     {
-                        ilProcessor.Append(Instruction.Create(OpCodes.Ldc_I4, ic.ToUInt64()));
+                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt64());
                     }
                     break;
 
@@ -161,16 +160,14 @@ public static class MethodBodyCompiler
         if (store is ConstantPrototype sp)
         {
             EmitConstant(ilProcessor, sp);
-            ilProcessor.Append(Instruction.Create(OpCodes.Stloc, variable));
+            ilProcessor.Emit(OpCodes.Stloc, variable);
 
             clrMethod.Body.InitLocals = true;
         }
     }
 
-    private static MethodReference GetPrintMethod(AssemblyDefinition assemblyDefinition, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
+    private static MethodReference GetPrintMethod(AssemblyDefinition assemblyDefinition, CallPrototype callPrototype)
     {
-        var callPrototype = (CallPrototype)load.NextInstructionOrNull.Prototype;
-
         var parentType = assemblyDefinition.ImportType(callPrototype.Callee.ParentType).Resolve();
 
         foreach (var method in parentType.Methods)
@@ -179,9 +176,10 @@ public static class MethodBodyCompiler
 
             if (method.Name == callPrototype.Callee.Name.ToString())
             {
-                if (MatchesParameters(parameters, load))
+                if (method.Parameters.Count == callPrototype.Callee.Parameters.Count)
                 {
-                    return method;
+                    if (MatchesParameters(parameters, callPrototype))
+                        return method;
                 }
             }
         }
@@ -189,14 +187,14 @@ public static class MethodBodyCompiler
         return null;
     }
 
-    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, Furesoft.Core.CodeDom.Compiler.NamedInstruction load)
+    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, CallPrototype callPrototype)
     {
         bool matches = false;
         for (int i = 0; i < parameters.Count; i++)
         {
-            if (parameters[i].ParameterType.FullName == load.ResultType.FullName.ToString() || parameters[i].ParameterType.FullName == "System.Object")
+            if (parameters[i].ParameterType.FullName == callPrototype.Callee.Parameters[i].Type.FullName.ToString())
             {
-                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == load.ResultType.FullName.ToString() || parameters[i].ParameterType.FullName == "System.Object";
+                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == callPrototype.Callee.Parameters[i].Type.FullName.ToString();
             }
         }
 
