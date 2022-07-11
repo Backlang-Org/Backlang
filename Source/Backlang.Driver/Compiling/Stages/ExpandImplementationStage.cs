@@ -3,12 +3,13 @@ using Backlang.Codeanalysis.Parsing.AST;
 using Flo;
 using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class ExpandImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static List<Symbol> _primitiveTypes = new()
+    private static ImmutableList<Symbol> _primitiveTypes = new List<Symbol>()
     {
         (Symbol)"u8",
         (Symbol)"u16",
@@ -23,7 +24,7 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
         (Symbol)"f16",
         (Symbol)"f32",
         (Symbol)"f64",
-    };
+    }.ToImmutableList();
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {

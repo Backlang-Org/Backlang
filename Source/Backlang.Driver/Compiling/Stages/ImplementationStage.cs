@@ -25,10 +25,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private void CollectImplementations(CompilerContext context, CompilationUnit tree)
     {
-        var implementations = tree.Body.Where(_ => _.IsCall && _.Name == Symbols.Implementation);
-
-        foreach (var st in implementations)
+        foreach (var st in tree.Body)
         {
+            if (!(st.IsCall && st.Name == Symbols.Implementation)) continue;
+
             var targetType = (DescribedType)IntermediateStage.GetType(st.Args[0], context);
             var body = st.Args[0].Args[1].Args;
 
@@ -66,10 +66,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private void ImplementDefaultConstructors(CompilerContext context, CompilationUnit tree)
     {
-        var structs = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Struct);
-
-        foreach (var st in structs)
+        foreach (var st in tree.Body)
         {
+            if (!(st.IsCall && st.Name == CodeSymbols.Struct)) continue;
+
             var name = st.Args[0].Name;
             var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
             if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))

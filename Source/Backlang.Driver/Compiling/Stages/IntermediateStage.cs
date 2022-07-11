@@ -4,12 +4,13 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static readonly Dictionary<string, Type> TypenameTable = new()
+    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>()
     {
         ["obj"] = typeof(object),
 
@@ -31,7 +32,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         ["char"] = typeof(char),
         ["string"] = typeof(string),
-    };
+    }.ToImmutableDictionary();
 
     public static IType GetType(LNode type, CompilerContext context)
     {
@@ -90,10 +91,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
-
-        foreach (var enu in enums)
+        foreach (var enu in tree.Body)
         {
+            if (!(enu.IsCall && enu.Name == CodeSymbols.Enum)) continue;
+
             var name = enu.Args[0].Name;
             var members = enu.Args[2];
 
@@ -108,10 +109,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
     {
-        var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
-
-        foreach (var st in types)
+        foreach (var st in tree.Body)
         {
+            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
+
             var name = st.Args[0].Name;
             var inheritances = st.Args[1];
             var members = st.Args[2];
