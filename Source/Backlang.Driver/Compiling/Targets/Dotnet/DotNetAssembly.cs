@@ -43,155 +43,47 @@ public class DotNetAssembly : ITargetAssembly
                 type.Name.ToString(), TypeAttributes.Class);
 
             ConvertCustomAttributes(type, clrType);
-
-            if (type.IsPrivate)
-            {
-                clrType.Attributes |= TypeAttributes.NestedPrivate;
-            }
-            else if (type.IsProtected)
-            {
-                clrType.Attributes |= TypeAttributes.NestedFamily;
-            }
-            else
-            {
-                clrType.Attributes |= TypeAttributes.Public;
-            }
-            if (type.IsStatic)
-            {
-                clrType.Attributes |= TypeAttributes.Abstract;
-                clrType.Attributes |= TypeAttributes.Sealed;
-            }
-
-            if (type.IsAbstract)
-            {
-                clrType.Attributes |= TypeAttributes.Abstract;
-            }
-
-            clrType.IsInterface = type.IsInterfaceType;
-
-            if (type.BaseTypes.Any())
-            {
-                foreach (var t in type.BaseTypes)
-                {
-                    if (t.Name.ToString() == "ValueType")
-                    {
-                        clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(ValueType));
-
-                        //clrType.ClassSize = 1;
-                        //clrType.PackingSize = 0;
-                    }
-                    else
-                    {
-                        AddBaseType(clrType, t.FullName);
-                    }
-                }
-            }
-            else
-            {
-                clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(object));
-            }
-
-            foreach (DescribedField field in type.Fields)
-            {
-                var fieldType = Resolve(field.FieldType.FullName);
-                var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
-
-                var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
-
-                fieldDefinition.IsRuntimeSpecialName = specialName != null;
-                fieldDefinition.IsSpecialName = specialName != null;
-                fieldDefinition.IsStatic = field.IsStatic;
-                fieldDefinition.IsInitOnly = !field.Owns(Attributes.Mutable);
-
-                if (clrType.IsEnum || field.InitialValue != null)
-                {
-                    fieldDefinition.Constant = field.InitialValue;
-
-                    if (field.Name.ToString() != "value__")
-                    {
-                        fieldDefinition.IsRuntimeSpecialName = false;
-                        fieldDefinition.IsSpecialName = false;
-                        fieldDefinition.IsLiteral = true;
-                    }
-                }
-
-                ConvertCustomAttributes(field, fieldDefinition);
-
-                clrType.Fields.Add(fieldDefinition);
-            }
-
-            foreach (DescribedBodyMethod m in type.Methods)
-            {
-                var returnType = m.ReturnParameter.Type;
-                var clrMethod = GetMethodDefinition(m, returnType);
-
-                if (m.IsOverride)
-                {
-                    clrMethod.IsHideBySig = true;
-                    clrMethod.IsVirtual = true;
-                }
-
-                clrMethod.IsAbstract = m.IsAbstract;
-                clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
-
-                if (m.Body != null)
-                {
-                    clrMethod.HasThis = false;
-
-                    var variables = MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
-                    clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
-
-                    foreach (var variable in variables)
-                    {
-                        clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.definition, variable.name));
-                    }
-                }
-
-                var attributes = m.Attributes.GetAll();
-                if (attributes.Any())
-                {
-                    foreach (var attr in attributes)
-                    {
-                        if (attr.AttributeType.Name.ToString() == AccessModifierAttribute.AttributeName)
-                        {
-                            continue;
-                        }
-
-                        if (attr.AttributeType.Name.ToString() == "ExtensionAttribute")
-                        {
-                            var attrCtor = _assemblyDefinition.MainModule.ImportReference(typeof(ExtensionAttribute).GetConstructors().First());
-                            var ca = new CustomAttribute(attrCtor);
-                            clrType.IsBeforeFieldInit = false;
-                            clrMethod.IsHideBySig = true;
-
-                            clrMethod.CustomAttributes.Add(ca);
-                        }
-                    }
-                }
-
-                clrType.Methods.Add(clrMethod);
-            }
+            ApplyModifiers(type, clrType);
+            SetBaseType(type, clrType);
+            ConvertFields(type, clrType);
+            ConvertMethods(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
         }
 
-        foreach (var baseType in needToAdjust)
-        {
-            var type = Resolve(baseType.name).Resolve();
-
-            if (type.IsInterface)
-            {
-                baseType.definition.Interfaces.Add(new InterfaceImplementation(type));
-            }
-            else
-            {
-                baseType.definition.BaseType = type;
-            }
-        }
+        AdjustBaseTypesAndInterfaces();
 
         _assemblyDefinition.Write(output);
 
         output.Close();
+    }
+
+    private static void ApplyModifiers(DescribedType type, TypeDefinition clrType)
+    {
+        if (type.IsPrivate)
+        {
+            clrType.Attributes |= TypeAttributes.NestedPrivate;
+        }
+        else if (type.IsProtected)
+        {
+            clrType.Attributes |= TypeAttributes.NestedFamily;
+        }
+        else
+        {
+            clrType.Attributes |= TypeAttributes.Public;
+        }
+        if (type.IsStatic)
+        {
+            clrType.Attributes |= TypeAttributes.Abstract;
+            clrType.Attributes |= TypeAttributes.Sealed;
+        }
+
+        if (type.IsAbstract)
+        {
+            clrType.Attributes |= TypeAttributes.Abstract;
+        }
+
+        clrType.IsInterface = type.IsInterfaceType;
     }
 
     private static MethodAttributes GetMethodAttributes(IMember member)
@@ -236,6 +128,135 @@ public class DotNetAssembly : ITargetAssembly
 
             default:
                 break;
+        }
+    }
+
+    private void AdjustBaseTypesAndInterfaces()
+    {
+        foreach (var baseType in needToAdjust)
+        {
+            var type = Resolve(baseType.name).Resolve();
+
+            if (type.IsInterface)
+            {
+                baseType.definition.Interfaces.Add(new InterfaceImplementation(type));
+            }
+            else
+            {
+                baseType.definition.BaseType = type;
+            }
+        }
+    }
+
+    private void ConvertMethods(DescribedType type, TypeDefinition clrType)
+    {
+        foreach (DescribedBodyMethod m in type.Methods)
+        {
+            var returnType = m.ReturnParameter.Type;
+            var clrMethod = GetMethodDefinition(m, returnType);
+
+            if (m.IsOverride)
+            {
+                clrMethod.IsHideBySig = true;
+                clrMethod.IsVirtual = true;
+            }
+
+            clrMethod.IsAbstract = m.IsAbstract;
+            clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
+
+            if (m.Body != null)
+            {
+                clrMethod.HasThis = false;
+
+                var variables = MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+                clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
+
+                foreach (var variable in variables)
+                {
+                    clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.definition, variable.name));
+                }
+            }
+
+            var attributes = m.Attributes.GetAll();
+            if (attributes.Any())
+            {
+                foreach (var attr in attributes)
+                {
+                    if (attr.AttributeType.Name.ToString() == AccessModifierAttribute.AttributeName)
+                    {
+                        continue;
+                    }
+
+                    if (attr.AttributeType.Name.ToString() == "ExtensionAttribute")
+                    {
+                        var attrCtor = _assemblyDefinition.MainModule.ImportReference(typeof(ExtensionAttribute).GetConstructors().First());
+                        var ca = new CustomAttribute(attrCtor);
+                        clrType.IsBeforeFieldInit = false;
+                        clrMethod.IsHideBySig = true;
+
+                        clrMethod.CustomAttributes.Add(ca);
+                    }
+                }
+            }
+
+            clrType.Methods.Add(clrMethod);
+        }
+    }
+
+    private void ConvertFields(DescribedType type, TypeDefinition clrType)
+    {
+        foreach (DescribedField field in type.Fields)
+        {
+            var fieldType = Resolve(field.FieldType.FullName);
+            var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
+
+            var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
+
+            fieldDefinition.IsRuntimeSpecialName = specialName != null;
+            fieldDefinition.IsSpecialName = specialName != null;
+            fieldDefinition.IsStatic = field.IsStatic;
+            fieldDefinition.IsInitOnly = !field.Owns(Attributes.Mutable);
+
+            if (clrType.IsEnum || field.InitialValue != null)
+            {
+                fieldDefinition.Constant = field.InitialValue;
+
+                if (field.Name.ToString() != "value__")
+                {
+                    fieldDefinition.IsRuntimeSpecialName = false;
+                    fieldDefinition.IsSpecialName = false;
+                    fieldDefinition.IsLiteral = true;
+                }
+            }
+
+            ConvertCustomAttributes(field, fieldDefinition);
+
+            clrType.Fields.Add(fieldDefinition);
+        }
+    }
+
+    private void SetBaseType(DescribedType type, TypeDefinition clrType)
+    {
+        if (type.BaseTypes.Any())
+        {
+            foreach (var t in type.BaseTypes)
+            {
+                if (t.Name.ToString() == "ValueType")
+                {
+                    clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(ValueType));
+
+                    //clrType.ClassSize = 1;
+                    //clrType.PackingSize = 0;
+                }
+                else
+                {
+                    AddBaseType(clrType, t.FullName);
+                }
+            }
+        }
+        else
+        {
+            clrType.BaseType = _assemblyDefinition.MainModule.ImportReference(typeof(object));
         }
     }
 

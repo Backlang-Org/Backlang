@@ -207,7 +207,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         foreach (var tree in context.Trees)
         {
-            var modulename = IntermediateStage.GetModuleName(tree);
+            var modulename = Utils.GetModuleName(tree);
 
             ConvertTypesOrInterface(context, tree, modulename.Value);
 
@@ -459,7 +459,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
             {
-                type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(context.Assembly.Name), context.Assembly);
+                type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
                 type.IsStatic = true;
 
                 context.Assembly.AddType(type);
@@ -502,7 +502,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
 
-            var name = GetQualifiedName(st.Args[0]);
+            var name = Utils.GetQualifiedName(st.Args[0]);
             var inheritances = st.Args[1];
             var members = st.Args[2];
 
@@ -510,7 +510,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             foreach (var inheritance in inheritances.Args)
             {
-                var fullName = GetQualifiedName(inheritance);
+                var fullName = Utils.GetQualifiedName(inheritance);
                 var btype = context.Binder.ResolveTypes(fullName).FirstOrDefault();
 
                 if (btype != null)
@@ -534,18 +534,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             ConvertTypeMembers(members, type, context);
         }
-    }
-
-    private static QualifiedName GetQualifiedName(LNode lNode)
-    {
-        if (lNode.Calls(CodeSymbols.Dot))
-        {
-            QualifiedName qname = GetQualifiedName(lNode.Args[0]);
-
-            return GetQualifiedName(lNode.Args[1]).Qualify(qname);
-        }
-
-        return new SimpleName(lNode.Name.Name).Qualify();
     }
 
     private static void ConvertUnions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)

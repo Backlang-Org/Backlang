@@ -1,4 +1,6 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 using System.Text;
 
@@ -19,6 +21,7 @@ public sealed class Utils
 
         return sb.ToString();
     }
+
     public static void SetAccessModifier(LNode node, DescribedMember type)
     {
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
@@ -32,6 +35,42 @@ public sealed class Utils
         else
         {
             type.IsPublic = true;
+        }
+    }
+
+    public static QualifiedName? GetModuleName(CompilationUnit tree)
+    {
+        foreach (var mod in tree.Body)
+        {
+            if (!mod.Calls(CodeSymbols.Namespace)) continue;
+
+            return ShrinkDottedModuleName(mod.Args[0]);
+        }
+
+        return default;
+    }
+
+    public static QualifiedName GetQualifiedName(LNode lNode)
+    {
+        if (lNode.Calls(CodeSymbols.Dot))
+        {
+            QualifiedName qname = GetQualifiedName(lNode.Args[0]);
+
+            return GetQualifiedName(lNode.Args[1]).Qualify(qname);
+        }
+
+        return new SimpleName(lNode.Name.Name).Qualify();
+    }
+
+    private static QualifiedName ShrinkDottedModuleName(LNode lNode)
+    {
+        if (lNode.Calls(CodeSymbols.Dot))
+        {
+            return ShrinkDottedModuleName(lNode.Args[1]).Qualify(ShrinkDottedModuleName(lNode.Args[0]));
+        }
+        else
+        {
+            return new SimpleName(lNode.Name.Name).Qualify();
         }
     }
 }

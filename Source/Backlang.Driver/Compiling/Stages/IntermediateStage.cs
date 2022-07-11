@@ -70,29 +70,17 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    public static QualifiedName? GetModuleName(CompilationUnit tree)
-    {
-        foreach (var mod in tree.Body)
-        {
-            if (!mod.Calls(CodeSymbols.Namespace)) continue;
-
-            return ShrinkDottedModuleName(mod.Args[0]);
-        }
-
-        return default;
-    }
-
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
-        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
+        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(string.Empty), context.Assembly)
         {
             IsStatic = true
         };
 
         foreach (var tree in context.Trees)
         {
-            var modulename = GetModuleName(tree) ?? context.Assembly.Name.Qualify();
+            var modulename = Utils.GetModuleName(tree) ?? new SimpleName(string.Empty).Qualify();
 
             ConvertTypesOrInterfaces(context, tree, modulename);
             ConvertEnums(context, tree, modulename);
@@ -155,18 +143,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {
             type.IsAbstract = true;
-        }
-    }
-
-    private static QualifiedName ShrinkDottedModuleName(LNode lNode)
-    {
-        if (lNode.Calls(CodeSymbols.Dot))
-        {
-            return ShrinkDottedModuleName(lNode.Args[1]).Qualify(ShrinkDottedModuleName(lNode.Args[0]));
-        }
-        else
-        {
-            return new SimpleName(lNode.Name.Name).Qualify();
         }
     }
 }

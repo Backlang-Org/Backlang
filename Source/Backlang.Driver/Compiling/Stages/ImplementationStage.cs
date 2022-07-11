@@ -66,7 +66,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private void ImplementDefaultConstructors(CompilerContext context, CompilationUnit tree)
     {
-        var modulename = IntermediateStage.GetModuleName(tree);
+        var modulename = Utils.GetModuleName(tree);
 
         foreach (var st in tree.Body)
         {
