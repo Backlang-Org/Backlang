@@ -6,4 +6,6 @@ namespace Backlang.Driver;
 public interface ICompilationTarget : ITarget
 {
     TypeEnvironment Init(TypeResolver binder);
+
+    void AfterCompiling(CompilerContext context);
 }

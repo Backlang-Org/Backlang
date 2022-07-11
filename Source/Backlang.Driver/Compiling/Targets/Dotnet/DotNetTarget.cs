@@ -1,5 +1,4 @@
 ﻿using Backlang.Core;
-using Backlang.Driver.Compiling.Typesystem;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using System.Collections.Specialized;
@@ -10,6 +9,17 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 public class DotNetTarget : ICompilationTarget
 {
     public string Name => "dotnet";
+
+    public void AfterCompiling(CompilerContext context)
+    {
+        var runtimeConfigStream = typeof(DotNetTarget).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
+        var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.OutputFilename))}.runtimeconfig.json");
+
+        runtimeConfigStream.CopyTo(jsonStream);
+
+        jsonStream.Close();
+        runtimeConfigStream.Close();
+    }
 
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {

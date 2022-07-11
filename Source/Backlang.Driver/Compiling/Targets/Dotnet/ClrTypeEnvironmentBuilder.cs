@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Backlang.Driver.Compiling.Typesystem;
+namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class ClrTypeEnvironmentBuilder
 {

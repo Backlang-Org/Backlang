@@ -1,6 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Core.CompilerService;
-using Backlang.Driver.Compiling.Typesystem;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -22,13 +22,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath,
                 context.OutputFilename)));
 
-            var runtimeConfigStream = typeof(CompileTargetStage).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
-            var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.OutputFilename))}.runtimeconfig.json");
-
-            runtimeConfigStream.CopyTo(jsonStream);
-
-            jsonStream.Close();
-            runtimeConfigStream.Close();
+            context.CompilationTarget.AfterCompiling(context);
         }
 
         return await next.Invoke(context);
