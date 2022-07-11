@@ -119,6 +119,17 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Fields.Add(fieldDefinition);
             }
 
+            foreach (DescribedProperty property in type.Properties)
+            {
+                var propType = property.PropertyType;
+
+                var clrProp = new PropertyDefinition(property.Name.ToString(), GetPropertyAttributes(property), Resolve(propType));
+
+                // ToDo: Getter and Setter
+
+                clrType.Properties.Add(clrProp);
+            }
+
             foreach (DescribedBodyMethod m in type.Methods)
             {
                 var returnType = m.ReturnParameter.Type;
@@ -177,6 +188,13 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition.Write(output);
 
         output.Close();
+    }
+
+    private static PropertyAttributes GetPropertyAttributes(DescribedProperty property)
+    {
+        PropertyAttributes attr = 0;
+
+        return attr;
     }
 
     private static MethodAttributes GetMethodAttributes(IMember member)
