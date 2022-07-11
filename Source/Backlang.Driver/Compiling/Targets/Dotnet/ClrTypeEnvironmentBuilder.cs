@@ -121,7 +121,8 @@ public class ClrTypeEnvironmentBuilder
     {
         foreach (var p in parameterInfos)
         {
-            var pa = new Parameter(resolver.ResolveTypes(new SimpleName(p.ParameterType.Name).Qualify(p.ParameterType.Namespace)).FirstOrDefault(), p.Name);
+            var types = resolver.ResolveTypes(new SimpleName(p.ParameterType.Name).Qualify(p.ParameterType.Namespace));
+            var pa = new Parameter(types.FirstOrDefault(), p.Name);
 
             method.AddParameter(pa);
         }

@@ -42,8 +42,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
         context.writeMethods = consoleType?.Methods.Where(
             method => method.Name.ToString() == "Write"
                 && method.IsStatic
-                && method.ReturnParameter.Type == context.Environment.Void
-                && method.Parameters.Count == 1);
+                && method.ReturnParameter.Type == context.Environment.Void);
 
         return await next.Invoke(context);
     }

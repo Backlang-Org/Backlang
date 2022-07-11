@@ -1,4 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -169,7 +169,7 @@ public static class MethodBodyCompiler
         {
             var parameters = method.Parameters;
 
-            if (method.Name == callPrototype.Callee.Name.ToString() && parameters.Count == 1)
+            if (method.Name == callPrototype.Callee.Name.ToString())
             {
                 if (MatchesParameters(parameters, load))
                 {
@@ -186,9 +186,9 @@ public static class MethodBodyCompiler
         bool matches = false;
         for (int i = 0; i < parameters.Count; i++)
         {
-            if (parameters[i].ParameterType.Name == load.ResultType.Name.ToString())
+            if (parameters[i].ParameterType.FullName == load.ResultType.FullName.ToString() || parameters[i].ParameterType.FullName == "System.Object")
             {
-                matches = (matches || i == 0) && parameters[i].ParameterType.Name == load.ResultType.Name.ToString();
+                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == load.ResultType.FullName.ToString() || parameters[i].ParameterType.FullName == "System.Object";
             }
         }
 
