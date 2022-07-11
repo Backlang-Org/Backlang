@@ -519,7 +519,16 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
                 else
                 {
-                    context.AddError(inheritance, $"Type {fullName} cannot be found");
+                    btype = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
+
+                    if (btype != null)
+                    {
+                        type.AddBaseType(btype);
+                    }
+                    else
+                    {
+                        context.AddError(inheritance, $"Type {fullName} cannot be found");
+                    }
                 }
             }
 
