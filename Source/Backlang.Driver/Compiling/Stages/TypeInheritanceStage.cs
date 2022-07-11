@@ -13,6 +13,7 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -356,10 +357,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertEnums(CompilerContext context, CompilationUnit tree)
     {
-        var enums = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Enum);
-
-        foreach (var enu in enums)
+        foreach (var enu in tree.Body)
         {
+            if (!(enu.IsCall && enu.Name == CodeSymbols.Enum)) continue;
+
             var name = enu.Args[0].Name;
             var members = enu.Args[2];
 
@@ -430,10 +431,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
     {
-        var ff = tree.Body.Where(_ => _.IsCall && _.Name == CodeSymbols.Fn);
-
-        foreach (var function in ff)
+        foreach (var function in tree.Body)
         {
+            if (!(function.IsCall && function.Name == CodeSymbols.Fn)) continue;
+
             DescribedType type;
 
             if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
@@ -477,10 +478,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree)
     {
-        var types = tree.Body.Where(_ => _.IsCall && (_.Name == CodeSymbols.Struct || _.Name == CodeSymbols.Class || _.Name == CodeSymbols.Interface));
-
-        foreach (var st in types)
+        foreach (var st in tree.Body)
         {
+            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
+
             var name = st.Args[0].Name;
             var inheritances = st.Args[1];
             var members = st.Args[2];
@@ -498,10 +499,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertUnions(CompilerContext context, CompilationUnit tree)
     {
-        var types = tree.Body.Where(_ => _.IsCall && _.Name == Symbols.Union);
-
-        foreach (var node in types)
+        foreach (var node in tree.Body)
         {
+            if (!(node.IsCall && node.Name == Symbols.Union)) continue;
+
             var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(context.Assembly.FullName.FullName), context.Assembly);
             type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
 
@@ -546,29 +547,28 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
+    private static readonly ImmutableDictionary<string, string> Aliases = new Dictionary<string, string>()
+    {
+        ["bool"] = "Boolean",
+
+        ["i8"] = "Byte",
+        ["i16"] = "Int16",
+        ["i32"] = "Int32",
+        ["i64"] = "Int64",
+
+        ["u16"] = "UInt16",
+        ["u32"] = "UInt32",
+        ["u64"] = "UInt64",
+
+        ["char"] = "Char",
+        ["string"] = "String",
+        ["none"] = "Void",
+    }.ToImmutableDictionary();
     private static QualifiedName GetNameOfPrimitiveType(TypeResolver binder, string name)
     {
-        var aliases = new Dictionary<string, string>()
+        if (Aliases.ContainsKey(name))
         {
-            ["bool"] = "Boolean",
-
-            ["i8"] = "Byte",
-            ["i16"] = "Int16",
-            ["i32"] = "Int32",
-            ["i64"] = "Int64",
-
-            ["u16"] = "UInt16",
-            ["u32"] = "UInt32",
-            ["u64"] = "UInt64",
-
-            ["char"] = "Char",
-            ["string"] = "String",
-            ["none"] = "Void",
-        };
-
-        if (aliases.ContainsKey(name))
-        {
-            name = aliases[name];
+            name = Aliases[name];
         }
 
         return ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System").FullName;
