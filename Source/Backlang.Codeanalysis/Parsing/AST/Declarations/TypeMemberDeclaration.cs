@@ -20,7 +20,7 @@ public sealed class TypeMemberDeclaration
         {
             declaration = ParseProperty(iterator, parser);
         }
-        else if (iterator.IsMatch(TokenType.Declare))
+        else if (iterator.IsMatch(TokenType.Let))
         {
             declaration = ParseField(iterator, parser);
         }
@@ -35,7 +35,7 @@ public sealed class TypeMemberDeclaration
 
     public static LNode ParseField(TokenIterator iterator, Parser parser)
     {
-        iterator.Match(TokenType.Declare);
+        iterator.Match(TokenType.Let);
         return VariableStatement.Parse(iterator, parser);
     }
 
