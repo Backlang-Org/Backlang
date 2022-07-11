@@ -151,6 +151,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return method;
     }
 
+    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member)
+    {
+        var property = new DescribedProperty(new SimpleName(member.Args[1].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
+
+        Utils.SetAccessModifier(member, property);
+
+        return property;
+    }
+
     public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
     {
         foreach (var member in members.Args)
@@ -162,6 +171,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             else if (member.Calls(CodeSymbols.Fn))
             {
                 type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
+            }
+            else if (member.Calls(CodeSymbols.Property))
+            {
+                type.AddProperty(ConvertProperty(context, type, member));
             }
         }
     }
