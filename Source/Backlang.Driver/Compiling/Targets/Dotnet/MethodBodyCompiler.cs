@@ -1,4 +1,4 @@
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -51,13 +51,21 @@ public static class MethodBodyCompiler
             }
         }
 
-        clrMethod.Body.MaxStackSize = 7;
+        //clrMethod.Body.MaxStackSize = 7;
     }
 
     private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item)
     {
         var load = item.PreviousInstructionOrNull;
         var method = GetPrintMethod(assemblyDefinition, load);
+
+        foreach (var arg in method.Parameters)
+        {
+            if (arg.ParameterType.FullName == "System.Object")
+            {
+                ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(load.ResultType));
+            }
+        }
 
         ilProcessor.Append(Instruction.Create(OpCodes.Call,
             assemblyDefinition.MainModule.ImportReference(

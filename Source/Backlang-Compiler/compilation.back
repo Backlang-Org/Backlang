@@ -7,11 +7,11 @@ union Some {
 	world : f32 = 0;
 }
 
-public static func main() -> i32 {
-	print("Hello Backlang!");
-	let mut m : i32 = 12;
+public static func main() -> none {
+	print("Hello Backlang! {0}", 5);
+	/*let mut m : i32 = 12;
 	
-	return 0;
+	return 0;*/
 }
 
 implement u8 {

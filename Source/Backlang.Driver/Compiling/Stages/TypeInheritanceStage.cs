@@ -209,16 +209,44 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
     {
         var method = context.writeMethods.FirstOrDefault();
-        var constant = block.AppendInstruction(
-            ConvertConstant(
-                GetLiteralType(node.Args[0].Args[0].Value, context.Binder),
-            node.Args[0].Args[0].Value));
 
-        var str = block.AppendInstruction(
-            Instruction.CreateLoad(
-                GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
+        var argTypes = new List<IType>();
+        var callTags = new List<ValueTag>();
 
-        block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new ValueTag[] { str }));
+        foreach (var arg in node.Args)
+        {
+            var type = GetLiteralType(arg.Args[0].Value, context.Binder);
+            argTypes.Add(type);
+
+            var constant = block.AppendInstruction(
+            ConvertConstant(type, arg.Args[0].Value));
+
+            var value = block.AppendInstruction(
+                Instruction.CreateLoad(type, constant));
+
+            callTags.Add(value);
+        }
+
+        foreach (var m in context.writeMethods)
+        {
+            if (m.Parameters.Count == argTypes.Count)
+            {
+                var parameters = m.Parameters.Select(_ => _.Type?.FullName.ToString()).ToArray();
+                var argsNames = argTypes.Select(_ => _.FullName.ToString()).ToArray();
+
+                for (int i = 0; i < m.Parameters.Count; i++)
+                {
+                    if (parameters[i] == null) break;
+
+                    if (parameters[i].Equals(argsNames[i]) || parameters[i] == "System.Object")
+                    {
+                        method = m;
+                    }
+                }
+            }
+        }
+
+        block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, callTags));
     }
 
     private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node)
