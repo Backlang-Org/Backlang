@@ -46,11 +46,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (node.Calls(CodeSymbols.Return))
             {
-                var valueNode = node.Args[0].Args[0];
-                var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
+                if (node.ArgCount == 1)
+                {
+                    var valueNode = node.Args[0].Args[0];
+                    var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
 
-                block.Flow =
-                    new ReturnFlow(rt);
+                    block.Flow = new ReturnFlow(rt);
+                }
             }
             else if (node.Calls(CodeSymbols.Throw))
             {
