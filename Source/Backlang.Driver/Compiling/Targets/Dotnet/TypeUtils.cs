@@ -31,6 +31,6 @@ public static class TypeUtils
         }
 
         return _assemblyDefinition.MainModule.ImportReference(
-            new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule).Resolve());
+            new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule)).Resolve();
     }
 }
