@@ -73,7 +73,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             if (!(st.IsCall && st.Name == CodeSymbols.Struct)) continue;
 
             var name = st.Args[0].Name;
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename.Value)).First();
             if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
             {
                 var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));

@@ -6,7 +6,6 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 using System.Collections.Immutable;
-using System.Text;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -71,6 +70,18 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
+    public static QualifiedName? GetModuleName(CompilationUnit tree)
+    {
+        foreach (var mod in tree.Body)
+        {
+            if (!mod.Calls(CodeSymbols.Namespace)) continue;
+
+            return ShrinkDottedModuleName(mod.Args[0]);
+        }
+
+        return default;
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
@@ -81,7 +92,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var tree in context.Trees)
         {
-            var modulename = GetModuleName(tree) ?? context.Assembly.Name;
+            var modulename = GetModuleName(tree) ?? context.Assembly.Name.Qualify();
 
             ConvertTypesOrInterfaces(context, tree, modulename);
             ConvertEnums(context, tree, modulename);
@@ -93,7 +104,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
     {
         foreach (var @enum in tree.Body)
         {
@@ -110,7 +121,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree, UnqualifiedName modulename)
+    private static void ConvertTypesOrInterfaces(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
     {
         foreach (var st in tree.Body)
         {
@@ -147,37 +158,15 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    public static UnqualifiedName GetModuleName(CompilationUnit tree)
+    private static QualifiedName ShrinkDottedModuleName(LNode lNode)
     {
-        foreach (var mod in tree.Body)
-        {
-            if (!mod.Calls(CodeSymbols.Namespace)) continue;
-
-            string name = mod.Args[0].Name.Name;
-
-            name = ShrinkDottedModuleName(mod.Args[0]);
-
-            return new SimpleName(name);
-        }
-
-        return null;
-    }
-
-    private static string ShrinkDottedModuleName(LNode lNode)
-    {
-        var sb = new StringBuilder();
-
         if (lNode.Calls(CodeSymbols.Dot))
         {
-            sb.Append(ShrinkDottedModuleName(lNode.Args[0]));
-            sb.Append(".");
-            sb.Append(lNode.Args[1].Name);
+            return ShrinkDottedModuleName(lNode.Args[1]).Qualify(ShrinkDottedModuleName(lNode.Args[0]));
         }
         else
         {
-            sb.Append(lNode.Name.Name);
+            return new SimpleName(lNode.Name.Name).Qualify();
         }
-
-        return sb.ToString();
     }
 }

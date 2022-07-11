@@ -15,6 +15,7 @@ public class DotNetAssembly : ITargetAssembly
 {
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
+    private readonly Dictionary<TypeDefinition, QualifiedName> needToAdjust = new();
     private AssemblyDefinition _assemblyDefinition;
 
     public DotNetAssembly(AssemblyContentDescription description)
@@ -38,7 +39,7 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (DescribedType type in _assembly.Types)
         {
-            var clrType = new TypeDefinition(type.FullName.Qualifier.ToString(),
+            var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
             ConvertCustomAttributes(type, clrType);
@@ -81,7 +82,13 @@ public class DotNetAssembly : ITargetAssembly
                     }
                     else
                     {
-                        clrType.BaseType = Resolve(t.FullName);
+                        if (t.Name.ToString().StartsWith("I"))
+                        {
+                        }
+                        else
+                        {
+                            AddBaseType(clrType, t.FullName);
+                        }
                     }
                 }
             }
@@ -174,6 +181,11 @@ public class DotNetAssembly : ITargetAssembly
             _assemblyDefinition.MainModule.Types.Add(clrType);
         }
 
+        foreach (var baseType in needToAdjust)
+        {
+            baseType.Key.BaseType = Resolve(baseType.Value);
+        }
+
         _assemblyDefinition.Write(output);
 
         output.Close();
@@ -222,6 +234,11 @@ public class DotNetAssembly : ITargetAssembly
             default:
                 break;
         }
+    }
+
+    private void AddBaseType(TypeDefinition clrType, QualifiedName fullName)
+    {
+        needToAdjust.Add(clrType, fullName);
     }
 
     private void ConvertCustomAttributes(DescribedType type, TypeDefinition clrType)

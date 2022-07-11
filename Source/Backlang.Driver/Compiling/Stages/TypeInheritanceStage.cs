@@ -209,13 +209,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             var modulename = IntermediateStage.GetModuleName(tree);
 
-            ConvertTypesOrInterface(context, tree, modulename);
+            ConvertTypesOrInterface(context, tree, modulename.Value);
 
-            ConvertFreeFunctions(context, tree, modulename);
+            ConvertFreeFunctions(context, tree, modulename.Value);
 
-            ConvertEnums(context, tree, modulename);
+            ConvertEnums(context, tree, modulename.Value);
 
-            ConvertUnions(context, tree, modulename);
+            ConvertUnions(context, tree, modulename.Value);
         }
 
         return await next.Invoke(context);
@@ -375,7 +375,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                                            elementType);
     }
 
-    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
     {
         foreach (var enu in tree.Body)
         {
@@ -449,7 +449,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         type.AddField(field);
     }
 
-    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
+    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
     {
         foreach (var function in tree.Body)
         {
@@ -496,7 +496,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return param;
     }
 
-    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
+    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
     {
         foreach (var st in tree.Body)
         {
@@ -511,7 +511,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             foreach (var inheritance in inheritances.Args)
             {
                 var fullName = GetQualifiedName(inheritance); //ToDo: fix
-                var btype = context.Binder.ResolveTypes(fullName.FullyUnqualifiedName.Qualify(modulename)).FirstOrDefault();
+                var btype = context.Binder.ResolveTypes(fullName).FirstOrDefault();
 
                 if (btype != null)
                 {
@@ -539,7 +539,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return new SimpleName(lNode.Name.Name).Qualify();
     }
 
-    private static void ConvertUnions(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
+    private static void ConvertUnions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
     {
         foreach (var node in tree.Body)
         {

@@ -13,7 +13,7 @@ public static class TypeUtils
 
     public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, QualifiedName type)
     {
-        return ImportType(_assemblyDefinition, type.Qualifier.ToString(), type.Name.ToString());
+        return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());
     }
 
     public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, string ns, string type)
@@ -22,7 +22,7 @@ public static class TypeUtils
         {
             var ass = _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar, new ReaderParameters() { });
 
-            var tr = new TypeReference(ns, type, ass.MainModule, ass.MainModule).Resolve();
+            var tr = new TypeReference(ns, type, ass.MainModule, ass.MainModule);
 
             if (tr?.Resolve() != null)
             {
@@ -30,7 +30,8 @@ public static class TypeUtils
             }
         }
 
-        return _assemblyDefinition.MainModule.ImportReference(
-            new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule)).Resolve();
+        var trr = new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule).Resolve();
+
+        return _assemblyDefinition.MainModule.ImportReference(trr);
     }
 }
