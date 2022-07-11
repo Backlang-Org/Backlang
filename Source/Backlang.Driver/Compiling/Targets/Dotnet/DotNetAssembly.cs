@@ -15,7 +15,7 @@ public class DotNetAssembly : ITargetAssembly
 {
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
-    private readonly Dictionary<TypeDefinition, QualifiedName> needToAdjust = new();
+    private readonly List<(TypeDefinition definition, QualifiedName name)> needToAdjust = new();
     private AssemblyDefinition _assemblyDefinition;
 
     public DotNetAssembly(AssemblyContentDescription description)
@@ -82,13 +82,7 @@ public class DotNetAssembly : ITargetAssembly
                     }
                     else
                     {
-                        if (t.Name.ToString().StartsWith("I"))
-                        {
-                        }
-                        else
-                        {
-                            AddBaseType(clrType, t.FullName);
-                        }
+                        AddBaseType(clrType, t.FullName);
                     }
                 }
             }
@@ -183,7 +177,16 @@ public class DotNetAssembly : ITargetAssembly
 
         foreach (var baseType in needToAdjust)
         {
-            baseType.Key.BaseType = Resolve(baseType.Value);
+            var type = Resolve(baseType.name).Resolve();
+
+            if (type.IsInterface)
+            {
+                baseType.definition.Interfaces.Add(new InterfaceImplementation(type));
+            }
+            else
+            {
+                baseType.definition.BaseType = type;
+            }
         }
 
         _assemblyDefinition.Write(output);
@@ -238,7 +241,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private void AddBaseType(TypeDefinition clrType, QualifiedName fullName)
     {
-        needToAdjust.Add(clrType, fullName);
+        needToAdjust.Add((clrType, fullName));
     }
 
     private void ConvertCustomAttributes(DescribedType type, TypeDefinition clrType)

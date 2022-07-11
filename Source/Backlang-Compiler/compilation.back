@@ -1,10 +1,14 @@
 module a.b.c.d;
 
-public struct kek : a.b.c.d.IBlob {
+public struct kek : a.b.c.d.Blob, IRed {
 
 }
 
-public interface IBlob {
+public interface IRed {
+
+}
+
+public abstract class Blob {
 
 }
 

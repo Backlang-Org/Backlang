@@ -510,7 +510,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             foreach (var inheritance in inheritances.Args)
             {
-                var fullName = GetQualifiedName(inheritance); //ToDo: fix
+                var fullName = GetQualifiedName(inheritance);
                 var btype = context.Binder.ResolveTypes(fullName).FirstOrDefault();
 
                 if (btype != null)
