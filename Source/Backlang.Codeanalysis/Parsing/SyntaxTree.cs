@@ -56,7 +56,7 @@ public static class SyntaxTree
     public static LNode Class(string name, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Class,
-            Factory.List(
+            LNode.List(
                 Factory.Id((Symbol)name),
                 Factory.Call(Symbols.Inheritance, inheritances),
                 Factory.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
