@@ -1,21 +1,5 @@
-struct hello {
-	public let k : i32 = 42;
-}
-
-union Some {
-	hello : hello = 0;
-	world : f32 = 0;
-}
-
-public static func main() -> none {
+public static func main() -> i32 {
 	print("Hello Backlang! {0}", 42);
-	let mut m : i32 = 12;
-	
-	throw "Some Error Message";
-}
 
-implement u8 {
-    func DoBacklang() -> none {
-        
-    }
+	return 0;
 }

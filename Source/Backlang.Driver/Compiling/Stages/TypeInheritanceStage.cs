@@ -218,8 +218,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
     {
-        var method = context.writeMethods.FirstOrDefault();
-
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
@@ -231,32 +229,44 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var constant = block.AppendInstruction(
             ConvertConstant(type, arg.Args[0].Value));
 
-            var value = block.AppendInstruction(
-                Instruction.CreateLoad(type, constant));
+            block.AppendInstruction(Instruction.CreateLoad(type, constant));
 
-            callTags.Add(value);
+            callTags.Add(constant);
         }
 
+        var method = GetMatchingPrintMethod(context, argTypes);
+
+        var call = Instruction.CreateCall(method, MethodLookup.Static, callTags);
+
+        block.AppendInstruction(call);
+    }
+
+    private static IMethod GetMatchingPrintMethod(CompilerContext context, List<IType> argTypes)
+    {
         foreach (var m in context.writeMethods)
         {
             if (m.Parameters.Count == argTypes.Count)
             {
-                var parameters = m.Parameters.Select(_ => _.Type?.FullName.ToString()).ToArray();
-                var argsNames = argTypes.Select(_ => _.FullName.ToString()).ToArray();
-
-                for (int i = 0; i < m.Parameters.Count; i++)
-                {
-                    if (parameters[i] == null) break;
-
-                    if (parameters[i].Equals(argsNames[i]) || parameters[i] == "System.Object")
-                    {
-                        method = m;
-                    }
-                }
+                if (MatchesParameters(m, argTypes))
+                    return m;
             }
         }
 
-        block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, callTags));
+        return null;
+    }
+
+    private static bool MatchesParameters(IMethod m, List<IType> argTypes)
+    {
+        bool matches = false;
+        for (int i = 0; i < m.Parameters.Count; i++)
+        {
+            if (m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString())
+            {
+                matches = (matches || i == 0) && m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString();
+            }
+        }
+
+        return matches;
     }
 
     private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node)

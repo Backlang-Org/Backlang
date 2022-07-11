@@ -17,23 +17,23 @@ public static class MethodBodyCompiler
 
         foreach (var item in m.Body.Implementation.NamedInstructions)
         {
-            var i = item.Instruction;
+            var instruction = item.Instruction;
 
-            if (i.Prototype is CallPrototype callPrototype)
+            if (instruction.Prototype is CallPrototype callPrototype)
             {
-                EmitCall(assemblyDefinition, ilProcessor, callPrototype);
+                EmitCall(assemblyDefinition, ilProcessor, instruction, m.Body.Implementation);
             }
-            else if (i.Prototype is NewObjectPrototype newObjectPrototype)
+            else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
                 EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
             }
-            else if (i.Prototype is LoadPrototype ld)
+            else if (instruction.Prototype is LoadPrototype ld)
             {
                 var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
 
                 EmitConstant(ilProcessor, consProto);
             }
-            else if (i.Prototype is AllocaPrototype allocA)
+            else if (instruction.Prototype is AllocaPrototype allocA)
             {
                 var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
@@ -71,15 +71,22 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Newobj, method);
     }
 
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, CallPrototype callPrototype)
+    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, Furesoft.Core.CodeDom.Compiler.FlowGraph implementation)
     {
+        var callPrototype = (CallPrototype)instruction.Prototype;
+
         var method = GetMethod(assemblyDefinition, callPrototype.Callee);
 
-        foreach (var arg in method.Parameters)
+        for (var i = 0; i < method.Parameters.Count; i++)
         {
-            if (arg.ParameterType.FullName == "System.Object")
+            var valueType = implementation.NamedInstructions
+                .Where(_ => instruction.Arguments[i] == _.Tag)
+                .Select(_ => _.ResultType).FirstOrDefault();
+
+            var arg = method.Parameters[i];
+            if (arg.ParameterType.FullName.ToString() == "System.Object")
             {
-                //ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(load.ResultType));
+                ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(valueType));
             }
         }
 
