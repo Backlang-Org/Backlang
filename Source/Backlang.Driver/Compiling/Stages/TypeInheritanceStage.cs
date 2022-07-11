@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -58,9 +58,17 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 var valueNode = node.Args[0].Args[0];
                 var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(node.Args[0].Args[0].Value, context.Binder), node.Args[0].Args[0].Value));
+                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
 
-                var str = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(node.Args[0].Args[0].Value, context.Binder), constant));
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
+
+                if (node.Args[0].Name.Name == "#string")
+                {
+                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
+                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
+
+                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
+                }
 
                 block.Flow = UnreachableFlow.Instance;
             }

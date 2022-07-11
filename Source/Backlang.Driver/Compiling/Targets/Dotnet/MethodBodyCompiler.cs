@@ -1,3 +1,4 @@
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
@@ -21,6 +22,10 @@ public static class MethodBodyCompiler
             if (i.Prototype is CallPrototype callPrototype)
             {
                 EmitCall(assemblyDefinition, ilProcessor, callPrototype);
+            }
+            else if (i.Prototype is NewObjectPrototype newObjectPrototype)
+            {
+                EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
             }
             else if (i.Prototype is LoadPrototype ld)
             {
@@ -55,11 +60,20 @@ public static class MethodBodyCompiler
         }
 
         clrMethod.Body.MaxStackSize = 7;
+
+        return variables;
+    }
+
+    private static void EmitNewObject(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NewObjectPrototype newObjectPrototype)
+    {
+        var method = GetMethod(assemblyDefinition, newObjectPrototype.Constructor);
+
+        ilProcessor.Emit(OpCodes.Newobj, method);
     }
 
     private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, CallPrototype callPrototype)
     {
-        var method = GetPrintMethod(assemblyDefinition, callPrototype);
+        var method = GetMethod(assemblyDefinition, callPrototype.Callee);
 
         foreach (var arg in method.Parameters)
         {
@@ -167,22 +181,24 @@ public static class MethodBodyCompiler
 
             clrMethod.Body.InitLocals = true;
         }
+
+        return (item.Block.Parameters[0].Tag.Name, variable);
     }
 
-    private static MethodReference GetPrintMethod(AssemblyDefinition assemblyDefinition, CallPrototype callPrototype)
+    private static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)
     {
-        var parentType = assemblyDefinition.ImportType(callPrototype.Callee.ParentType).Resolve();
+        var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
 
-        foreach (var method in parentType.Methods)
+        foreach (var m in parentType.Methods)
         {
-            var parameters = method.Parameters;
+            var parameters = m.Parameters;
 
-            if (method.Name == callPrototype.Callee.Name.ToString())
+            if (m.Name == method.Name.ToString())
             {
-                if (method.Parameters.Count == callPrototype.Callee.Parameters.Count)
+                if (parameters.Count == method.Parameters.Count)
                 {
-                    if (MatchesParameters(parameters, callPrototype))
-                        return method;
+                    if (MatchesParameters(parameters, method))
+                        return assemblyDefinition.MainModule.ImportReference(m);
                 }
             }
         }
@@ -190,14 +206,14 @@ public static class MethodBodyCompiler
         return null;
     }
 
-    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, CallPrototype callPrototype)
+    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
     {
         bool matches = false;
         for (int i = 0; i < parameters.Count; i++)
         {
-            if (parameters[i].ParameterType.FullName == callPrototype.Callee.Parameters[i].Type.FullName.ToString())
+            if (parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString())
             {
-                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == callPrototype.Callee.Parameters[i].Type.FullName.ToString();
+                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString();
             }
         }
 

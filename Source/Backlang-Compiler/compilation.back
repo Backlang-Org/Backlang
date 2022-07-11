@@ -8,10 +8,10 @@ union Some {
 }
 
 public static func main() -> none {
-	print("Hello Backlang! {0}", 5);
-	/*let mut m : i32 = 12;
+	print("Hello Backlang! {0}", 42);
+	let mut m : i32 = 12;
 	
-	return 0;*/
+	throw "Some Error Message";
 }
 
 implement u8 {

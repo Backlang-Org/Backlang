@@ -1,10 +1,10 @@
-using Backlang.Driver.Compiling.Stages;
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -92,7 +92,8 @@ public class DotNetAssembly : ITargetAssembly
 
             foreach (DescribedField field in type.Fields)
             {
-                var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, Resolve(field.FieldType.FullName));
+                var fieldType = Resolve(field.FieldType.FullName);
+                var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
                 var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
 
@@ -335,23 +336,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(QualifiedName name)
     {
-        var type = Type.GetType(name.ToString());
-
-        if (type == null)
-        {
-            if (IntermediateStage.TypenameTable.ContainsKey(name.Name.ToString()))
-            {
-                return _assemblyDefinition.MainModule.ImportReference(IntermediateStage.TypenameTable[name.Name.ToString()]);
-            }
-            else
-            {
-                return new TypeReference(name.Qualifier.ToString(),
-                    name.FullyUnqualifiedName.ToString(), _assemblyDefinition.MainModule, _assemblyDefinition.MainModule);
-            }
-        }
-
-        var resolvedType = _assemblyDefinition.MainModule.ImportReference(type);
-        return resolvedType;
+        return _assemblyDefinition.ImportType(name);
     }
 
     private void SetTargetFramework()
