@@ -1,10 +1,12 @@
-﻿using Backlang.Driver.Compiling.Targets.Dotnet;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 using System.Collections.Immutable;
+using System.Text;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -79,8 +81,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var tree in context.Trees)
         {
-            ConvertTypesOrInterfaces(context, tree);
-            ConvertEnums(context, tree);
+            var modulename = GetModuleName(tree) ?? context.Assembly.Name;
+
+            ConvertTypesOrInterfaces(context, tree, modulename);
+            ConvertEnums(context, tree, modulename);
         }
 
         context.Assembly.AddType(context.ExtensionsType);
@@ -89,7 +93,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
     {
         foreach (var @enum in tree.Body)
         {
@@ -97,7 +101,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             var name = @enum.Args[0].Name;
 
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
             type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
@@ -106,7 +110,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
+    private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree, UnqualifiedName modulename)
     {
         foreach (var st in tree.Body)
         {
@@ -114,7 +118,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             var name = st.Args[0].Name;
 
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
             if (st.Name == CodeSymbols.Struct)
             {
                 type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
@@ -141,5 +145,39 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             type.IsAbstract = true;
         }
+    }
+
+    public static UnqualifiedName GetModuleName(CompilationUnit tree)
+    {
+        foreach (var mod in tree.Body)
+        {
+            if (!mod.Calls(CodeSymbols.Namespace)) continue;
+
+            string name = mod.Args[0].Name.Name;
+
+            name = ShrinkDottedModuleName(mod.Args[0]);
+
+            return new SimpleName(name);
+        }
+
+        return null;
+    }
+
+    private static string ShrinkDottedModuleName(LNode lNode)
+    {
+        var sb = new StringBuilder();
+
+        if (lNode.Calls(CodeSymbols.Dot))
+        {
+            sb.Append(ShrinkDottedModuleName(lNode.Args[0]));
+            sb.Append(".");
+            sb.Append(lNode.Args[1].Name);
+        }
+        else
+        {
+            sb.Append(lNode.Name.Name);
+        }
+
+        return sb.ToString();
     }
 }

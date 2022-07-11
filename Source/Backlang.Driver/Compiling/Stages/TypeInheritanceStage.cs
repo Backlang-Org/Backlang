@@ -21,6 +21,24 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
 {
+    private static readonly ImmutableDictionary<string, string> Aliases = new Dictionary<string, string>()
+    {
+        ["bool"] = "Boolean",
+
+        ["i8"] = "Byte",
+        ["i16"] = "Int16",
+        ["i32"] = "Int32",
+        ["i64"] = "Int64",
+
+        ["u16"] = "UInt16",
+        ["u32"] = "UInt32",
+        ["u64"] = "UInt64",
+
+        ["char"] = "Char",
+        ["string"] = "String",
+        ["none"] = "Void",
+    }.ToImmutableDictionary();
+
     public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType)
     {
         var graph = new FlowGraphBuilder();
@@ -189,13 +207,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         foreach (var tree in context.Trees)
         {
-            ConvertTypesOrInterface(context, tree);
+            var modulename = IntermediateStage.GetModuleName(tree);
 
-            ConvertFreeFunctions(context, tree);
+            ConvertTypesOrInterface(context, tree, modulename);
 
-            ConvertEnums(context, tree);
+            ConvertFreeFunctions(context, tree, modulename);
 
-            ConvertUnions(context, tree);
+            ConvertEnums(context, tree, modulename);
+
+            ConvertUnions(context, tree, modulename);
         }
 
         return await next.Invoke(context);
@@ -355,7 +375,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                                            elementType);
     }
 
-    private static void ConvertEnums(CompilerContext context, CompilationUnit tree)
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
     {
         foreach (var enu in tree.Body)
         {
@@ -364,7 +384,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var name = enu.Args[0].Name;
             var members = enu.Args[2];
 
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
 
             var i = -1;
             foreach (var member in members.Args)
@@ -429,7 +449,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         type.AddField(field);
     }
 
-    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree)
+    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
     {
         foreach (var function in tree.Body)
         {
@@ -476,34 +496,56 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return param;
     }
 
-    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree)
+    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
     {
         foreach (var st in tree.Body)
         {
             if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
 
-            var name = st.Args[0].Name;
+            var name = GetQualifiedName(st.Args[0]);
             var inheritances = st.Args[1];
             var members = st.Args[2];
 
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
+            var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).First();
 
             foreach (var inheritance in inheritances.Args)
             {
-                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName(inheritance.Name.Name).Qualify(context.Assembly.Name)).First());
+                var fullName = GetQualifiedName(inheritance); //ToDo: fix
+                var btype = context.Binder.ResolveTypes(fullName.FullyUnqualifiedName.Qualify(modulename)).FirstOrDefault();
+
+                if (btype != null)
+                {
+                    type.AddBaseType(btype);
+                }
+                else
+                {
+                    context.AddError(inheritance, $"Type {fullName} cannot be found");
+                }
             }
 
             ConvertTypeMembers(members, type, context);
         }
     }
 
-    private static void ConvertUnions(CompilerContext context, CompilationUnit tree)
+    private static QualifiedName GetQualifiedName(LNode lNode)
+    {
+        if (lNode.Calls(CodeSymbols.Dot))
+        {
+            QualifiedName qname = GetQualifiedName(lNode.Args[0]);
+
+            return GetQualifiedName(lNode.Args[1]).Qualify(qname);
+        }
+
+        return new SimpleName(lNode.Name.Name).Qualify();
+    }
+
+    private static void ConvertUnions(CompilerContext context, CompilationUnit tree, UnqualifiedName modulename)
     {
         foreach (var node in tree.Body)
         {
             if (!(node.IsCall && node.Name == Symbols.Union)) continue;
 
-            var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(context.Assembly.FullName.FullName), context.Assembly);
+            var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(modulename), context.Assembly);
             type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
 
             var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
@@ -547,23 +589,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static readonly ImmutableDictionary<string, string> Aliases = new Dictionary<string, string>()
-    {
-        ["bool"] = "Boolean",
-
-        ["i8"] = "Byte",
-        ["i16"] = "Int16",
-        ["i32"] = "Int32",
-        ["i64"] = "Int64",
-
-        ["u16"] = "UInt16",
-        ["u32"] = "UInt32",
-        ["u64"] = "UInt64",
-
-        ["char"] = "Char",
-        ["string"] = "String",
-        ["none"] = "Void",
-    }.ToImmutableDictionary();
     private static QualifiedName GetNameOfPrimitiveType(TypeResolver binder, string name)
     {
         if (Aliases.ContainsKey(name))

@@ -1,4 +1,6 @@
-public struct kek : IBlob {
+module a.b.c.d;
+
+public struct kek : a.b.c.d.IBlob {
 
 }
 
