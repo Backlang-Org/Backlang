@@ -1,4 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -9,9 +9,10 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static void Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition)
+    public static List<(string name, VariableDefinition definition)> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
+        var variables = new List<(string name, VariableDefinition definition)>();
 
         foreach (var item in m.Body.Implementation.NamedInstructions)
         {
@@ -29,7 +30,9 @@ public static class MethodBodyCompiler
             }
             else if (i.Prototype is AllocaPrototype allocA)
             {
-                EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
+                var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
+
+                variables.Add(variable);
             }
         }
 
@@ -147,7 +150,7 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static void EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
+    private static (string name, VariableDefinition definition) EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 

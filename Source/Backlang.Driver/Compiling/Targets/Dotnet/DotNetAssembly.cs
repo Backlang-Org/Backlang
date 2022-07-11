@@ -1,4 +1,4 @@
-﻿using Backlang.Driver.Compiling.Stages;
+using Backlang.Driver.Compiling.Stages;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
@@ -135,7 +135,14 @@ public class DotNetAssembly : ITargetAssembly
                 if (m.Body != null)
                 {
                     clrMethod.HasThis = false;
-                    MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+
+                    var variables = MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+                    clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
+
+                    foreach (var variable in variables)
+                    {
+                        clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.definition, variable.name));
+                    }
                 }
 
                 var attributes = m.Attributes.GetAll();

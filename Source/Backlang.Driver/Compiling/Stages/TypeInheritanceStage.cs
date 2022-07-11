@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -255,12 +255,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         var decl = node.Args[1];
 
-        //ToDo: Fix IR Typ resolving
         var types = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, node.Args[0].Args[0].Args[0].Name.ToString().Replace("#", "")));
         var elementType = types.First();
 
         var instruction = Instruction.CreateAlloca(elementType);
         var local = block.AppendInstruction(instruction);
+
+        block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
 
         if (decl.Args[1].Args[0].HasValue)
         {
