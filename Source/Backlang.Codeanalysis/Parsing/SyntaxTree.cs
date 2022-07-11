@@ -40,7 +40,7 @@ public static class SyntaxTree
 
     public static LNode Bitfield(string name, LNodeList members)
     {
-        return Factory.Call(Symbols.Bitfield, LNode.Id(name)).WithAttrs(members);
+        return Factory.Call(Symbols.Bitfield, LNode.List(LNode.Id(name), Factory.AltList(members)));
     }
 
     public static LNode Case(LNode condition, LNode body)
