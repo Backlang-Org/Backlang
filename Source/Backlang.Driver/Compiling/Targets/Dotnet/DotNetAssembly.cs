@@ -207,6 +207,8 @@ public class DotNetAssembly : ITargetAssembly
     {
         var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
 
+        clrField.CustomAttributes.Add(CompilerGeneratedAttribute());
+
         return clrField;
     }
 
@@ -215,6 +217,8 @@ public class DotNetAssembly : ITargetAssembly
         var clrMethod = new MethodDefinition($"get_{property.Name}",
                                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                 Resolve(property.PropertyType.FullName));
+
+        clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
 
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
@@ -231,6 +235,8 @@ public class DotNetAssembly : ITargetAssembly
                                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                 Resolve(new SimpleName("Void").Qualify("System")));
 
+        clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
+
         var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
         clrMethod.Parameters.Add(param);
 
@@ -242,6 +248,15 @@ public class DotNetAssembly : ITargetAssembly
         ilProcessor.Emit(OpCodes.Ret);
 
         return clrMethod;
+    }
+
+    private CustomAttribute CompilerGeneratedAttribute()
+    {
+        var type = typeof(CompilerGeneratedAttribute).GetConstructors()[0];
+
+        var attr = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(type));
+
+        return attr;
     }
 
     private static PropertyAttributes GetPropertyAttributes(DescribedProperty property)
