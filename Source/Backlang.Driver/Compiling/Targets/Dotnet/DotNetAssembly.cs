@@ -123,9 +123,7 @@ public class DotNetAssembly : ITargetAssembly
             {
                 var propType = property.PropertyType;
 
-                var clrProp = new PropertyDefinition(property.Name.ToString(), GetPropertyAttributes(property), Resolve(propType));
-
-                // ToDo: Getter and Setter
+                var clrProp = new PropertyDefinition(property.Name.ToString(), PropertyAttributes.None, Resolve(propType));
 
                 var field = GeneratePropertyField(property);
 
@@ -255,13 +253,6 @@ public class DotNetAssembly : ITargetAssembly
         var type = typeof(CompilerGeneratedAttribute).GetConstructors()[0];
 
         var attr = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(type));
-
-        return attr;
-    }
-
-    private static PropertyAttributes GetPropertyAttributes(DescribedProperty property)
-    {
-        PropertyAttributes attr = 0;
 
         return attr;
     }

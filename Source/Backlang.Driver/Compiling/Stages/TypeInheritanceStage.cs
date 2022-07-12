@@ -161,7 +161,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             // getter defined
             var getter =  new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
-            Utils.SetAccessModifier(member.Args[1], getter);
+            Utils.SetAccessModifier(member.Args[1], getter, property.GetAccessModifier());
             property.Getter = getter;
         }
 
@@ -170,7 +170,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             // setter defined
             var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
             setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
-            Utils.SetAccessModifier(member.Args[2], setter);
+            Utils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
             property.Setter = setter;
         }
 
