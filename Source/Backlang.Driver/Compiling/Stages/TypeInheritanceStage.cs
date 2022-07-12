@@ -210,13 +210,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             var modulename = Utils.GetModuleName(tree);
 
-            ConvertTypesOrInterface(context, tree, modulename.Value);
+            ConvertTypesOrInterface(context, tree, modulename ?? context.Assembly.Name.Qualify());
 
-            ConvertFreeFunctions(context, tree, modulename.Value);
+            ConvertFreeFunctions(context, tree, modulename ?? context.Assembly.Name.Qualify());
 
-            ConvertEnums(context, tree, modulename.Value);
+            ConvertEnums(context, tree, modulename ?? context.Assembly.Name.Qualify());
 
-            ConvertUnions(context, tree, modulename.Value);
+            ConvertUnions(context, tree, modulename ?? context.Assembly.Name.Qualify());
         }
 
         return await next.Invoke(context);
