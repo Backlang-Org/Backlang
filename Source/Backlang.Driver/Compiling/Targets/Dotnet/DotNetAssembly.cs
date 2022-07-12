@@ -66,6 +66,7 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Abstract;
             }
 
+
             clrType.IsInterface = type.IsInterfaceType;
 
             if (type.BaseTypes.Any())
@@ -274,6 +275,10 @@ public class DotNetAssembly : ITargetAssembly
         else if(mod.HasFlag(AccessModifier.Public))
         {
             attr |= MethodAttributes.Public;
+        }
+        else if (mod.HasFlag(AccessModifier.Internal))
+        {
+            attr |= MethodAttributes.Assembly;
         }
         else
         {

@@ -19,7 +19,7 @@ public sealed class Utils
 
         return sb.ToString();
     }
-    public static void SetAccessModifier(LNode node, DescribedMember type, AccessModifier defaultChoice = AccessModifier.Internal)
+    public static void SetAccessModifier(LNode node, DescribedMember type, AccessModifier defaultChoice = AccessModifier.Private)
     {
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
         {

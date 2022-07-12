@@ -1,5 +1,11 @@
 struct kek : IBlob {
+    
+}
 
+implement kek {
+	func abc() -> none {
+		
+	}
 }
 
 public interface IBlob {
