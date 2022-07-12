@@ -25,6 +25,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private void CollectImplementations(CompilerContext context, CompilationUnit tree)
     {
+        var modulename = Utils.GetModuleName(tree);
+
         foreach (var st in tree.Body)
         {
             if (!(st.IsCall && st.Name == Symbols.Implementation)) continue;
@@ -38,12 +40,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 {
                     if (targetType.Parent.Assembly == context.Assembly)
                     {
-                        var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node);
+                        var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node, modulename);
                         targetType.AddMethod(fn);
                     }
                     else
                     {
-                        var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node);
+                        var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node, modulename);
 
                         fn.IsStatic = true;
 

@@ -39,7 +39,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["none"] = "Void",
     }.ToImmutableDictionary();
 
-    public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType)
+    public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType, QualifiedName? modulename)
     {
         var graph = new FlowGraphBuilder();
         // Use a permissive exception delayability model to make the optimizer's
@@ -57,7 +57,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                AppendVariableDeclaration(context, block, node);
+                AppendVariableDeclaration(context, block, node, modulename);
             }
             else if (node.Name == (Symbol)"print")
             {
@@ -100,7 +100,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             graph.ToImmutable());
     }
 
-    public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type, LNode function, string methodName = null, bool hasBody = true)
+    public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
+        LNode function, QualifiedName? modulename, string methodName = null, bool hasBody = true)
     {
         if (methodName == null) methodName = GetMethodName(function);
 
@@ -138,7 +139,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         MethodBody body = null;
         if (hasBody)
         {
-            body = CompileBody(function, context, type);
+            body = CompileBody(function, context, type, modulename);
         }
 
         /*
@@ -169,7 +170,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return method;
     }
 
-    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
+    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename)
     {
         foreach (var member in members.Args)
         {
@@ -179,7 +180,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (member.Calls(CodeSymbols.Fn))
             {
-                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
+                type.AddMethod(ConvertFunction(context, type, member, modulename, hasBody: false));
             }
         }
     }
@@ -290,12 +291,22 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return matches;
     }
 
-    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node)
+    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var decl = node.Args[1];
 
-        var types = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, node.Args[0].Args[0].Args[0].Name.ToString().Replace("#", "")));
-        var elementType = types.First();
+        var name = Utils.GetQualifiedName(node.Args[0].Args[0].Args[0]);
+        var elementType = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename.Value)).FirstOrDefault();
+
+        if (elementType == null)
+        {
+            elementType = (DescribedType)context.Binder.ResolveTypes(name).FirstOrDefault();
+
+            if (elementType == null)
+            {
+                elementType = (DescribedType)IntermediateStage.GetType(node.Args[0].Args[0].Args[0], context);
+            }
+        }
 
         var instruction = Instruction.CreateAlloca(elementType);
         var local = block.AppendInstruction(instruction);
@@ -472,7 +483,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             string methodName = GetMethodName(function);
             if (methodName == "main") methodName = "Main";
 
-            var method = ConvertFunction(context, type, function, methodName: methodName);
+            var method = ConvertFunction(context, type, function, modulename, methodName: methodName);
 
             if (method != null) type.AddMethod(method);
         }
@@ -532,7 +543,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
             }
 
-            ConvertTypeMembers(members, type, context);
+            ConvertTypeMembers(members, type, context, modulename);
         }
     }
 
@@ -586,14 +597,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static QualifiedName GetNameOfPrimitiveType(TypeResolver binder, string name)
+    private static QualifiedName? GetNameOfPrimitiveType(TypeResolver binder, string name)
     {
         if (Aliases.ContainsKey(name))
         {
             name = Aliases[name];
         }
 
-        return ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System").FullName;
+        var primitiveType = ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System");
+
+        if (primitiveType is not null)
+        {
+            return primitiveType.FullName;
+        }
+
+        return null;
     }
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
