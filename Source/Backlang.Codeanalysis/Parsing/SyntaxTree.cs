@@ -38,14 +38,14 @@ public static class SyntaxTree
         return Factory.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
-    public static LNode Property(LNode type, LNode name, LNode value)
+    public static LNode Property(LNode type, LNode name, LNode getter, LNode setter, LNode value)
     {
         if (value != null)
         {
-            return LNode.Call(CodeSymbols.Property, LNode.List(type, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
+            return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
         }
 
-        return LNode.Call(CodeSymbols.Property, LNode.List(type, name));
+        return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, name));
     }
 
     public static LNode Bitfield(string name, LNodeList members)

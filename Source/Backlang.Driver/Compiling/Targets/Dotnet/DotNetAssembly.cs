@@ -214,8 +214,8 @@ public class DotNetAssembly : ITargetAssembly
 
     private MethodDefinition GeneratePropertyGetter(DescribedProperty property, FieldReference reference)
     {
-        var clrMethod = new MethodDefinition($"get_{property.Name}",
-                                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+        var clrMethod = new MethodDefinition(property.Getter.Name.ToString(),
+                                GetMethodAttributes(property.Getter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                 Resolve(property.PropertyType.FullName));
 
         clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
@@ -231,8 +231,8 @@ public class DotNetAssembly : ITargetAssembly
 
     private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
     {
-        var clrMethod = new MethodDefinition($"set_{property.Name}",
-                                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+        var clrMethod = new MethodDefinition(property.Setter.Name.ToString(),
+                                GetMethodAttributes(property.Setter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                 Resolve(new SimpleName("Void").Qualify("System")));
 
         clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
@@ -272,17 +272,17 @@ public class DotNetAssembly : ITargetAssembly
 
         var mod = member.GetAccessModifier();
 
-        if (mod.HasFlag(AccessModifier.Public))
+        if (mod.HasFlag(AccessModifier.Private))
         {
-            attr |= MethodAttributes.Public;
+            attr |= MethodAttributes.Private;
         }
         else if (mod.HasFlag(AccessModifier.Protected))
         {
             attr |= MethodAttributes.Family;
         }
-        else if (mod.HasFlag(AccessModifier.Private))
+        else if(mod.HasFlag(AccessModifier.Public))
         {
-            attr |= MethodAttributes.Private;
+            attr |= MethodAttributes.Public;
         }
         else
         {

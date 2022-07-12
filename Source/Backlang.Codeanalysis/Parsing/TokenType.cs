@@ -237,6 +237,12 @@ public enum TokenType
     [Keyword("none")]
     None,
 
+    [Keyword("get")]
+    Get,
+
+    [Keyword("set")]
+    Set,
+
     [Keyword("type")]
     Type,
 

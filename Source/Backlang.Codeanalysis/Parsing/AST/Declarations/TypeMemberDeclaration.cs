@@ -56,22 +56,65 @@ public sealed class TypeMemberDeclaration
         var nameToken = iterator.Match(TokenType.Identifier);
         var name = LNode.Id(nameToken.Text);
 
-        if (iterator.Current.Type == TokenType.Colon)
+        if (iterator.IsMatch(TokenType.Colon))
         {
             iterator.NextToken();
 
             type = TypeLiteral.Parse(iterator, parser);
         }
 
-        if (iterator.Current.Type == TokenType.EqualsToken)
+        iterator.Match(TokenType.OpenCurly);
+
+        LNode getter = LNode.Missing;
+        LNode setter = LNode.Missing;
+
+        var needModifier = false;
+        LNodeList modifier;
+
+        Modifier.TryParse(parser, out modifier);
+        if (iterator.IsMatch(TokenType.Get))
+        {
+            iterator.NextToken();
+            LNodeList args = LNode.List();
+            if (iterator.IsMatch(TokenType.Semicolon))
+            {
+                iterator.NextToken();
+            }
+            else
+            {
+                args.Add(Statement.ParseBlock(parser));
+            }
+            getter = LNode.Call(CodeSymbols.get, args).WithAttrs(modifier);
+            needModifier = true;
+        }
+
+        if (needModifier) Modifier.TryParse(parser, out modifier);
+        if (iterator.IsMatch(TokenType.Set))
+        {
+            iterator.NextToken();
+            LNodeList args = LNode.List();
+            if (iterator.IsMatch(TokenType.Semicolon))
+            {
+                iterator.NextToken();
+            }
+            else
+            {
+                args.Add(Statement.ParseBlock(parser));
+            }
+            setter = LNode.Call(CodeSymbols.set, args).WithAttrs(modifier);
+        }
+
+        iterator.Match(TokenType.CloseCurly);
+
+        if (iterator.IsMatch(TokenType.EqualsToken))
         {
             iterator.NextToken();
 
             value = Expression.Parse(parser);
+
+            iterator.Match(TokenType.Semicolon);
         }
 
-        iterator.Match(TokenType.Semicolon);
-
-        return SyntaxTree.Property(type, name, value).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Property(type, name, getter, setter, value).WithRange(keywordToken, iterator.Prev);
     }
 }

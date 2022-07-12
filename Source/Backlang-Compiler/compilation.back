@@ -7,7 +7,7 @@ public interface IBlob {
 }
 
 private class VeryImportantPerson {
-	public prop IsCool: bool = true;
+	public prop IsCool: bool { get; private set; }
 }
 
 public static func main() -> i32 {

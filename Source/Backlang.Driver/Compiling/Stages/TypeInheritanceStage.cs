@@ -153,9 +153,26 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member)
     {
-        var property = new DescribedProperty(new SimpleName(member.Args[1].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
+        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
 
         Utils.SetAccessModifier(member, property);
+
+        if (member.Args[1] != LNode.Missing)
+        {
+            // getter defined
+            var getter =  new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
+            Utils.SetAccessModifier(member.Args[1], getter);
+            property.Getter = getter;
+        }
+
+        if (member.Args[2] != LNode.Missing)
+        {
+            // setter defined
+            var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
+            setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
+            Utils.SetAccessModifier(member.Args[2], setter);
+            property.Setter = setter;
+        }
 
         return property;
     }
