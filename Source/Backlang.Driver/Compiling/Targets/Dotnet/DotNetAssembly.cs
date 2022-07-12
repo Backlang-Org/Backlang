@@ -127,6 +127,19 @@ public class DotNetAssembly : ITargetAssembly
 
                 // ToDo: Getter and Setter
 
+                var field = GeneratePropertyField(property);
+
+                clrType.Fields.Add(field);
+
+                var getter = GeneratePropertyGetter(property, field);
+                var setter = GeneratePropertySetter(property, field);
+
+                clrType.Methods.Add(getter);
+                clrType.Methods.Add(setter);
+
+                clrProp.GetMethod = getter;
+                clrProp.SetMethod = setter;
+
                 clrType.Properties.Add(clrProp);
             }
 
@@ -188,6 +201,47 @@ public class DotNetAssembly : ITargetAssembly
         _assemblyDefinition.Write(output);
 
         output.Close();
+    }
+
+    private FieldDefinition GeneratePropertyField(DescribedProperty property)
+    {
+        var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
+
+        return clrField;
+    }
+
+    private MethodDefinition GeneratePropertyGetter(DescribedProperty property, FieldReference reference)
+    {
+        var clrMethod = new MethodDefinition($"get_{property.Name}",
+                                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                Resolve(property.PropertyType.FullName));
+
+        var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        ilProcessor.Emit(OpCodes.Ldarg_0);
+        ilProcessor.Emit(OpCodes.Ldfld, reference);
+        ilProcessor.Emit(OpCodes.Ret);
+
+        return clrMethod;
+    }
+
+    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
+    {
+        var clrMethod = new MethodDefinition($"set_{property.Name}",
+                                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                Resolve(new SimpleName("Void").Qualify("System")));
+
+        var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
+        clrMethod.Parameters.Add(param);
+
+        var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        ilProcessor.Emit(OpCodes.Ldarg_0);
+        ilProcessor.Emit(OpCodes.Ldarg_1);
+        ilProcessor.Emit(OpCodes.Stfld, reference);
+        ilProcessor.Emit(OpCodes.Ret);
+
+        return clrMethod;
     }
 
     private static PropertyAttributes GetPropertyAttributes(DescribedProperty property)
