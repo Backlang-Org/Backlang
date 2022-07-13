@@ -23,6 +23,16 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Throw, LNode.List(arg));
     }
 
+    public static LNode Constructor(LNodeList parameters, LNode code)
+    {
+        return Factory.Call(Symbols.Constructor, LNode.List(Factory.AltList(parameters), code));
+    }
+
+    public static LNode Destructor(LNodeList parameters, LNode code)
+    {
+        return Factory.Call(Symbols.Destructor, LNode.List(Factory.AltList(parameters), code));
+    }
+
     public static LNode ArrayInstantiation(LNodeList elements)
     {
         return Factory.Call(CodeSymbols.Braces, elements);

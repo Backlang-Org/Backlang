@@ -16,6 +16,18 @@ private class VeryImportantPerson {
 	protected prop IsCool: bool { get; private set; }
 }
 
+implement VeryImportantPerson {
+	
+
+	static constructor() {
+		// here u can init stuff
+	}
+
+	destructor() {
+		print("byebye");
+	}
+}
+
 public static func main() -> i32 {
 	print("Hello Backlang! {0}", 42);
 

@@ -156,6 +156,21 @@ public class DotNetAssembly : ITargetAssembly
                 clrMethod.IsAbstract = m.IsAbstract;
                 clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
 
+                if (m.IsConstructor)
+                {
+                    clrMethod.IsRuntimeSpecialName = true;
+                    clrMethod.IsSpecialName = true;
+                    clrMethod.Name = ".ctor";
+                }
+                else if (m.IsDestructor)
+                {
+                    clrMethod.Overrides.Add(_assemblyDefinition.MainModule.ImportReference(typeof(object).GetMethod("Finalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)));
+                    clrMethod.Name = "Finalize";
+                    clrMethod.IsVirtual = true;
+                    clrMethod.IsFamily = true;
+                    clrMethod.IsHideBySig = true;
+                }
+
                 if (m.Body != null)
                 {
                     clrMethod.HasThis = false;
@@ -380,13 +395,7 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         clrMethod.IsStatic = m.IsStatic;
-        if (m.IsConstructor)
-        {
-            clrMethod.IsRuntimeSpecialName = true;
-            clrMethod.IsSpecialName = true;
-            clrMethod.Name = ".ctor";
-            clrMethod.IsStatic = false;
-        }
+        
         return clrMethod;
     }
 

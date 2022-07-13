@@ -18,6 +18,8 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<BitFieldDeclaration>(TokenType.Bitfield);
         AddDeclarationParsePoint<UnionDeclaration>(TokenType.Union);
         AddDeclarationParsePoint<ClassDeclaration>(TokenType.Class);
+        AddDeclarationParsePoint<ConstructorDeclaration>(TokenType.Constructor);
+        AddDeclarationParsePoint<DestructorDeclaration>(TokenType.Destructor);
         AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
         AddDeclarationParsePoint<MacroDeclaration>(TokenType.Macro);

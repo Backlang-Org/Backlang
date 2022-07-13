@@ -186,6 +186,12 @@ public enum TokenType
     [Keyword("func")]
     Function,
 
+    [Keyword("constructor")]
+    Constructor,
+
+    [Keyword("destructor")]
+    Destructor,
+
     [Keyword("macro")]
     Macro,
 

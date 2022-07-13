@@ -88,33 +88,33 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+            false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+
 
         Utils.SetAccessModifier(function, method);
 
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
-        {
-            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
-        }
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
-        {
-            method.IsOverride = true;
-        }
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
-        {
-            method.IsExtern = true;
-        }
+        method.IsStatic = function.Attrs.Contains(LNode.Id(CodeSymbols.Static));
+        method.IsOverride = function.Attrs.Contains(LNode.Id(CodeSymbols.Override));
+        method.IsExtern = function.Attrs.Contains(LNode.Id(CodeSymbols.Extern));
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {
             method.AddAttribute(FlagAttribute.Abstract);
+        }
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
+        {
+            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
 
         AddParameters(method, function, context);
         SetReturnType(method, function, context);
 
-        if (methodName == "new" && method.IsStatic)
+        if (methodName == ".ctor")
         {
             method.IsConstructor = true;
+        }
+        else if (methodName == ".dtor")
+        {
+            method.IsDestructor = true;
         }
 
         MethodBody body = null;
