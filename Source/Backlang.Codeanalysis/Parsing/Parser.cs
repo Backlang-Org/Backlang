@@ -20,6 +20,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ClassDeclaration>(TokenType.Class);
         AddDeclarationParsePoint<ConstructorDeclaration>(TokenType.Constructor);
         AddDeclarationParsePoint<DestructorDeclaration>(TokenType.Destructor);
+        AddDeclarationParsePoint<DiscriminatedUnionDeclaration>(TokenType.Type);
         AddDeclarationParsePoint<EnumDeclaration>(TokenType.Enum);
         AddDeclarationParsePoint<FunctionDeclaration>(TokenType.Function);
         AddDeclarationParsePoint<MacroDeclaration>(TokenType.Macro);
@@ -27,7 +28,6 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.Implement);
         AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
-        AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Type);
         AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
         AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
         AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
