@@ -517,7 +517,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var inheritances = st.Args[1];
             var members = st.Args[2];
 
-            var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).First();
+            var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).FirstOrDefault();
 
             foreach (var inheritance in inheritances.Args)
             {
