@@ -8,6 +8,8 @@ public static class Symbols
     public static readonly Symbol Bitfield = GSymbol.Get("#bitfield");
     public static readonly Symbol Constructor = GSymbol.Get("#constructor");
     public static readonly Symbol Destructor = GSymbol.Get("#destructor");
+    public static readonly Symbol DiscriminatedType = GSymbol.Get("#discrimType");
+    public static readonly Symbol DiscriminatedUnion = GSymbol.Get("#discrimUnion");
     public static readonly Symbol Float16 = GSymbol.Get("#float16");
     public static readonly Symbol Float32 = GSymbol.Get("#float32");
     public static readonly Symbol Float64 = GSymbol.Get("#float64");

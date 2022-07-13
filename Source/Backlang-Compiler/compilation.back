@@ -17,8 +17,6 @@ private class VeryImportantPerson {
 }
 
 implement VeryImportantPerson {
-	
-
 	static constructor() {
 		// here u can init stuff
 	}
@@ -27,6 +25,11 @@ implement VeryImportantPerson {
 		print("byebye");
 	}
 }
+
+public type Shape =
+		| Rectange (width: f32, length: f32)
+		| Circle (mut radius: f32)
+		| Prism (width: f32, mut height: f32);
 
 public static func main() -> i32 {
 	print("Hello Backlang! {0}", 42);

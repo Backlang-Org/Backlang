@@ -43,6 +43,16 @@ public static class SyntaxTree
         return arr.WithArgs(indices);
     }
 
+    public static LNode DiscriminatedType(string name, LNodeList parameters)
+    {
+        return Factory.Call(Symbols.DiscriminatedType, LNode.List(LNode.Id(name), Factory.AltList(parameters)));
+    }
+
+    public static LNode DiscriminatedUnion(string name, LNodeList types)
+    {
+        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(LNode.Id(name), Factory.AltList(types)));
+    }
+
     public static LNode Binary(Symbol op, LNode left, LNode right)
     {
         return Factory.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
