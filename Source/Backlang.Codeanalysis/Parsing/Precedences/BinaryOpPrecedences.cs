@@ -5,7 +5,6 @@ public enum BinaryOpPrecedences
     Hat = 2,
 
     Ampersand = 3,
-    ShiftOperator = Ampersand,
 
     EqualsEquals = 4,
     DashedOps = EqualsEquals, // add, sub
