@@ -1,9 +1,31 @@
-public struct kek : IBlob {
+struct kek : IBlob {
+    
+}
 
+implement kek {
+	func abc() -> none {
+		
+	}
 }
 
 public interface IBlob {
 
+}
+
+private class VeryImportantPerson {
+	protected prop IsCool: bool { get; private set; }
+}
+
+implement VeryImportantPerson {
+	
+
+	static constructor() {
+		// here u can init stuff
+	}
+
+	destructor() {
+		print("byebye");
+	}
 }
 
 public static func main() -> i32 {

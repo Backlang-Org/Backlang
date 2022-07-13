@@ -66,6 +66,7 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Attributes |= TypeAttributes.Abstract;
             }
 
+
             clrType.IsInterface = type.IsInterfaceType;
 
             if (type.BaseTypes.Any())
@@ -119,6 +120,28 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Fields.Add(fieldDefinition);
             }
 
+            foreach (DescribedProperty property in type.Properties)
+            {
+                var propType = property.PropertyType;
+
+                var clrProp = new PropertyDefinition(property.Name.ToString(), PropertyAttributes.None, Resolve(propType));
+
+                var field = GeneratePropertyField(property);
+
+                clrType.Fields.Add(field);
+
+                var getter = GeneratePropertyGetter(property, field);
+                var setter = GeneratePropertySetter(property, field);
+
+                clrType.Methods.Add(getter);
+                clrType.Methods.Add(setter);
+
+                clrProp.GetMethod = getter;
+                clrProp.SetMethod = setter;
+
+                clrType.Properties.Add(clrProp);
+            }
+
             foreach (DescribedBodyMethod m in type.Methods)
             {
                 var returnType = m.ReturnParameter.Type;
@@ -132,6 +155,21 @@ public class DotNetAssembly : ITargetAssembly
 
                 clrMethod.IsAbstract = m.IsAbstract;
                 clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
+
+                if (m.IsConstructor)
+                {
+                    clrMethod.IsRuntimeSpecialName = true;
+                    clrMethod.IsSpecialName = true;
+                    clrMethod.Name = ".ctor";
+                }
+                else if (m.IsDestructor)
+                {
+                    clrMethod.Overrides.Add(_assemblyDefinition.MainModule.ImportReference(typeof(object).GetMethod("Finalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)));
+                    clrMethod.Name = "Finalize";
+                    clrMethod.IsVirtual = true;
+                    clrMethod.IsFamily = true;
+                    clrMethod.IsHideBySig = true;
+                }
 
                 if (m.Body != null)
                 {
@@ -179,23 +217,83 @@ public class DotNetAssembly : ITargetAssembly
         output.Close();
     }
 
+    private FieldDefinition GeneratePropertyField(DescribedProperty property)
+    {
+        var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
+
+        clrField.CustomAttributes.Add(CompilerGeneratedAttribute());
+
+        return clrField;
+    }
+
+    private MethodDefinition GeneratePropertyGetter(DescribedProperty property, FieldReference reference)
+    {
+        var clrMethod = new MethodDefinition(property.Getter.Name.ToString(),
+                                GetMethodAttributes(property.Getter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                Resolve(property.PropertyType.FullName));
+
+        clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
+
+        var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        ilProcessor.Emit(OpCodes.Ldarg_0);
+        ilProcessor.Emit(OpCodes.Ldfld, reference);
+        ilProcessor.Emit(OpCodes.Ret);
+
+        return clrMethod;
+    }
+
+    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
+    {
+        var clrMethod = new MethodDefinition(property.Setter.Name.ToString(),
+                                GetMethodAttributes(property.Setter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                Resolve(new SimpleName("Void").Qualify("System")));
+
+        clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
+
+        var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
+        clrMethod.Parameters.Add(param);
+
+        var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        ilProcessor.Emit(OpCodes.Ldarg_0);
+        ilProcessor.Emit(OpCodes.Ldarg_1);
+        ilProcessor.Emit(OpCodes.Stfld, reference);
+        ilProcessor.Emit(OpCodes.Ret);
+
+        return clrMethod;
+    }
+
+    private CustomAttribute CompilerGeneratedAttribute()
+    {
+        var type = typeof(CompilerGeneratedAttribute).GetConstructors()[0];
+
+        var attr = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(type));
+
+        return attr;
+    }
+
     private static MethodAttributes GetMethodAttributes(IMember member)
     {
         MethodAttributes attr = 0;
 
         var mod = member.GetAccessModifier();
 
-        if (mod.HasFlag(AccessModifier.Public))
+        if (mod.HasFlag(AccessModifier.Private))
         {
-            attr |= MethodAttributes.Public;
+            attr |= MethodAttributes.Private;
         }
         else if (mod.HasFlag(AccessModifier.Protected))
         {
             attr |= MethodAttributes.Family;
         }
-        else if (mod.HasFlag(AccessModifier.Private))
+        else if(mod.HasFlag(AccessModifier.Public))
         {
-            attr |= MethodAttributes.Private;
+            attr |= MethodAttributes.Public;
+        }
+        else if (mod.HasFlag(AccessModifier.Internal))
+        {
+            attr |= MethodAttributes.Assembly;
         }
         else
         {
@@ -297,13 +395,7 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         clrMethod.IsStatic = m.IsStatic;
-        if (m.IsConstructor)
-        {
-            clrMethod.IsRuntimeSpecialName = true;
-            clrMethod.IsSpecialName = true;
-            clrMethod.Name = ".ctor";
-            clrMethod.IsStatic = false;
-        }
+        
         return clrMethod;
     }
 

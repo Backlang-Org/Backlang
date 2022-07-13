@@ -178,11 +178,20 @@ public enum TokenType
     [Keyword("func")]
     Function,
 
+    [Keyword("constructor")]
+    Constructor,
+
+    [Keyword("destructor")]
+    Destructor,
+
     [Keyword("macro")]
     Macro,
 
     [Keyword("let")]
     Let,
+
+    [Keyword("prop")]
+    Property,
 
     [Keyword("mut")]
     Mutable,
@@ -225,6 +234,12 @@ public enum TokenType
 
     [Keyword("none")]
     None,
+
+    [Keyword("get")]
+    Get,
+
+    [Keyword("set")]
+    Set,
 
     [Keyword("type")]
     Type,
