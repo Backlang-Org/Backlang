@@ -115,6 +115,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         Utils.SetAccessModifier(function, method);
 
+        ConvertAnnotations(function, method, context, modulename,
+            AttributeTargets.Method, (attr, t) => ((DescribedBodyMethod)t).AddAttribute(attr));
+
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
             method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
@@ -239,7 +242,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return (DescribedType)resolvedType;
     }
 
-    public static void ConvertAnnotation(LNode st, DescribedType type, CompilerContext context, QualifiedName modulename, AttributeTargets targets)
+    public static void ConvertAnnotations(LNode st, IMember type,
+        CompilerContext context, QualifiedName modulename, AttributeTargets targets,
+        Action<DescribedAttribute, IMember> applyAttributeCallback)
     {
         for (var i = 0; i < st.Attrs.Count; i++)
         {
@@ -273,7 +278,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                     if (targetValue.HasFlag(AttributeTargets.All) || targets.HasFlag(targetValue))
                     {
-                        type.AddAttribute(customAttribute);
+                        applyAttributeCallback(customAttribute, type);
                     }
                     else
                     {
@@ -608,7 +613,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).FirstOrDefault();
 
-        ConvertAnnotation(node, type, context, modulename, AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct);
+        ConvertAnnotations(node, type, context, modulename,
+            AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct,
+            (attr, t) => ((DescribedType)t).AddAttribute(attr));
 
         foreach (var inheritance in inheritances.Args)
         {
@@ -649,7 +656,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         type.AddAttribute(attribute);
 
-        ConvertAnnotation(node, type, context, modulename, AttributeTargets.Class);
+        ConvertAnnotations(node, type, context, modulename, AttributeTargets.Class,
+            (attr, t) => ((DescribedType)t).AddAttribute(attr));
 
         foreach (var member in node.Args[1].Args)
         {
