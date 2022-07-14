@@ -90,8 +90,19 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             new QualifiedName(methodName).FullyUnqualifiedName,
             false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
 
-
         Utils.SetAccessModifier(function, method);
+
+        ConvertAnnotations(function, method, context, modulename,
+            AttributeTargets.Method, (attr, t) => ((DescribedBodyMethod)t).AddAttribute(attr));
+
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
+        {
+            method.IsOverride = true;
+        }
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
+        {
+            method.IsExtern = true;
+        }
 
         method.IsStatic = function.Attrs.Contains(LNode.Id(CodeSymbols.Static));
         method.IsOverride = function.Attrs.Contains(LNode.Id(CodeSymbols.Override));
@@ -151,6 +162,25 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return method;
     }
 
+    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename)
+    {
+        foreach (var member in members.Args)
+        {
+            if (member.Name == CodeSymbols.Var)
+            {
+                ConvertFields(type, context, member, modulename);
+            }
+            else if (member.Calls(CodeSymbols.Fn))
+            {
+                type.AddMethod(ConvertFunction(context, type, member, modulename, hasBody: false));
+            }
+            else if (member.Calls(CodeSymbols.Property))
+            {
+                type.AddProperty(ConvertProperty(context, type, member));
+            }
+        }
+    }
+
     public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member)
     {
         var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
@@ -160,7 +190,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         if (member.Args[1] != LNode.Missing)
         {
             // getter defined
-            var getter =  new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
+            var getter = new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
             Utils.SetAccessModifier(member.Args[1], getter, property.GetAccessModifier());
             property.Getter = getter;
         }
