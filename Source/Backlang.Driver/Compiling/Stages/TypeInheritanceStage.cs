@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -239,6 +239,51 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return (DescribedType)resolvedType;
     }
 
+    public static void ConvertAnnotation(LNode st, DescribedType type, CompilerContext context, QualifiedName modulename, AttributeTargets targets)
+    {
+        for (var i = 0; i < st.Attrs.Count; i++)
+        {
+            var annotation = st.Attrs[i];
+            if (annotation.Calls(Symbols.Annotation))
+            {
+                annotation = annotation.Args[0];
+
+                var fullname = Utils.GetQualifiedName(annotation.Target);
+
+                if (!fullname.FullyUnqualifiedName.ToString().EndsWith("Attribute"))
+                {
+                    fullname = AppendAttributeToName(fullname);
+                }
+
+                var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
+
+                var customAttribute = new DescribedAttribute(resolvedType);
+
+                //ToDo: add arguments to custom attribute
+                //ToDo: only add attribute if attributeusage is right
+
+                var attrUsage = (DescribedAttribute)resolvedType.Attributes
+                    .GetAll()
+                    .FirstOrDefault(_ => _.AttributeType.FullName.ToString() == typeof(AttributeUsageAttribute).FullName);
+
+                if (attrUsage != null)
+                {
+                    var target = attrUsage.ConstructorArguments.FirstOrDefault(_ => _.Value is AttributeTargets);
+                    var targetValue = (AttributeTargets)target.Value;
+
+                    if (targetValue.HasFlag(AttributeTargets.All) || targets.HasFlag(targetValue))
+                    {
+                        type.AddAttribute(customAttribute);
+                    }
+                    else
+                    {
+                        context.AddError(st, "Cannot apply Attribute");
+                    }
+                }
+            }
+        }
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         foreach (var tree in context.Trees)
@@ -258,6 +303,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
 
         return await next.Invoke(context);
+    }
+
+    private static QualifiedName AppendAttributeToName(QualifiedName fullname)
+    {
+        var qualifier = fullname.Slice(0, fullname.PathLength - 1);
+
+        return new SimpleName(fullname.FullyUnqualifiedName.ToString() + "Attribute").Qualify(qualifier);
     }
 
     private static string GetMethodName(LNode function)
@@ -556,7 +608,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).FirstOrDefault();
 
-        ConvertAnnotation(node, type, context, modulename);
+        ConvertAnnotation(node, type, context, modulename, AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct);
 
         foreach (var inheritance in inheritances.Args)
         {
@@ -597,7 +649,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         type.AddAttribute(attribute);
 
-        ConvertAnnotation(node, type, context, modulename);
+        ConvertAnnotation(node, type, context, modulename, AttributeTargets.Class);
 
         foreach (var member in node.Args[1].Args)
         {
