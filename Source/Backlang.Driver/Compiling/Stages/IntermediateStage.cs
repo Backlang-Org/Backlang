@@ -1,16 +1,9 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Flow;
-using Furesoft.Core.CodeDom.Compiler.TypeSystem;
-using Loyc;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
@@ -80,16 +73,17 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
-        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
+        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(string.Empty), context.Assembly)
         {
             IsStatic = true
         };
 
         foreach (var tree in context.Trees)
         {
-            ConvertTypesOrInterfaces(context, tree);
-            ConvertEnums(context, tree);
-            ConvertDiscriminatedUnions(context, tree);
+            var modulename = Utils.GetModuleName(tree);
+
+            ConvertTypesOrInterfaces(context, tree, modulename);
+            ConvertEnums(context, tree, modulename);
         }
 
         context.Assembly.AddType(context.ExtensionsType);
@@ -98,6 +92,48 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
+    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    {
+        foreach (var @enum in tree.Body)
+        {
+            if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) continue;
+
+            var name = @enum.Args[0].Name;
+
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
+
+            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+
+            context.Assembly.AddType(type);
+        }
+    }
+
+    private static void ConvertTypesOrInterfaces(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    {
+        foreach (var st in tree.Body)
+        {
+            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
+
+            var name = st.Args[0].Name;
+
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+            if (st.Name == CodeSymbols.Struct)
+            {
+                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
+            }
+            else if (st.Name == CodeSymbols.Interface)
+            {
+                type.AddAttribute(FlagAttribute.InterfaceType);
+            }
+
+            Utils.SetAccessModifier(st, type);
+            SetOtherModifiers(st, type);
+
+            context.Assembly.AddType(type);
+        }
+    }
+    
     private void ConvertDiscriminatedUnions(CompilerContext context, CompilationUnit tree)
     {
         foreach (var discrim in tree.Body)
@@ -156,48 +192,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
                 discType.AddMethod(constructor);
             }
-        }
-    }
-
-    private static void ConvertEnums(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
-    {
-        foreach (var @enum in tree.Body)
-        {
-            if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) continue;
-
-            var name = @enum.Args[0].Name;
-
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
-
-            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
-
-            context.Assembly.AddType(type);
-        }
-    }
-
-    private static void ConvertTypesOrInterfaces(CompilerContext context, Codeanalysis.Parsing.AST.CompilationUnit tree)
-    {
-        foreach (var st in tree.Body)
-        {
-            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
-
-            var name = st.Args[0].Name;
-
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
-            if (st.Name == CodeSymbols.Struct)
-            {
-                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
-            }
-            else if (st.Name == CodeSymbols.Interface)
-            {
-                type.AddAttribute(FlagAttribute.InterfaceType);
-            }
-
-            Utils.SetAccessModifier(st, type);
-            SetOtherModifiers(st, type);
-
-            context.Assembly.AddType(type);
         }
     }
 

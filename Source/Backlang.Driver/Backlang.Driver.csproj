@@ -18,8 +18,8 @@
 	<ItemGroup>
 		<PackageReference Include="Flo" Version="0.3.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.24" />
-		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.24" />
+		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.25" />
+		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.25" />
 		<PackageReference Include="LeMP" Version="30.1.0" />
 		<PackageReference Include="Loyc.Syntax" Version="30.1.0" />
 		<PackageReference Include="System.Runtime" Version="4.3.1" />
