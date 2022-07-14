@@ -9,7 +9,7 @@ public class VariableStatement : IParsePoint<LNode>
         var keywordToken = iterator.Prev;
 
         bool isMutable = false;
-        LNode type = LNode.Missing;
+        LNode type = SyntaxTree.Type("", LNode.List());
         LNode value = LNode.Missing;
 
         Token mutableToken = null;
