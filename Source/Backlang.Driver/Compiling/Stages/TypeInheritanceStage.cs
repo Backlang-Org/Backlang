@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -132,8 +132,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.AddAttribute(FlagAttribute.Abstract);
         }
 
-        AddParameters(method, function, context);
-        SetReturnType(method, function, context);
+        AddParameters(method, function, context, modulename);
+        SetReturnType(method, function, context, modulename);
 
         if (methodName == "new" && method.IsStatic)
         {
@@ -180,7 +180,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             if (member.Name == CodeSymbols.Var)
             {
-                ConvertFields(type, context, member);
+                ConvertFields(type, context, member, modulename);
             }
             else if (member.Calls(CodeSymbols.Fn))
             {
@@ -208,19 +208,41 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
     }
 
+    public static DescribedType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
+    {
+        var resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
+
+        if (resolvedType == null)
+        {
+            resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
+
+            if (resolvedType == null)
+            {
+                resolvedType = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, fullName.FullyUnqualifiedName.ToString()).GetValueOrDefault()).FirstOrDefault();
+
+                if (resolvedType == null)
+                {
+                    context.AddError(typeNode, $"Type {fullName} cannot be found");
+                }
+            }
+        }
+
+        return (DescribedType)resolvedType;
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         foreach (var tree in context.Trees)
         {
             var modulename = Utils.GetModuleName(tree);
 
-            ConvertTypesOrInterface(context, tree, modulename ?? context.Assembly.Name.Qualify());
+            ConvertTypesOrInterface(context, tree, modulename);
 
-            ConvertFreeFunctions(context, tree, modulename ?? context.Assembly.Name.Qualify());
+            ConvertFreeFunctions(context, tree, modulename);
 
-            ConvertEnums(context, tree, modulename ?? context.Assembly.Name.Qualify());
+            ConvertEnums(context, tree, modulename);
 
-            ConvertUnions(context, tree, modulename ?? context.Assembly.Name.Qualify());
+            ConvertUnions(context, tree, modulename);
         }
 
         return await next.Invoke(context);
@@ -231,13 +253,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return function.Args[1].Args[0].Args[0].Name.Name;
     }
 
-    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
     {
         var param = function.Args[2];
 
         foreach (var p in param.Args)
         {
-            var pa = ConvertParameter(p, context);
+            var pa = ConvertParameter(p, context, modulename);
             method.AddParameter(pa);
         }
     }
@@ -442,9 +464,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member)
+    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename)
     {
-        var mtype = IntermediateStage.GetType(member.Args[0], context);
+        var ftype = member.Args[0].Args[0].Args[0];
+        var fullname = Utils.GetQualifiedName(ftype);
+
+        var mtype = ResolveTypeWithModule(ftype, context, modulename, fullname);
 
         var mvar = member.Args[1];
         var mname = mvar.Args[0].Name;
@@ -493,9 +518,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static Parameter ConvertParameter(LNode p, CompilerContext context)
+    private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)
     {
-        var type = IntermediateStage.GetType(p.Args[0], context);
+        var ptype = p.Args[0].Args[0].Args[0];
+        var fullname = Utils.GetQualifiedName(ptype);
+
+        var type = ResolveTypeWithModule(ptype, context, modulename, fullname);
         var assignment = p.Args[1];
 
         var name = assignment.Args[0].Name;
@@ -526,23 +554,17 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             foreach (var inheritance in inheritances.Args)
             {
                 var fullName = Utils.GetQualifiedName(inheritance);
-                var btype = context.Binder.ResolveTypes(fullName).FirstOrDefault();
+                var btype = ResolveTypeWithModule(inheritance, context, modulename, fullName);
 
                 if (btype != null)
                 {
-                    type.AddBaseType(btype);
-                }
-                else
-                {
-                    btype = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
-
-                    if (btype != null)
+                    if (!btype.IsSealed)
                     {
                         type.AddBaseType(btype);
                     }
                     else
                     {
-                        context.AddError(inheritance, $"Type {fullName} cannot be found");
+                        context.AddError(inheritance, $"Cannot inherit from sealed Type {inheritance}");
                     }
                 }
             }
@@ -575,7 +597,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 if (member.Name == CodeSymbols.Var)
                 {
-                    var mtype = IntermediateStage.GetType(member.Args[0], context);
+                    var ftype = member.Args[0].Args[0].Args[0];
+                    var fullname = Utils.GetQualifiedName(ftype);
+
+                    var mtype = ResolveTypeWithModule(ftype, context, modulename, fullname);
 
                     var mvar = member.Args[1];
                     var mname = mvar.Args[0].Name;
@@ -618,10 +643,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return null;
     }
 
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
     {
-        var retType = function.Args[0];
+        var retType = function.Args[0].Args[0].Args[0];
+        var fullName = Utils.GetQualifiedName(retType);
 
-        method.ReturnParameter = new Parameter(IntermediateStage.GetType(retType, context));
+        var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
+
+        method.ReturnParameter = new Parameter(rtype);
     }
 }
