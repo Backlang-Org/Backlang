@@ -1,5 +1,4 @@
-﻿using Loyc;
-using Loyc.Syntax;
+﻿using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
@@ -7,8 +6,8 @@ public sealed class Annotation
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        iterator.Match(TokenType.At);
-        var nameToken = iterator.Match(TokenType.Identifier);
+        var atToken = iterator.Match(TokenType.At);
+        var name = Expression.Parse(parser);
         var args = LNode.List();
 
         if (iterator.Current.Type == TokenType.OpenParen)
@@ -18,7 +17,7 @@ public sealed class Annotation
             args = Expression.ParseList(parser, TokenType.CloseParen);
         }
 
-        return SyntaxTree.Annotation(LNode.Call((Symbol)nameToken.Text, args));
+        return SyntaxTree.Annotation(LNode.Call(name, args)).WithRange(atToken, iterator.Prev);
     }
 
     public static bool TryParse(Parser parser, out LNodeList node)
