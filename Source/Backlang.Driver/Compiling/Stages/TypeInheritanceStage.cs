@@ -561,7 +561,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         DescribedType type;
 
-        if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
+        if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $".{Names.ProgramClass}"))
         {
             type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
             type.IsStatic = true;
@@ -570,7 +570,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
         else
         {
-            type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
+            type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $".{Names.ProgramClass}");
         }
 
         string methodName = GetMethodName(node);
