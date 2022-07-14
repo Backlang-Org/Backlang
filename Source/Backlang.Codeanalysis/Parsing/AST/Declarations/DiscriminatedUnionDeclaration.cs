@@ -55,7 +55,7 @@ public class DiscriminatedUnionDeclaration : IParsePoint<LNode>
 
                 if (isMutable)
                 {
-                    parameter = parameter.PlusAttr(LNode.Id(Symbols.Mutable));
+                    parameter = parameter.PlusAttr(SyntaxTree.Factory.Id(Symbols.Mutable));
                 }
 
                 parameters.Add(parameter);

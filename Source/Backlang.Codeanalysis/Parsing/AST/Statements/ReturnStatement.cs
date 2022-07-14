@@ -16,6 +16,6 @@ public sealed class ReturnStatement : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return LNode.Call(CodeSymbols.Return, arguments).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Factory.Call(CodeSymbols.Return, arguments).WithRange(keywordToken, iterator.Prev);
     }
 }

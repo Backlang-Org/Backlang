@@ -12,14 +12,16 @@ public class VariableStatement : IParsePoint<LNode>
         LNode type = LNode.Missing;
         LNode value = LNode.Missing;
 
+        Token mutableToken = null;
+
         if (iterator.Current.Type == TokenType.Mutable)
         {
             isMutable = true;
-            iterator.NextToken();
+            mutableToken = iterator.NextToken();
         }
 
         var nameToken = iterator.Match(TokenType.Identifier);
-        var name = LNode.Id(nameToken.Text);
+        var name = SyntaxTree.Factory.Id(nameToken.Text);
 
         if (iterator.Current.Type == TokenType.Colon)
         {
@@ -39,6 +41,6 @@ public class VariableStatement : IParsePoint<LNode>
 
         var node = SyntaxTree.Factory.Var(type, name, value).WithRange(keywordToken, iterator.Prev);
 
-        return isMutable ? node.WithAttrs(LNode.Id(Symbols.Mutable)) : node;
+        return isMutable ? node.WithAttrs(SyntaxTree.Factory.Id(Symbols.Mutable).WithRange(mutableToken)) : node;
     }
 }

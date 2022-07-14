@@ -16,7 +16,8 @@ public static class Statement
 
         parser.Iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Factory.Braces(body).WithStyle(NodeStyle.StatementBlock).WithRange(openCurlyToken, parser.Iterator.Prev);
+        return SyntaxTree.Factory.Braces(body).WithStyle(NodeStyle.StatementBlock)
+            .WithRange(openCurlyToken, parser.Iterator.Prev);
     }
 
     public static LNode ParseOneOrBlock(Parser parser)

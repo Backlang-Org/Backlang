@@ -204,7 +204,7 @@ public static class SyntaxTree
 
     public static LNode Type(string name, LNodeList arguments)
     {
-        return Factory.Call(Symbols.TypeLiteral, Factory.List(LNode.Id(name), LNode.Call(CodeSymbols.Of, arguments)));
+        return Factory.Call(Symbols.TypeLiteral, Factory.List(Factory.Id(name), Factory.Call(CodeSymbols.Of, arguments)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)
