@@ -38,6 +38,6 @@ func hellworld() {
 
 implement u8 {
 	public static func hello() {
-		
+		return;
 	}
 }

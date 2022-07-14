@@ -76,6 +76,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                     var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
 
                     block.Flow = new ReturnFlow(rt);
+                } else
+                {
+                    block.Flow = new ReturnFlow();
                 }
             }
             else if (node.Calls(CodeSymbols.Throw))
