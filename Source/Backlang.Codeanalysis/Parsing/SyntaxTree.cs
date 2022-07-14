@@ -28,7 +28,7 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Braces, elements);
     }
 
-    public static LNode ArrayInstantiation(IdNode arr, LNodeList indices)
+    public static LNode ArrayInstantiation(LNode arr, LNodeList indices)
     {
         return arr.WithArgs(indices);
     }
