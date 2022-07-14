@@ -223,6 +223,7 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (DescribedField field in type.Fields)
         {
+            //ToDo: fix fieldtype emit: (type is not available)
             var fieldType = Resolve(field.FieldType.FullName);
             var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 

@@ -38,16 +38,16 @@ public sealed class Utils
         }
     }
 
-    public static QualifiedName? GetModuleName(CompilationUnit tree)
+    public static QualifiedName GetModuleName(CompilationUnit tree)
     {
-        foreach (var mod in tree.Body)
-        {
-            if (!mod.Calls(CodeSymbols.Namespace)) continue;
+        var moduleDefinition = tree.Body.SingleOrDefault(_ => _.Calls(CodeSymbols.Namespace));
 
-            return ShrinkDottedModuleName(mod.Args[0]);
+        if (moduleDefinition != null)
+        {
+            return ShrinkDottedModuleName(moduleDefinition.Args[0]);
         }
 
-        return default;
+        return new SimpleName("").Qualify();
     }
 
     public static QualifiedName GetQualifiedName(LNode lNode)

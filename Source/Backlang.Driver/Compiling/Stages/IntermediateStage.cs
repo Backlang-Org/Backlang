@@ -80,7 +80,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var tree in context.Trees)
         {
-            var modulename = Utils.GetModuleName(tree) ?? new SimpleName(string.Empty).Qualify();
+            var modulename = Utils.GetModuleName(tree);
 
             ConvertTypesOrInterfaces(context, tree, modulename);
             ConvertEnums(context, tree, modulename);
