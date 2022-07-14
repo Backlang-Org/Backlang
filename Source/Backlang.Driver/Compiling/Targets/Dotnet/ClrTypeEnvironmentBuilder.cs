@@ -108,7 +108,7 @@ public class ClrTypeEnvironmentBuilder
     {
         foreach (var member in type.GetMembers())
         {
-            if (member is ConstructorInfo ctor)
+            if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
                     new SimpleName(ctor.Name), ctor.IsStatic, ResolveType(resolver, typeof(void)));
@@ -119,7 +119,7 @@ public class ClrTypeEnvironmentBuilder
 
                 t.AddMethod(method);
             }
-            else if (member is MethodInfo m)
+            else if (member is MethodInfo m && m.IsPublic)
             {
                 var method = new DescribedMethod(t, new SimpleName(m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
 
@@ -137,7 +137,7 @@ public class ClrTypeEnvironmentBuilder
 
                 t.AddMethod(method);
             }
-            else if (member is FieldInfo field)
+            else if (member is FieldInfo field && field.IsPublic)
             {
                 var f = new DescribedField(t, new SimpleName(field.Name),
                     field.IsStatic, ResolveType(resolver, field.FieldType));
