@@ -245,13 +245,16 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             var modulename = Utils.GetModuleName(tree);
 
-            ConvertTypesOrInterface(context, tree, modulename);
+            foreach (var node in tree.Body)
+            {
+                ConvertTypesOrInterface(context, node, modulename);
 
-            ConvertFreeFunctions(context, tree, modulename);
+                ConvertFreeFunctions(context, node, modulename);
 
-            ConvertEnums(context, tree, modulename);
+                ConvertEnums(context, node, modulename);
 
-            ConvertUnions(context, tree, modulename);
+                ConvertUnion(context, node, modulename);
+            }
         }
 
         return await next.Invoke(context);
@@ -421,56 +424,53 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                                            elementType);
     }
 
-    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private static void ConvertEnums(CompilerContext context, LNode node, QualifiedName modulename)
     {
-        foreach (var enu in tree.Body)
+        if (!(node.IsCall && node.Name == CodeSymbols.Enum)) return;
+
+        var name = node.Args[0].Name;
+        var members = node.Args[2];
+
+        var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
+
+        var i = -1;
+        foreach (var member in members.Args)
         {
-            if (!(enu.IsCall && enu.Name == CodeSymbols.Enum)) continue;
-
-            var name = enu.Args[0].Name;
-            var members = enu.Args[2];
-
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
-
-            var i = -1;
-            foreach (var member in members.Args)
+            if (member.Name == CodeSymbols.Var)
             {
-                if (member.Name == CodeSymbols.Var)
+                IType mtype;
+                if (member.Args[0] == LNode.Missing)
                 {
-                    IType mtype;
-                    if (member.Args[0] == LNode.Missing)
-                    {
-                        mtype = context.Environment.Int32;
-                    }
-                    else
-                    {
-                        mtype = IntermediateStage.GetType(member.Args[0], context);
-                    }
-
-                    var mname = member.Args[1].Args[0].Name;
-                    var mvalue = member.Args[1].Args[1];
-
-                    if (mvalue == LNode.Missing)
-                    {
-                        i++;
-                    }
-                    else
-                    {
-                        i = (int)mvalue.Args[0].Value;
-                    }
-
-                    var field = new DescribedField(type, new SimpleName(mname.Name), true, mtype);
-                    field.InitialValue = i;
-
-                    type.AddField(field);
+                    mtype = context.Environment.Int32;
                 }
+                else
+                {
+                    mtype = IntermediateStage.GetType(member.Args[0], context);
+                }
+
+                var mname = member.Args[1].Args[0].Name;
+                var mvalue = member.Args[1].Args[1];
+
+                if (mvalue == LNode.Missing)
+                {
+                    i++;
+                }
+                else
+                {
+                    i = (int)mvalue.Args[0].Value;
+                }
+
+                var field = new DescribedField(type, new SimpleName(mname.Name), true, mtype);
+                field.InitialValue = i;
+
+                type.AddField(field);
             }
-
-            var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
-            valueField.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
-
-            type.AddField(valueField);
         }
+
+        var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
+        valueField.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+
+        type.AddField(valueField);
     }
 
     private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename)
@@ -498,33 +498,30 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         type.AddField(field);
     }
 
-    private static void ConvertFreeFunctions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private static void ConvertFreeFunctions(CompilerContext context, LNode node, QualifiedName modulename)
     {
-        foreach (var function in tree.Body)
+        if (!(node.IsCall && node.Name == CodeSymbols.Fn)) return;
+
+        DescribedType type;
+
+        if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
         {
-            if (!(function.IsCall && function.Name == CodeSymbols.Fn)) continue;
+            type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
+            type.IsStatic = true;
 
-            DescribedType type;
-
-            if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}"))
-            {
-                type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
-                type.IsStatic = true;
-
-                context.Assembly.AddType(type);
-            }
-            else
-            {
-                type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
-            }
-
-            string methodName = GetMethodName(function);
-            if (methodName == "main") methodName = "Main";
-
-            var method = ConvertFunction(context, type, function, modulename, methodName: methodName);
-
-            if (method != null) type.AddMethod(method);
+            context.Assembly.AddType(type);
         }
+        else
+        {
+            type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $"{context.Assembly.Name}.{Names.ProgramClass}");
+        }
+
+        string methodName = GetMethodName(node);
+        if (methodName == "main") methodName = "Main";
+
+        var method = ConvertFunction(context, type, node, modulename, methodName: methodName);
+
+        if (method != null) type.AddMethod(method);
     }
 
     private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)
@@ -548,91 +545,90 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return param;
     }
 
-    private static void ConvertTypesOrInterface(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private static void ConvertTypesOrInterface(CompilerContext context, LNode node, QualifiedName modulename)
     {
-        foreach (var st in tree.Body)
+        if (!(node.IsCall &&
+            (node.Name == CodeSymbols.Struct || node.Name == CodeSymbols.Class || node.Name == CodeSymbols.Interface))) return;
+
+        var name = Utils.GetQualifiedName(node.Args[0]);
+        var inheritances = node.Args[1];
+        var members = node.Args[2];
+
+        var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).FirstOrDefault();
+
+        ConvertAnnotation(node, type, context, modulename);
+
+        foreach (var inheritance in inheritances.Args)
         {
-            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
+            var fullName = Utils.GetQualifiedName(inheritance);
+            var btype = ResolveTypeWithModule(inheritance, context, modulename, fullName);
 
-            var name = Utils.GetQualifiedName(st.Args[0]);
-            var inheritances = st.Args[1];
-            var members = st.Args[2];
-
-            var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).FirstOrDefault();
-
-            foreach (var inheritance in inheritances.Args)
+            if (btype != null)
             {
-                var fullName = Utils.GetQualifiedName(inheritance);
-                var btype = ResolveTypeWithModule(inheritance, context, modulename, fullName);
-
-                if (btype != null)
+                if (!btype.IsSealed)
                 {
-                    if (!btype.IsSealed)
-                    {
-                        type.AddBaseType(btype);
-                    }
-                    else
-                    {
-                        context.AddError(inheritance, $"Cannot inherit from sealed Type {inheritance}");
-                    }
+                    type.AddBaseType(btype);
+                }
+                else
+                {
+                    context.AddError(inheritance, $"Cannot inherit from sealed Type {inheritance}");
                 }
             }
-
-            ConvertTypeMembers(members, type, context, modulename);
         }
+
+        ConvertTypeMembers(members, type, context, modulename);
     }
 
-    private static void ConvertUnions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private static void ConvertUnion(CompilerContext context, LNode node, QualifiedName modulename)
     {
-        foreach (var node in tree.Body)
+        if (!(node.IsCall && node.Name == Symbols.Union)) return;
+
+        var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(modulename), context.Assembly);
+        type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
+
+        var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
+
+        var attribute = new DescribedAttribute(attributeType);
+        attribute.ConstructorArguments.Add(
+            new AttributeArgument(
+                ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(LayoutKind)),
+                LayoutKind.Explicit)
+            );
+
+        type.AddAttribute(attribute);
+
+        ConvertAnnotation(node, type, context, modulename);
+
+        foreach (var member in node.Args[1].Args)
         {
-            if (!(node.IsCall && node.Name == Symbols.Union)) continue;
-
-            var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(modulename), context.Assembly);
-            type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
-
-            var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
-
-            var attribute = new DescribedAttribute(attributeType);
-            attribute.ConstructorArguments.Add(
-                new AttributeArgument(
-                    ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(LayoutKind)),
-                    LayoutKind.Explicit)
-                );
-
-            type.AddAttribute(attribute);
-
-            foreach (var member in node.Args[1].Args)
+            if (member.Name == CodeSymbols.Var)
             {
-                if (member.Name == CodeSymbols.Var)
-                {
-                    var ftype = member.Args[0].Args[0].Args[0];
-                    var fullname = Utils.GetQualifiedName(ftype);
+                var ftype = member.Args[0].Args[0].Args[0];
+                var fullname = Utils.GetQualifiedName(ftype);
 
-                    var mtype = ResolveTypeWithModule(ftype, context, modulename, fullname);
+                var mtype = ResolveTypeWithModule(ftype, context, modulename, fullname);
 
-                    var mvar = member.Args[1];
-                    var mname = mvar.Args[0].Name;
-                    var mvalue = mvar.Args[1];
+                var mvar = member.Args[1];
+                var mname = mvar.Args[0].Name;
+                var mvalue = mvar.Args[1];
 
-                    var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
+                var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
 
-                    attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
-                    attribute = new DescribedAttribute(attributeType);
-                    attribute.ConstructorArguments.Add(
-                        new AttributeArgument(
-                            mtype,
-                            mvalue.Args[0].Value)
-                        );
+                attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
+                attribute = new DescribedAttribute(attributeType);
+                attribute.ConstructorArguments.Add(
+                    new AttributeArgument(
+                        mtype,
+                        mvalue.Args[0].Value)
+                    );
 
-                    field.AddAttribute(attribute);
+                field.AddAttribute(attribute);
 
-                    type.AddField(field);
-                }
+                type.AddField(field);
             }
-
-            context.Assembly.AddType(type);
         }
+
+        context.Assembly.AddType(type);
     }
 
     private static QualifiedName? GetNameOfPrimitiveType(TypeResolver binder, string name)
