@@ -19,7 +19,10 @@ public class ClrTypeEnvironmentBuilder
         {
             if (!type.IsPublic) continue;
 
-            assembly.AddType(new DescribedType(new SimpleName(type.Name).Qualify(type.Namespace), assembly));
+            var dt = new DescribedType(new SimpleName(type.Name).Qualify(type.Namespace), assembly);
+            dt.IsSealed = type.IsSealed;
+
+            assembly.AddType(dt);
         }
 
         return assembly;
