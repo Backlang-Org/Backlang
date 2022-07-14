@@ -111,17 +111,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+            false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+
 
         Utils.SetAccessModifier(function, method);
 
         ConvertAnnotations(function, method, context, modulename,
             AttributeTargets.Method, (attr, t) => ((DescribedBodyMethod)t).AddAttribute(attr));
-
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
-        {
-            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
-        }
+            
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
         {
             method.IsOverride = true;
@@ -130,17 +127,30 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             method.IsExtern = true;
         }
+
+        method.IsStatic = function.Attrs.Contains(LNode.Id(CodeSymbols.Static));
+        method.IsOverride = function.Attrs.Contains(LNode.Id(CodeSymbols.Override));
+        method.IsExtern = function.Attrs.Contains(LNode.Id(CodeSymbols.Extern));
+
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {
             method.AddAttribute(FlagAttribute.Abstract);
+        }
+        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
+        {
+            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
 
         AddParameters(method, function, context, modulename);
         SetReturnType(method, function, context, modulename);
 
-        if (methodName == "new" && method.IsStatic)
+        if (methodName == ".ctor")
         {
             method.IsConstructor = true;
+        }
+        else if (methodName == ".dtor")
+        {
+            method.IsDestructor = true;
         }
 
         MethodBody body = null;
@@ -177,19 +187,49 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return method;
     }
 
-    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename)
+public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context)
     {
         foreach (var member in members.Args)
         {
             if (member.Name == CodeSymbols.Var)
             {
-                ConvertFields(type, context, member, modulename);
+                ConvertFields(type, context, member);
             }
             else if (member.Calls(CodeSymbols.Fn))
             {
-                type.AddMethod(ConvertFunction(context, type, member, modulename, hasBody: false));
+                type.AddMethod(ConvertFunction(context, type, member, hasBody: false));
+            }
+            else if (member.Calls(CodeSymbols.Property))
+            {
+                type.AddProperty(ConvertProperty(context, type, member));
             }
         }
+    }
+    
+    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member)
+    {
+        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
+
+        Utils.SetAccessModifier(member, property);
+
+        if (member.Args[1] != LNode.Missing)
+        {
+            // getter defined
+            var getter =  new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
+            Utils.SetAccessModifier(member.Args[1], getter, property.GetAccessModifier());
+            property.Getter = getter;
+        }
+
+        if (member.Args[2] != LNode.Missing)
+        {
+            // setter defined
+            var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
+            setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
+            Utils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
+            property.Setter = setter;
+        }
+
+        return property;
     }
 
     public static IType GetLiteralType(object value, TypeResolver resolver)

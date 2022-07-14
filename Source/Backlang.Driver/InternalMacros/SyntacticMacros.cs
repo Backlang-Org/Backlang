@@ -116,6 +116,18 @@ public static class SyntacticMacros
         return node;
     }
 
+    [LexicalMacro("constructor()", "Convert constructor() to .ctor() function", "#constructor", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Constructor(LNode @operator, IMacroContext context)
+    {
+        return SyntaxTree.Signature(SyntaxTree.Type(".ctor", new()), LNode.Missing, @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+    }
+
+    [LexicalMacro("destructor()", "Convert destructor() to .dtor() function", "#destructor", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Destructor(LNode @operator, IMacroContext context)
+    {
+        return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()), LNode.Missing, @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+    }
+
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {

@@ -23,6 +23,16 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Throw, LNode.List(arg));
     }
 
+    public static LNode Constructor(LNodeList parameters, LNode code)
+    {
+        return Factory.Call(Symbols.Constructor, LNode.List(Factory.AltList(parameters), code));
+    }
+
+    public static LNode Destructor(LNodeList parameters, LNode code)
+    {
+        return Factory.Call(Symbols.Destructor, LNode.List(Factory.AltList(parameters), code));
+    }
+
     public static LNode ArrayInstantiation(LNodeList elements)
     {
         return Factory.Call(CodeSymbols.Braces, elements);
@@ -33,9 +43,29 @@ public static class SyntaxTree
         return arr.WithArgs(indices);
     }
 
+    public static LNode DiscriminatedType(string name, LNodeList parameters)
+    {
+        return Factory.Call(Symbols.DiscriminatedType, LNode.List(LNode.Id(name), Factory.AltList(parameters)));
+    }
+
+    public static LNode DiscriminatedUnion(string name, LNodeList types)
+    {
+        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(LNode.Id(name), Factory.AltList(types)));
+    }
+
     public static LNode Binary(Symbol op, LNode left, LNode right)
     {
         return Factory.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
+    }
+
+    public static LNode Property(LNode type, LNode name, LNode getter, LNode setter, LNode value)
+    {
+        if (value != null)
+        {
+            return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
+        }
+
+        return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, name));
     }
 
     public static LNode Bitfield(string name, LNodeList members)

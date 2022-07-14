@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
@@ -131,6 +131,67 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             SetOtherModifiers(st, type);
 
             context.Assembly.AddType(type);
+        }
+    }
+    
+    private void ConvertDiscriminatedUnions(CompilerContext context, CompilationUnit tree)
+    {
+        foreach (var discrim in tree.Body)
+        {
+            if (!(discrim.IsCall && discrim.Name == Symbols.DiscriminatedUnion)) continue;
+
+            var name = discrim.Args[0].Name;
+
+            var baseType = new DescribedType(new SimpleName(name.Name).Qualify(context.Assembly.Name), context.Assembly);
+            Utils.SetAccessModifier(discrim, baseType);
+            baseType.IsAbstract = true;
+            context.Assembly.AddType(baseType);
+
+            foreach (var type in discrim.Args[1].Args)
+            {
+                var discName = type.Args[0].Name;
+                var discType = new DescribedType(new SimpleName(discName.Name).Qualify(context.Assembly.Name), context.Assembly);
+                Utils.SetAccessModifier(discrim, discType);
+                discType.AddBaseType(baseType);
+                context.Assembly.AddType(discType);
+
+                foreach (var field in type.Args[1].Args)
+                {
+                    var fieldName = field.Args[1].Args[0].Name;
+                    var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name), false, GetType(field.Args[0], context));
+                    if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
+                    {
+                        fieldType.AddAttribute(Attributes.Mutable);
+                    }
+                    fieldType.IsPublic = true;
+                    discType.AddField(fieldType);
+                }
+
+                DescribedBodyMethod constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+                constructor.IsConstructor = true;
+                constructor.IsPublic = true;
+
+                foreach (var field in discType.Fields)
+                {
+                    constructor.AddParameter(new Parameter(field.FieldType, field.Name));
+                }
+
+                var graph = new FlowGraphBuilder();
+                // Use a permissive exception delayability model to make the optimizer's
+                // life easier.
+                graph.AddAnalysis(
+                    new ConstantAnalysis<ExceptionDelayability>(
+                        PermissiveExceptionDelayability.Instance));
+
+                // Grab the entry point block.
+                var block = graph.EntryPoint;
+
+                block.Flow = new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+
+                constructor.Body = new MethodBody(new Parameter(), new Parameter(), EmptyArray<Parameter>.Value, graph.ToImmutable());
+
+                discType.AddMethod(constructor);
+            }
         }
     }
 
