@@ -52,6 +52,18 @@ public static class SyntacticMacros
         return body.WithArgs(LNode.List().AddRange(body.Args).AddRange(freeCalls));
     }
 
+    [LexicalMacro("constructor()", "Convert constructor() to .ctor() function", "#constructor", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Constructor(LNode @operator, IMacroContext context)
+    {
+        return SyntaxTree.Signature(SyntaxTree.Type(".ctor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+    }
+
+    [LexicalMacro("destructor()", "Convert destructor() to .dtor() function", "#destructor", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Destructor(LNode @operator, IMacroContext context)
+    {
+        return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+    }
+
     [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode DivEquals(LNode @operator, IMacroContext context)
     {

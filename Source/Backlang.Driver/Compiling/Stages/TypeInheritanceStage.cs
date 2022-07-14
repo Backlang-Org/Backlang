@@ -30,13 +30,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["i32"] = "Int32",
         ["i64"] = "Int64",
 
+        ["u8"] = "Byte",
         ["u16"] = "UInt16",
         ["u32"] = "UInt32",
         ["u64"] = "UInt64",
 
-        ["f16"] = typeof(Half).Name,
-        ["f32"] = typeof(float).Name,
-        ["f64"] = typeof(double).Name,
+        ["f16"] = "Half",
+        ["f32"] = "Single",
+        ["f64"] = "Double",
 
         ["char"] = "Char",
         ["string"] = "String",
@@ -138,9 +139,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         AddParameters(method, function, context, modulename);
         SetReturnType(method, function, context, modulename);
 
-        if (methodName == "new" && method.IsStatic)
+        if (methodName == ".ctor")
         {
             method.IsConstructor = true;
+        }
+        else if (methodName == ".dtor")
+        {
+            method.IsDestructor = true;
         }
 
         MethodBody body = null;
@@ -188,6 +193,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             else if (member.Calls(CodeSymbols.Fn))
             {
                 type.AddMethod(ConvertFunction(context, type, member, modulename, hasBody: false));
+            }
+            else if (member.Calls(CodeSymbols.Property))
+            {
+                type.AddProperty(ConvertProperty(context, type, member));
             }
         }
     }
@@ -262,6 +271,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
 
+                if (resolvedType == null) continue;
+
                 var customAttribute = new DescribedAttribute(resolvedType);
 
                 //ToDo: add arguments to custom attribute
@@ -287,6 +298,32 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
             }
         }
+    }
+
+    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member)
+    {
+        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
+
+        Utils.SetAccessModifier(member, property);
+
+        if (member.Args[1] != LNode.Missing)
+        {
+            // getter defined
+            var getter = new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
+            Utils.SetAccessModifier(member.Args[1], getter, property.GetAccessModifier());
+            property.Getter = getter;
+        }
+
+        if (member.Args[2] != LNode.Missing)
+        {
+            // setter defined
+            var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
+            setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
+            Utils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
+            property.Setter = setter;
+        }
+
+        return property;
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)

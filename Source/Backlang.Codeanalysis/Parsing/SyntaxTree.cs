@@ -13,6 +13,36 @@ public static class SyntaxTree
         return Factory.Call(Symbols.Annotation, LNode.List(call));
     }
 
+    public static LNode Constructor(LNodeList parameters, LNode code)
+    {
+        return Factory.Call(Symbols.Constructor, LNode.List(Factory.AltList(parameters), code));
+    }
+
+    public static LNode DiscriminatedType(string name, LNodeList parameters)
+    {
+        return Factory.Call(Symbols.DiscriminatedType, LNode.List(LNode.Id(name), Factory.AltList(parameters)));
+    }
+
+    public static LNode DiscriminatedUnion(string name, LNodeList types)
+    {
+        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(LNode.Id(name), Factory.AltList(types)));
+    }
+
+    public static LNode Property(LNode type, LNode name, LNode getter, LNode setter, LNode value)
+    {
+        if (value != null)
+        {
+            return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
+        }
+
+        return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, name));
+    }
+
+    public static LNode Destructor(LNodeList parameters, LNode code)
+    {
+        return Factory.Call(Symbols.Destructor, LNode.List(Factory.AltList(parameters), code));
+    }
+
     public static LNode Array(LNode typeNode, int dimensions)
     {
         return Factory.Call(CodeSymbols.Array, LNode.List(typeNode, LNode.Literal(dimensions)));

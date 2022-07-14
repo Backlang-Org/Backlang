@@ -5,6 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -45,6 +46,7 @@ public class DotNetAssembly : ITargetAssembly
             ApplyModifiers(type, clrType);
             SetBaseType(type, clrType);
             ConvertFields(type, clrType);
+            ConvertProperties(type, clrType);
             ConvertMethods(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
@@ -130,6 +132,87 @@ public class DotNetAssembly : ITargetAssembly
         }
     }
 
+    private FieldDefinition GeneratePropertyField(DescribedProperty property)
+    {
+        var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
+
+        clrField.CustomAttributes.Add(GetCompilerGeneratedAttribute());
+
+        return clrField;
+    }
+
+    private MethodDefinition GeneratePropertyGetter(DescribedProperty property, FieldReference reference)
+    {
+        var clrMethod = new MethodDefinition(property.Getter.Name.ToString(),
+                                GetMethodAttributes(property.Getter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                Resolve(property.PropertyType.FullName));
+
+        clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
+
+        var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        ilProcessor.Emit(OpCodes.Ldarg_0);
+        ilProcessor.Emit(OpCodes.Ldfld, reference);
+        ilProcessor.Emit(OpCodes.Ret);
+
+        return clrMethod;
+    }
+
+    private CustomAttribute GetCompilerGeneratedAttribute()
+    {
+        var type = typeof(CompilerGeneratedAttribute).GetConstructors()[0];
+
+        var attr = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(type));
+
+        return attr;
+    }
+
+    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
+    {
+        var clrMethod = new MethodDefinition(property.Setter.Name.ToString(),
+                                GetMethodAttributes(property.Setter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+                                Resolve(new SimpleName("Void").Qualify("System")));
+
+        clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
+
+        var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
+        clrMethod.Parameters.Add(param);
+
+        var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        ilProcessor.Emit(OpCodes.Ldarg_0);
+        ilProcessor.Emit(OpCodes.Ldarg_1);
+        ilProcessor.Emit(OpCodes.Stfld, reference);
+        ilProcessor.Emit(OpCodes.Ret);
+
+        return clrMethod;
+    }
+
+    private void ConvertProperties(DescribedType type, TypeDefinition clrType)
+    {
+        foreach (DescribedProperty property in type.Properties)
+        {
+            var propType = property.PropertyType;
+
+            var clrProp = new PropertyDefinition(property.Name.ToString(), PropertyAttributes.None, Resolve(propType));
+
+            var field = GeneratePropertyField(property);
+
+            clrType.Fields.Add(field);
+
+            var getter = GeneratePropertyGetter(property, field);
+            var setter = GeneratePropertySetter(property, field);
+
+            clrType.Methods.Add(getter);
+            clrType.Methods.Add(setter);
+
+            clrProp.GetMethod = getter;
+            clrProp.SetMethod = setter;
+
+            clrType.Properties.Add(clrProp);
+        }
+    }
+
     private void AdjustBaseTypesAndInterfaces()
     {
         foreach (var baseType in needToAdjust)
@@ -162,6 +245,21 @@ public class DotNetAssembly : ITargetAssembly
 
             clrMethod.IsAbstract = m.IsAbstract;
             clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
+
+            if (m.IsConstructor)
+            {
+                clrMethod.IsRuntimeSpecialName = true;
+                clrMethod.IsSpecialName = true;
+                clrMethod.Name = ".ctor";
+            }
+            else if (m.IsDestructor)
+            {
+                clrMethod.Overrides.Add(_assemblyDefinition.MainModule.ImportReference(typeof(object).GetMethod("Finalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)));
+                clrMethod.Name = "Finalize";
+                clrMethod.IsVirtual = true;
+                clrMethod.IsFamily = true;
+                clrMethod.IsHideBySig = true;
+            }
 
             if (m.Body != null)
             {

@@ -1,7 +1,16 @@
 module a.b.c.d;
 
-public struct kek : a.b.c.d.Blob, IRed {
+type Shape = | Circle(mut Radius : i32)
+			 | Rectangle(Width : i32, Height : i32);
 
+public class kek : a.b.c.d.Blob, IRed {
+	prop Hello : i32 { get; set; }
+}
+
+implement kek {
+	public constructor(mm : i32) {
+
+	}
 }
 
 public interface IRed {
@@ -20,6 +29,11 @@ public static func main() -> i32 {
 	print("Hello Backlang! {0}", 42);
 
 	return 0;
+}
+
+@System.Runtime.CompilerServices.CompilerGenerated
+func hellworld() {
+	print("kk");
 }
 
 implement u8 {

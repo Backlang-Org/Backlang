@@ -1,9 +1,15 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
@@ -84,6 +90,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             ConvertTypesOrInterfaces(context, tree, modulename);
             ConvertEnums(context, tree, modulename);
+            ConvertDiscriminatedUnions(context, tree, modulename);
         }
 
         context.Assembly.AddType(context.ExtensionsType);
@@ -143,6 +150,67 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {
             type.IsAbstract = true;
+        }
+    }
+
+    private void ConvertDiscriminatedUnions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    {
+        foreach (var discrim in tree.Body)
+        {
+            if (!(discrim.IsCall && discrim.Name == Symbols.DiscriminatedUnion)) continue;
+
+            var name = discrim.Args[0].Name;
+
+            var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+            Utils.SetAccessModifier(discrim, baseType);
+            baseType.IsAbstract = true;
+            context.Assembly.AddType(baseType);
+
+            foreach (var type in discrim.Args[1].Args)
+            {
+                var discName = type.Args[0].Name;
+                var discType = new DescribedType(new SimpleName(discName.Name).Qualify(modulename), context.Assembly);
+                Utils.SetAccessModifier(discrim, discType);
+                discType.AddBaseType(baseType);
+                context.Assembly.AddType(discType);
+
+                foreach (var field in type.Args[1].Args)
+                {
+                    var fieldName = field.Args[1].Args[0].Name;
+                    var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name), false, TypeInheritanceStage.ResolveTypeWithModule(field.Args[0].Args[0].Args[0], context, modulename, Utils.GetQualifiedName(field.Args[0].Args[0].Args[0])));
+                    if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
+                    {
+                        fieldType.AddAttribute(Attributes.Mutable);
+                    }
+                    fieldType.IsPublic = true;
+                    discType.AddField(fieldType);
+                }
+
+                var constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+                constructor.IsConstructor = true;
+                constructor.IsPublic = true;
+
+                foreach (var field in discType.Fields)
+                {
+                    constructor.AddParameter(new Parameter(field.FieldType, field.Name));
+                }
+
+                var graph = new FlowGraphBuilder();
+                // Use a permissive exception delayability model to make the optimizer's
+                // life easier.
+                graph.AddAnalysis(
+                    new ConstantAnalysis<ExceptionDelayability>(
+                        PermissiveExceptionDelayability.Instance));
+
+                // Grab the entry point block.
+                var block = graph.EntryPoint;
+
+                block.Flow = new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+
+                constructor.Body = new MethodBody(new Parameter(), new Parameter(), EmptyArray<Parameter>.Value, graph.ToImmutable());
+
+                discType.AddMethod(constructor);
+            }
         }
     }
 }

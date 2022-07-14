@@ -31,7 +31,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         {
             if (!(st.IsCall && st.Name == Symbols.Implementation)) continue;
 
-            var targetType = (DescribedType)IntermediateStage.GetType(st.Args[0], context);
+            var typenode = st.Args[0].Args[0].Args[0].Args[0];
+            var fullname = Utils.GetQualifiedName(typenode);
+            var targetType = TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
+
             var body = st.Args[0].Args[1].Args;
 
             foreach (var node in body)

@@ -40,6 +40,10 @@ public enum TokenType
     [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Ampersand,
 
+    [Lexeme("|")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
+    Pipe,
+
     [Lexeme("^")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
     [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
@@ -137,7 +141,7 @@ public enum TokenType
 
     [Lexeme("|>")]
     [BinaryOperatorInfo(BinaryOpPrecedences.PipeOperator)]
-    Pipe,
+    PipeOperator,
 
     [Lexeme(",")]
     Comma,
@@ -175,14 +179,26 @@ public enum TokenType
     [Keyword("false")]
     FalseLiteral,
 
+    [Keyword("type")]
+    Type,
+
     [Keyword("func")]
     Function,
+
+    [Keyword("constructor")]
+    Constructor,
+
+    [Keyword("destructor")]
+    Destructor,
 
     [Keyword("macro")]
     Macro,
 
     [Keyword("let")]
     Let,
+
+    [Keyword("prop")]
+    Property,
 
     [Keyword("mut")]
     Mutable,
@@ -226,8 +242,11 @@ public enum TokenType
     [Keyword("none")]
     None,
 
-    [Keyword("type")]
-    Type,
+    [Keyword("get")]
+    Get,
+
+    [Keyword("set")]
+    Set,
 
     [Keyword("switch")]
     Switch,
