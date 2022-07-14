@@ -113,10 +113,6 @@ public static class MethodBodyCompiler
         {
             ilProcessor.Emit(OpCodes.Ldc_R8, f64.Value);
         }
-        else if (v is NullConstant)
-        {
-            ilProcessor.Emit(OpCodes.Ldnull);
-        }
         else if (v is IntegerConstant ic)
         {
             switch (ic.Spec.Size)

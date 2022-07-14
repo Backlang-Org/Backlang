@@ -6,7 +6,7 @@ public sealed class NameExpression : IParsePoint<LNode>
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var nameExpression = SyntaxTree.Factory.Id(iterator.Peek(-1).Text);
+        var nameExpression = LNode.Id(iterator.Peek(-1).Text);
 
         if (iterator.Current.Type == TokenType.OpenSquare)
         {

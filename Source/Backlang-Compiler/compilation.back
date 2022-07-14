@@ -1,6 +1,14 @@
-module a.b.c.d;
+struct kek : IBlob {
+    
+}
 
-public abstract class Blob {
+implement kek {
+	func abc() -> none {
+		
+	}
+}
+
+public interface IBlob {
 
 }
 
@@ -24,17 +32,7 @@ public type Shape =
 		| Prism (width: f32, mut height: f32);
 
 public static func main() -> i32 {
-	let mammut : Blob = none;
-	let kk : i32 = 42;
-	let nn = 42;
-
 	print("Hello Backlang! {0}", 42);
 
 	return 0;
-}
-
-implement u8 {
-	public static func hello() {
-		
-	}
 }
