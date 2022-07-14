@@ -19,7 +19,9 @@ public class ClrTypeEnvironmentBuilder
         {
             if (!type.IsPublic) continue;
 
-            var dt = new DescribedType(new SimpleName(type.Name).Qualify(type.Namespace), assembly);
+            var ns = QualifyNamespace(type.Namespace);
+
+            var dt = new DescribedType(new SimpleName(type.Name).Qualify(ns), assembly);
             dt.IsSealed = type.IsSealed;
 
             assembly.AddType(dt);
@@ -62,12 +64,34 @@ public class ClrTypeEnvironmentBuilder
 
     public static DescribedType ResolveType(TypeResolver resolver, Type type)
     {
-        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(type.Namespace))?.FirstOrDefault();
+        var ns = QualifyNamespace(type.Namespace);
+
+        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(ns))?.FirstOrDefault();
     }
 
     public static DescribedType ResolveType(TypeResolver resolver, string name, string ns)
     {
         return (DescribedType)resolver.ResolveTypes(new SimpleName(name).Qualify(ns))?.FirstOrDefault();
+    }
+
+    private static QualifiedName QualifyNamespace(string @namespace)
+    {
+        var spl = @namespace.Split('.');
+
+        QualifiedName? name = null;
+
+        foreach (var path in spl)
+        {
+            if (name == null)
+            {
+                name = new SimpleName(path).Qualify();
+                continue;
+            }
+
+            name = new SimpleName(path).Qualify(name.Value);
+        }
+
+        return name.Value;
     }
 
     private static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
