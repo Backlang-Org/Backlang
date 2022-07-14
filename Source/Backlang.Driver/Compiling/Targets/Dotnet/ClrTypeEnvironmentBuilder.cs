@@ -58,11 +58,11 @@ public class ClrTypeEnvironmentBuilder
                 var attrType = attr.GetType();
                 var attribute = new DescribedAttribute(ResolveType(resolver, attrType));
 
-                foreach (var field in attrType.GetFields())
+                foreach (var prop in attrType.GetProperties())
                 {
-                    var value = field.GetValue(attr);
+                    var value = prop.GetValue(attr);
 
-                    attribute.ConstructorArguments.Add(new AttributeArgument(ResolveType(resolver, field.FieldType), value));
+                    attribute.ConstructorArguments.Add(new AttributeArgument(ResolveType(resolver, prop.PropertyType), value));
                 }
 
                 t.AddAttribute(attribute);
