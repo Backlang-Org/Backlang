@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -218,7 +218,16 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (resolvedType == null)
             {
-                resolvedType = context.Binder.ResolveTypes(GetNameOfPrimitiveType(context.Binder, fullName.FullyUnqualifiedName.ToString()).GetValueOrDefault()).FirstOrDefault();
+                var primitiveName = GetNameOfPrimitiveType(context.Binder, fullName.FullyUnqualifiedName.ToString());
+
+                if (!primitiveName.HasValue)
+                {
+                    resolvedType = null;
+                }
+                else
+                {
+                    resolvedType = context.Binder.ResolveTypes(primitiveName.Value).FirstOrDefault();
+                }
 
                 if (resolvedType == null)
                 {
