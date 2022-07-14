@@ -47,8 +47,6 @@ public class DotNetAssembly : ITargetAssembly
             ConvertFields(type, clrType);
             ConvertMethods(type, clrType);
 
-            ConvertCustomAttributes(type, clrType);
-
             _assemblyDefinition.MainModule.Types.Add(clrType);
         }
 
