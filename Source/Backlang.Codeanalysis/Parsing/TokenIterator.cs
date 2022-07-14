@@ -39,17 +39,6 @@ public sealed class TokenIterator
         return Enum.GetName(kind);
     }
 
-    public bool ConsumeIfMatch(TokenType kind)
-    {
-        var result = false;
-        if(IsMatch(kind))
-        {
-            result = true;
-            NextToken();
-        }
-        return result;
-    }
-
     public bool IsMatch(TokenType kind)
     {
         return Current.Type == kind;

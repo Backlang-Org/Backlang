@@ -22,7 +22,7 @@ public sealed class Utils
         return sb.ToString();
     }
 
-    public static void SetAccessModifier(LNode node, DescribedMember type, AccessModifier defaultChoice = AccessModifier.Private)
+    public static void SetAccessModifier(LNode node, DescribedMember type)
     {
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
         {
@@ -32,14 +32,9 @@ public sealed class Utils
         {
             type.IsProtected = true;
         }
-        else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Public)))
-        {
-            type.IsPublic = true;
-        }
         else
         {
-            type.RemoveAccessModifier();
-            type.AddAttribute(AccessModifierAttribute.Create(defaultChoice));
+            type.IsPublic = true;
         }
     }
 

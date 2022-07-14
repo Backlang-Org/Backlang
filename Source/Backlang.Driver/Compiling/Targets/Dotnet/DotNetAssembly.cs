@@ -1,11 +1,10 @@
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -47,28 +46,6 @@ public class DotNetAssembly : ITargetAssembly
             SetBaseType(type, clrType);
             ConvertFields(type, clrType);
             ConvertMethods(type, clrType);
-
-            foreach (DescribedProperty property in type.Properties)
-            {
-                var propType = property.PropertyType;
-
-                var clrProp = new PropertyDefinition(property.Name.ToString(), PropertyAttributes.None, Resolve(propType));
-
-                var field = GeneratePropertyField(property);
-
-                clrType.Fields.Add(field);
-
-                var getter = GeneratePropertyGetter(property, field);
-                var setter = GeneratePropertySetter(property, field);
-
-                clrType.Methods.Add(getter);
-                clrType.Methods.Add(setter);
-
-                clrProp.GetMethod = getter;
-                clrProp.SetMethod = setter;
-
-                clrType.Properties.Add(clrProp);
-            }
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
         }
@@ -151,62 +128,6 @@ public class DotNetAssembly : ITargetAssembly
             default:
                 break;
         }
-    }
-
-    private FieldDefinition GeneratePropertyField(DescribedProperty property)
-    {
-        var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
-
-        clrField.CustomAttributes.Add(CompilerGeneratedAttribute());
-
-        return clrField;
-    }
-
-    private CustomAttribute CompilerGeneratedAttribute()
-    {
-        var type = typeof(CompilerGeneratedAttribute).GetConstructors()[0];
-
-        var attr = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(type));
-
-        return attr;
-    }
-
-    private MethodDefinition GeneratePropertyGetter(DescribedProperty property, FieldReference reference)
-    {
-        var clrMethod = new MethodDefinition(property.Getter.Name.ToString(),
-                                GetMethodAttributes(property.Getter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
-                                Resolve(property.PropertyType.FullName));
-
-        clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
-
-        var ilProcessor = clrMethod.Body.GetILProcessor();
-
-        ilProcessor.Emit(OpCodes.Ldarg_0);
-        ilProcessor.Emit(OpCodes.Ldfld, reference);
-        ilProcessor.Emit(OpCodes.Ret);
-
-        return clrMethod;
-    }
-
-    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
-    {
-        var clrMethod = new MethodDefinition(property.Setter.Name.ToString(),
-                                GetMethodAttributes(property.Setter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
-                                Resolve(new SimpleName("Void").Qualify("System")));
-
-        clrMethod.CustomAttributes.Add(CompilerGeneratedAttribute());
-
-        var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
-        clrMethod.Parameters.Add(param);
-
-        var ilProcessor = clrMethod.Body.GetILProcessor();
-
-        ilProcessor.Emit(OpCodes.Ldarg_0);
-        ilProcessor.Emit(OpCodes.Ldarg_1);
-        ilProcessor.Emit(OpCodes.Stfld, reference);
-        ilProcessor.Emit(OpCodes.Ret);
-
-        return clrMethod;
     }
 
     private void AdjustBaseTypesAndInterfaces()

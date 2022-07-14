@@ -1,27 +1,16 @@
 module a.b.c.d;
 
+public struct kek : a.b.c.d.Blob, IRed {
+
+}
+
+public interface IRed {
+
+}
+
 public abstract class Blob {
 
 }
-
-private class VeryImportantPerson {
-	protected prop IsCool: bool { get; private set; }
-}
-
-implement VeryImportantPerson {
-	static constructor() {
-		// here u can init stuff
-	}
-
-	destructor() {
-		print("byebye");
-	}
-}
-
-public type Shape =
-		| Rectange (width: f32, length: f32)
-		| Circle (mut radius: f32)
-		| Prism (width: f32, mut height: f32);
 
 public static func main() -> i32 {
 	let mammut : Blob = none;
