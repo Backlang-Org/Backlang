@@ -25,8 +25,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private void CollectImplementations(CompilerContext context, CompilationUnit tree)
     {
-        var modulename = Utils.GetModuleName(tree);
-
         foreach (var st in tree.Body)
         {
             if (!(st.IsCall && st.Name == Symbols.Implementation)) continue;
@@ -43,12 +41,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 {
                     if (targetType.Parent.Assembly == context.Assembly)
                     {
-                        var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node, modulename);
+                        var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node);
                         targetType.AddMethod(fn);
                     }
                     else
                     {
-                        var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node, modulename);
+                        var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node);
 
                         fn.IsStatic = true;
 
@@ -71,14 +69,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private void ImplementDefaultConstructors(CompilerContext context, CompilationUnit tree)
     {
-        var modulename = Utils.GetModuleName(tree);
-
         foreach (var st in tree.Body)
         {
             if (!(st.IsCall && st.Name == CodeSymbols.Struct)) continue;
 
             var name = st.Args[0].Name;
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(context.Assembly.Name)).First();
             if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
             {
                 var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));

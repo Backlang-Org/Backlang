@@ -1,4 +1,12 @@
-module a.b.c.d;
+struct kek : IBlob {
+    
+}
+
+implement kek {
+	func abc() -> none {
+		
+	}
+}
 
 type Shape = | Circle(mut Radius : i32)
 			 | Rectangle(Width : i32, Height : i32);
@@ -22,10 +30,6 @@ public abstract class Blob {
 }
 
 public static func main() -> i32 {
-	let mammut : Blob = none;
-	let kk : i32 = 42;
-	let nn = 42;
-
 	print("Hello Backlang! {0}", 42);
 
 	return 0;

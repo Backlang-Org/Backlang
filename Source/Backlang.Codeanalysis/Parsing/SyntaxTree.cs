@@ -160,7 +160,7 @@ public static class SyntaxTree
 
     public static LNode None()
     {
-        return Factory.Call(CodeSymbols.Void, LNode.Literal(null));
+        return Factory.Call(CodeSymbols.Void);
     }
 
     public static LNode Pointer(LNode type)

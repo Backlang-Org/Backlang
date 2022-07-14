@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
@@ -17,7 +18,7 @@ public sealed class Signature
                 $"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column));
         }
 
-        LNode returnType = SyntaxTree.Type("none", LNode.List());
+        LNode returnType = LNode.Missing;
         LNodeList generics = new();
 
         iterator.Match(TokenType.OpenParen);

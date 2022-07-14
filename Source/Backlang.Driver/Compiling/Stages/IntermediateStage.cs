@@ -10,6 +10,9 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using Loyc;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
@@ -79,7 +82,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
-        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(string.Empty), context.Assembly)
+        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(context.Assembly.Name), context.Assembly)
         {
             IsStatic = true
         };
