@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -33,6 +33,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["u16"] = "UInt16",
         ["u32"] = "UInt32",
         ["u64"] = "UInt64",
+
+        ["f16"] = typeof(Half).Name,
+        ["f32"] = typeof(float).Name,
+        ["f64"] = typeof(double).Name,
 
         ["char"] = "Char",
         ["string"] = "String",
