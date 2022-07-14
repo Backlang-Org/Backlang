@@ -105,7 +105,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     }
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
-        LNode function, QualifiedName? modulename, string methodName = null, bool hasBody = true)
+        LNode function, QualifiedName modulename, string methodName = null, bool hasBody = true)
     {
         if (methodName == null) methodName = GetMethodName(function);
 
