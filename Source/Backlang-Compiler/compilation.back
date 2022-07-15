@@ -1,5 +1,7 @@
 module a.b.c.d;
 
+
+
 type Shape = | Circle(mut Radius : i32)
 			 | Rectangle(Width : i32, Height : i32);
 
@@ -9,7 +11,9 @@ public class kek : a.b.c.d.Blob, IRed {
 
 implement kek {
 	public constructor(mm : i32) {
-
+		target(dotnet) {
+			print("running under: clr");
+		}
 	}
 }
 
