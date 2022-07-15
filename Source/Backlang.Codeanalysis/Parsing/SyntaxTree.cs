@@ -214,7 +214,19 @@ public static class SyntaxTree
 
     public static LNode Using(LNode from, LNode to)
     {
-        return Factory.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
+        var args = new LNodeList();
+
+        if (!from.Calls("#error") && from.Name != LNode.Missing.Name)
+        {
+            args.Add(from);
+        }
+
+        if (!to.Calls("#error") && to.Name != LNode.Missing.Name)
+        {
+            args.Add(to);
+        }
+
+        return Factory.Call(CodeSymbols.UsingStmt, args);
     }
 
     public static LNode When(LNode binOp, LNode rightHand, LNode body)
