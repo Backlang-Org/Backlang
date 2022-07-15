@@ -43,7 +43,10 @@ public static class MethodBodyCompiler
 
         if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
         {
-            EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+            if(rf.HasReturnValue)
+            {
+                EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+            }
 
             ilProcessor.Emit(OpCodes.Ret);
         }

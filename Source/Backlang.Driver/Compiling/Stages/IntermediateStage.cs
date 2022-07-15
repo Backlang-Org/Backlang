@@ -205,7 +205,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 // Grab the entry point block.
                 var block = graph.EntryPoint;
 
-                block.Flow = new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+                block.Flow = new ReturnFlow();
 
                 constructor.Body = new MethodBody(new Parameter(), new Parameter(), EmptyArray<Parameter>.Value, graph.ToImmutable());
 
