@@ -128,6 +128,20 @@ public static class SyntacticMacros
         return node;
     }
 
+    [LexicalMacro("target(CLR) {}", "Only Compile Code If CompilationTarget Is CLR", "target", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode TargetMacro(LNode node, IMacroContext context)
+    {
+        var target = (string)context.ScopedProperties["Target"];
+        var selectedTarget = node.Args[0].Name.Name;
+
+        if (target == selectedTarget)
+        {
+            return node.Args[1];
+        }
+
+        return LNode.Call((Symbol)"'{}");
+    }
+
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {

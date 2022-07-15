@@ -47,6 +47,8 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
             }
         }
 
+        _macroProcessor.DefaultScopedProperties.Add("Target", context.Target);
+
         foreach (var tree in context.Trees)
         {
             tree.Body = _macroProcessor.ProcessSynchronously(new VList<LNode>(tree.Body));
