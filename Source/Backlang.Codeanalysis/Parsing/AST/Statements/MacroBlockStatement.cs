@@ -22,7 +22,7 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
             {
                 //custom code block with arguments
                 var body = Statement.ParseBlock(parser);
-                arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
+                arguments = arguments.Add(body);
 
                 return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
                     .WithRange(nameToken, iterator.Prev);
