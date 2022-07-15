@@ -11,7 +11,8 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
         var keywordToken = iterator.Prev;
         var from = Expression.Parse(parser);
 
-        iterator.Match(TokenType.As);
+        var asToken = iterator.Match(TokenType.As);
+        var asKeyword = SyntaxTree.Factory.Id(asToken.Text).WithRange(asToken);
 
         string to;
         if (iterator.Current.Type == TokenType.Identifier)
@@ -28,6 +29,6 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        return SyntaxTree.Using(from, LNode.Id((Symbol)to)).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Using(from, SyntaxTree.Factory.Id((Symbol)to)).PlusAttr(asKeyword).WithRange(keywordToken, iterator.Prev);
     }
 }

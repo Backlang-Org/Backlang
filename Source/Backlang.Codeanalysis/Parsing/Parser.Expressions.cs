@@ -62,11 +62,12 @@ public sealed partial class Parser
     {
         var token = Iterator.Current;
         var type = token.Type;
+
         if (parsePoints.ContainsKey(type))
         {
             Iterator.NextToken();
 
-            return parsePoints[type](Iterator, this).WithRange(token, Iterator.Current);
+            return parsePoints[type](Iterator, this).WithRange(token, Iterator.Prev);
         }
         else
         {
