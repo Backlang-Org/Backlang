@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Text;
@@ -67,7 +68,29 @@ public class Emitter
         {
             var varname = firstBlock.Parameters[i].Tag.Name;
 
-            Emit($"\t// new variable called \"{varname}\" with offset {0}\n", null, 0); //ToDo: Calculate variable offset
+            //ToDo: Variables must be rewritten
+            var namedInstructions = body.Implementation.NamedInstructions.ToArray();
+            for (var i1 = 0; i1 < namedInstructions.Length; i1++)
+            {
+                var item = namedInstructions[i1];
+                var instruction = item.Instruction;
+
+                if (instruction.Prototype is AllocaPrototype allocA)
+                {
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (instruction.Prototype is not ConstantPrototype)
+                        {
+                            instruction = item.NextInstructionOrNull.Instruction;
+                        }
+                    }
+
+                    if (instruction.Prototype is ConstantPrototype constantPrototype)
+                    {
+                        EmitImmediate(constantPrototype.Value);
+                    }
+                }
+            }
         }
 
         foreach (var item in body.Implementation.NamedInstructions)
@@ -92,6 +115,15 @@ public class Emitter
             {
                 EmitVariableDeclaration(item, allocA);
             }
+        }
+    }
+
+    private void EmitImmediate(Constant value)
+    {
+        if (value is IntegerConstant icons)
+        {
+            Emit($"copy {icons.ToInt64().ToString()}, R1", "// put immediate into register");
+            Emit("push R1", "// push immediate onto stack");
         }
     }
 
