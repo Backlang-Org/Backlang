@@ -47,11 +47,29 @@ public class Bs2KTypeEnvironment : TypeEnvironment
 
     public override bool TryMakeSignedIntegerType(int sizeInBits, out IType integerType)
     {
-        throw new NotImplementedException();
+        integerType = sizeInBits switch
+        {
+            8 => new I8Type(Assembly),
+            16 => new I16Type(Assembly),
+            32 => new I32Type(Assembly),
+            64 => new I64Type(Assembly),
+            _ => null
+        };
+
+        return integerType != null;
     }
 
     public override bool TryMakeUnsignedIntegerType(int sizeInBits, out IType integerType)
     {
-        throw new NotImplementedException();
+        integerType = sizeInBits switch
+        {
+            8 => new U8Type(Assembly),
+            16 => new U16Type(Assembly),
+            32 => new U32Type(Assembly),
+            64 => new U64Type(Assembly),
+            _ => null
+        };
+
+        return integerType != null;
     }
 }
