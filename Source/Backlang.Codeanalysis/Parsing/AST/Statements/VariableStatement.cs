@@ -39,7 +39,7 @@ public class VariableStatement : IParsePoint<LNode>
 
         iterator.Match(TokenType.Semicolon);
 
-        var node = SyntaxTree.Factory.Var(type, name, value).WithRange(keywordToken, iterator.Prev);
+        var node = SyntaxTree.Factory.Var(type, name, value).WithRange(keywordToken, iterator.Prev).WithTarget(CodeSymbols.Let);
 
         return isMutable ? node.WithAttrs(SyntaxTree.Factory.Id(Symbols.Mutable).WithRange(mutableToken)) : node;
     }

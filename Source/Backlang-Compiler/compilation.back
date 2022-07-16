@@ -11,9 +11,7 @@ public class kek : a.b.c.d.Blob, IRed {
 
 implement kek {
 	public constructor(mm : i32) {
-		target(dotnet) {
-			print("running under: clr");
-		}
+		
 	}
 }
 
@@ -26,9 +24,10 @@ public abstract class Blob {
 }
 
 public static func main() -> i32 {
+
 	let mammut : Blob = none;
 	let kk : i32 = 42;
-	let nn = 42;
+	let nn : i32 = 42;
 
 	print("Hello Backlang! {0}", 42);
 
