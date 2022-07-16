@@ -1,3 +1,4 @@
 public static func main() {
-	
+	let k : i32 = 42;
+	let l : i32 = 2;
 }

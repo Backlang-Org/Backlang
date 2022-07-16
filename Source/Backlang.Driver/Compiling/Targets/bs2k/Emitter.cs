@@ -61,6 +61,15 @@ public class Emitter
 
     private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
     {
+        var firstBlock = body.Implementation.NamedInstructions.First().Block;
+
+        for (int i = 0; i < firstBlock.Parameters.Count; i++)
+        {
+            var varname = firstBlock.Parameters[i].Tag.Name;
+
+            Emit($"\t// new variable called \"{varname}\" with offset {0}\n", null, 0); //ToDo: Calculate variable offset
+        }
+
         foreach (var item in body.Implementation.NamedInstructions)
         {
             var instruction = item.Instruction;
@@ -81,9 +90,13 @@ public class Emitter
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
-                //EmitVariableDeclaration(item, allocA);
+                EmitVariableDeclaration(item, allocA);
             }
         }
+    }
+
+    private void EmitVariableDeclaration(NamedInstruction item, AllocaPrototype allocA)
+    {
     }
 
     private void EmitCall(Instruction instruction, FlowGraph implementation)
