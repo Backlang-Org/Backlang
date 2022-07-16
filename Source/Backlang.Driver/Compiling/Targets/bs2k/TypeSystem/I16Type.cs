@@ -6,7 +6,7 @@ namespace Backlang.Driver.Compiling.Targets.bs2k.TypeSystem;
 
 public class I16Type : DescribedType
 {
-    public I16Type(IAssembly assembly) : base(new SimpleName("I16").Qualify("System"), assembly)
+    public I16Type(IAssembly assembly) : base(new SimpleName("Int16").Qualify("System"), assembly)
     {
     }
 }

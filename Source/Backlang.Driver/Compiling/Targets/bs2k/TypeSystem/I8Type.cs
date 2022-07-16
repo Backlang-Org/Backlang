@@ -6,7 +6,7 @@ namespace Backlang.Driver.Compiling.Targets.bs2k.TypeSystem;
 
 public class I8Type : DescribedType
 {
-    public I8Type(IAssembly assembly) : base(new SimpleName("I8").Qualify("System"), assembly)
+    public I8Type(IAssembly assembly) : base(new SimpleName("SByte").Qualify("System"), assembly)
     {
     }
 }

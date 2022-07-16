@@ -6,7 +6,7 @@ namespace Backlang.Driver.Compiling.Targets.bs2k.TypeSystem;
 
 public class U8Type : DescribedType
 {
-    public U8Type(IAssembly assembly) : base(new SimpleName("U8").Qualify("System"), assembly)
+    public U8Type(IAssembly assembly) : base(new SimpleName("Byte").Qualify("System"), assembly)
     {
     }
 }
