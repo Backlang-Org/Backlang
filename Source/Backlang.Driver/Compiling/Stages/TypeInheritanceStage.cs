@@ -72,10 +72,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 if (node.ArgCount == 1)
                 {
-                    var valueNode = node.Args[0].Args[0];
-                    var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
+                    var valueNode = node.Args[0];
 
-                    block.Flow = new ReturnFlow(rt);
+                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32); //ToDo: Deduce Type
+
+                    block.Flow = new ReturnFlow();
                 }
                 else
                 {

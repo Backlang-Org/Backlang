@@ -3,5 +3,5 @@ public static func main() -> i32 {
 	let val : i32 = 42;
 	let arith : i32 = 1 + 2 * 3;
 
-	return 0;
+	return 1+2;
 }
