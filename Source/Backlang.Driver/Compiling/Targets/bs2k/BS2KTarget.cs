@@ -18,8 +18,6 @@ public class BS2KTarget : ICompilationTarget
 
     public TypeEnvironment Init(TypeResolver binder)
     {
-        var te = new TypeEnvironment();
-
-        return te;
+        throw null;
     }
 }

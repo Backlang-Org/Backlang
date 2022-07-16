@@ -69,9 +69,13 @@ public class DotNetAssembly : ITargetAssembly
         {
             clrType.Attributes |= TypeAttributes.NestedFamily;
         }
-        else
+        else if (type.IsPublic)
         {
             clrType.Attributes |= TypeAttributes.Public;
+        }
+        else
+        {
+            // here also 'internal' is used, because 'internal' doesnt need any attribute.
         }
         if (type.IsStatic)
         {
