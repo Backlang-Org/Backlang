@@ -1,37 +1,133 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Text;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
 
 public class Emitter
 {
+    private readonly IMethod _mainMethod;
     private StringBuilder _builder = new();
 
-    public void EmitFunctionDefinition(IMethod method)
+    public Emitter(IMethod mainMethod)
+    {
+        this._mainMethod = mainMethod;
+    }
+
+    public void EmitFunctionDefinition(DescribedBodyMethod method)
     {
         var signature = NameMangler.Mangle(method);
 
-        if (function_definition->name.location.view() == "main")
+        Emit($"{signature}:");
+
+        if (method == _mainMethod)
         {
             Emit("copy sp, R0", "save current stack pointer into R0 (this is the new stack frame base pointer)");
         }
-        result += emit_statement(*program, function_definition->body);
-        if (function_definition->name.location.view() == "main")
+
+        EmitMethodBody(method, method.Body);
+
+        if (method == _mainMethod)
         {
-            emit("halt");
+            Emit("halt");
         }
         else
         {
             Emit("copy R0, sp", "clear current stack frame");
             Emit("pop R0", "restore previous stack frame");
-            emit("return");
+            Emit("return");
         }
     }
 
     public override string ToString() => _builder.ToString();
 
-    private void Emit(string instruction, string comment)
+    private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
     {
-        _builder.AppendLine(instruction + $" // {comment}");
+        foreach (var item in body.Implementation.NamedInstructions)
+        {
+            var instruction = item.Instruction;
+
+            if (instruction.Prototype is CallPrototype callPrototype)
+            {
+                EmitCall(instruction, body.Implementation);
+            }
+            else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
+            {
+                //EmitNewObject(newObjectPrototype);
+            }
+            else if (instruction.Prototype is LoadPrototype ld)
+            {
+                var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
+
+                //EmitConstant(consProto);
+            }
+            else if (instruction.Prototype is AllocaPrototype allocA)
+            {
+                //EmitVariableDeclaration(item, allocA);
+            }
+        }
+
+        if (body.Implementation.EntryPoint.Flow is ReturnFlow rf)
+        {
+            if (rf.HasReturnValue)
+            {
+                //EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+            }
+
+            Emit("return");
+        }
+        else if (body.Implementation.EntryPoint.Flow is UnreachableFlow)
+        {
+            if (method.ReturnParameter.Name.ToString() == "Void")
+            {
+                Emit("return");
+            }
+            else
+            {
+                Emit("halt");
+            }
+        }
+    }
+
+    private void EmitCall(Instruction instruction, FlowGraph implementation)
+    {
+        var prototype = (CallPrototype)instruction.Prototype;
+
+        Emit($"copy {NameMangler.Mangle(prototype.Callee)}, R1", "get address of label");
+        Emit("push R1", "push address of label onto stack");
+        Emit("pop R5", "get jump address");
+
+        Emit("copy sp, R6", "store address of return address placeholder");
+        Emit("add sp, 4, sp", "reserve stack space for the return address placeholder");
+
+        Emit("push R0", "store current stack frame base pointer for later");
+        Emit("copy sp, R0");
+
+        /*
+        for (const auto&argument : expression.arguments) {
+            argument->accept(*this);
+        }
+        */
+
+        Emit("add ip, 24, R1", "calculate return address");
+        Emit("copy R1, *R6", "fill return address placeholder");
+        Emit("jump R5", "call function");
+
+        // after the call the return value is inside R1
+        Emit("push R1", "push return value onto stack");
+    }
+
+    private void Emit(string instruction, string comment = null)
+    {
+        if (comment == null)
+        {
+            _builder.AppendLine(instruction);
+            return;
+        }
+
+        _builder.AppendLine($"{instruction} // {comment}");
     }
 }

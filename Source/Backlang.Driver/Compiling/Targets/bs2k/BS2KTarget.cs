@@ -13,12 +13,14 @@ public class BS2KTarget : ICompilationTarget
 
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
-        throw new NotImplementedException();
+        return new Bs2kAssembly(contents);
     }
 
     public TypeEnvironment Init(TypeResolver binder)
     {
         var te = new Bs2KTypeEnvironment();
+
+        binder.AddAssembly(te.Assembly);
 
         return te;
     }
