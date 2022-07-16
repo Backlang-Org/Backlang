@@ -444,20 +444,40 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
+        block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
+
+        AppendExpression(block, decl.Args[1], elementType);
+
         var instruction = Instruction.CreateAlloca(elementType);
         var local = block.AppendInstruction(instruction);
-
-        block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
 
         if (decl.Args[1].Args[0].HasValue)
         {
             block.AppendInstruction(
-               Instruction.CreateStore(
-                   elementType,
-                   local,
-                   block.AppendInstruction(
-                       ConvertConstant(elementType, decl.Args[1].Args[0].Value))));
+                  Instruction.CreateStore(
+                      elementType,
+                      local, null));
         }
+    }
+
+    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType)
+    {
+        if (node.Args[0].HasValue)
+        {
+            var constant = ConvertConstant(elementType, node.Args[0].Value);
+            var value = block.AppendInstruction(constant);
+
+            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
+        }
+        else if (node.ArgCount == 2)
+        {
+            var lhs = AppendExpression(block, node.Args[0], elementType);
+            var rhs = AppendExpression(block, node.Args[1], elementType);
+
+            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        }
+
+        return null;
     }
 
     private static Instruction ConvertConstant(IType elementType, object value)

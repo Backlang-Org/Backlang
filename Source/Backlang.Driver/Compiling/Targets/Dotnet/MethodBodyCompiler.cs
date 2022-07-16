@@ -29,9 +29,8 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadPrototype ld)
             {
-                var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
-
-                EmitConstant(ilProcessor, consProto);
+                var valueInstruction = m.Body.Implementation.GetInstruction(instruction.Arguments[0]);
+                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
@@ -39,11 +38,15 @@ public static class MethodBodyCompiler
 
                 variables.Add(variable);
             }
+            else if (instruction.Prototype is IntrinsicPrototype arith)
+            {
+                EmitArithmetik(ilProcessor, arith);
+            }
         }
 
         if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
         {
-            if(rf.HasReturnValue)
+            if (rf.HasReturnValue)
             {
                 EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
             }
@@ -65,6 +68,23 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
+    }
+
+    private static void EmitArithmetik(ILProcessor ilProcessor, IntrinsicPrototype arith)
+    {
+        switch (arith.Name)
+        {
+            case "arith.+":
+                ilProcessor.Emit(OpCodes.Add); break;
+            case "arith.-":
+                ilProcessor.Emit(OpCodes.Sub); break;
+            case "arith.*":
+                ilProcessor.Emit(OpCodes.Mul); break;
+            case "arith./":
+                ilProcessor.Emit(OpCodes.Div); break;
+            case "arith.%":
+                ilProcessor.Emit(OpCodes.Rem); break;
+        }
     }
 
     private static void EmitNewObject(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NewObjectPrototype newObjectPrototype)
@@ -186,11 +206,10 @@ public static class MethodBodyCompiler
             new VariableDefinition(assemblyDefinition.MainModule.ImportReference(elementType));
         clrMethod.Body.Variables.Add(variable);
 
-        var store = item.NextInstructionOrNull?.Prototype;
+        var store = item.Instruction.Prototype;
 
-        if (store is ConstantPrototype sp)
+        if (store is AllocaPrototype sp)
         {
-            EmitConstant(ilProcessor, sp);
             ilProcessor.Emit(OpCodes.Stloc, variable);
 
             clrMethod.Body.InitLocals = true;
