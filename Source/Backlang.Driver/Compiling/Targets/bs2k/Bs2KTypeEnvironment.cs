@@ -1,16 +1,21 @@
 ﻿using Backlang.Driver.Compiling.Targets.bs2k.TypeSystem;
 using Furesoft.Core.CodeDom.Backends.CLR;
 using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
 
 public class Bs2KTypeEnvironment : TypeEnvironment
 {
+    public Bs2KTypeEnvironment()
+    {
+        Assembly = new DescribedAssembly(new SimpleName("System").Qualify());
+    }
+
     public override SubtypingRules Subtyping => ClrSubtypingRules.Instance;
 
     public IAssembly Assembly { get; set; }
-
     public override IType Void => new VoidType(Assembly);
 
     public override IType Float32 => new I32Type(Assembly); // ! ! ! FALLBACK - Change Later ! ! !
