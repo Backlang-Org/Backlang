@@ -11,6 +11,11 @@ public class BS2KTarget : ICompilationTarget
     {
     }
 
+    public void BeforeCompiling(CompilerContext context)
+    {
+        context.OutputFilename += ".bsm";
+    }
+
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
         return new Bs2kAssembly(contents);
