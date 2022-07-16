@@ -21,8 +21,15 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             context.CompilationTarget.BeforeCompiling(context);
 
             var assembly = context.CompilationTarget.Compile(description);
-            assembly.WriteTo(File.OpenWrite(Path.Combine(context.TempOutputPath,
-                context.OutputFilename)));
+            var resultPath = Path.Combine(context.TempOutputPath,
+                            context.OutputFilename);
+
+            if (File.Exists(resultPath))
+            {
+                File.Delete(resultPath);
+            }
+
+            assembly.WriteTo(File.OpenWrite(resultPath));
 
             context.CompilationTarget.AfterCompiling(context);
         }
