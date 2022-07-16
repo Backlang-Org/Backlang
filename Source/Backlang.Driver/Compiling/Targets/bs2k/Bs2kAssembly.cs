@@ -1,4 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Pipeline;
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
@@ -16,7 +16,7 @@ public class Bs2kAssembly : ITargetAssembly
     {
         var emitter = new Emitter(Contents.EntryPoint);
 
-        var program = Contents.Assembly.Types.First(_ => _.FullName.ToString() == Names.ProgramClass);
+        emitter.Emit($"jump {NameMangler.Mangle(Contents.EntryPoint)}", "call main method\n", 0);
 
         foreach (var method in program.Methods)
         {
