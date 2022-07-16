@@ -449,16 +449,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         AppendExpression(block, decl.Args[1], elementType);
 
-        var instruction = Instruction.CreateAlloca(elementType);
-        var local = block.AppendInstruction(instruction);
-
-        if (decl.Args[1].Args[0].HasValue)
-        {
-            block.AppendInstruction(
-                  Instruction.CreateStore(
-                      elementType,
-                      local, null));
-        }
+        block.AppendInstruction(Instruction.CreateAlloca(elementType));
     }
 
     private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType)
