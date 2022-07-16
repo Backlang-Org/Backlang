@@ -43,7 +43,7 @@ public static class MethodBodyCompiler
 
         if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
         {
-            if(rf.HasReturnValue)
+            if (rf.HasReturnValue)
             {
                 EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
             }
@@ -196,7 +196,7 @@ public static class MethodBodyCompiler
             clrMethod.Body.InitLocals = true;
         }
 
-        return (item.Block.Parameters[0].Tag.Name, variable);
+        return (item.Block.Parameters[0].Tag.Name, variable); //ToDo: Fix correct variable name
     }
 
     private static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)
