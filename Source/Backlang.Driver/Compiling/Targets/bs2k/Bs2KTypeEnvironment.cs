@@ -13,19 +13,19 @@ public class Bs2KTypeEnvironment : TypeEnvironment
 
     public override IType Void => new VoidType(Assembly);
 
-    public override IType Float32 => throw new NotImplementedException();
+    public override IType Float32 => new I32Type(Assembly); // ! ! ! FALLBACK - Change Later ! ! !
 
-    public override IType Float64 => throw new NotImplementedException();
+    public override IType Float64 => new I64Type(Assembly); // ! ! ! FALLBACK - Change Later ! ! !
 
-    public override IType String => throw new NotImplementedException();
+    public override IType String => new StringType(Assembly);
 
-    public override IType Char => throw new NotImplementedException();
+    public override IType Char => new CharType(Assembly);
 
-    public override IType NaturalInt => throw new NotImplementedException();
+    public override IType NaturalInt => new I32Type(Assembly);
 
-    public override IType NaturalUInt => throw new NotImplementedException();
+    public override IType NaturalUInt => new U32Type(Assembly);
 
-    public override IType Object => throw new NotImplementedException();
+    public override IType Object => new ObjectType(Assembly);
 
     public override IType TypeToken => throw new NotImplementedException();
 
