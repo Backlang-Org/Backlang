@@ -60,7 +60,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             if (!node.IsCall) continue;
 
-            if (node.Name == CodeSymbols.Let)
+            if (node.Name == CodeSymbols.Var)
             {
                 AppendVariableDeclaration(context, block, node, modulename);
             }
@@ -190,7 +190,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         foreach (var member in members.Args)
         {
-            if (member.Name == CodeSymbols.Let)
+            if (member.Name == CodeSymbols.Var)
             {
                 ConvertFields(type, context, member, modulename);
             }
@@ -534,7 +534,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var i = -1;
         foreach (var member in members.Args)
         {
-            if (member.Name == CodeSymbols.Let)
+            if (member.Name == CodeSymbols.Var)
             {
                 IType mtype;
                 if (member.Args[0] == LNode.Missing)
@@ -702,7 +702,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         foreach (var member in node.Args[1].Args)
         {
-            if (member.Name == CodeSymbols.Let)
+            if (member.Name == CodeSymbols.Var)
             {
                 var ftype = member.Args[0].Args[0].Args[0];
                 var fullname = Utils.GetQualifiedName(ftype);

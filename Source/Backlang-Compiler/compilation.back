@@ -40,7 +40,7 @@ func hellworld() {
 }
 
 implement u8 {
-	public static func hello() {
+	public static func hello(n : i32) {
 		return;
 	}
 }

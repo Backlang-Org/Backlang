@@ -103,7 +103,7 @@ public static partial class BuiltInMacros
         var temp = GenerateId(null, context);
 
         return LNode.Call(CodeSymbols.Braces, LNode.List(
-            LNode.Call(CodeSymbols.Let, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(temp, left)))),
+            LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(temp, left)))),
             LNode.Call(CodeSymbols.Assign, LNode.List(left, right)),
             LNode.Call(CodeSymbols.Assign, LNode.List(right, temp))
             )).SetStyle(NodeStyle.StatementBlock);
