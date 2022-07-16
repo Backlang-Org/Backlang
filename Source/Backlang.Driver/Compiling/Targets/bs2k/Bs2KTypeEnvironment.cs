@@ -11,6 +11,21 @@ public class Bs2KTypeEnvironment : TypeEnvironment
     public Bs2KTypeEnvironment()
     {
         Assembly = new DescribedAssembly(new SimpleName("System").Qualify());
+
+        ((DescribedAssembly)Assembly).AddType(Void);
+        ((DescribedAssembly)Assembly).AddType(String);
+        ((DescribedAssembly)Assembly).AddType(Char);
+        ((DescribedAssembly)Assembly).AddType(Object);
+
+        ((DescribedAssembly)Assembly).AddType(Int8);
+        ((DescribedAssembly)Assembly).AddType(Int16);
+        ((DescribedAssembly)Assembly).AddType(Int32);
+        ((DescribedAssembly)Assembly).AddType(Int64);
+
+        ((DescribedAssembly)Assembly).AddType(UInt8);
+        ((DescribedAssembly)Assembly).AddType(UInt16);
+        ((DescribedAssembly)Assembly).AddType(UInt32);
+        ((DescribedAssembly)Assembly).AddType(UInt64);
     }
 
     public override SubtypingRules Subtyping => ClrSubtypingRules.Instance;

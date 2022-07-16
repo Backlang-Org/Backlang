@@ -1,6 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Text;
@@ -21,7 +20,7 @@ public class Emitter
     {
         var signature = NameMangler.Mangle(method);
 
-        Emit($"{signature}:");
+        Emit($"{signature}:", null, 0);
 
         if (method == _mainMethod)
         {
@@ -43,6 +42,22 @@ public class Emitter
     }
 
     public override string ToString() => _builder.ToString();
+
+    public void Emit(string instruction, string comment = null, int indentlevel = 1)
+    {
+        if (indentlevel == 1)
+        {
+            _builder.Append('\t');
+        }
+
+        if (comment == null)
+        {
+            _builder.AppendLine(instruction);
+            return;
+        }
+
+        _builder.AppendLine($"{instruction} // {comment}");
+    }
 
     private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
     {
@@ -67,27 +82,6 @@ public class Emitter
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
                 //EmitVariableDeclaration(item, allocA);
-            }
-        }
-
-        if (body.Implementation.EntryPoint.Flow is ReturnFlow rf)
-        {
-            if (rf.HasReturnValue)
-            {
-                //EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
-            }
-
-            Emit("return");
-        }
-        else if (body.Implementation.EntryPoint.Flow is UnreachableFlow)
-        {
-            if (method.ReturnParameter.Name.ToString() == "Void")
-            {
-                Emit("return");
-            }
-            else
-            {
-                Emit("halt");
             }
         }
     }
@@ -118,16 +112,5 @@ public class Emitter
 
         // after the call the return value is inside R1
         Emit("push R1", "push return value onto stack");
-    }
-
-    private void Emit(string instruction, string comment = null)
-    {
-        if (comment == null)
-        {
-            _builder.AppendLine(instruction);
-            return;
-        }
-
-        _builder.AppendLine($"{instruction} // {comment}");
     }
 }

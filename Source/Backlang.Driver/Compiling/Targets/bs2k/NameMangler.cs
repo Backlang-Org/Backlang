@@ -9,7 +9,7 @@ public class NameMangler
     {
         var sb = new StringBuilder();
 
-        sb.Append("$").Append(method.FullName.Qualifier.ToString());
+        sb.Append("$").Append(method.FullName.FullyUnqualifiedName.ToString());
 
         foreach (var param in method.Parameters)
         {
