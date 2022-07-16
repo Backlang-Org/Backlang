@@ -114,9 +114,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         if (methodName == null) methodName = GetMethodName(function);
 
+        var returnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), returnType);
 
         Utils.SetAccessModifier(function, method);
 

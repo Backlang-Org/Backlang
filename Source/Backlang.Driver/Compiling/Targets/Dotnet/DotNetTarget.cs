@@ -21,6 +21,10 @@ public class DotNetTarget : ICompilationTarget
         runtimeConfigStream.Close();
     }
 
+    public void BeforeCompiling(CompilerContext context)
+    {
+    }
+
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
         return new DotNetAssembly(contents);
