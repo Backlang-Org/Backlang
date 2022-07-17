@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -100,6 +100,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
 
                 block.Flow = UnreachableFlow.Instance;
+            }
+            else if (node.Calls((Symbol)"'::")) //static call
+            {
+                var callee = node.Args[1];
+                var typename = Utils.GetQualifiedName(node.Args[0]);
+
+                var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
+
+                AppendCall(context, block, callee, type.Methods, callee.Name.Name);
             }
         }
 
