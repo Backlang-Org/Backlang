@@ -8,7 +8,7 @@ public sealed class ReportErrorStage : IHandler<CompilerContext, CompilerContext
     {
         foreach (var msg in context.Messages)
         {
-            Console.WriteLine(msg.ToString());
+            Console.WriteLine($"[{msg.Severity}]: {msg}");
         }
 
         Environment.Exit(1337);

@@ -65,11 +65,27 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
             var errors = (MessageHolder)_macroProcessor.Sink;
             if (errors.List.Count > 0)
             {
-                context.Messages.AddRange(errors.List
-                    .Select(_ => Message.Error(tree.Document, _.Formatted, 0, 0)));
+                foreach (var error in errors.List)
+                {
+                    var msg = Message.Error(tree.Document, error.Formatted, 0, 0);
+                    msg.Severity = ConvertSeverity(error.Severity);
+
+                    context.Messages.Add(msg);
+                }
             }
         }
 
         return await next.Invoke(context);
+    }
+
+    private MessageSeverity ConvertSeverity(Severity severity)
+    {
+        return severity switch
+        {
+            Severity.Info => MessageSeverity.Info,
+            Severity.Warning => MessageSeverity.Warning,
+            Severity.Error => MessageSeverity.Error,
+            _ => MessageSeverity.Error,
+        };
     }
 }

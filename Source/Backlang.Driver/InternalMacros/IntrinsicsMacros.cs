@@ -20,8 +20,15 @@ public static class IntrinsicsMacros
 
         var compContext = (CompilerContext)context.ScopedProperties["Context"];
 
-        if (target != selectedTarget || !compContext.CompilationTarget.HasIntrinsics)
+        if (target != selectedTarget)
         {
+            return LNode.Call((Symbol)"'{}");
+        }
+
+        if (!compContext.CompilationTarget.HasIntrinsics)
+        {
+            context.Warn($"{selectedTarget} has no intrinsics");
+
             return LNode.Call((Symbol)"'{}");
         }
 
