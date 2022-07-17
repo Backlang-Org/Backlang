@@ -1,7 +1,11 @@
+type Shape = 
+			| Rectangle(Width : i32, Height : i32)
+			| Circle(Radius : i32);
 
 public static func main() -> i32 {
 	let val : i32 = 42;
 	let arith : i32 = 1 + 2 * 3;
 
-	return 1+2;
+	return arith;
 }
+

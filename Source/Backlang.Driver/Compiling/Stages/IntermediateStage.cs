@@ -5,7 +5,6 @@ using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
@@ -206,6 +205,12 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 var block = graph.EntryPoint;
 
                 block.Flow = new ReturnFlow();
+
+                foreach (var p in constructor.Parameters)
+                {
+                    block.AppendInstruction(Instruction.CreateLoadArg(p));
+                    //ToDo: Store Argument In Field
+                }
 
                 constructor.Body = new MethodBody(new Parameter(), new Parameter(), EmptyArray<Parameter>.Value, graph.ToImmutable());
 
