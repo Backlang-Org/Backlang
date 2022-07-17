@@ -94,6 +94,8 @@ public static class SyntacticMacros
     [LexicalMacro("^hat", "Gets a handle for the variable", "'^", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode HandleOperator(LNode @operator, IMacroContext context)
     {
+        if (@operator.Args.Count != 1) return @operator;
+
         if (!@operator.Args[0].IsId) context.Error("Expected Identifier for HandleOperator");
 
         return LNode.Call(
