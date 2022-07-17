@@ -28,7 +28,11 @@ public class Emitter
             Emit("copy sp, R0", "save current stack pointer into R0 (this is the new stack frame base pointer)");
         }
 
+        Emit("");
+
         EmitMethodBody(method, method.Body);
+
+        Emit("");
 
         if (method == _mainMethod)
         {
@@ -95,15 +99,18 @@ public class Emitter
     {
         if (consProto.Value is IntegerConstant ic)
         {
-            Emit($"copy {ic.ToInt32()}, R1", "put immediate into register");
-            Emit("push R1", "push immediate onto stack");
+            Emit("//push immeditate onto stack");
+            Emit($"copy {ic.ToInt32()}, R1");
+            Emit("push R1");
+
+            Emit("");
         }
     }
 
     private void EmitBinary(IntrinsicPrototype arith)
     {
-        Emit("pop R2", $"(store rhs for {arith.Name}-operator in R1)");
-        Emit("pop R1", $"(store lhs for {arith.Name}-operator in R1)");
+        Emit("pop R2", $"store rhs for {arith.Name}-operator in R1");
+        Emit("pop R1", $"store lhs for {arith.Name}-operator in R1");
 
         switch (arith.Name)
         {
@@ -116,6 +123,8 @@ public class Emitter
         }
 
         Emit("push R3", "push result onto stack");
+
+        Emit("");
     }
 
     private void EmitImmediate(Constant value)
