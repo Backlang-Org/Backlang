@@ -4,8 +4,11 @@ type Shape =
 
 public static func main() -> i32 {
 	let val : i32 = 42;
+	let val2 : i32 = val;
 	let arith : i32 = 1 + 2 * 3;
 
-	return arith;
+	print(12);
+
+	return 0;
 }
 

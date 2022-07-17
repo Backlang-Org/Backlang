@@ -46,6 +46,10 @@ public static class MethodBodyCompiler
             {
                 EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
             }
+            else if (instruction.Prototype is LoadLocalPrototype lloc)
+            {
+                EmitLoadLocal(clrMethod, ilProcessor, parentType, lloc, variables);
+            }
             else if (instruction.Prototype is GetFieldPointerPrototype fp)
             {
                 EmitLoadField(parentType, ilProcessor, fp);
@@ -80,6 +84,12 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
+    }
+
+    private static void EmitLoadLocal(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeDefinition parentType, LoadLocalPrototype lloc, List<(string name, VariableDefinition definition)> variables)
+    {
+        var defTuple = variables.Find(_ => _.name == lloc.Parameter.Name.ToString());
+        ilProcessor.Emit(OpCodes.Ldloc, defTuple.definition);
     }
 
     private static void EmitStoreField(TypeDefinition parentType, ILProcessor ilProcessor, StoreFieldPointerPrototype fp)

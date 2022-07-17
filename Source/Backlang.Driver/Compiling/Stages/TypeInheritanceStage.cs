@@ -474,7 +474,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (!par.Any())
             {
-                //ToDo:check for locals
+                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
+                if(!localPrms.Any())
+                {
+                    // throw error because couldn't find variable
+                } else
+                {
+                    block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                }
             }
             else
             {
