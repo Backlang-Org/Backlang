@@ -76,6 +76,7 @@ public class Emitter
             {
                 //ToDo: Check if call is intrinsic and transform to assembly
 
+                Emit($"// Calling '{callPrototype.Callee.FullName}'");
                 EmitCall(instruction, body.Implementation);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
