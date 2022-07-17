@@ -10,10 +10,10 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static List<(string name, VariableDefinition definition)> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
+    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
-        var variables = new List<(string name, VariableDefinition definition)>();
+        var variables = new Dictionary<string, VariableDefinition>();
 
         foreach (var item in m.Body.Implementation.NamedInstructions)
         {
@@ -36,7 +36,7 @@ public static class MethodBodyCompiler
             {
                 var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
-                variables.Add(variable);
+                variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
             }
             else if (instruction.Prototype is IntrinsicPrototype arith)
             {
@@ -86,10 +86,10 @@ public static class MethodBodyCompiler
         return variables;
     }
 
-    private static void EmitLoadLocal(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeDefinition parentType, LoadLocalPrototype lloc, List<(string name, VariableDefinition definition)> variables)
+    private static void EmitLoadLocal(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeDefinition parentType, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
     {
-        var defTuple = variables.Find(_ => _.name == lloc.Parameter.Name.ToString());
-        ilProcessor.Emit(OpCodes.Ldloc, defTuple.definition);
+        var definition = variables[lloc.Parameter.Name.ToString()];
+        ilProcessor.Emit(OpCodes.Ldloc, definition);
     }
 
     private static void EmitStoreField(TypeDefinition parentType, ILProcessor ilProcessor, StoreFieldPointerPrototype fp)
@@ -254,7 +254,7 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static (string name, VariableDefinition definition) EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 
@@ -271,7 +271,7 @@ public static class MethodBodyCompiler
             clrMethod.Body.InitLocals = true;
         }
 
-        return (item.Block.Parameters[0].Tag.Name, variable);
+        return variable;
     }
 
     private static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)

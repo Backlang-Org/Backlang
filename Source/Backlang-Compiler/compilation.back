@@ -9,6 +9,6 @@ public static func main() -> i32 {
 
 	print(12);
 
-	return 0;
+	return arith;
 }
 
