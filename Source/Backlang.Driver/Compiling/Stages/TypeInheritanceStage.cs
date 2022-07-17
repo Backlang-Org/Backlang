@@ -44,7 +44,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["none"] = "Void",
     }.ToImmutableDictionary();
 
-    public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType, QualifiedName? modulename)
+    public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method, IType parentType, QualifiedName? modulename)
     {
         var graph = new FlowGraphBuilder();
         // Use a permissive exception delayability model to make the optimizer's
@@ -62,7 +62,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                AppendVariableDeclaration(context, block, node, modulename);
+                AppendVariableDeclaration(context, method, block, node, modulename);
             }
             else if (node.Name == (Symbol)"print")
             {
@@ -74,7 +74,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 {
                     var valueNode = node.Args[0];
 
-                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32); //ToDo: Deduce Type
+                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
 
                     block.Flow = new ReturnFlow();
                 }
@@ -156,7 +156,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         MethodBody body = null;
         if (hasBody)
         {
-            body = CompileBody(function, context, type, modulename);
+            body = CompileBody(function, context, method, type, modulename);
         }
 
         /*
@@ -428,7 +428,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return matches;
     }
 
-    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static void AppendVariableDeclaration(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var decl = node.Args[1];
 
@@ -447,14 +447,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
 
-        AppendExpression(block, decl.Args[1], elementType);
+        AppendExpression(block, decl.Args[1], elementType, method);
 
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
     }
 
-    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType)
+    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType, IMethod method)
     {
-        if (node.Args[0].HasValue)
+        if (node.ArgCount == 1 && node.Args[0].HasValue)
         {
             var constant = ConvertConstant(elementType, node.Args[0].Value);
             var value = block.AppendInstruction(constant);
@@ -463,10 +463,23 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
         else if (node.ArgCount == 2)
         {
-            var lhs = AppendExpression(block, node.Args[0], elementType);
-            var rhs = AppendExpression(block, node.Args[1], elementType);
+            var lhs = AppendExpression(block, node.Args[0], elementType, method);
+            var rhs = AppendExpression(block, node.Args[1], elementType, method);
 
             return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        }
+        else if (node.IsId)
+        {
+            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
+
+            if (!par.Any())
+            {
+                //ToDo:check for locals
+            }
+            else
+            {
+                block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+            }
         }
 
         return null;

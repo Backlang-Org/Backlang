@@ -42,6 +42,12 @@ public static class MethodBodyCompiler
             {
                 EmitArithmetik(ilProcessor, arith);
             }
+            else if (instruction.Prototype is LoadArgPrototype larg)
+            {
+                var param = clrMethod.Parameters.FirstOrDefault(_ => _.Name == larg.Parameter.Name.ToString());
+
+                ilProcessor.Emit(OpCodes.Ldarg, param);
+            }
         }
 
         if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
