@@ -153,13 +153,17 @@ public class Emitter
         Emit("add sp, 4, sp", "reserve stack space for the return address placeholder");
 
         Emit("push R0", "store current stack frame base pointer for later");
-        Emit("copy sp, R0");
+        Emit("copy sp, R7", "this will be the new stack frame base pointer");
 
+        Emit("", "evaluate arguments in current stack frame");
         /*
         for (const auto&argument : expression.arguments) {
             argument->accept(*this);
         }
         */
+
+        Emit("copy R7, R0", "set the new stack frame base pointer");
+        Emit("");
 
         Emit("add ip, 24, R1", "calculate return address");
         Emit("copy R1, *R6", "fill return address placeholder");
