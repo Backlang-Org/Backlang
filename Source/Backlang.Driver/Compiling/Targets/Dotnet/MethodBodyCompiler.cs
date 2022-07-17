@@ -10,10 +10,10 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static List<(string name, VariableDefinition definition)> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition)
+    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
-        var variables = new List<(string name, VariableDefinition definition)>();
+        var variables = new Dictionary<string, VariableDefinition>();
 
         foreach (var item in m.Body.Implementation.NamedInstructions)
         {
@@ -29,15 +29,34 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadPrototype ld)
             {
-                var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
-
-                EmitConstant(ilProcessor, consProto);
+                var valueInstruction = m.Body.Implementation.GetInstruction(instruction.Arguments[0]);
+                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
                 var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
-                variables.Add(variable);
+                variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
+            }
+            else if (instruction.Prototype is IntrinsicPrototype arith)
+            {
+                EmitArithmetik(ilProcessor, arith);
+            }
+            else if (instruction.Prototype is LoadArgPrototype larg)
+            {
+                EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
+            }
+            else if (instruction.Prototype is LoadLocalPrototype lloc)
+            {
+                EmitLoadLocal(clrMethod, ilProcessor, parentType, lloc, variables);
+            }
+            else if (instruction.Prototype is GetFieldPointerPrototype fp)
+            {
+                EmitLoadField(parentType, ilProcessor, fp);
+            }
+            else if (instruction.Prototype is StoreFieldPointerPrototype sp)
+            {
+                EmitStoreField(parentType, ilProcessor, sp);
             }
         }
 
@@ -65,6 +84,63 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
+    }
+
+    private static void EmitLoadLocal(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeDefinition parentType, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
+    {
+        var definition = variables[lloc.Parameter.Name.ToString()];
+        ilProcessor.Emit(OpCodes.Ldloc, definition);
+    }
+
+    private static void EmitStoreField(TypeDefinition parentType, ILProcessor ilProcessor, StoreFieldPointerPrototype fp)
+    {
+        var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
+
+        ilProcessor.Emit(OpCodes.Stfld, field);
+    }
+
+    private static void EmitLoadField(TypeDefinition parentType, ILProcessor ilProcessor, GetFieldPointerPrototype fp)
+    {
+        var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
+
+        ilProcessor.Emit(OpCodes.Ldfld, field);
+    }
+
+    private static void EmitLoadArg(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeReference parentType, LoadArgPrototype larg)
+    {
+        var param = clrMethod.Parameters.FirstOrDefault(_ => _.Name == larg.Parameter.Name.ToString());
+
+        if (param != null)
+        {
+            var index = clrMethod.Parameters.IndexOf(param);
+            ilProcessor.Emit(OpCodes.Ldarg, index + 1);
+        }
+        else
+        {
+            var thisPtr = larg.Parameter.Type.Name.ToString() == parentType.Name.ToString(); //ToDo: fix namespacing
+
+            if (thisPtr)
+            {
+                ilProcessor.Emit(OpCodes.Ldarg_0);
+            }
+        }
+    }
+
+    private static void EmitArithmetik(ILProcessor ilProcessor, IntrinsicPrototype arith)
+    {
+        switch (arith.Name)
+        {
+            case "arith.+":
+                ilProcessor.Emit(OpCodes.Add); break;
+            case "arith.-":
+                ilProcessor.Emit(OpCodes.Sub); break;
+            case "arith.*":
+                ilProcessor.Emit(OpCodes.Mul); break;
+            case "arith./":
+                ilProcessor.Emit(OpCodes.Div); break;
+            case "arith.%":
+                ilProcessor.Emit(OpCodes.Rem); break;
+        }
     }
 
     private static void EmitNewObject(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NewObjectPrototype newObjectPrototype)
@@ -178,7 +254,7 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static (string name, VariableDefinition definition) EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 
@@ -186,17 +262,16 @@ public static class MethodBodyCompiler
             new VariableDefinition(assemblyDefinition.MainModule.ImportReference(elementType));
         clrMethod.Body.Variables.Add(variable);
 
-        var store = item.NextInstructionOrNull?.Prototype;
+        var store = item.Instruction.Prototype;
 
-        if (store is ConstantPrototype sp)
+        if (store is AllocaPrototype sp)
         {
-            EmitConstant(ilProcessor, sp);
             ilProcessor.Emit(OpCodes.Stloc, variable);
 
             clrMethod.Body.InitLocals = true;
         }
 
-        return (item.Block.Parameters[0].Tag.Name, variable); //ToDo: Fix correct variable name
+        return variable;
     }
 
     private static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)
@@ -230,6 +305,8 @@ public static class MethodBodyCompiler
                 matches = (matches || i == 0) && parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString();
             }
         }
+
+        matches = matches || method.Parameters.Count == parameters.Count;
 
         return matches;
     }

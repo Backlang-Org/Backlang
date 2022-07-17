@@ -44,7 +44,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["none"] = "Void",
     }.ToImmutableDictionary();
 
-    public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType, QualifiedName? modulename)
+    public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method, IType parentType, QualifiedName? modulename)
     {
         var graph = new FlowGraphBuilder();
         // Use a permissive exception delayability model to make the optimizer's
@@ -62,7 +62,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
             if (node.Name == CodeSymbols.Var)
             {
-                AppendVariableDeclaration(context, block, node, modulename);
+                AppendVariableDeclaration(context, method, block, node, modulename);
             }
             else if (node.Name == (Symbol)"print")
             {
@@ -72,10 +72,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 if (node.ArgCount == 1)
                 {
-                    var valueNode = node.Args[0].Args[0];
-                    var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
+                    var valueNode = node.Args[0];
 
-                    block.Flow = new ReturnFlow(rt);
+                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
+
+                    block.Flow = new ReturnFlow();
                 }
                 else
                 {
@@ -157,7 +158,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         MethodBody body = null;
         if (hasBody)
         {
-            body = CompileBody(function, context, type, modulename);
+            body = CompileBody(function, context, method, type, modulename);
         }
 
         /*
@@ -429,7 +430,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return matches;
     }
 
-    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static void AppendVariableDeclaration(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var decl = node.Args[1];
 
@@ -446,20 +447,48 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
-        var instruction = Instruction.CreateAlloca(elementType);
-        var local = block.AppendInstruction(instruction);
-
         block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
 
-        if (decl.Args[1].Args[0].HasValue)
+        AppendExpression(block, decl.Args[1], elementType, method);
+
+        block.AppendInstruction(Instruction.CreateAlloca(elementType));
+    }
+
+    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType, IMethod method)
+    {
+        if (node.ArgCount == 1 && node.Args[0].HasValue)
         {
-            block.AppendInstruction(
-               Instruction.CreateStore(
-                   elementType,
-                   local,
-                   block.AppendInstruction(
-                       ConvertConstant(elementType, decl.Args[1].Args[0].Value))));
+            var constant = ConvertConstant(elementType, node.Args[0].Value);
+            var value = block.AppendInstruction(constant);
+
+            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
         }
+        else if (node.ArgCount == 2)
+        {
+            var lhs = AppendExpression(block, node.Args[0], elementType, method);
+            var rhs = AppendExpression(block, node.Args[1], elementType, method);
+
+            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        }
+        else if (node.IsId)
+        {
+            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
+
+            if (!par.Any())
+            {
+                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
+                if(localPrms.Any())
+                {
+                    block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                }
+            }
+            else
+            {
+                block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+            }
+        }
+
+        return null;
     }
 
     private static Instruction ConvertConstant(IType elementType, object value)

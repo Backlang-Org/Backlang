@@ -1,20 +1,22 @@
 ﻿using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
 public sealed class Modifier
 {
-    private static Dictionary<TokenType, Symbol> possibleModifiers = new() {
+    private static ImmutableDictionary<TokenType, Symbol> possibleModifiers = new Dictionary<TokenType, Symbol>() {
         { TokenType.Static, CodeSymbols.Static },
         { TokenType.Public, CodeSymbols.Public },
         { TokenType.Protected, CodeSymbols.Protected },
         { TokenType.Private, CodeSymbols.Private },
+        { TokenType.Internal, CodeSymbols.Internal },
         { TokenType.Operator, CodeSymbols.Operator },
         { TokenType.Abstract, CodeSymbols.Abstract },
         { TokenType.Override, CodeSymbols.Override },
         { TokenType.Extern, CodeSymbols.Extern },
-    };
+    }.ToImmutableDictionary();
 
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

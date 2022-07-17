@@ -314,6 +314,9 @@ public enum TokenType
     [Keyword("public")]
     Public,
 
+    [Keyword("internal")]
+    Internal,
+
     [Keyword("protected")]
     Protected,
 
