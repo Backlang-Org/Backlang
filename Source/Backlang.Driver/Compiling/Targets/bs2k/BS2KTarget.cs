@@ -49,7 +49,7 @@ public class BS2KTarget : ICompilationTarget
                 LNode.Id((Symbol)"Targets"))).SetStyle(NodeStyle.Operator),
                 LNode.Id((Symbol)"bs2k"))).SetStyle(NodeStyle.Operator),
                 LNode.Id((Symbol)"Intrinsics"))).SetStyle(NodeStyle.Operator),
-            call)).SetStyle(NodeStyle.Operator)).SetStyle(NodeStyle.Operator);
+            call)).SetStyle(NodeStyle.Operator)).Target;
     }
 
     public TypeEnvironment Init(TypeResolver binder)
