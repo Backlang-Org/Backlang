@@ -10,7 +10,7 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static List<(string name, VariableDefinition definition)> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition)
+    public static List<(string name, VariableDefinition definition)> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
         var variables = new List<(string name, VariableDefinition definition)>();
@@ -44,9 +44,15 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadArgPrototype larg)
             {
-                var param = clrMethod.Parameters.FirstOrDefault(_ => _.Name == larg.Parameter.Name.ToString());
-
-                ilProcessor.Emit(OpCodes.Ldarg, param);
+                EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
+            }
+            else if (instruction.Prototype is GetFieldPointerPrototype fp)
+            {
+                EmitLoadField(parentType, ilProcessor, fp);
+            }
+            else if (instruction.Prototype is StoreFieldPointerPrototype sp)
+            {
+                EmitStoreField(parentType, ilProcessor, sp);
             }
         }
 
@@ -74,6 +80,40 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
+    }
+
+    private static void EmitStoreField(TypeDefinition parentType, ILProcessor ilProcessor, StoreFieldPointerPrototype fp)
+    {
+        var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
+
+        ilProcessor.Emit(OpCodes.Stfld, field);
+    }
+
+    private static void EmitLoadField(TypeDefinition parentType, ILProcessor ilProcessor, GetFieldPointerPrototype fp)
+    {
+        var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
+
+        ilProcessor.Emit(OpCodes.Ldfld, field);
+    }
+
+    private static void EmitLoadArg(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeReference parentType, LoadArgPrototype larg)
+    {
+        var param = clrMethod.Parameters.FirstOrDefault(_ => _.Name == larg.Parameter.Name.ToString());
+
+        if (param != null)
+        {
+            var index = clrMethod.Parameters.IndexOf(param);
+            ilProcessor.Emit(OpCodes.Ldarg, index + 1);
+        }
+        else
+        {
+            var thisPtr = larg.Parameter.Type.Name.ToString() == parentType.Name.ToString(); //ToDo: fix namespacing
+
+            if (thisPtr)
+            {
+                ilProcessor.Emit(OpCodes.Ldarg_0);
+            }
+        }
     }
 
     private static void EmitArithmetik(ILProcessor ilProcessor, IntrinsicPrototype arith)
@@ -255,6 +295,8 @@ public static class MethodBodyCompiler
                 matches = (matches || i == 0) && parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString();
             }
         }
+
+        matches = matches || method.Parameters.Count == parameters.Count;
 
         return matches;
     }

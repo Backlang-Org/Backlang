@@ -254,6 +254,10 @@ public class DotNetAssembly : ITargetAssembly
             {
                 clrMethod.IsRuntimeSpecialName = true;
                 clrMethod.IsSpecialName = true;
+                clrMethod.IsHideBySig = true;
+
+                clrMethod.HasThis = true;
+
                 clrMethod.Name = ".ctor";
             }
             else if (m.IsDestructor)
@@ -267,9 +271,8 @@ public class DotNetAssembly : ITargetAssembly
 
             if (m.Body != null)
             {
-                clrMethod.HasThis = false;
-
-                var variables = MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+                var variables =
+                    MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition, clrType);
                 clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
 
                 foreach (var variable in variables)
