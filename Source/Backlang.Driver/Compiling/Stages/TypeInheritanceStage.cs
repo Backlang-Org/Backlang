@@ -56,7 +56,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in function.Args[3].Args)
+        foreach (var node in UnpackBlocks(function.Args[3].Args)) //Todo: Unpack only for now, later compile blocks
         {
             if (!node.IsCall) continue;
 
@@ -354,6 +354,26 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return await next.Invoke(context);
     }
 
+    private static IEnumerable<LNode> UnpackBlocks(LNodeList args)
+    {
+        var result = new List<LNode>();
+
+        foreach (var node in args)
+        {
+            if (node.Calls(Symbols.Block) && node.ArgCount == 0) continue;
+
+            if (node.Calls(Symbols.Block))
+            {
+                result.AddRange(UnpackBlocks(node.Args));
+                continue;
+            }
+
+            result.Add(node);
+        }
+
+        return result;
+    }
+
     private static QualifiedName AppendAttributeToName(QualifiedName fullname)
     {
         var qualifier = fullname.Slice(0, fullname.PathLength - 1);
@@ -477,7 +497,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             if (!par.Any())
             {
                 var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
-                if(localPrms.Any())
+                if (localPrms.Any())
                 {
                     block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
                 }
