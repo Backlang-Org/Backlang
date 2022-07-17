@@ -1,4 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 using Loyc;
@@ -34,8 +34,10 @@ public class BS2KTarget : ICompilationTarget
 
     public LNode ConvertIntrinsic(LNode call)
     {
+        //ToDo: make namespace calls simpler with helper method qualifiyng from namespace string
+
         return LNode.Call(
-                LNode.Call((Symbol)"'::",
+                LNode.Call(LNode.Id("'::"),
                 LNode.List(LNode.Call(CodeSymbols.Dot,
                 LNode.List(LNode.Call(CodeSymbols.Dot,
                 LNode.List(LNode.Call(CodeSymbols.Dot,

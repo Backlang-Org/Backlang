@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -66,7 +66,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (node.Name == (Symbol)"print")
             {
-                AppendPrint(context, block, node);
+                AppendCall(context, block, node, context.writeMethods, "Write");
             }
             else if (node.Calls(CodeSymbols.Return))
             {
@@ -397,7 +397,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
+    private static void AppendCall(CompilerContext context, BasicBlockBuilder block,
+        LNode node, IEnumerable<IMethod> methods, string methodName = null)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
@@ -415,17 +416,24 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             callTags.Add(constant);
         }
 
-        var method = GetMatchingPrintMethod(context, argTypes);
+        if (methodName == null)
+        {
+            methodName = node.Name.Name;
+        }
+
+        var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
         var call = Instruction.CreateCall(method, MethodLookup.Static, callTags);
 
         block.AppendInstruction(call);
     }
 
-    private static IMethod GetMatchingPrintMethod(CompilerContext context, List<IType> argTypes)
+    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
     {
-        foreach (var m in context.writeMethods)
+        foreach (var m in methods)
         {
+            if (m.Name.ToString() != methodname) continue;
+
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
