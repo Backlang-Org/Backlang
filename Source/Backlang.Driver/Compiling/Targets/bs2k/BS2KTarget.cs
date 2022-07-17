@@ -11,13 +11,22 @@ public class BS2KTarget : ICompilationTarget
     {
     }
 
+    public void BeforeCompiling(CompilerContext context)
+    {
+        context.OutputFilename += ".bsm";
+    }
+
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
-        throw new NotImplementedException();
+        return new Bs2kAssembly(contents);
     }
 
     public TypeEnvironment Init(TypeResolver binder)
     {
-        throw null;
+        var te = new Bs2KTypeEnvironment();
+
+        binder.AddAssembly(te.Assembly);
+
+        return te;
     }
 }
