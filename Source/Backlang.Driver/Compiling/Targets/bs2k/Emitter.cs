@@ -118,6 +118,7 @@ public class Emitter
             case "arith.*": Emit("mult R1, R2, R3, R4", "multiply values"); break;
             case "arith.|": Emit("or R1, R2, R3"); break;
             case "arith.&": Emit("and R1, R2, R3"); break;
+            case "arith.^": Emit("xor R1, R2, R3"); break;
             default:
                 break;
         }
