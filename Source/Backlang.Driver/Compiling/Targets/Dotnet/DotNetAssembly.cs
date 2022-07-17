@@ -277,7 +277,7 @@ public class DotNetAssembly : ITargetAssembly
 
                 foreach (var variable in variables)
                 {
-                    clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.definition, variable.name));
+                    clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
                 }
             }
 
