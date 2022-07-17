@@ -1,5 +1,6 @@
 
 public static func main() {
 	let k : i32 = 42;
-	let l : i32 = 2;
+	let l : i32 = 2 + 3;
+	let m = 1 | 2;
 }

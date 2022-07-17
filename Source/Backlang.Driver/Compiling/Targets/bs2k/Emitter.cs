@@ -64,35 +64,6 @@ public class Emitter
     {
         var firstBlock = body.Implementation.NamedInstructions.First().Block;
 
-        for (int i = 0; i < firstBlock.Parameters.Count; i++)
-        {
-            var varname = firstBlock.Parameters[i].Tag.Name;
-
-            //ToDo: Variables must be rewritten
-            var namedInstructions = body.Implementation.NamedInstructions.ToArray();
-            for (var i1 = 0; i1 < namedInstructions.Length; i1++)
-            {
-                var item = namedInstructions[i1];
-                var instruction = item.Instruction;
-
-                if (instruction.Prototype is AllocaPrototype allocA)
-                {
-                    for (int j = 0; j < i; j++)
-                    {
-                        if (instruction.Prototype is not ConstantPrototype)
-                        {
-                            instruction = item.NextInstructionOrNull.Instruction;
-                        }
-                    }
-
-                    if (instruction.Prototype is ConstantPrototype constantPrototype)
-                    {
-                        EmitImmediate(constantPrototype.Value);
-                    }
-                }
-            }
-        }
-
         foreach (var item in body.Implementation.NamedInstructions)
         {
             var instruction = item.Instruction;
@@ -105,17 +76,46 @@ public class Emitter
             {
                 //EmitNewObject(newObjectPrototype);
             }
-            else if (instruction.Prototype is LoadPrototype ld)
+            else if (instruction.Prototype is ConstantPrototype consProto)
             {
-                var consProto = (ConstantPrototype)item.PreviousInstructionOrNull.Prototype;
-
-                //EmitConstant(consProto);
+                EmitConstant(consProto);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
                 EmitVariableDeclaration(item, allocA);
             }
+            else if (instruction.Prototype is IntrinsicPrototype arith)
+            {
+                EmitBinary(arith);
+            }
         }
+    }
+
+    private void EmitConstant(ConstantPrototype consProto)
+    {
+        if (consProto.Value is IntegerConstant ic)
+        {
+            Emit($"copy {ic.ToInt32()}, R1", "put immediate into register");
+            Emit("push R1", "push immediate onto stack");
+        }
+    }
+
+    private void EmitBinary(IntrinsicPrototype arith)
+    {
+        Emit("pop R2", $"(store rhs for {arith.Name}-operator in R1)");
+        Emit("pop R1", $"(store lhs for {arith.Name}-operator in R1)");
+
+        switch (arith.Name)
+        {
+            case "arith.+": Emit("add R1, R2, R3", "push result onto stack"); break;
+            case "arith.*": Emit("mult R1, R2, R3, R4", "multiply values"); break;
+            case "arith.or": Emit("or R1, R2, R3"); break;
+            case "arith.and": Emit("and R1, R2, R3"); break;
+            default:
+                break;
+        }
+
+        Emit("push R3", "push result onto stack");
     }
 
     private void EmitImmediate(Constant value)
@@ -131,6 +131,7 @@ public class Emitter
     {
     }
 
+    //ToDo: Fix with new source from coder
     private void EmitCall(Instruction instruction, FlowGraph implementation)
     {
         var prototype = (CallPrototype)instruction.Prototype;

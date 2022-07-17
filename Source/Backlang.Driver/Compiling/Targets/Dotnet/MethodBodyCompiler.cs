@@ -40,7 +40,7 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is IntrinsicPrototype arith)
             {
-                EmitArithmetik(ilProcessor, arith);
+                EmitArithmetic(ilProcessor, arith);
             }
             else if (instruction.Prototype is LoadArgPrototype larg)
             {
@@ -126,7 +126,7 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static void EmitArithmetik(ILProcessor ilProcessor, IntrinsicPrototype arith)
+    private static void EmitArithmetic(ILProcessor ilProcessor, IntrinsicPrototype arith)
     {
         switch (arith.Name)
         {
