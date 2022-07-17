@@ -12,4 +12,8 @@ public static func main() {
 		copy(1, 2);
 		push("R1");
 	}
+
+	inline {
+	    some();
+	}
 }

@@ -20,6 +20,11 @@ public static class IntrinsicsMacros
 
         var compContext = (CompilerContext)context.ScopedProperties["Context"];
 
+        if (selectedTarget == LNode.Missing.Name.Name)
+        {
+            context.Warn("No target speficied for inline block. Code will never be executed");
+        }
+
         if (target != selectedTarget)
         {
             return LNode.Call((Symbol)"'{}");
