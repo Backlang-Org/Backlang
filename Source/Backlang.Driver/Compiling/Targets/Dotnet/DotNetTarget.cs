@@ -1,6 +1,8 @@
 ﻿using Backlang.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
+using LeMP;
+using Loyc.Syntax;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 
@@ -9,6 +11,10 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 public class DotNetTarget : ICompilationTarget
 {
     public string Name => "dotnet";
+
+    public bool HasIntrinsics => false;
+
+    public Type IntrinsicType => throw new NotImplementedException();
 
     public void AfterCompiling(CompilerContext context)
     {
@@ -25,9 +31,18 @@ public class DotNetTarget : ICompilationTarget
     {
     }
 
+    public void BeforeExpandMacros(MacroProcessor processor)
+    {
+    }
+
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
         return new DotNetAssembly(contents);
+    }
+
+    public LNode ConvertIntrinsic(LNode calls)
+    {
+        throw new NotImplementedException();
     }
 
     public TypeEnvironment Init(TypeResolver binder)

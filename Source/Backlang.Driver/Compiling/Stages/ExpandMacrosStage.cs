@@ -14,6 +14,8 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 {
     private MacroProcessor _macroProcessor;
 
+    private bool hasBeforeExpandMacrosCalled;
+
     public ExpandMacrosStage()
     {
         _macroProcessor = new MacroProcessor(new MessageHolder(), typeof(LeMP.Prelude.BuiltinMacros));
@@ -27,6 +29,12 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
+        if (!hasBeforeExpandMacrosCalled)
+        {
+            context.CompilationTarget.BeforeExpandMacros(_macroProcessor); //Only calls once
+            hasBeforeExpandMacrosCalled = true;
+        }
+
         if (context.MacroReferences != null)
         {
             var loadContext = new AssemblyLoadContext("Macros");
@@ -48,6 +56,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
         }
 
         _macroProcessor.DefaultScopedProperties.Add("Target", context.Target);
+        _macroProcessor.DefaultScopedProperties.Add("Context", context);
 
         foreach (var tree in context.Trees)
         {

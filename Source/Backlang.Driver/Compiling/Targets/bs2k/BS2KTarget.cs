@@ -1,11 +1,18 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
+using LeMP;
+using Loyc;
+using Loyc.Syntax;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
 
 public class BS2KTarget : ICompilationTarget
 {
     public string Name => "bs2k";
+
+    public bool HasIntrinsics => true;
+
+    public Type IntrinsicType => typeof(Intrinsics);
 
     public void AfterCompiling(CompilerContext context)
     {
@@ -16,9 +23,31 @@ public class BS2KTarget : ICompilationTarget
         context.OutputFilename += ".bsm";
     }
 
+    public void BeforeExpandMacros(MacroProcessor processor)
+    {
+    }
+
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
         return new Bs2kAssembly(contents);
+    }
+
+    public LNode ConvertIntrinsic(LNode call)
+    {
+        return LNode.Call(
+                LNode.Call((Symbol)"'::",
+                LNode.List(LNode.Call(CodeSymbols.Dot,
+                LNode.List(LNode.Call(CodeSymbols.Dot,
+                LNode.List(LNode.Call(CodeSymbols.Dot,
+                LNode.List(LNode.Call(CodeSymbols.Dot,
+                LNode.List(LNode.Call(CodeSymbols.Dot,
+                LNode.List(LNode.Id((Symbol)"Backlang"),
+                LNode.Id((Symbol)"Driver"))).SetStyle(NodeStyle.Operator),
+                LNode.Id((Symbol)"Compiling"))).SetStyle(NodeStyle.Operator),
+                LNode.Id((Symbol)"Targets"))).SetStyle(NodeStyle.Operator),
+                LNode.Id((Symbol)"bs2k"))).SetStyle(NodeStyle.Operator),
+                LNode.Id((Symbol)"Intrinsics"))).SetStyle(NodeStyle.Operator),
+            call)).SetStyle(NodeStyle.Operator)).SetStyle(NodeStyle.Operator);
     }
 
     public TypeEnvironment Init(TypeResolver binder)

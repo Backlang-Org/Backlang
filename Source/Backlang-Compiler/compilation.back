@@ -3,4 +3,13 @@ public static func main() {
 	let k : i32 = 42;
 	let l : i32 = 2 + 3;
 	let m : i32 = 1 ^ 2;
+
+	inline(dotnet) {
+		ldc_i(32);
+	}
+
+	inline(bs2k) {
+		copy(1, 2);
+		push("R1");
+	}
 }
