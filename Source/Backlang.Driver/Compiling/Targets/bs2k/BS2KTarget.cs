@@ -1,3 +1,5 @@
+﻿using Backlang.Driver.Compiling.Targets.Dotnet;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
@@ -56,8 +58,34 @@ public class BS2KTarget : ICompilationTarget
     {
         var te = new Bs2KTypeEnvironment();
 
-        binder.AddAssembly(te.Assembly);
+        //ToDo: Implement helper method for intrinsic types
+        AddIntrinsicType(binder, te, typeof(Intrinsics));
 
         return te;
+    }
+
+    private static void AddIntrinsicType(TypeResolver binder, Bs2KTypeEnvironment te, Type type)
+    {
+        var qualifier = ClrTypeEnvironmentBuilder.QualifyNamespace(type.Namespace);
+        var intrinsicAssembly = new DescribedAssembly(qualifier);
+
+        var instrinsicsType = new DescribedType(
+            new SimpleName(type.Name).Qualify(
+                qualifier), intrinsicAssembly)
+        {
+            IsStatic = true
+        };
+
+        binder.AddAssembly(te.Assembly);
+
+        var methods = type.GetMethods().Where(_ => _.IsStatic);
+
+        foreach (var method in methods)
+        {
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, binder, method, method.Name.ToLower());
+        }
+
+        intrinsicAssembly.AddType(instrinsicsType);
+        binder.AddAssembly(intrinsicAssembly);
     }
 }
