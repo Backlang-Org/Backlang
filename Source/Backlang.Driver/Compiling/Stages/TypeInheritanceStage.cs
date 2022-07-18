@@ -85,11 +85,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (node.Calls(CodeSymbols.Throw))
             {
-                var valueNode = node.Args[0].Args[0];
+                var valueNode = node.Args[0];
                 var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
+                    GetLiteralType(valueNode, context.Binder), valueNode.Args[0].Value));
 
-                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode, context.Binder), constant));
 
                 if (node.Args[0].Name.Name == "#string")
                 {
@@ -217,20 +217,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    public static IType GetLiteralType(object value, TypeResolver resolver)
+    public static IType GetLiteralType(LNode value, TypeResolver resolver)
     {
-        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        else if (value is char) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
-        else if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
-        else if (value is byte) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
-        else if (value is short) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
-        else if (value is ushort) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
-        else if (value is int) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
-        else if (value is uint) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
-        else if (value is long) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
-        else if (value is ulong) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
-        else if (value is float) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
-        else if (value is double) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
+        if (value.Calls(CodeSymbols.String)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        else if (value.Calls(CodeSymbols.Char)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
+        else if (value.Calls(CodeSymbols.Bool)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
+        else if (value.Calls(CodeSymbols.Int8)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
+        else if (value.Calls(CodeSymbols.Int16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
+        else if (value.Calls(CodeSymbols.UInt16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
+        else if (value.Calls(CodeSymbols.Int32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
+        else if (value.Calls(CodeSymbols.UInt32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+        else if (value.Calls(CodeSymbols.Int64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
+        else if (value.Calls(CodeSymbols.UInt64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
+        else if (value.Calls(Symbols.Float16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(Half));
+        else if (value.Calls(Symbols.Float32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
+        else if (value.Calls(Symbols.Float64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
         else if (value is IdNode id) { } //todo: symbol table
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
@@ -414,7 +415,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         foreach (var arg in node.Args)
         {
-            var type = GetLiteralType(arg.Args[0].Value, context.Binder);
+            var type = GetLiteralType(arg, context.Binder);
             argTypes.Add(type);
 
             var constant = block.AppendInstruction(
