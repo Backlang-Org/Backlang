@@ -65,19 +65,6 @@ public class Emitter
         _builder.AppendLine($"{instruction} // {comment}");
     }
 
-    //Todo: Fix intrinsic double emit constant
-    private void EmitConstant(ConstantPrototype consProto)
-    {
-        if (consProto.Value is IntegerConstant ic)
-        {
-            Emit("//push immeditate onto stack");
-            Emit($"copy {ic.ToInt32()}, R1");
-            Emit("push R1");
-
-            Emit("");
-        }
-    }
-
     private void EmitBinary(IntrinsicPrototype arith)
     {
         Emit("pop R2", $"store rhs for {arith.Name}-operator in R1");
@@ -99,12 +86,16 @@ public class Emitter
         Emit("");
     }
 
-    private void EmitImmediate(Constant value)
+    //Todo: Fix intrinsic double emit constant
+    private void EmitConstant(ConstantPrototype consProto)
     {
-        if (value is IntegerConstant icons)
+        if (consProto.Value is IntegerConstant ic)
         {
-            Emit($"copy {icons.ToInt64().ToString()}, R1", "// put immediate into register");
-            Emit("push R1", "// push immediate onto stack");
+            Emit("//push immeditate onto stack");
+            Emit($"copy {ic.ToInt32()}, R1");
+            Emit("push R1");
+
+            Emit("");
         }
     }
 
