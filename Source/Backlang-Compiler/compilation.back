@@ -9,9 +9,14 @@ public static func main() {
 	}
 
 	inline(bs2k) {
-		push("R1");
-		push(5);
+		copy("&0", 'A');
 	}
 
 	
+}
+
+public static func put_char() {
+	inline(bs2k) {
+		copy("&0", 'A');
+	}
 }

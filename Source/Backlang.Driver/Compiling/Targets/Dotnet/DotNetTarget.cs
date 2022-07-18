@@ -2,7 +2,6 @@
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
-using Loyc.Syntax;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 
@@ -38,11 +37,6 @@ public class DotNetTarget : ICompilationTarget
     public ITargetAssembly Compile(AssemblyContentDescription contents)
     {
         return new DotNetAssembly(contents);
-    }
-
-    public LNode ConvertIntrinsic(LNode calls)
-    {
-        throw new NotImplementedException();
     }
 
     public TypeEnvironment Init(TypeResolver binder)
