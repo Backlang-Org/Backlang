@@ -33,7 +33,27 @@ public class BS2KTarget : ICompilationTarget
 
     public LNode ConvertIntrinsic(LNode call)
     {
-        return "Backlang".dot("Driver").dot("Compiling").dot("Targets").dot("bs2k").dot("Intrinsics").coloncolon(call);
+        var ns = IntrinsicType.Namespace;
+        var nsSplitted = ns.Split('.');
+
+        LNode qualifiedName = LNode.Missing;
+        for (var i = 0; i < nsSplitted.Length; i++)
+        {
+            var n = nsSplitted[i];
+
+            if (qualifiedName == LNode.Missing)
+            {
+                qualifiedName = n.dot(nsSplitted[i + 1]);
+
+                i += 1;
+            }
+            else
+            {
+                qualifiedName = qualifiedName.dot(n);
+            }
+        }
+
+        return qualifiedName.dot(IntrinsicType.Name).coloncolon(call);
     }
 
     public TypeEnvironment Init(TypeResolver binder)
