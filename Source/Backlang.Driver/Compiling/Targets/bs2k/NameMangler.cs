@@ -9,7 +9,7 @@ public class NameMangler
     {
         var sb = new StringBuilder();
 
-        var ns = method.FullName.Qualifier.ToString().Replace(".", "%");
+        var ns = method.FullName.Slice(0, method.FullName.PathLength - 1).ToString().Replace(".", "%");
 
         sb.Append(ns).Append("$").Append(method.FullName.FullyUnqualifiedName.ToString());
 
