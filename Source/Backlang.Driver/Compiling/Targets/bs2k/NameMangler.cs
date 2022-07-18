@@ -12,7 +12,12 @@ public class NameMangler
 
         var ns = method.FullName.Slice(0, method.FullName.PathLength - 1).ToString().Replace(".", "%").ToLower();
 
-        sb.Append(ns).Append("$").Append(method.FullName.FullyUnqualifiedName.ToString());
+        if (ns != "%program")
+        {
+            sb.Append(ns);
+        }
+
+        sb.Append('$').Append(method.FullName.FullyUnqualifiedName.ToString());
 
         foreach (var param in method.Parameters)
         {
