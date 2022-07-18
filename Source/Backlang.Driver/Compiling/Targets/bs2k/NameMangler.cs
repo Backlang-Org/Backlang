@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core;
+using System.Globalization;
 using System.Text;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
@@ -9,7 +10,7 @@ public class NameMangler
     {
         var sb = new StringBuilder();
 
-        var ns = method.FullName.Slice(0, method.FullName.PathLength - 1).ToString().Replace(".", "%");
+        var ns = method.FullName.Slice(0, method.FullName.PathLength - 1).ToString().Replace(".", "%").ToLower();
 
         sb.Append(ns).Append("$").Append(method.FullName.FullyUnqualifiedName.ToString());
 
@@ -23,11 +24,8 @@ public class NameMangler
 
     private static string MangleTypeName(IType type)
     {
-        if (type.FullName.Qualifier.ToString() == "System")
-        {
-            return type.Name.ToString().ToUpper();
-        }
+        var myTI = CultureInfo.InvariantCulture.TextInfo;
 
-        return string.Empty;
+        return myTI.ToTitleCase(type.Name.ToString());
     }
 }
