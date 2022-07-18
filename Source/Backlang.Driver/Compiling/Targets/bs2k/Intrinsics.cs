@@ -16,4 +16,14 @@ public static class Intrinsics
     {
         return Push((int)value);
     }
+
+    public static string Copy(string target, char value)
+    {
+        return Copy(target, (int)value);
+    }
+
+    public static string Copy(string target, int value)
+    {
+        return $"copy {target}, {value}";
+    }
 }
