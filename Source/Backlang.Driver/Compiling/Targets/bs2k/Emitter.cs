@@ -3,7 +3,9 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Reflection;
 using System.Text;
+using MethodBody = Furesoft.Core.CodeDom.Compiler.MethodBody;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
 
@@ -14,7 +16,7 @@ public class Emitter
 
     public Emitter(IMethod mainMethod)
     {
-        this._mainMethod = mainMethod;
+        _mainMethod = mainMethod;
     }
 
     public void EmitFunctionDefinition(DescribedBodyMethod method)
@@ -64,40 +66,42 @@ public class Emitter
         _builder.AppendLine($"{instruction} // {comment}");
     }
 
-    private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
+    private static bool IsIntrinsicType(CallPrototype callPrototype)
     {
-        var firstBlock = body.Implementation.NamedInstructions.First().Block;
-
-        foreach (var item in body.Implementation.NamedInstructions)
-        {
-            var instruction = item.Instruction;
-
-            if (instruction.Prototype is CallPrototype callPrototype)
-            {
-                //ToDo: Check if call is intrinsic and transform to assembly
-
-                Emit($"// Calling '{callPrototype.Callee.FullName}'");
-                EmitCall(instruction, body.Implementation);
-            }
-            else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
-            {
-                //EmitNewObject(newObjectPrototype);
-            }
-            else if (instruction.Prototype is ConstantPrototype consProto)
-            {
-                EmitConstant(consProto);
-            }
-            else if (instruction.Prototype is AllocaPrototype allocA)
-            {
-                EmitVariableDeclaration(item, allocA);
-            }
-            else if (instruction.Prototype is IntrinsicPrototype arith)
-            {
-                EmitBinary(arith);
-            }
-        }
+        return callPrototype.Callee.ParentType.FullName.ToString() == typeof(Intrinsics).ToString();
     }
 
+    private static bool MatchesParameters(IMethod m, List<Type> argTypes)
+    {
+        bool matches = false;
+        for (int i = 0; i < m.Parameters.Count; i++)
+        {
+            if (m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString())
+            {
+                matches = (matches || i == 0) && m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString();
+            }
+        }
+
+        return matches;
+    }
+
+    private static MethodInfo GetMatchingIntrinsicMethod(IMethod callee)
+    {
+        var methods = typeof(Intrinsics).GetMethods().Where(_ => _.IsStatic)
+                    .Where(_ => _.Name.Equals(callee.Name.ToString(), StringComparison.InvariantCultureIgnoreCase));
+
+        foreach (var m in methods)
+        {
+            if (MatchesParameters(callee, m.GetParameters().Select(_ => _.ParameterType).ToList()))
+            {
+                return m;
+            }
+        }
+
+        return null;
+    }
+
+    //Todo: Fix intrinsic double emit constant
     private void EmitConstant(ConstantPrototype consProto)
     {
         if (consProto.Value is IntegerConstant ic)
@@ -108,6 +112,13 @@ public class Emitter
 
             Emit("");
         }
+    }
+
+    private object InvokeIntrinsic(IMethod callee, object[] arguments)
+    {
+        var method = GetMatchingIntrinsicMethod(callee);
+
+        return method.Invoke(null, arguments);
     }
 
     private void EmitBinary(IntrinsicPrototype arith)
@@ -144,7 +155,6 @@ public class Emitter
     {
     }
 
-    //ToDo: Fix with new source from coder
     private void EmitCall(Instruction instruction, FlowGraph implementation)
     {
         var prototype = (CallPrototype)instruction.Prototype;
@@ -175,5 +185,130 @@ public class Emitter
 
         // after the call the return value is inside R1
         Emit("push R1", "push return value onto stack");
+    }
+
+    private object GetValue(Constant value)
+    {
+        switch (value)
+        {
+            case StringConstant str:
+                return str.Value;
+
+            case Float32Constant f32:
+                return f32.Value;
+
+            case Float64Constant f64:
+                return f64.Value;
+
+            case NullConstant:
+                return null;
+
+            case IntegerConstant ic:
+                switch (ic.Spec.Size)
+                {
+                    case 1:
+                        return !ic.IsZero;
+
+                    case 8:
+                        if (ic.Spec.IsSigned)
+                        {
+                            return ic.ToInt8();
+                        }
+                        else
+                        {
+                            return ic.ToUInt8();
+                        }
+
+                    case 16:
+                        if (ic.Spec.IsSigned)
+                        {
+                            return ic.ToInt16();
+                        }
+                        else
+                        {
+                            return ic.ToUInt16();
+                        }
+
+                    case 32:
+                        if (ic.Spec.IsSigned)
+                        {
+                            return ic.ToInt32();
+                        }
+                        else
+                        {
+                            return ic.ToUInt32();
+                        }
+
+                    case 64:
+                        if (ic.Spec.IsSigned)
+                        {
+                            return ic.ToInt64();
+                        }
+                        else
+                        {
+                            return ic.ToUInt64();
+                        }
+
+                    default:
+                        break;
+                }
+
+                return null;
+        }
+
+        return null;
+    }
+
+    private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
+    {
+        var firstBlock = body.Implementation.NamedInstructions.First().Block;
+
+        foreach (var item in body.Implementation.NamedInstructions)
+        {
+            var instruction = item.Instruction;
+
+            if (instruction.Prototype is CallPrototype callPrototype)
+            {
+                if (IsIntrinsicType(callPrototype))
+                {
+                    var arguments = new List<object>();
+
+                    foreach (var argTag in instruction.Arguments)
+                    {
+                        var argPrototype = (ConstantPrototype)body.Implementation.GetInstruction(argTag).Prototype;
+
+                        arguments.Add(GetValue(argPrototype.Value));
+                    }
+
+                    var intrinsic = InvokeIntrinsic(callPrototype.Callee, arguments.ToArray()).ToString();
+
+                    foreach (var intr in intrinsic.Split("\n"))
+                    {
+                        Emit(intr, "// emited from intrinsic");
+                    }
+
+                    continue;
+                }
+
+                Emit($"// Calling '{callPrototype.Callee.FullName}'");
+                EmitCall(instruction, body.Implementation);
+            }
+            else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
+            {
+                //EmitNewObject(newObjectPrototype);
+            }
+            else if (instruction.Prototype is ConstantPrototype consProto)
+            {
+                EmitConstant(consProto);
+            }
+            else if (instruction.Prototype is AllocaPrototype allocA)
+            {
+                EmitVariableDeclaration(item, allocA);
+            }
+            else if (instruction.Prototype is IntrinsicPrototype arith)
+            {
+                EmitBinary(arith);
+            }
+        }
     }
 }

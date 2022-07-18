@@ -9,11 +9,9 @@ public static func main() {
 	}
 
 	inline(bs2k) {
-		copy(1, 2);
 		push("R1");
+		push(5);
 	}
 
-	inline {
-	    some();
-	}
+	
 }
