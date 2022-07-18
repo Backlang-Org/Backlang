@@ -11,4 +11,9 @@ public static class Intrinsics
     {
         return $"copy {value}, R0\npush R0";
     }
+
+    public static string Push(char value)
+    {
+        return Push((int)value);
+    }
 }
