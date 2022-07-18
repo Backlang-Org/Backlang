@@ -34,22 +34,7 @@ public class BS2KTarget : ICompilationTarget
 
     public LNode ConvertIntrinsic(LNode call)
     {
-        //ToDo: make namespace calls simpler with helper method qualifiyng from namespace string
-
-        return LNode.Call(
-                LNode.Call(LNode.Id("'::"),
-                LNode.List(LNode.Call(CodeSymbols.Dot,
-                LNode.List(LNode.Call(CodeSymbols.Dot,
-                LNode.List(LNode.Call(CodeSymbols.Dot,
-                LNode.List(LNode.Call(CodeSymbols.Dot,
-                LNode.List(LNode.Call(CodeSymbols.Dot,
-                LNode.List(LNode.Id((Symbol)"Backlang"),
-                LNode.Id((Symbol)"Driver"))).SetStyle(NodeStyle.Operator),
-                LNode.Id((Symbol)"Compiling"))).SetStyle(NodeStyle.Operator),
-                LNode.Id((Symbol)"Targets"))).SetStyle(NodeStyle.Operator),
-                LNode.Id((Symbol)"bs2k"))).SetStyle(NodeStyle.Operator),
-                LNode.Id((Symbol)"Intrinsics"))).SetStyle(NodeStyle.Operator),
-            call)).SetStyle(NodeStyle.Operator)).Target;
+        return "Backlang".dot("Driver").dot("Compiling").dot("Targets").dot("bs2k").dot("Intrinsics").coloncolon(call).Target;
     }
 
     public TypeEnvironment Init(TypeResolver binder)

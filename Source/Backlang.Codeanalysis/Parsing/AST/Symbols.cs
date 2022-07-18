@@ -6,6 +6,7 @@ public static class Symbols
 {
     public static readonly Symbol Annotation = GSymbol.Get("#annotation");
     public static readonly Symbol Bitfield = GSymbol.Get("#bitfield");
+    public static readonly Symbol ColonColon = GSymbol.Get("'::");
     public static readonly Symbol Constructor = GSymbol.Get("#constructor");
     public static readonly Symbol Destructor = GSymbol.Get("#destructor");
     public static readonly Symbol DiscriminatedType = GSymbol.Get("#discrimType");
