@@ -1,7 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
-using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
@@ -34,7 +33,7 @@ public class BS2KTarget : ICompilationTarget
 
     public LNode ConvertIntrinsic(LNode call)
     {
-        return "Backlang".dot("Driver").dot("Compiling").dot("Targets").dot("bs2k").dot("Intrinsics").coloncolon(call).Target;
+        return "Backlang".dot("Driver").dot("Compiling").dot("Targets").dot("bs2k").dot("Intrinsics").coloncolon(call);
     }
 
     public TypeEnvironment Init(TypeResolver binder)
