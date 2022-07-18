@@ -37,6 +37,11 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
 
             context.CompilationTarget = compilationTarget;
             context.Environment = compilationTarget.Init(context.Binder);
+
+            if (compilationTarget.HasIntrinsics)
+            {
+                AddIntrinsicType(context.Binder, context.Environment, compilationTarget.IntrinsicType);
+            }
         }
 
         var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
@@ -47,6 +52,31 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
                 && method.ReturnParameter.Type == context.Environment.Void);
 
         return await next.Invoke(context);
+    }
+
+    private static void AddIntrinsicType(TypeResolver binder, TypeEnvironment te, Type type)
+    {
+        var qualifier = ClrTypeEnvironmentBuilder.QualifyNamespace(type.Namespace);
+        var intrinsicAssembly = new DescribedAssembly(qualifier);
+
+        var instrinsicsType = new DescribedType(
+            new SimpleName(type.Name).Qualify(
+                qualifier), intrinsicAssembly)
+        {
+            IsStatic = true
+        };
+
+        binder.AddAssembly(te.Void.Parent.Assembly);
+
+        var methods = type.GetMethods().Where(_ => _.IsStatic);
+
+        foreach (var method in methods)
+        {
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, binder, method, method.Name.ToLower());
+        }
+
+        intrinsicAssembly.AddType(instrinsicsType);
+        binder.AddAssembly(intrinsicAssembly);
     }
 
     private void AddTarget<T>()
