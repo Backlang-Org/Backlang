@@ -9,6 +9,6 @@ public static class Intrinsics
 
     public static string Push(int value)
     {
-        return $"copy R0, {value}\npush R0";
+        return $"copy {value}, R0\npush R0";
     }
 }
