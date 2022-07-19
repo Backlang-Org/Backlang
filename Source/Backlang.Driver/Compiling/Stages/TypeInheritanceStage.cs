@@ -651,6 +651,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
             type.IsStatic = true;
+            type.IsPublic = true;
 
             context.Assembly.AddType(type);
         }

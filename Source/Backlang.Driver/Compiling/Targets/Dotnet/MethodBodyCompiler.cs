@@ -284,17 +284,14 @@ public static class MethodBodyCompiler
     {
         var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
 
-        foreach (var m in parentType.Methods)
+        foreach (var m in parentType.Methods.Where(_ => _.Name == method.Name.ToString()))
         {
             var parameters = m.Parameters;
 
-            if (m.Name == method.Name.ToString())
+            if (parameters.Count == method.Parameters.Count)
             {
-                if (parameters.Count == method.Parameters.Count)
-                {
-                    if (MatchesParameters(parameters, method))
-                        return assemblyDefinition.MainModule.ImportReference(m);
-                }
+                if (MatchesParameters(parameters, method))
+                    return assemblyDefinition.MainModule.ImportReference(m);
             }
         }
 
@@ -312,7 +309,7 @@ public static class MethodBodyCompiler
             }
         }
 
-        matches = matches || method.Parameters.Count == parameters.Count;
+        matches = method.Parameters.Count == parameters.Count && matches;
 
         return matches;
     }

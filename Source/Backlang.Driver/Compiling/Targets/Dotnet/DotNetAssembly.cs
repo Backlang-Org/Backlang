@@ -250,6 +250,11 @@ public class DotNetAssembly : ITargetAssembly
             clrMethod.IsAbstract = m.IsAbstract;
             clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
 
+            if (m.IsStatic)
+            {
+                clrMethod.HasThis = false;
+            }
+
             if (m.IsConstructor)
             {
                 clrMethod.IsRuntimeSpecialName = true;
