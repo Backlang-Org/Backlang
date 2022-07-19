@@ -140,6 +140,12 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Div); break;
             case "arith.%":
                 ilProcessor.Emit(OpCodes.Rem); break;
+            case "arith.&":
+                ilProcessor.Emit(OpCodes.And); break;
+            case "arith.|":
+                ilProcessor.Emit(OpCodes.Or); break;
+            case "arith.^":
+                ilProcessor.Emit(OpCodes.Xor); break;
         }
     }
 

@@ -72,6 +72,7 @@ public class Emitter
 
         switch (arith.Name)
         {
+
             case "arith.+": Emit("add R1, R2, R3", "push result onto stack"); break;
             case "arith.*": Emit("mult R1, R2, R3, R4", "multiply values"); break;
             case "arith.|": Emit("or R1, R2, R3"); break;
@@ -79,6 +80,7 @@ public class Emitter
             case "arith.^": Emit("xor R1, R2, R3"); break;
             default:
                 break;
+
         }
 
         Emit("push R3", "push result onto stack");

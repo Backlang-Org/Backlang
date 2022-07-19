@@ -57,61 +57,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in UnpackBlocks(function.Args[3].Args)) //Todo: Unpack only for now, later compile blocks
-        {
-            if (!node.IsCall) continue;
-
-            if (node.Name == CodeSymbols.Var)
-            {
-                AppendVariableDeclaration(context, method, block, node, modulename);
-            }
-            else if (node.Name == (Symbol)"print")
-            {
-                AppendCall(context, block, node, context.writeMethods, "Write");
-            }
-            else if (node.Calls(CodeSymbols.Return))
-            {
-                if (node.ArgCount == 1)
-                {
-                    var valueNode = node.Args[0];
-
-                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
-
-                    block.Flow = new ReturnFlow();
-                }
-                else
-                {
-                    block.Flow = new ReturnFlow();
-                }
-            }
-            else if (node.Calls(CodeSymbols.Throw))
-            {
-                var valueNode = node.Args[0];
-                var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(valueNode, context.Binder), valueNode.Args[0].Value));
-
-                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode, context.Binder), constant));
-
-                if (node.Args[0].Name.Name == "#string")
-                {
-                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
-                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
-
-                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
-                }
-
-                block.Flow = UnreachableFlow.Instance;
-            }
-            else if (node.Calls((Symbol)"'::")) //static call
-            {
-                var callee = node.Args[1];
-                var typename = Utils.GetQualifiedName(node.Args[0]);
-
-                var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
-
-                AppendCall(context, block, callee, type.Methods, callee.Name.Name);
-            }
-        }
+        AppendBlock(function.Args[3], block, context, method, modulename);
 
         return new MethodBody(
             new Parameter(parentType),
@@ -278,7 +224,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var annotation = st.Attrs[i];
             if (annotation.Calls(Symbols.Annotation))
             {
-                annotation = annotation.Args[0];
+                annotation = annotation.Attrs[0];
 
                 var fullname = Utils.GetQualifiedName(annotation.Target);
 
@@ -289,7 +235,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
 
-                if (resolvedType == null) continue;
+                if (resolvedType == null) continue; //Todo: Add Error
 
                 var customAttribute = new DescribedAttribute(resolvedType);
 
@@ -365,24 +311,56 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return await next.Invoke(context);
     }
 
-    private static IEnumerable<LNode> UnpackBlocks(LNodeList args)
+
+    private static void AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename)
     {
-        var result = new List<LNode>();
-
-        foreach (var node in args)
+        foreach (var node in blkNode.Args)
         {
-            if (node.Calls(Symbols.Block) && node.ArgCount == 0) continue;
+            if (!node.IsCall) continue;
 
-            if (node.Calls(Symbols.Block))
+            if (node.Name == CodeSymbols.Var)
             {
-                result.AddRange(UnpackBlocks(node.Args));
-                continue;
+                AppendVariableDeclaration(context, method, block, node, modulename);
             }
+            else if (node.Name == (Symbol)"print")
+            {
+                AppendPrint(context, block, node);
+            }
+            else if (node.Calls(CodeSymbols.Return))
+            {
+                if (node.ArgCount == 1)
+                {
+                    var valueNode = node.Args[0];
 
-            result.Add(node);
+                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
+
+                    block.Flow = new ReturnFlow();
+                }
+                else
+                {
+                    block.Flow = new ReturnFlow();
+                }
+            }
+            else if (node.Calls(CodeSymbols.Throw))
+            {
+                var valueNode = node.Args[0].Args[0];
+                var constant = block.AppendInstruction(ConvertConstant(
+                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
+
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
+
+                if (node.Args[0].Name.Name == "#string")
+                {
+                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
+                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
+
+                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
+                }
+
+                block.Flow = UnreachableFlow.Instance;
+            }
         }
 
-        return result;
     }
 
     private static QualifiedName AppendAttributeToName(QualifiedName fullname)
