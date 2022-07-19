@@ -104,7 +104,7 @@ public sealed partial class Parser
         var unescaped = ParseHelpers.UnescapeCStyle(text);
 
         return SyntaxTree.Factory.Call(CodeSymbols.Char,
-            LNode.List(SyntaxTree.Factory.Literal(unescaped))).WithRange(Iterator.Prev);
+            LNode.List(SyntaxTree.Factory.Literal(unescaped[0]))).WithRange(Iterator.Prev);
     }
 
     private LNode ParseHexNumber()
