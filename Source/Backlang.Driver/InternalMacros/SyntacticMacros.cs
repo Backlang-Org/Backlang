@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using LeMP;
 using Loyc;
@@ -170,7 +170,7 @@ public static class SyntacticMacros
 
         var typename = node.Args[0];
 
-        if (!typename.Calls(Symbols.TypeLiteral))
+        if (string.IsNullOrEmpty(typename.Args[0].Args[0].Name.Name))
         {
             var definiton = node.Args[1];
             var value = definiton.Args[1];
