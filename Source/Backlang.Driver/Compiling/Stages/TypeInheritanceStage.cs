@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -10,6 +10,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
@@ -517,12 +518,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
                 if (localPrms.Any())
                 {
-                    block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
                 }
             }
             else
             {
-                block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
             }
         }
 
