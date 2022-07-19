@@ -162,19 +162,7 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Add);
     }
 
-    [LexicalMacro("left |= right;", "Convert to left = left | something", "'|=", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode OrEquals(LNode @operator, IMacroContext context)
-    {
-        return ConvertToAssignment(@operator, CodeSymbols.Or);
-    }
-
-    [LexicalMacro("left &= right;", "Convert to left = left & something", "'&=", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode AndEquals(LNode @operator, IMacroContext context)
-    {
-        return ConvertToAssignment(@operator, CodeSymbols.And);
-    }
-
-    [LexicalMacro("let k = 42;", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("#var", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode TypeInferenceForLet(LNode node, IMacroContext context)
     {
         if (node.ArgCount == 0)
@@ -184,7 +172,7 @@ public static class SyntacticMacros
 
         var typename = node.Args[0];
 
-        if (string.IsNullOrEmpty(typename.Args[0].Args[0].Name.Name))
+        if (!typename.Calls(Symbols.TypeLiteral))
         {
             var definiton = node.Args[1];
             var value = definiton.Args[1];

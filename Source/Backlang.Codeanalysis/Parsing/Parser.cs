@@ -103,7 +103,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
             return parsePoints[type](Iterator, this);
         }
 
-        Messages.Add(Message.Error(Document, $"Expected {string.Join(", ", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+        Messages.Add(Message.Error(Document, $"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
         Iterator.NextToken();
 
         return default;

@@ -10,7 +10,7 @@ public static class SyntaxTree
 
     public static LNode Annotation(LNode call)
     {
-        return Factory.Call(Symbols.Annotation).PlusAttr(call);
+        return Factory.Call(Symbols.Annotation, LNode.List(call));
     }
 
     public static LNode Constructor(LNodeList parameters, LNode code)

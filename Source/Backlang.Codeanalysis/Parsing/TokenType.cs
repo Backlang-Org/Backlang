@@ -80,13 +80,20 @@ public enum TokenType
     Exclamation,
 
     [Lexeme("*=")]
-    [Lexeme("/=")]
-    [Lexeme("+=")]
-    [Lexeme("-=")]
-    [Lexeme("|=")]
-    [Lexeme("&=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
-    EqualsShortcutToken,
+    StarEqualsToken,
+
+    [Lexeme("/=")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
+    DivEqualsToken,
+
+    [Lexeme("+=")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
+    PlusEqualsToken,
+
+    [Lexeme("-=")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
+    MinusEqualsToken,
 
     [Lexeme("=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]

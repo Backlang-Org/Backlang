@@ -101,7 +101,7 @@ public static class Expression
         where TLexer : BaseLexer, new()
     {
         var list = new LNodeList();
-        while (parser.Iterator.Current.Type != terminator)
+        while (parser.Iterator.Current.Type != terminator) //ToDo: implement option to disallow empty list
         {
             list.Add(Expression.Parse(parser, parsePoints));
 

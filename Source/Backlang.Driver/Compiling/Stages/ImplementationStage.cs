@@ -90,7 +90,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                     ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
                 }
 
-                ctorMethod.Body = null; // ToDo: Make body set members (Lixou)
+                ctorMethod.Body = null; // ToDo: Make body set members
 
                 type.AddMethod(ctorMethod);
             }
