@@ -10,7 +10,6 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
@@ -323,7 +322,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (node.Name == (Symbol)"print")
             {
-                AppendPrint(context, block, node);
+                AppendCall(context, block, node, context.writeMethods, "Write");
             }
             else if (node.Calls(CodeSymbols.Return))
             {
@@ -344,9 +343,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 var valueNode = node.Args[0].Args[0];
                 var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
+                    GetLiteralType(valueNode, context.Binder), valueNode.Value));
 
-                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode, context.Binder), constant));
 
                 if (node.Args[0].Name.Name == "#string")
                 {
