@@ -300,17 +300,10 @@ public static class MethodBodyCompiler
 
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
     {
-        bool matches = false;
-        for (int i = 0; i < parameters.Count; i++)
-        {
-            if (parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString())
-            {
-                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString();
-            }
-        }
+        //ToDo: refactor to improve code
+        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
-        matches = matches || method.Parameters.Count == parameters.Count;
-
-        return matches;
+        return methodParams.Equals(monocecilParams);
     }
 }
