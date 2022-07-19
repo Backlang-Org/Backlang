@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
@@ -13,15 +14,37 @@ public static class MethodBodyCompiler
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
+
+        var variables = new Dictionary<string, VariableDefinition>();
+        //var variables = CompileBlock(m.Body.Implementation.EntryPoint, assemblyDefinition, ilProcessor, clrMethod, parentType);
+
+        foreach (var block in m.Body.Implementation.BasicBlocks)
+        {
+            var blockLocals =
+                 CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType);
+
+            foreach (var local in blockLocals)
+            {
+                variables.Add(local.Key, local.Value);
+            }
+        }
+
+        clrMethod.Body.MaxStackSize = 7;
+
+        return variables;
+    }
+
+    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType)
+    {
         var variables = new Dictionary<string, VariableDefinition>();
 
-        foreach (var item in m.Body.Implementation.NamedInstructions)
+        foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
 
             if (instruction.Prototype is CallPrototype callPrototype)
             {
-                EmitCall(assemblyDefinition, ilProcessor, instruction, m.Body.Implementation);
+                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
@@ -29,7 +52,7 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadPrototype ld)
             {
-                var valueInstruction = m.Body.Implementation.GetInstruction(instruction.Arguments[0]);
+                var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
                 EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
@@ -60,7 +83,7 @@ public static class MethodBodyCompiler
             }
         }
 
-        if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
+        if (block.Flow is ReturnFlow rf)
         {
             if (rf.HasReturnValue)
             {
@@ -69,7 +92,7 @@ public static class MethodBodyCompiler
 
             ilProcessor.Emit(OpCodes.Ret);
         }
-        else if (m.Body.Implementation.EntryPoint.Flow is UnreachableFlow)
+        else if (block.Flow is UnreachableFlow)
         {
             if (clrMethod.ReturnType.Name == "Void")
             {
@@ -80,8 +103,6 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Throw);
             }
         }
-
-        clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
