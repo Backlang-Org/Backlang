@@ -1,43 +1,22 @@
-module a.b.c.d;
 
-type Shape = | Circle(mut Radius : i32)
-			 | Rectangle(Width : i32, Height : i32);
+public static func main() {
+	let k : i32 = 42;
+	let l : i32 = 2 + 3;
+	let m : i32 = 1 ^ 2;
 
-public class kek : a.b.c.d.Blob, IRed {
-	prop Hello : i32 { get; set; }
-}
-
-implement kek {
-	public constructor(mm : i32) {
-
+	inline(dotnet) {
+		ldc_i(32);
 	}
+
+	inline(bs2k) {
+		copy("&0", 'A');
+	}
+
+	
 }
 
-public interface IRed {
-
-}
-
-public abstract class Blob {
-
-}
-
-public static func main() -> i32 {
-	let mammut : Blob = none;
-	let kk : i32 = 42;
-	let nn = 42;
-
-	print("Hello Backlang! {0}", 42);
-
-	return 0;
-}
-
-@System.Runtime.CompilerServices.CompilerGenerated
-func hellworld() {
-	print("kk");
-}
-
-implement u8 {
-	public static func hello() {
-		
+public static func put_char() {
+	inline(bs2k) {
+		copy("&0", 'A');
 	}
 }

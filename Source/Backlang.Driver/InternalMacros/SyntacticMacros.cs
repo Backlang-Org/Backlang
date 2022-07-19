@@ -94,6 +94,8 @@ public static class SyntacticMacros
     [LexicalMacro("^hat", "Gets a handle for the variable", "'^", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode HandleOperator(LNode @operator, IMacroContext context)
     {
+        if (@operator.Args.Count != 1) return @operator;
+
         if (!@operator.Args[0].IsId) context.Error("Expected Identifier for HandleOperator");
 
         return LNode.Call(
@@ -128,6 +130,20 @@ public static class SyntacticMacros
         return node;
     }
 
+    [LexicalMacro("target(CLR) {}", "Only Compile Code If CompilationTarget Is CLR", "target", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode TargetMacro(LNode node, IMacroContext context)
+    {
+        var target = (string)context.ScopedProperties["Target"];
+        var selectedTarget = node.Args[0].Name.Name;
+
+        if (target == selectedTarget)
+        {
+            return node.Args[1];
+        }
+
+        return LNode.Call((Symbol)"'{}");
+    }
+
     [LexicalMacro("left -= right;", "Convert to left = left - something", "'-=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
@@ -146,7 +162,19 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Add);
     }
 
-    [LexicalMacro("#var", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("left |= right;", "Convert to left = left | something", "'|=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode OrEquals(LNode @operator, IMacroContext context)
+    {
+        return ConvertToAssignment(@operator, CodeSymbols.Or);
+    }
+
+    [LexicalMacro("left &= right;", "Convert to left = left & something", "'&=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode AndEquals(LNode @operator, IMacroContext context)
+    {
+        return ConvertToAssignment(@operator, CodeSymbols.And);
+    }
+
+    [LexicalMacro("let k = 42;", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode TypeInferenceForLet(LNode node, IMacroContext context)
     {
         if (node.ArgCount == 0)
@@ -156,7 +184,7 @@ public static class SyntacticMacros
 
         var typename = node.Args[0];
 
-        if (!typename.Calls(Symbols.TypeLiteral))
+        if (string.IsNullOrEmpty(typename.Args[0].Args[0].Name.Name))
         {
             var definiton = node.Args[1];
             var value = definiton.Args[1];

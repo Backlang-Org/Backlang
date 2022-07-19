@@ -6,6 +6,7 @@ public static class Symbols
 {
     public static readonly Symbol Annotation = GSymbol.Get("#annotation");
     public static readonly Symbol Bitfield = GSymbol.Get("#bitfield");
+    public static readonly Symbol ColonColon = GSymbol.Get("'::");
     public static readonly Symbol Constructor = GSymbol.Get("#constructor");
     public static readonly Symbol Destructor = GSymbol.Get("#destructor");
     public static readonly Symbol DiscriminatedType = GSymbol.Get("#discrimType");
@@ -25,4 +26,5 @@ public static class Symbols
     public static readonly Symbol TypeLiteral = GSymbol.Get("#type");
     public static readonly Symbol Union = GSymbol.Get("#union");
     public static readonly Symbol Where = GSymbol.Get("#where");
+    public static readonly Symbol Block = GSymbol.Get("'{}");
 }

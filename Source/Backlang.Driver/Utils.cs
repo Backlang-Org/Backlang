@@ -36,6 +36,10 @@ public sealed class Utils
         {
             type.IsPublic = true;
         }
+        else if (node.Attrs.Contains(LNode.Id(CodeSymbols.Internal)))
+        {
+            type.IsInternal = true;
+        }
         else
         {
             type.RemoveAccessModifier();

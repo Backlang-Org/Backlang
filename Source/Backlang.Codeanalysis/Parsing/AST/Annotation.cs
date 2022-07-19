@@ -17,7 +17,7 @@ public sealed class Annotation
             args = Expression.ParseList(parser, TokenType.CloseParen);
         }
 
-        return SyntaxTree.Annotation(LNode.Call(name, args)).WithRange(atToken, iterator.Prev);
+        return SyntaxTree.Annotation(SyntaxTree.Factory.Call(name, args)).WithRange(atToken, iterator.Prev);
     }
 
     public static bool TryParse(Parser parser, out LNodeList node)

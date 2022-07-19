@@ -1,5 +1,4 @@
-﻿using Loyc;
-using Loyc.Syntax;
+﻿using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
@@ -11,23 +10,25 @@ public sealed class TypeAliasDeclaration : IParsePoint<LNode>
         var keywordToken = iterator.Prev;
         var from = Expression.Parse(parser);
 
-        iterator.Match(TokenType.As);
+        LNode asKeyword = LNode.Missing;
+        if (iterator.IsMatch(TokenType.As))
+        {
+            var asToken = iterator.Match(TokenType.As);
+            asKeyword = SyntaxTree.Factory.Id(CodeSymbols.As.Name).WithRange(asToken);
+        }
 
-        string to;
-        if (iterator.Current.Type == TokenType.Identifier)
-        {
-            to = iterator.Current.Text;
-            iterator.NextToken();
-        }
-        else
-        {
-            //error
-            parser.AddError($"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column);
-            return LNode.Missing;
-        }
+        var toToken = iterator.Match(TokenType.Identifier);
+        var to = SyntaxTree.Factory.Id(toToken.Text).WithRange(toToken);
 
         iterator.Match(TokenType.Semicolon);
 
-        return SyntaxTree.Using(from, LNode.Id((Symbol)to)).WithRange(keywordToken, iterator.Prev);
+        var result = SyntaxTree.Using(from, to).WithRange(keywordToken, iterator.Prev);
+
+        if (asKeyword != LNode.Missing)
+        {
+            result = result.PlusAttr(asKeyword);
+        }
+
+        return result;
     }
 }

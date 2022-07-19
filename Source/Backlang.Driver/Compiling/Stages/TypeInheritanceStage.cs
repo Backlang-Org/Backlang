@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -44,7 +44,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["none"] = "Void",
     }.ToImmutableDictionary();
 
-    public static MethodBody CompileBody(LNode function, CompilerContext context, IType parentType, QualifiedName? modulename)
+    public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method, IType parentType, QualifiedName? modulename)
     {
         var graph = new FlowGraphBuilder();
         // Use a permissive exception delayability model to make the optimizer's
@@ -56,47 +56,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in function.Args[3].Args)
-        {
-            if (!node.IsCall) continue;
-
-            if (node.Name == CodeSymbols.Var)
-            {
-                AppendVariableDeclaration(context, block, node, modulename);
-            }
-            else if (node.Name == (Symbol)"print")
-            {
-                AppendPrint(context, block, node);
-            }
-            else if (node.Calls(CodeSymbols.Return))
-            {
-                if (node.ArgCount == 1)
-                {
-                    var valueNode = node.Args[0].Args[0];
-                    var rt = ConvertConstant(GetLiteralType(valueNode.Value, context.Binder), valueNode.Value);
-
-                    block.Flow = new ReturnFlow(rt);
-                }
-            }
-            else if (node.Calls(CodeSymbols.Throw))
-            {
-                var valueNode = node.Args[0].Args[0];
-                var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
-
-                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
-
-                if (node.Args[0].Name.Name == "#string")
-                {
-                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
-                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
-
-                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
-                }
-
-                block.Flow = UnreachableFlow.Instance;
-            }
-        }
+        AppendBlock(function.Args[3], block, context, method, modulename);
 
         return new MethodBody(
             new Parameter(parentType),
@@ -110,9 +70,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     {
         if (methodName == null) methodName = GetMethodName(function);
 
+        var returnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), returnType);
 
         Utils.SetAccessModifier(function, method);
 
@@ -151,7 +113,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         MethodBody body = null;
         if (hasBody)
         {
-            body = CompileBody(function, context, type, modulename);
+            body = CompileBody(function, context, method, type, modulename);
         }
 
         /*
@@ -201,20 +163,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    public static IType GetLiteralType(object value, TypeResolver resolver)
+    public static IType GetLiteralType(LNode value, TypeResolver resolver)
     {
-        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        else if (value is char) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
-        else if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
-        else if (value is byte) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
-        else if (value is short) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
-        else if (value is ushort) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
-        else if (value is int) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
-        else if (value is uint) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
-        else if (value is long) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
-        else if (value is ulong) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
-        else if (value is float) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
-        else if (value is double) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
+        if (value.Calls(CodeSymbols.String)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        else if (value.Calls(CodeSymbols.Char)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
+        else if (value.Calls(CodeSymbols.Bool)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
+        else if (value.Calls(CodeSymbols.Int8)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
+        else if (value.Calls(CodeSymbols.Int16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
+        else if (value.Calls(CodeSymbols.UInt16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
+        else if (value.Calls(CodeSymbols.Int32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
+        else if (value.Calls(CodeSymbols.UInt32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+        else if (value.Calls(CodeSymbols.Int64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
+        else if (value.Calls(CodeSymbols.UInt64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
+        else if (value.Calls(Symbols.Float16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(Half));
+        else if (value.Calls(Symbols.Float32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
+        else if (value.Calls(Symbols.Float64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
         else if (value is IdNode id) { } //todo: symbol table
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
@@ -260,7 +223,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var annotation = st.Attrs[i];
             if (annotation.Calls(Symbols.Annotation))
             {
-                annotation = annotation.Args[0];
+                annotation = annotation.Attrs[0];
 
                 var fullname = Utils.GetQualifiedName(annotation.Target);
 
@@ -271,7 +234,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
 
-                if (resolvedType == null) continue;
+                if (resolvedType == null) continue; //Todo: Add Error
 
                 var customAttribute = new DescribedAttribute(resolvedType);
 
@@ -347,6 +310,56 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return await next.Invoke(context);
     }
 
+    private static void AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename)
+    {
+        foreach (var node in blkNode.Args)
+        {
+            if (!node.IsCall) continue;
+
+            if (node.Name == CodeSymbols.Var)
+            {
+                AppendVariableDeclaration(context, method, block, node, modulename);
+            }
+            else if (node.Name == (Symbol)"print")
+            {
+                AppendCall(context, block, node, context.writeMethods, "Write");
+            }
+            else if (node.Calls(CodeSymbols.Return))
+            {
+                if (node.ArgCount == 1)
+                {
+                    var valueNode = node.Args[0];
+
+                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
+
+                    block.Flow = new ReturnFlow();
+                }
+                else
+                {
+                    block.Flow = new ReturnFlow();
+                }
+            }
+            else if (node.Calls(CodeSymbols.Throw))
+            {
+                var valueNode = node.Args[0].Args[0];
+                var constant = block.AppendInstruction(ConvertConstant(
+                    GetLiteralType(valueNode, context.Binder), valueNode.Value));
+
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode, context.Binder), constant));
+
+                if (node.Args[0].Name.Name == "#string")
+                {
+                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
+                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
+
+                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
+                }
+
+                block.Flow = UnreachableFlow.Instance;
+            }
+        }
+    }
+
     private static QualifiedName AppendAttributeToName(QualifiedName fullname)
     {
         var qualifier = fullname.Slice(0, fullname.PathLength - 1);
@@ -370,14 +383,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
+    private static void AppendCall(CompilerContext context, BasicBlockBuilder block,
+        LNode node, IEnumerable<IMethod> methods, string methodName = null)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
         foreach (var arg in node.Args)
         {
-            var type = GetLiteralType(arg.Args[0].Value, context.Binder);
+            var type = GetLiteralType(arg, context.Binder);
             argTypes.Add(type);
 
             var constant = block.AppendInstruction(
@@ -388,17 +402,24 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             callTags.Add(constant);
         }
 
-        var method = GetMatchingPrintMethod(context, argTypes);
+        if (methodName == null)
+        {
+            methodName = node.Name.Name;
+        }
+
+        var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
         var call = Instruction.CreateCall(method, MethodLookup.Static, callTags);
 
         block.AppendInstruction(call);
     }
 
-    private static IMethod GetMatchingPrintMethod(CompilerContext context, List<IType> argTypes)
+    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
     {
-        foreach (var m in context.writeMethods)
+        foreach (var m in methods)
         {
+            if (m.Name.ToString() != methodname) continue;
+
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
@@ -423,7 +444,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return matches;
     }
 
-    private static void AppendVariableDeclaration(CompilerContext context, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static void AppendVariableDeclaration(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var decl = node.Args[1];
 
@@ -440,20 +461,48 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
-        var instruction = Instruction.CreateAlloca(elementType);
-        var local = block.AppendInstruction(instruction);
-
         block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
 
-        if (decl.Args[1].Args[0].HasValue)
+        AppendExpression(block, decl.Args[1], elementType, method);
+
+        block.AppendInstruction(Instruction.CreateAlloca(elementType));
+    }
+
+    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType, IMethod method)
+    {
+        if (node.ArgCount == 1 && node.Args[0].HasValue)
         {
-            block.AppendInstruction(
-               Instruction.CreateStore(
-                   elementType,
-                   local,
-                   block.AppendInstruction(
-                       ConvertConstant(elementType, decl.Args[1].Args[0].Value))));
+            var constant = ConvertConstant(elementType, node.Args[0].Value);
+            var value = block.AppendInstruction(constant);
+
+            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
         }
+        else if (node.ArgCount == 2)
+        {
+            var lhs = AppendExpression(block, node.Args[0], elementType, method);
+            var rhs = AppendExpression(block, node.Args[1], elementType, method);
+
+            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        }
+        else if (node.IsId)
+        {
+            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
+
+            if (!par.Any())
+            {
+                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
+                if (localPrms.Any())
+                {
+                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                }
+            }
+            else
+            {
+                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+            }
+        }
+
+        return null;
     }
 
     private static Instruction ConvertConstant(IType elementType, object value)
@@ -602,6 +651,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
             type.IsStatic = true;
+            type.IsPublic = true;
 
             context.Assembly.AddType(type);
         }

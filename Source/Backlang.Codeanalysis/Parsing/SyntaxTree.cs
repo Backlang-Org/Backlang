@@ -10,7 +10,7 @@ public static class SyntaxTree
 
     public static LNode Annotation(LNode call)
     {
-        return Factory.Call(Symbols.Annotation, LNode.List(call));
+        return Factory.Call(Symbols.Annotation).PlusAttr(call);
     }
 
     public static LNode Constructor(LNodeList parameters, LNode code)
@@ -20,12 +20,12 @@ public static class SyntaxTree
 
     public static LNode DiscriminatedType(string name, LNodeList parameters)
     {
-        return Factory.Call(Symbols.DiscriminatedType, LNode.List(LNode.Id(name), Factory.AltList(parameters)));
+        return Factory.Call(Symbols.DiscriminatedType, LNode.List(Factory.Id(name), Factory.AltList(parameters)));
     }
 
     public static LNode DiscriminatedUnion(string name, LNodeList types)
     {
-        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(LNode.Id(name), Factory.AltList(types)));
+        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(Factory.Id(name), Factory.AltList(types)));
     }
 
     public static LNode Property(LNode type, LNode name, LNode getter, LNode setter, LNode value)
@@ -125,14 +125,9 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.If, Factory.List(cond, ifBody, elseBody));
     }
 
-    public static LNode ImplDecl(LNode target, LNodeList body, bool isStatic)
+    public static LNode ImplDecl(LNode target, LNodeList body)
     {
         var attributes = new LNodeList();
-
-        if (isStatic)
-        {
-            attributes.Add(LNode.Call(CodeSymbols.Static));
-        }
 
         return Factory.Call(Symbols.Implementation,
            Factory.List(target, LNode.Call(CodeSymbols.Braces,
@@ -204,7 +199,7 @@ public static class SyntaxTree
 
     public static LNode Type(string name, LNodeList arguments)
     {
-        return Factory.Call(Symbols.TypeLiteral, Factory.List(LNode.Id(name), LNode.Call(CodeSymbols.Of, arguments)));
+        return Factory.Call(Symbols.TypeLiteral, Factory.List(Factory.Id(name), Factory.Call(CodeSymbols.Of, arguments)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)
@@ -214,12 +209,24 @@ public static class SyntaxTree
 
     public static LNode Union(string name, LNodeList members)
     {
-        return Factory.Call(Symbols.Union, LNode.List(LNode.Id(name)).Add(LNode.Call(CodeSymbols.AltList, members)));
+        return Factory.Call(Symbols.Union, LNode.List(Factory.Id(name)).Add(LNode.Call(CodeSymbols.AltList, members)));
     }
 
     public static LNode Using(LNode from, LNode to)
     {
-        return Factory.Call(CodeSymbols.UsingStmt, LNode.List(from, to));
+        var args = new LNodeList();
+
+        if (!from.Calls("#error") && from.Name != LNode.Missing.Name)
+        {
+            args.Add(from);
+        }
+
+        if (!to.Calls("#error") && to.Name != LNode.Missing.Name)
+        {
+            args.Add(to);
+        }
+
+        return Factory.Call(CodeSymbols.UsingStmt, args);
     }
 
     public static LNode When(LNode binOp, LNode rightHand, LNode body)
@@ -231,6 +238,6 @@ public static class SyntaxTree
     {
         return Factory.Call(
             CodeSymbols.While,
-                Factory.List(cond, body));
+                LNode.List(cond, body));
     }
 }

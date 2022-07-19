@@ -80,20 +80,13 @@ public enum TokenType
     Exclamation,
 
     [Lexeme("*=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
-    StarEqualsToken,
-
     [Lexeme("/=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
-    DivEqualsToken,
-
     [Lexeme("+=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
-    PlusEqualsToken,
-
     [Lexeme("-=")]
+    [Lexeme("|=")]
+    [Lexeme("&=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
-    MinusEqualsToken,
+    EqualsShortcutToken,
 
     [Lexeme("=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
@@ -313,6 +306,9 @@ public enum TokenType
 
     [Keyword("public")]
     Public,
+
+    [Keyword("internal")]
+    Internal,
 
     [Keyword("protected")]
     Protected,

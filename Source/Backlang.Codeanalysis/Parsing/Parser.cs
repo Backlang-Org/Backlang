@@ -81,9 +81,12 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
             Annotation.TryParse(this, out var annotation);
             Modifier.TryParse(this, out var modifiers);
 
-            var item = InvokeParsePoint(DeclarationParsePoints).PlusAttrs(annotation).PlusAttrs(modifiers);
+            var item = InvokeParsePoint(DeclarationParsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers);
 
-            body.Add(item);
+            if (item != null)
+            {
+                body.Add(item);
+            }
         }
 
         return body;
@@ -100,7 +103,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
             return parsePoints[type](Iterator, this);
         }
 
-        Messages.Add(Message.Error(Document, $"Expected {string.Join(",", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+        Messages.Add(Message.Error(Document, $"Expected {string.Join(", ", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
         Iterator.NextToken();
 
         return default;

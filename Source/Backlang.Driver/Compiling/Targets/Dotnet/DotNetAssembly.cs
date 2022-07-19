@@ -69,9 +69,13 @@ public class DotNetAssembly : ITargetAssembly
         {
             clrType.Attributes |= TypeAttributes.NestedFamily;
         }
-        else
+        else if (type.IsPublic)
         {
             clrType.Attributes |= TypeAttributes.Public;
+        }
+        else
+        {
+            // here also 'internal' is used, because 'internal' doesnt need any attribute.
         }
         if (type.IsStatic)
         {
@@ -246,10 +250,19 @@ public class DotNetAssembly : ITargetAssembly
             clrMethod.IsAbstract = m.IsAbstract;
             clrMethod.IsHideBySig = m.Owns(Attributes.Mutable);
 
+            if (m.IsStatic)
+            {
+                clrMethod.HasThis = false;
+            }
+
             if (m.IsConstructor)
             {
                 clrMethod.IsRuntimeSpecialName = true;
                 clrMethod.IsSpecialName = true;
+                clrMethod.IsHideBySig = true;
+
+                clrMethod.HasThis = true;
+
                 clrMethod.Name = ".ctor";
             }
             else if (m.IsDestructor)
@@ -263,14 +276,13 @@ public class DotNetAssembly : ITargetAssembly
 
             if (m.Body != null)
             {
-                clrMethod.HasThis = false;
-
-                var variables = MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition);
+                var variables =
+                    MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition, clrType);
                 clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
 
                 foreach (var variable in variables)
                 {
-                    clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.definition, variable.name));
+                    clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
                 }
             }
 

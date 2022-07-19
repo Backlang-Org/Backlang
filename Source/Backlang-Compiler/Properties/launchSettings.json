@@ -2,7 +2,7 @@
   "profiles": {
     "Backlang-Compiler": {
       "commandName": "Project",
-      "commandLineArgs": "-i compilation.back -o compilation -t dotnet"
+      "commandLineArgs": "-i compilation.back -o compilation --target dotnet"
     }
   }
 }

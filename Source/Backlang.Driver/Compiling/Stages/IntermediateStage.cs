@@ -5,7 +5,6 @@ using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
@@ -164,6 +163,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
             Utils.SetAccessModifier(discrim, baseType);
             baseType.IsAbstract = true;
+
             context.Assembly.AddType(baseType);
 
             foreach (var type in discrim.Args[1].Args)
@@ -186,7 +186,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                     discType.AddField(fieldType);
                 }
 
-                var constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
+                var constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, context.Environment.Void);
                 constructor.IsConstructor = true;
                 constructor.IsPublic = true;
 
@@ -205,9 +205,28 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 // Grab the entry point block.
                 var block = graph.EntryPoint;
 
-                block.Flow = new ReturnFlow(Instruction.CreateConstant(NullConstant.Instance, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void))));
+                block.Flow = new ReturnFlow();
 
-                constructor.Body = new MethodBody(new Parameter(), new Parameter(), EmptyArray<Parameter>.Value, graph.ToImmutable());
+                var objType = context.Binder.ResolveTypes(new SimpleName("Object").Qualify("System")).First();
+                var baseCtor = objType.Methods.First(_ => _.IsConstructor);
+
+                block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
+                block.AppendInstruction(Instruction.CreateCall(baseCtor, Furesoft.Core.CodeDom.Compiler.Instructions.MethodLookup.Static, new[] { new ValueTag() }));
+
+                for (var i = 0; i < constructor.Parameters.Count; i++)
+                {
+                    var p = constructor.Parameters[i];
+                    var f = discType.Fields[i];
+
+                    block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
+
+                    block.AppendInstruction(Instruction.CreateLoadArg(p));
+                    block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
+                }
+
+                block.Flow = new ReturnFlow();
+
+                constructor.Body = new MethodBody(new Parameter(), new Parameter(discType), EmptyArray<Parameter>.Value, graph.ToImmutable());
 
                 discType.AddMethod(constructor);
             }
