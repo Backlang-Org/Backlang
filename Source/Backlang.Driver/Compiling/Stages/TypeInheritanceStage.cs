@@ -56,6 +56,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
+        var testBlock = graph.AddBasicBlock("testBlock");
+
+        testBlock.AppendInstruction(Instruction.CreateLoad(context.Environment.String,
+            testBlock.AppendInstruction(Instruction.CreateConstant(new StringConstant("From other block"),
+            context.Environment.String))));
+
         AppendBlock(function.Args[3], block, context, method, modulename);
 
         return new MethodBody(
