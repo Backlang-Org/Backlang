@@ -1,4 +1,5 @@
-﻿using Backlang.Driver.Compiling.Stages;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Driver.Compiling.Stages;
 
 namespace Backlang.Driver;
 
@@ -8,15 +9,17 @@ public class CompilerDriver
     {
         if (string.IsNullOrEmpty(context.TempOutputPath)) context.TempOutputPath = Environment.CurrentDirectory;
 
+        var hasError = (List<Message> messages) => messages.Any(_ => _.Severity == MessageSeverity.Error);
+
         var pipeline = Flo.Pipeline.Build<CompilerContext, CompilerContext>(
        cfg => {
            cfg.Add<ParsingStage>();
 
-           cfg.When(_ => !_.Messages.Any() && _.OutputTree, _ => {
+           cfg.When(_ => !hasError(_.Messages) && _.OutputTree, _ => {
                _.Add<EmitTreeStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<InitTypeSystemStage>();
            });
 
@@ -24,27 +27,27 @@ public class CompilerDriver
                _.Add<InitReferencesStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<ExpandMacrosStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<IntermediateStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<TypeInheritanceStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<ExpandImplementationStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<ImplementationStage>();
            });
 
-           cfg.When(_ => !_.Messages.Any(), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<CompileTargetStage>();
            });
 

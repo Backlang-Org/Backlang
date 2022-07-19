@@ -1,6 +1,7 @@
 ﻿using Backlang.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
+using LeMP;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 
@@ -9,6 +10,10 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 public class DotNetTarget : ICompilationTarget
 {
     public string Name => "dotnet";
+
+    public bool HasIntrinsics => false;
+
+    public Type IntrinsicType => throw new NotImplementedException();
 
     public void AfterCompiling(CompilerContext context)
     {
@@ -24,6 +29,10 @@ public class DotNetTarget : ICompilationTarget
     public void BeforeCompiling(CompilerContext context)
     {
         context.OutputFilename += ".dll";
+    }
+
+    public void BeforeExpandMacros(MacroProcessor processor)
+    {
     }
 
     public ITargetAssembly Compile(AssemblyContentDescription contents)

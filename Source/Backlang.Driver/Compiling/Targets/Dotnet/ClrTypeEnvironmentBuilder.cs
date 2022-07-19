@@ -84,7 +84,43 @@ public class ClrTypeEnvironmentBuilder
         return (DescribedType)resolver.ResolveTypes(new SimpleName(name).Qualify(ns))?.FirstOrDefault();
     }
 
-    private static QualifiedName QualifyNamespace(string @namespace)
+    public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
+    {
+        foreach (var member in type.GetMembers())
+        {
+            if (member is ConstructorInfo ctor && ctor.IsPublic)
+            {
+                var method = new DescribedMethod(t,
+                    new SimpleName(ctor.Name), ctor.IsStatic, ResolveType(resolver, typeof(void)));
+
+                method.IsConstructor = true;
+
+                ConvertParameter(ctor.GetParameters(), method, resolver);
+
+                t.AddMethod(method);
+            }
+            else if (member is MethodInfo m && m.IsPublic)
+            {
+                AddMethod(t, resolver, m);
+            }
+            else if (member is FieldInfo field && field.IsPublic)
+            {
+                var f = new DescribedField(t, new SimpleName(field.Name),
+                    field.IsStatic, ResolveType(resolver, field.FieldType));
+
+                t.AddField(f);
+            }
+            else if (member is PropertyInfo prop)
+            {
+                var p = new DescribedProperty(new SimpleName(prop.Name),
+                     ResolveType(resolver, prop.PropertyType), t);
+
+                t.AddProperty(p);
+            }
+        }
+    }
+
+    public static QualifiedName QualifyNamespace(string @namespace)
     {
         var spl = @namespace.Split('.');
 
@@ -104,54 +140,23 @@ public class ClrTypeEnvironmentBuilder
         return name.Value;
     }
 
-    private static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
+    public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m, string newName = null)
     {
-        foreach (var member in type.GetMembers())
+        var method = new DescribedMethod(t, new SimpleName(newName ?? m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
+
+        ConvertParameter(m.GetParameters(), method, resolver);
+
+        foreach (var attr in m.GetCustomAttributes())
         {
-            if (member is ConstructorInfo ctor && ctor.IsPublic)
-            {
-                var method = new DescribedMethod(t,
-                    new SimpleName(ctor.Name), ctor.IsStatic, ResolveType(resolver, typeof(void)));
-
-                method.IsConstructor = true;
-
-                ConvertParameter(ctor.GetParameters(), method, resolver);
-
-                t.AddMethod(method);
-            }
-            else if (member is MethodInfo m && m.IsPublic)
-            {
-                var method = new DescribedMethod(t, new SimpleName(m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
-
-                ConvertParameter(m.GetParameters(), method, resolver);
-
-                foreach (var attr in m.GetCustomAttributes())
-                {
-                    method.AddAttribute(new DescribedAttribute(ResolveType(resolver, attr.GetType())));
-                }
-
-                if (m.IsSpecialName)
-                {
-                    method.AddAttribute(new DescribedAttribute(ResolveType(resolver, typeof(SpecialNameAttribute))));
-                }
-
-                t.AddMethod(method);
-            }
-            else if (member is FieldInfo field && field.IsPublic)
-            {
-                var f = new DescribedField(t, new SimpleName(field.Name),
-                    field.IsStatic, ResolveType(resolver, field.FieldType));
-
-                t.AddField(f);
-            }
-            else if (member is PropertyInfo prop)
-            {
-                var p = new DescribedProperty(new SimpleName(prop.Name),
-                     ResolveType(resolver, prop.PropertyType), t);
-
-                t.AddProperty(p);
-            }
+            method.AddAttribute(new DescribedAttribute(ResolveType(resolver, attr.GetType())));
         }
+
+        if (m.IsSpecialName)
+        {
+            method.AddAttribute(new DescribedAttribute(ResolveType(resolver, typeof(SpecialNameAttribute))));
+        }
+
+        t.AddMethod(method);
     }
 
     private static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, TypeResolver resolver)

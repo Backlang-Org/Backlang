@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -10,6 +10,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
@@ -163,20 +164,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    public static IType GetLiteralType(object value, TypeResolver resolver)
+    public static IType GetLiteralType(LNode value, TypeResolver resolver)
     {
-        if (value is string) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        else if (value is char) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
-        else if (value is bool) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
-        else if (value is byte) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
-        else if (value is short) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
-        else if (value is ushort) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
-        else if (value is int) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
-        else if (value is uint) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
-        else if (value is long) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
-        else if (value is ulong) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
-        else if (value is float) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
-        else if (value is double) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
+        if (value.Calls(CodeSymbols.String)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
+        else if (value.Calls(CodeSymbols.Char)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
+        else if (value.Calls(CodeSymbols.Bool)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
+        else if (value.Calls(CodeSymbols.Int8)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
+        else if (value.Calls(CodeSymbols.Int16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
+        else if (value.Calls(CodeSymbols.UInt16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
+        else if (value.Calls(CodeSymbols.Int32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
+        else if (value.Calls(CodeSymbols.UInt32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
+        else if (value.Calls(CodeSymbols.Int64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
+        else if (value.Calls(CodeSymbols.UInt64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
+        else if (value.Calls(Symbols.Float16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(Half));
+        else if (value.Calls(Symbols.Float32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
+        else if (value.Calls(Symbols.Float64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
         else if (value is IdNode id) { } //todo: symbol table
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
@@ -382,14 +384,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void AppendPrint(CompilerContext context, BasicBlockBuilder block, LNode node)
+    private static void AppendCall(CompilerContext context, BasicBlockBuilder block,
+        LNode node, IEnumerable<IMethod> methods, string methodName = null)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
         foreach (var arg in node.Args)
         {
-            var type = GetLiteralType(arg.Args[0].Value, context.Binder);
+            var type = GetLiteralType(arg, context.Binder);
             argTypes.Add(type);
 
             var constant = block.AppendInstruction(
@@ -400,17 +403,24 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             callTags.Add(constant);
         }
 
-        var method = GetMatchingPrintMethod(context, argTypes);
+        if (methodName == null)
+        {
+            methodName = node.Name.Name;
+        }
+
+        var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
         var call = Instruction.CreateCall(method, MethodLookup.Static, callTags);
 
         block.AppendInstruction(call);
     }
 
-    private static IMethod GetMatchingPrintMethod(CompilerContext context, List<IType> argTypes)
+    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
     {
-        foreach (var m in context.writeMethods)
+        foreach (var m in methods)
         {
+            if (m.Name.ToString() != methodname) continue;
+
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
@@ -484,12 +494,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
                 if (localPrms.Any())
                 {
-                    block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
                 }
             }
             else
             {
-                block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
             }
         }
 

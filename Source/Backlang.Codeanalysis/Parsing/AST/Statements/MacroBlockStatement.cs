@@ -38,8 +38,7 @@ public sealed class MacroBlockStatement : IParsePoint<LNode>
         {
             //custom code block without arguments
             var body = Statement.ParseBlock(parser);
-            var arguments = LNode.List(LNode.Missing);
-            arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
+            var arguments = LNode.List(LNode.Missing, body);
 
             return LNode.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
                 .WithRange(nameToken, iterator.Prev);
