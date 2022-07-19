@@ -23,6 +23,7 @@ public class DotNetTarget : ICompilationTarget
 
     public void BeforeCompiling(CompilerContext context)
     {
+        context.OutputFilename += ".dll";
     }
 
     public ITargetAssembly Compile(AssemblyContentDescription contents)
