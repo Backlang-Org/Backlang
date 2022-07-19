@@ -267,7 +267,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var annotation = st.Attrs[i];
             if (annotation.Calls(Symbols.Annotation))
             {
-                annotation = annotation.Args[0];
+                annotation = annotation.Attrs[0];
 
                 var fullname = Utils.GetQualifiedName(annotation.Target);
 
@@ -278,7 +278,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
 
-                if (resolvedType == null) continue;
+                if (resolvedType == null) continue; //Todo: Add Error
 
                 var customAttribute = new DescribedAttribute(resolvedType);
 
@@ -477,7 +477,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             if (!par.Any())
             {
                 var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
-                if(localPrms.Any())
+                if (localPrms.Any())
                 {
                     block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
                 }
