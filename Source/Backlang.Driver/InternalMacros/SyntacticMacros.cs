@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing;
+﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
 using LeMP;
 using Loyc;
@@ -160,7 +160,19 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Add);
     }
 
-    [LexicalMacro("#var", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("left |= right;", "Convert to left = left | something", "'|=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode OrEquals(LNode @operator, IMacroContext context)
+    {
+        return ConvertToAssignment(@operator, CodeSymbols.Or);
+    }
+
+    [LexicalMacro("left &= right;", "Convert to left = left & something", "'&=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode AndEquals(LNode @operator, IMacroContext context)
+    {
+        return ConvertToAssignment(@operator, CodeSymbols.And);
+    }
+
+    [LexicalMacro("let k = 42;", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode TypeInferenceForLet(LNode node, IMacroContext context)
     {
         if (node.ArgCount == 0)
