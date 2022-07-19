@@ -79,7 +79,7 @@ public class Emitter
                 {
                     for (int j = 0; j < i; j++)
                     {
-                        if (instruction.Prototype is not ConstantPrototype)
+                        if (instruction.Prototype is not ConstantPrototype && item.NextInstructionOrNull is not null)
                         {
                             instruction = item.NextInstructionOrNull.Instruction;
                         }

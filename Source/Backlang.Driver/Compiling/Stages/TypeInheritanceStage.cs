@@ -56,52 +56,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
-        foreach (var node in function.Args[3].Args)
-        {
-            if (!node.IsCall) continue;
-
-            if (node.Name == CodeSymbols.Var)
-            {
-                AppendVariableDeclaration(context, method, block, node, modulename);
-            }
-            else if (node.Name == (Symbol)"print")
-            {
-                AppendPrint(context, block, node);
-            }
-            else if (node.Calls(CodeSymbols.Return))
-            {
-                if (node.ArgCount == 1)
-                {
-                    var valueNode = node.Args[0];
-
-                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
-
-                    block.Flow = new ReturnFlow();
-                }
-                else
-                {
-                    block.Flow = new ReturnFlow();
-                }
-            }
-            else if (node.Calls(CodeSymbols.Throw))
-            {
-                var valueNode = node.Args[0].Args[0];
-                var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
-
-                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
-
-                if (node.Args[0].Name.Name == "#string")
-                {
-                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
-                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
-
-                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
-                }
-
-                block.Flow = UnreachableFlow.Instance;
-            }
-        }
+        AppendBlock(function.Args[3], block, context, method, modulename);
 
         return new MethodBody(
             new Parameter(parentType),
@@ -352,6 +307,56 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
 
         return await next.Invoke(context);
+    }
+
+    private static void AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename)
+    {
+        foreach (var node in blkNode.Args)
+        {
+            if (!node.IsCall) continue;
+
+            if (node.Name == CodeSymbols.Var)
+            {
+                AppendVariableDeclaration(context, method, block, node, modulename);
+            }
+            else if (node.Name == (Symbol)"print")
+            {
+                AppendPrint(context, block, node);
+            }
+            else if (node.Calls(CodeSymbols.Return))
+            {
+                if (node.ArgCount == 1)
+                {
+                    var valueNode = node.Args[0];
+
+                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
+
+                    block.Flow = new ReturnFlow();
+                }
+                else
+                {
+                    block.Flow = new ReturnFlow();
+                }
+            }
+            else if (node.Calls(CodeSymbols.Throw))
+            {
+                var valueNode = node.Args[0].Args[0];
+                var constant = block.AppendInstruction(ConvertConstant(
+                    GetLiteralType(valueNode.Value, context.Binder), valueNode.Value));
+
+                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode.Value, context.Binder), constant));
+
+                if (node.Args[0].Name.Name == "#string")
+                {
+                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
+                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
+
+                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
+                }
+
+                block.Flow = UnreachableFlow.Instance;
+            }
+        }
     }
 
     private static QualifiedName AppendAttributeToName(QualifiedName fullname)
