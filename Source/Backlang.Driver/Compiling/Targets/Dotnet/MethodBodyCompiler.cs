@@ -309,7 +309,7 @@ public static class MethodBodyCompiler
             }
         }
 
-        matches = method.Parameters.Count == parameters.Count && matches;
+        matches = matches || method.Parameters.Count == parameters.Count;
 
         return matches;
     }
