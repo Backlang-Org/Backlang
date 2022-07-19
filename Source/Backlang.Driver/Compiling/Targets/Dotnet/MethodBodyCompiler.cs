@@ -16,7 +16,6 @@ public static class MethodBodyCompiler
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
         var variables = new Dictionary<string, VariableDefinition>();
-        //var variables = CompileBlock(m.Body.Implementation.EntryPoint, assemblyDefinition, ilProcessor, clrMethod, parentType);
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
