@@ -13,6 +13,7 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class DotNetAssembly : ITargetAssembly
 {
+    private static List<MethodBodyCompilation> _methodBodyCompilations = new();
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
     private readonly List<(TypeDefinition definition, QualifiedName name)> needToAdjust = new();
@@ -53,6 +54,8 @@ public class DotNetAssembly : ITargetAssembly
         }
 
         AdjustBaseTypesAndInterfaces();
+
+        CompileBodys();
 
         _assemblyDefinition.Write(output);
 
@@ -276,14 +279,7 @@ public class DotNetAssembly : ITargetAssembly
 
             if (m.Body != null)
             {
-                var variables =
-                    MethodBodyCompiler.Compile(m, clrMethod, _assemblyDefinition, clrType);
-                clrMethod.DebugInformation.Scope = new ScopeDebugInformation(clrMethod.Body.Instructions[0], clrMethod.Body.Instructions.Last());
-
-                foreach (var variable in variables)
-                {
-                    clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
-                }
+                _methodBodyCompilations.Add(new(m, clrMethod, clrType));
             }
 
             ConvertCustomAttributes(clrType, m, clrMethod);
@@ -291,6 +287,25 @@ public class DotNetAssembly : ITargetAssembly
             clrType.Methods.Add(clrMethod);
         }
     }
+
+    private void CompileBodys()
+    {
+        foreach (var bodyCompilation in _methodBodyCompilations)
+        {
+            var variables =
+                                MethodBodyCompiler.Compile(bodyCompilation.m, bodyCompilation.clrMethod, _assemblyDefinition, bodyCompilation.clrType);
+            bodyCompilation.clrMethod.DebugInformation.Scope =
+                new ScopeDebugInformation(bodyCompilation.clrMethod.Body.Instructions[0],
+                    bodyCompilation.clrMethod.Body.Instructions.Last());
+
+            foreach (var variable in variables)
+            {
+                bodyCompilation.clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
+            }
+        }
+    }
+
+    record struct MethodBodyCompilation(DescribedBodyMethod m, MethodDefinition clrMethod, TypeDefinition clrType);
 
     private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
     {
