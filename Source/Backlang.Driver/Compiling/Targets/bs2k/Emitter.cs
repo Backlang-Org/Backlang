@@ -135,10 +135,9 @@ public class Emitter
 
     private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
     {
-        int indentlevel = 1;
         foreach (var block in method.Body.Implementation.BasicBlocks)
         {
-            EmitBlock(block, indentlevel);
+            EmitBlock(block, 1);
         }
     }
 
@@ -169,7 +168,11 @@ public class Emitter
                     continue;
                 }
 
-                Emit($"// Calling '{callPrototype.Callee.FullName}'", null, indentlevel);
+                var callee = callPrototype.Callee
+                        .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.ProgramClass
+                       ? callPrototype.Callee.Name.ToString() : callPrototype.Callee.FullName.ToString();
+
+                Emit($"// Calling '{callee}'", null, indentlevel);
                 EmitCall(instruction, block.Graph);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
