@@ -3,7 +3,6 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System.Reflection;
-using MethodBody = Furesoft.Core.CodeDom.Compiler.MethodBody;
 
 namespace Backlang.Driver.Compiling;
 
@@ -14,7 +13,7 @@ public static class IntrinsicHelper
         return callPrototype.Callee.ParentType.FullName.ToString() == intrinsicType.ToString();
     }
 
-    public static object InvokeIntrinsic(Type intrinsicType, IMethod callee, Instruction instruction, MethodBody body)
+    public static object InvokeIntrinsic(Type intrinsicType, IMethod callee, Instruction instruction, BasicBlock block)
     {
         var method = GetMatchingIntrinsicMethod(callee, intrinsicType);
 
@@ -22,7 +21,7 @@ public static class IntrinsicHelper
 
         foreach (var argTag in instruction.Arguments)
         {
-            var argPrototype = (ConstantPrototype)body.Implementation.GetInstruction(argTag).Prototype;
+            var argPrototype = (ConstantPrototype)block.Graph.GetInstruction(argTag).Prototype;
 
             arguments.Add(GetValue(argPrototype.Value));
         }

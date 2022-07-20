@@ -137,9 +137,15 @@ public class Emitter
 
     private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
     {
-        var firstBlock = body.Implementation.NamedInstructions.First().Block;
+        foreach (var block in method.Body.Implementation.BasicBlocks)
+        {
+            EmitBlock(block);
+        }
+    }
 
-        foreach (var item in body.Implementation.NamedInstructions)
+    private void EmitBlock(BasicBlock block)
+    {
+        foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
 
@@ -148,7 +154,7 @@ public class Emitter
                 if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
                 {
                     var intrinsic = IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics),
-                                    callPrototype.Callee, instruction, body).ToString();
+                                    callPrototype.Callee, instruction, block).ToString();
 
                     Emit("//emited from intrinsic");
                     foreach (var intr in intrinsic.Split("\n"))
@@ -160,7 +166,7 @@ public class Emitter
                 }
 
                 Emit($"// Calling '{callPrototype.Callee.FullName}'");
-                EmitCall(instruction, body.Implementation);
+                EmitCall(instruction, block.Graph);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
