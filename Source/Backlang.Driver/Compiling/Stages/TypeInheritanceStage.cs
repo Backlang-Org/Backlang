@@ -363,6 +363,22 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 block.Flow = UnreachableFlow.Instance;
             }
+            else if (node.Calls(Symbols.ColonColon))
+            {
+                var callee = node.Args[1];
+                var typename = Utils.GetQualifiedName(node.Args[0]);
+
+                var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
+
+                AppendCall(context, block, callee, type.Methods, callee.Name.Name);
+            }
+            else
+            {
+                //ToDo: continue implementing static function call in same type
+                var type = method.ParentType;
+                var calleeName = node.Target;
+                var callee = type.Methods.FirstOrDefault(_ => _.IsStatic && _.Name.ToString() == calleeName.Name.Name);
+            }
         }
     }
 
