@@ -3,6 +3,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 using System.Collections.Specialized;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -61,5 +62,19 @@ public class DotNetTarget : ICompilationTarget
         ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, binder);
 
         return new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corLib);
+    }
+
+    public void InitReferences(CompilerContext context)
+    {
+        foreach (var r in context.References)
+        {
+            var assembly = Assembly.LoadFrom(r);
+
+            var refLib = ClrTypeEnvironmentBuilder.CollectTypes(assembly);
+
+            context.Binder.AddAssembly(refLib);
+
+            ClrTypeEnvironmentBuilder.FillTypes(assembly, context.Binder);
+        }
     }
 }

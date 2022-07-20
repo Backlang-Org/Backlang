@@ -1,6 +1,4 @@
-﻿using Backlang.Driver.Compiling.Targets.Dotnet;
-using Flo;
-using System.Reflection;
+﻿using Flo;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -8,16 +6,7 @@ public sealed class InitReferencesStage : IHandler<CompilerContext, CompilerCont
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        foreach (var r in context.References)
-        {
-            var assembly = Assembly.LoadFrom(r);
-
-            var refLib = ClrTypeEnvironmentBuilder.CollectTypes(assembly);
-
-            context.Binder.AddAssembly(refLib);
-
-            ClrTypeEnvironmentBuilder.FillTypes(assembly, context.Binder);
-        }
+        context.CompilationTarget.InitReferences(context);
 
         return await next.Invoke(context);
     }
