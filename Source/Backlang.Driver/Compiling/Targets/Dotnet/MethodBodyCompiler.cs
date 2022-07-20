@@ -166,6 +166,27 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Or); break;
             case "arith.^":
                 ilProcessor.Emit(OpCodes.Xor); break;
+            case "arith.==":
+                ilProcessor.Emit(OpCodes.Ceq); break;
+            case "arith.!=":
+                ilProcessor.Emit(OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+            case "arith.<":
+                ilProcessor.Emit(OpCodes.Clt); break;
+            case "arith.<=":
+                ilProcessor.Emit(OpCodes.Cgt);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+            case "arith.>":
+                ilProcessor.Emit(OpCodes.Cgt); break;
+            case "arith.>=":
+                ilProcessor.Emit(OpCodes.Clt);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
         }
     }
 

@@ -4,6 +4,8 @@ public static func main() {
 	let l : i32 = 2 + 3 * 15;
 	let m : i32 = 1 ^ 2;
 
+	let isCool : bool = k < l;
+
 	/*inline(dotnet) {
 		ldc_i(32);
 	}*/
@@ -11,8 +13,6 @@ public static func main() {
 	inline(bs2k) {
 		copy("&0", 'A');
 	}
-
-	
 }
 
 public static func put_char() {
