@@ -1,5 +1,7 @@
 
 public static func main() {
+	put_char('h');
+
 	let k : i32 = 42;
 	let l : i32 = 2 + 3 * 15;
 	let m : i32 = 1 ^ 2;
