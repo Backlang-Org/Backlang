@@ -38,6 +38,7 @@ public class Emitter
         if (method == _mainMethod)
         {
             Emit("halt");
+            Emit("");
         }
         else
         {
@@ -51,10 +52,7 @@ public class Emitter
 
     public void Emit(string instruction, string comment = null, int indentlevel = 1)
     {
-        if (indentlevel == 1)
-        {
-            _builder.Append('\t');
-        }
+        _builder.Append(new String('\t', indentlevel));
 
         if (comment == null)
         {
@@ -65,41 +63,41 @@ public class Emitter
         _builder.AppendLine($"{instruction} // {comment}");
     }
 
-    private void EmitBinary(IntrinsicPrototype arith)
+    private void EmitBinary(IntrinsicPrototype arith, int indentlevel)
     {
-        Emit("pop R2", $"store rhs for {arith.Name}-operator in R1");
-        Emit("pop R1", $"store lhs for {arith.Name}-operator in R1");
+        Emit("pop R2", $"store rhs for {arith.Name}-operator in R1", indentlevel);
+        Emit("pop R1", $"store lhs for {arith.Name}-operator in R1", indentlevel);
 
         switch (arith.Name)
         {
-            case "arith.+": Emit("add R1, R2, R3", "push result onto stack"); break;
-            case "arith.*": Emit("mult R1, R2, R3, R4", "multiply values"); break;
-            case "arith.|": Emit("or R1, R2, R3"); break;
-            case "arith.&": Emit("and R1, R2, R3"); break;
-            case "arith.^": Emit("xor R1, R2, R3"); break;
+            case "arith.+": Emit("add R1, R2, R3", "push result onto stack", indentlevel); break;
+            case "arith.*": Emit("mult R1, R2, R3, R4", "multiply values", indentlevel); break;
+            case "arith.|": Emit("or R1, R2, R3", null, indentlevel); break;
+            case "arith.&": Emit("and R1, R2, R3", null, indentlevel); break;
+            case "arith.^": Emit("xor R1, R2, R3", null, indentlevel); break;
             default:
                 break;
         }
 
-        Emit("push R3", "push result onto stack");
+        Emit("push R3", "push result onto stack", indentlevel);
 
         Emit("");
     }
 
     //Todo: Fix intrinsic double emit constant
-    private void EmitConstant(ConstantPrototype consProto)
+    private void EmitConstant(ConstantPrototype consProto, int indentlevel)
     {
         if (consProto.Value is IntegerConstant ic)
         {
-            Emit("//push immeditate onto stack");
-            Emit($"copy {ic.ToInt32()}, R1");
-            Emit("push R1");
+            Emit("//push immeditate onto stack", null, indentlevel);
+            Emit($"copy {ic.ToInt32()}, R1", null, indentlevel);
+            Emit("push R1", null, indentlevel);
 
             Emit("");
         }
     }
 
-    private void EmitVariableDeclaration(NamedInstruction item, AllocaPrototype allocA)
+    private void EmitVariableDeclaration(NamedInstruction item, AllocaPrototype allocA, int indentlevel)
     {
     }
 
@@ -137,9 +135,20 @@ public class Emitter
 
     private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
     {
-        var firstBlock = body.Implementation.NamedInstructions.First().Block;
+        foreach (var block in method.Body.Implementation.BasicBlocks)
+        {
+            EmitBlock(block, 1);
+        }
+    }
 
-        foreach (var item in body.Implementation.NamedInstructions)
+    private void EmitBlock(BasicBlock block, int indentlevel)
+    {
+        if (!string.IsNullOrEmpty(block.Tag.Name) && !block.IsEntryPoint)
+        {
+            Emit($"{block.Tag.Name}:", null, indentlevel++);
+        }
+
+        foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
 
@@ -148,19 +157,23 @@ public class Emitter
                 if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
                 {
                     var intrinsic = IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics),
-                                    callPrototype.Callee, instruction, body).ToString();
+                                    callPrototype.Callee, instruction, block).ToString();
 
-                    Emit("//emited from intrinsic");
+                    Emit("//emited from intrinsic", null, indentlevel);
                     foreach (var intr in intrinsic.Split("\n"))
                     {
-                        Emit(intr);
+                        Emit(intr, null, indentlevel);
                     }
 
                     continue;
                 }
 
-                Emit($"// Calling '{callPrototype.Callee.FullName}'");
-                EmitCall(instruction, body.Implementation);
+                var callee = callPrototype.Callee
+                        .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.ProgramClass
+                       ? callPrototype.Callee.Name.ToString() : callPrototype.Callee.FullName.ToString();
+
+                Emit($"// Calling '{callee}'", null, indentlevel);
+                EmitCall(instruction, block.Graph);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
@@ -168,15 +181,15 @@ public class Emitter
             }
             else if (instruction.Prototype is ConstantPrototype consProto)
             {
-                EmitConstant(consProto);
+                EmitConstant(consProto, indentlevel);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
-                EmitVariableDeclaration(item, allocA);
+                EmitVariableDeclaration(item, allocA, indentlevel);
             }
             else if (instruction.Prototype is IntrinsicPrototype arith)
             {
-                EmitBinary(arith);
+                EmitBinary(arith, indentlevel);
             }
         }
     }

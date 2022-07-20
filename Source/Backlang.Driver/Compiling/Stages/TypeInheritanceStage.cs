@@ -44,7 +44,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         ["none"] = "Void",
     }.ToImmutableDictionary();
 
-    public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method, IType parentType, QualifiedName? modulename)
+    private static List<MethodBodyCompilation> _bodyCompilations = new();
+
+    public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
+        QualifiedName? modulename)
     {
         var graph = new FlowGraphBuilder();
         // Use a permissive exception delayability model to make the optimizer's
@@ -56,14 +59,22 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         // Grab the entry point block.
         var block = graph.EntryPoint;
 
+        var testBlock = graph.AddBasicBlock("testBlock");
+
+        testBlock.AppendInstruction(Instruction.CreateLoad(context.Environment.Int32,
+            testBlock.AppendInstruction(Instruction.CreateConstant(new IntegerConstant(65),
+            context.Environment.Int32))));
+
         AppendBlock(function.Args[3], block, context, method, modulename);
 
         return new MethodBody(
-            new Parameter(parentType),
-            new Parameter(parentType),
+            method.ReturnParameter,
+            new Parameter(method.ParentType),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
     }
+
+    record struct MethodBodyCompilation(LNode function, CompilerContext context, DescribedBodyMethod method, QualifiedName? modulename);
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
         LNode function, QualifiedName modulename, string methodName = null, bool hasBody = true)
@@ -110,30 +121,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.IsDestructor = true;
         }
 
-        MethodBody body = null;
         if (hasBody)
         {
-            body = CompileBody(function, context, method, type, modulename);
+            //body = CompileBody(function, context, method, type, modulename);
+            _bodyCompilations.Add(new(function, context, method, modulename));
         }
-
-        /*
-        body = body.WithImplementation(
-                body.Implementation.Transform(
-                AllocaToRegister.Instance,
-                CopyPropagation.Instance,
-                new ConstantPropagation(),
-                GlobalValueNumbering.Instance,
-                CopyPropagation.Instance,
-                DeadValueElimination.Instance,
-                MemoryAccessElimination.Instance,
-                CopyPropagation.Instance,
-                new ConstantPropagation(),
-                DeadValueElimination.Instance,
-                ReassociateOperators.Instance,
-                DeadValueElimination.Instance
-            ));
-        */
-        method.Body = body;
 
         if (type.Methods.Any(_ => _.FullName.FullName.Equals(method.FullName.FullName)))
         {
@@ -307,6 +299,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
+        ConvertMethodBodies();
+
         return await next.Invoke(context);
     }
 
@@ -356,6 +350,31 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
 
                 block.Flow = UnreachableFlow.Instance;
+            }
+            else if (node.Calls(Symbols.ColonColon))
+            {
+                var callee = node.Args[1];
+                var typename = Utils.GetQualifiedName(node.Args[0]);
+
+                var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
+
+                AppendCall(context, block, callee, type.Methods, callee.Name.Name);
+            }
+            else
+            {
+                //ToDo: continue implementing static function call in same type
+                var type = method.ParentType;
+                var calleeName = node.Target;
+                var callee = type.Methods.FirstOrDefault(_ => _.IsStatic && _.Name.ToString() == calleeName.Name.Name);
+
+                if (callee != null)
+                {
+                    AppendCall(context, block, node, type.Methods);
+                }
+                else
+                {
+                    context.AddError(node, $"Cannot find static function '{calleeName.Name.Name}'");
+                }
             }
         }
     }
@@ -803,5 +822,33 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
 
         method.ReturnParameter = new Parameter(rtype);
+    }
+
+    private void ConvertMethodBodies()
+    {
+        foreach (var bodyCompilation in _bodyCompilations)
+        {
+            bodyCompilation.method.Body =
+                CompileBody(bodyCompilation.function, bodyCompilation.context,
+                bodyCompilation.method, bodyCompilation.modulename);
+
+            /*
+        body = body.WithImplementation(
+                body.Implementation.Transform(
+                AllocaToRegister.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                GlobalValueNumbering.Instance,
+                CopyPropagation.Instance,
+                DeadValueElimination.Instance,
+                MemoryAccessElimination.Instance,
+                CopyPropagation.Instance,
+                new ConstantPropagation(),
+                DeadValueElimination.Instance,
+                ReassociateOperators.Instance,
+                DeadValueElimination.Instance
+            ));
+        */
+        }
     }
 }

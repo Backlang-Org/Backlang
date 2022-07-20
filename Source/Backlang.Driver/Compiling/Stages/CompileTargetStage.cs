@@ -16,7 +16,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         if (!context.Messages.Any())
         {
-            AssemblyContentDescription description = GetDescription(context);
+            var description = GetDescription(context);
 
             context.CompilationTarget.BeforeCompiling(context);
 

@@ -11,6 +11,8 @@ public interface ICompilationTarget : ITarget
 
     TypeEnvironment Init(TypeResolver binder);
 
+    void InitReferences(CompilerContext context);
+
     void AfterCompiling(CompilerContext context);
 
     void BeforeCompiling(CompilerContext context);

@@ -34,4 +34,8 @@ public class BS2KTarget : ICompilationTarget
     {
         return new Bs2KTypeEnvironment();
     }
+
+    public void InitReferences(CompilerContext context)
+    {
+    }
 }

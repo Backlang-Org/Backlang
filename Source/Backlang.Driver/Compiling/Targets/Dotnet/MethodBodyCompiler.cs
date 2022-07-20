@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
@@ -13,23 +14,44 @@ public static class MethodBodyCompiler
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
+
         var variables = new Dictionary<string, VariableDefinition>();
 
-        foreach (var item in m.Body.Implementation.NamedInstructions)
+        foreach (var block in m.Body.Implementation.BasicBlocks)
+        {
+            var blockLocals =
+                 CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType);
+
+            foreach (var local in blockLocals)
+            {
+                variables.Add(local.Key, local.Value);
+            }
+        }
+
+        clrMethod.Body.MaxStackSize = 7;
+
+        return variables;
+    }
+
+    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType)
+    {
+        var variables = new Dictionary<string, VariableDefinition>();
+
+        foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
 
-            if (instruction.Prototype is CallPrototype callPrototype)
+            if (instruction.Prototype is CallPrototype)
             {
-                EmitCall(assemblyDefinition, ilProcessor, instruction, m.Body.Implementation);
+                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
                 EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
             }
-            else if (instruction.Prototype is LoadPrototype ld)
+            else if (instruction.Prototype is LoadPrototype)
             {
-                var valueInstruction = m.Body.Implementation.GetInstruction(instruction.Arguments[0]);
+                var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
                 EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
@@ -60,7 +82,7 @@ public static class MethodBodyCompiler
             }
         }
 
-        if (m.Body.Implementation.EntryPoint.Flow is ReturnFlow rf)
+        if (block.Flow is ReturnFlow rf)
         {
             if (rf.HasReturnValue)
             {
@@ -69,7 +91,7 @@ public static class MethodBodyCompiler
 
             ilProcessor.Emit(OpCodes.Ret);
         }
-        else if (m.Body.Implementation.EntryPoint.Flow is UnreachableFlow)
+        else if (block.Flow is UnreachableFlow)
         {
             if (clrMethod.ReturnType.Name == "Void")
             {
@@ -80,8 +102,6 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Throw);
             }
         }
-
-        clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
@@ -270,7 +290,7 @@ public static class MethodBodyCompiler
 
         var store = item.Instruction.Prototype;
 
-        if (store is AllocaPrototype sp)
+        if (store is AllocaPrototype)
         {
             ilProcessor.Emit(OpCodes.Stloc, variable);
 
@@ -300,17 +320,10 @@ public static class MethodBodyCompiler
 
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
     {
-        bool matches = false;
-        for (int i = 0; i < parameters.Count; i++)
-        {
-            if (parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString())
-            {
-                matches = (matches || i == 0) && parameters[i].ParameterType.FullName == method.Parameters[i].Type.FullName.ToString();
-            }
-        }
+        //ToDo: refactor to improve code
+        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
-        matches = matches || method.Parameters.Count == parameters.Count;
-
-        return matches;
+        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 }

@@ -7,7 +7,8 @@ public class CompilerDriver
 {
     public static async void Compile(CompilerContext context)
     {
-        if (string.IsNullOrEmpty(context.TempOutputPath)) context.TempOutputPath = Environment.CurrentDirectory;
+        if (string.IsNullOrEmpty(context.TempOutputPath))
+            context.TempOutputPath = Environment.CurrentDirectory;
 
         var hasError = (List<Message> messages) => messages.Any(_ => _.Severity == MessageSeverity.Error);
 
