@@ -13,11 +13,11 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class DotNetAssembly : ITargetAssembly
 {
-    private static List<MethodBodyCompilation> _methodBodyCompilations = new();
+    private static readonly List<MethodBodyCompilation> _methodBodyCompilations = new();
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
-    private readonly List<(TypeDefinition definition, QualifiedName name)> needToAdjust = new();
-    private AssemblyDefinition _assemblyDefinition;
+    private readonly List<(TypeDefinition definition, QualifiedName name)> _needToAdjust = new();
+    private readonly AssemblyDefinition _assemblyDefinition;
 
     public DotNetAssembly(AssemblyContentDescription description)
     {
@@ -222,7 +222,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private void AdjustBaseTypesAndInterfaces()
     {
-        foreach (var baseType in needToAdjust)
+        foreach (var baseType in _needToAdjust)
         {
             var type = Resolve(baseType.name).Resolve();
 
@@ -293,19 +293,20 @@ public class DotNetAssembly : ITargetAssembly
         foreach (var bodyCompilation in _methodBodyCompilations)
         {
             var variables =
-                                MethodBodyCompiler.Compile(bodyCompilation.m, bodyCompilation.clrMethod, _assemblyDefinition, bodyCompilation.clrType);
-            bodyCompilation.clrMethod.DebugInformation.Scope =
-                new ScopeDebugInformation(bodyCompilation.clrMethod.Body.Instructions[0],
-                    bodyCompilation.clrMethod.Body.Instructions.Last());
+                                MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
+
+            bodyCompilation.ClrMethod.DebugInformation.Scope =
+                new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
+                    bodyCompilation.ClrMethod.Body.Instructions.Last());
 
             foreach (var variable in variables)
             {
-                bodyCompilation.clrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
+                bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
             }
         }
     }
 
-    record struct MethodBodyCompilation(DescribedBodyMethod m, MethodDefinition clrMethod, TypeDefinition clrType);
+    private record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod, MethodDefinition ClrMethod, TypeDefinition ClrType);
 
     private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
     {
@@ -402,7 +403,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private void AddBaseType(TypeDefinition clrType, QualifiedName fullName)
     {
-        needToAdjust.Add((clrType, fullName));
+        _needToAdjust.Add((clrType, fullName));
     }
 
     private void ConvertCustomAttributes(DescribedType type, TypeDefinition clrType)
@@ -416,11 +417,11 @@ public class DotNetAssembly : ITargetAssembly
                 continue;
             }
 
-            ConvertCustomAttribute(clrType, type, attr);
+            ConvertCustomAttribute(clrType, attr);
         }
     }
 
-    private void ConvertCustomAttribute(TypeDefinition clrType, DescribedType type, DescribedAttribute attr)
+    private void ConvertCustomAttribute(TypeDefinition clrType, DescribedAttribute attr)
     {
         var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
         var attrCtor = attrType.Methods

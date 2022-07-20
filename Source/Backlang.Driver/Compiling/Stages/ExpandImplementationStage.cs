@@ -9,7 +9,7 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class ExpandImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static ImmutableList<Symbol> _primitiveTypes = new List<Symbol>()
+    private static readonly ImmutableList<Symbol> _primitiveTypes = new List<Symbol>()
     {
         (Symbol)"u8",
         (Symbol)"u16",
@@ -48,7 +48,35 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
         return LNode.Call(Symbols.ToExpand, LNode.List(Enumerable.Range(minIndex, difference + 1).Select(i => SyntaxTree.Type(_primitiveTypes[i].Name, LNode.List())).ToArray()));
     }
 
-    private void ExpandImplementations(CompilerContext context, CompilationUnit tree)
+    private static LNode GetTargets(LNode targets)
+    {
+        if (targets.Calls(Symbols.Range))
+        {
+            return GenerateRangeTargets(targets);
+        }
+        else if (targets.Calls(Symbols.ToExpand))
+        {
+            var newTargets = new LNodeList();
+            foreach (var arg in targets.Args)
+            {
+                if (arg.Calls(Symbols.Range))
+                {
+                    var rangeTargets = GenerateRangeTargets(arg).Args;
+                    newTargets.AddRange(rangeTargets);
+                }
+                else
+                {
+                    newTargets.Add(arg);
+                }
+            }
+
+            return targets.WithArgs(newTargets);
+        }
+
+        return targets;
+    }
+
+    private static void ExpandImplementations(CompilerContext context, CompilationUnit tree)
     {
         var newBody = new LNodeList();
 
@@ -106,33 +134,5 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
         }
 
         tree.Body = newBody;
-    }
-
-    private LNode GetTargets(LNode targets)
-    {
-        if (targets.Calls(Symbols.Range))
-        {
-            return GenerateRangeTargets(targets);
-        }
-        else if (targets.Calls(Symbols.ToExpand))
-        {
-            var newTargets = new LNodeList();
-            foreach (var arg in targets.Args)
-            {
-                if (arg.Calls(Symbols.Range))
-                {
-                    var rangeTargets = GenerateRangeTargets(arg).Args;
-                    newTargets.AddRange(rangeTargets);
-                }
-                else
-                {
-                    newTargets.Add(arg);
-                }
-            }
-
-            return targets.WithArgs(newTargets);
-        }
-
-        return targets;
     }
 }

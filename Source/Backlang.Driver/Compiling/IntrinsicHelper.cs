@@ -104,7 +104,7 @@ public static class IntrinsicHelper
     private static MethodInfo GetMatchingIntrinsicMethod(IMethod callee, Type intrinsicType)
     {
         var methods = intrinsicType.GetMethods().Where(_ => _.IsStatic)
-                    .Where(_ => _.Name.Equals(callee.Name.ToString(), StringComparison.InvariantCultureIgnoreCase));
+                    .Where(_ => _.Name.Equals(callee.Name.ToString(), StringComparison.OrdinalIgnoreCase));
 
         foreach (var m in methods)
         {
@@ -119,7 +119,7 @@ public static class IntrinsicHelper
 
     private static bool MatchesParameters(IMethod m, List<Type> argTypes)
     {
-        bool matches = false;
+        var matches = false;
         for (int i = 0; i < m.Parameters.Count; i++)
         {
             if (m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString())

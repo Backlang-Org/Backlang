@@ -28,7 +28,34 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         return await next.Invoke(context);
     }
 
-    private void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)
+    private static void ImplementDefaultConstructors(CompilerContext context, LNode st, QualifiedName modulename)
+    {
+        if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
+
+        var name = st.Args[0].Name;
+        var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
+
+        if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
+        {
+            var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
+            {
+                IsConstructor = true
+            };
+
+            ctorMethod.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+
+            foreach (var field in type.Fields)
+            {
+                ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
+            }
+
+            ctorMethod.Body = null; // ToDo: Make body set members (Lixou)
+
+            type.AddMethod(ctorMethod);
+        }
+    }
+
+    private static void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)
     {
         if (!(st.IsCall && st.Name == Symbols.Implementation)) return;
 
@@ -66,29 +93,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                     context.ExtensionsType.AddMethod(fn);
                 }
             }
-        }
-    }
-
-    private void ImplementDefaultConstructors(CompilerContext context, LNode st, QualifiedName modulename)
-    {
-        if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
-
-        var name = st.Args[0].Name;
-        var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
-        if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
-        {
-            var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)));
-            ctorMethod.IsConstructor = true;
-            ctorMethod.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
-
-            foreach (var field in type.Fields)
-            {
-                ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
-            }
-
-            ctorMethod.Body = null; // ToDo: Make body set members (Lixou)
-
-            type.AddMethod(ctorMethod);
         }
     }
 }

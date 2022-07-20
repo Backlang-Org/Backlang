@@ -290,7 +290,7 @@ public static class MethodBodyCompiler
 
         var store = item.Instruction.Prototype;
 
-        if (store is AllocaPrototype sp)
+        if (store is AllocaPrototype)
         {
             ilProcessor.Emit(OpCodes.Stloc, variable);
 
@@ -324,6 +324,6 @@ public static class MethodBodyCompiler
         var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
         var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
-        return methodParams.Equals(monocecilParams);
+        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 }

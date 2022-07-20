@@ -21,7 +21,7 @@ public class NameMangler
 
         foreach (var param in method.Parameters)
         {
-            sb.Append("$").Append(MangleTypeName(param.Type));
+            sb.Append('$').Append(MangleTypeName(param.Type));
         }
 
         return sb.ToString();
