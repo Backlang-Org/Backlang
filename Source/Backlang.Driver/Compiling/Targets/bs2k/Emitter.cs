@@ -145,6 +145,11 @@ public class Emitter
 
     private void EmitBlock(BasicBlock block)
     {
+        if (!string.IsNullOrEmpty(block.Tag.Name) && !block.IsEntryPoint)
+        {
+            Emit($"{block.Tag.Name}:", null, 0);
+        }
+
         foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
