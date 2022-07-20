@@ -65,7 +65,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         AppendBlock(function.Args[3], block, context, method, modulename);
 
         return new MethodBody(
-            new Parameter(parentType),
+            method.ReturnParameter,
             new Parameter(parentType),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
