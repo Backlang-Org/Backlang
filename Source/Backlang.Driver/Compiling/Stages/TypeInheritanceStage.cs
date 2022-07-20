@@ -61,9 +61,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         var testBlock = graph.AddBasicBlock("testBlock");
 
-        testBlock.AppendInstruction(Instruction.CreateLoad(context.Environment.String,
-            testBlock.AppendInstruction(Instruction.CreateConstant(new StringConstant("From other block"),
-            context.Environment.String))));
+        testBlock.AppendInstruction(Instruction.CreateLoad(context.Environment.Int32,
+            testBlock.AppendInstruction(Instruction.CreateConstant(new IntegerConstant(65),
+            context.Environment.Int32))));
 
         AppendBlock(function.Args[3], block, context, method, modulename);
 
