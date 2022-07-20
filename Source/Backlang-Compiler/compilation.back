@@ -20,3 +20,8 @@ public static func put_char() {
 		copy("&0", 'A');
 	}
 }
+
+struct Person {
+	let name: string;
+	let age: u8;
+}

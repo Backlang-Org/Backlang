@@ -1,9 +1,13 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
 using System.Runtime.CompilerServices;
@@ -49,7 +53,25 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
             }
 
-            ctorMethod.Body = null; // ToDo: Make body set members (Lixou)
+            var graph = new FlowGraphBuilder();
+            graph.AddAnalysis(new ConstantAnalysis<ExceptionDelayability>(PermissiveExceptionDelayability.Instance));
+
+            var block = graph.EntryPoint;
+
+            for (var i = 0; i < ctorMethod.Parameters.Count; i++)
+            {
+                var p = ctorMethod.Parameters[i];
+                var f = type.Fields[i];
+
+                block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type))); //this ptr
+
+                block.AppendInstruction(Instruction.CreateLoadArg(p));
+                block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
+            }
+
+            block.Flow = new ReturnFlow();
+
+            ctorMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
 
             type.AddMethod(ctorMethod);
         }
