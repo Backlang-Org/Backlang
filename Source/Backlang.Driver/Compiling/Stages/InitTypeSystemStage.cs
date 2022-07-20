@@ -23,7 +23,6 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
         if (string.IsNullOrEmpty(context.Target))
         {
             context.Target = "dotnet";
-            context.OutputFilename += ".dll";
         }
 
         if (context.OutputType == "dotnet")
