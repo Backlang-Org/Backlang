@@ -1,12 +1,12 @@
 
 public static func main() {
 	let k : i32 = 42;
-	let l : i32 = 2 + 3;
+	let l : i32 = 2 + 3 * 15;
 	let m : i32 = 1 ^ 2;
 
-	inline(dotnet) {
+	/*inline(dotnet) {
 		ldc_i(32);
-	}
+	}*/
 
 	inline(bs2k) {
 		copy("&0", 'A');
