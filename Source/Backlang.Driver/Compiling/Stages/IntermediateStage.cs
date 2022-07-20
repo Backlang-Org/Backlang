@@ -87,9 +87,12 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             var modulename = Utils.GetModuleName(tree);
 
-            ConvertTypesOrInterfaces(context, tree, modulename);
-            ConvertEnums(context, tree, modulename);
-            ConvertDiscriminatedUnions(context, tree, modulename);
+            foreach (var st in tree.Body)
+            {
+                ConvertTypesOrInterfaces(context, st, modulename);
+                ConvertEnums(context, st, modulename);
+                ConvertDiscriminatedUnions(context, st, modulename);
+            }
         }
 
         context.Assembly.AddType(context.ExtensionsType);
@@ -98,46 +101,40 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ConvertEnums(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private static void ConvertEnums(CompilerContext context, LNode @enum, QualifiedName modulename)
     {
-        foreach (var @enum in tree.Body)
-        {
-            if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) continue;
+        if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) return;
 
-            var name = @enum.Args[0].Name;
+        var name = @enum.Args[0].Name;
 
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
+        var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+        type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
 
-            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+        type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 
-            context.Assembly.AddType(type);
-        }
+        context.Assembly.AddType(type);
     }
 
-    private static void ConvertTypesOrInterfaces(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private static void ConvertTypesOrInterfaces(CompilerContext context, LNode st, QualifiedName modulename)
     {
-        foreach (var st in tree.Body)
+        if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) return;
+
+        var name = st.Args[0].Name;
+
+        var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+        if (st.Name == CodeSymbols.Struct)
         {
-            if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) continue;
-
-            var name = st.Args[0].Name;
-
-            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-            if (st.Name == CodeSymbols.Struct)
-            {
-                type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
-            }
-            else if (st.Name == CodeSymbols.Interface)
-            {
-                type.AddAttribute(FlagAttribute.InterfaceType);
-            }
-
-            Utils.SetAccessModifier(st, type);
-            SetOtherModifiers(st, type);
-
-            context.Assembly.AddType(type);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
         }
+        else if (st.Name == CodeSymbols.Interface)
+        {
+            type.AddAttribute(FlagAttribute.InterfaceType);
+        }
+
+        Utils.SetAccessModifier(st, type);
+        SetOtherModifiers(st, type);
+
+        context.Assembly.AddType(type);
     }
 
     private static void SetOtherModifiers(LNode node, DescribedType type)
@@ -152,84 +149,81 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private void ConvertDiscriminatedUnions(CompilerContext context, CompilationUnit tree, QualifiedName modulename)
+    private void ConvertDiscriminatedUnions(CompilerContext context, LNode discrim, QualifiedName modulename)
     {
-        foreach (var discrim in tree.Body)
+        if (!(discrim.IsCall && discrim.Name == Symbols.DiscriminatedUnion)) return;
+
+        var name = discrim.Args[0].Name;
+
+        var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+        Utils.SetAccessModifier(discrim, baseType);
+        baseType.IsAbstract = true;
+
+        context.Assembly.AddType(baseType);
+
+        foreach (var type in discrim.Args[1].Args)
         {
-            if (!(discrim.IsCall && discrim.Name == Symbols.DiscriminatedUnion)) continue;
+            var discName = type.Args[0].Name;
+            var discType = new DescribedType(new SimpleName(discName.Name).Qualify(modulename), context.Assembly);
+            Utils.SetAccessModifier(discrim, discType);
+            discType.AddBaseType(baseType);
+            context.Assembly.AddType(discType);
 
-            var name = discrim.Args[0].Name;
-
-            var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-            Utils.SetAccessModifier(discrim, baseType);
-            baseType.IsAbstract = true;
-
-            context.Assembly.AddType(baseType);
-
-            foreach (var type in discrim.Args[1].Args)
+            foreach (var field in type.Args[1].Args)
             {
-                var discName = type.Args[0].Name;
-                var discType = new DescribedType(new SimpleName(discName.Name).Qualify(modulename), context.Assembly);
-                Utils.SetAccessModifier(discrim, discType);
-                discType.AddBaseType(baseType);
-                context.Assembly.AddType(discType);
-
-                foreach (var field in type.Args[1].Args)
+                var fieldName = field.Args[1].Args[0].Name;
+                var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name), false, TypeInheritanceStage.ResolveTypeWithModule(field.Args[0].Args[0].Args[0], context, modulename, Utils.GetQualifiedName(field.Args[0].Args[0].Args[0])));
+                if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
-                    var fieldName = field.Args[1].Args[0].Name;
-                    var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name), false, TypeInheritanceStage.ResolveTypeWithModule(field.Args[0].Args[0].Args[0], context, modulename, Utils.GetQualifiedName(field.Args[0].Args[0].Args[0])));
-                    if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
-                    {
-                        fieldType.AddAttribute(Attributes.Mutable);
-                    }
-                    fieldType.IsPublic = true;
-                    discType.AddField(fieldType);
+                    fieldType.AddAttribute(Attributes.Mutable);
                 }
+                fieldType.IsPublic = true;
+                discType.AddField(fieldType);
+            }
 
-                var constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, context.Environment.Void);
-                constructor.IsConstructor = true;
-                constructor.IsPublic = true;
+            var constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, context.Environment.Void);
+            constructor.IsConstructor = true;
+            constructor.IsPublic = true;
 
-                foreach (var field in discType.Fields)
-                {
-                    constructor.AddParameter(new Parameter(field.FieldType, field.Name));
-                }
+            foreach (var field in discType.Fields)
+            {
+                constructor.AddParameter(new Parameter(field.FieldType, field.Name));
+            }
 
-                var graph = new FlowGraphBuilder();
-                // Use a permissive exception delayability model to make the optimizer's
-                // life easier.
-                graph.AddAnalysis(
-                    new ConstantAnalysis<ExceptionDelayability>(
-                        PermissiveExceptionDelayability.Instance));
+            var graph = new FlowGraphBuilder();
+            // Use a permissive exception delayability model to make the optimizer's
+            // life easier.
+            graph.AddAnalysis(
+                new ConstantAnalysis<ExceptionDelayability>(
+                    PermissiveExceptionDelayability.Instance));
 
-                // Grab the entry point block.
-                var block = graph.EntryPoint;
+            // Grab the entry point block.
+            var block = graph.EntryPoint;
 
-                block.Flow = new ReturnFlow();
+            block.Flow = new ReturnFlow();
 
-                var objType = context.Binder.ResolveTypes(new SimpleName("Object").Qualify("System")).First();
-                var baseCtor = objType.Methods.First(_ => _.IsConstructor);
+            var objType = context.Binder.ResolveTypes(new SimpleName("Object").Qualify("System")).First();
+            var baseCtor = objType.Methods.First(_ => _.IsConstructor);
+
+            block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
+            block.AppendInstruction(Instruction.CreateCall(baseCtor, Furesoft.Core.CodeDom.Compiler.Instructions.MethodLookup.Static, new[] { new ValueTag() }));
+
+            for (var i = 0; i < constructor.Parameters.Count; i++)
+            {
+                var p = constructor.Parameters[i];
+                var f = discType.Fields[i];
 
                 block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
-                block.AppendInstruction(Instruction.CreateCall(baseCtor, Furesoft.Core.CodeDom.Compiler.Instructions.MethodLookup.Static, new[] { new ValueTag() }));
 
-                for (var i = 0; i < constructor.Parameters.Count; i++)
-                {
-                    var p = constructor.Parameters[i];
-                    var f = discType.Fields[i];
-
-                    block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
-
-                    block.AppendInstruction(Instruction.CreateLoadArg(p));
-                    block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
-                }
-
-                block.Flow = new ReturnFlow();
-
-                constructor.Body = new MethodBody(new Parameter(), new Parameter(discType), EmptyArray<Parameter>.Value, graph.ToImmutable());
-
-                discType.AddMethod(constructor);
+                block.AppendInstruction(Instruction.CreateLoadArg(p));
+                block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
             }
+
+            block.Flow = new ReturnFlow();
+
+            constructor.Body = new MethodBody(new Parameter(), new Parameter(discType), EmptyArray<Parameter>.Value, graph.ToImmutable());
+
+            discType.AddMethod(constructor);
         }
     }
 }
