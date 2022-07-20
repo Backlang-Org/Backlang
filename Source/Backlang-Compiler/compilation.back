@@ -17,7 +17,7 @@ public static func main() {
 	}
 }
 
-public static func put_char() {
+public static func put_char(c : char) {
 	inline(bs2k) {
 		copy("&0", 'A');
 	}
