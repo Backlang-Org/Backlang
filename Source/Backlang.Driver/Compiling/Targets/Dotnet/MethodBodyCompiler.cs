@@ -41,7 +41,7 @@ public static class MethodBodyCompiler
         {
             var instruction = item.Instruction;
 
-            if (instruction.Prototype is CallPrototype callPrototype)
+            if (instruction.Prototype is CallPrototype)
             {
                 EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph);
             }
@@ -49,7 +49,7 @@ public static class MethodBodyCompiler
             {
                 EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
             }
-            else if (instruction.Prototype is LoadPrototype ld)
+            else if (instruction.Prototype is LoadPrototype)
             {
                 var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
                 EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
