@@ -93,11 +93,14 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename);
             }
 
-            if (node.Name == CodeSymbols.Var)
+            if (node.Calls(CodeSymbols.Var))
             {
                 AppendVariableDeclaration(context, method, block, node, modulename);
             }
-            else if (node.Name == (Symbol)"print")
+            else if (node.Calls(CodeSymbols.If))
+            {
+            }
+            else if (node.Calls((Symbol)"print"))
             {
                 AppendCall(context, block, node, context.writeMethods, "Write");
             }
