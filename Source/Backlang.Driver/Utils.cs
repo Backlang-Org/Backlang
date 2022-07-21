@@ -26,7 +26,7 @@ public sealed class Utils
 
         for (var i = 0; i < random.Next(5, 9); i++)
         {
-            sb.Append(ALPHABET[random.Next()]);
+            sb.Append(ALPHABET[random.Next(ALPHABET.Length)]);
         }
 
         return sb.ToString();
@@ -79,6 +79,11 @@ public sealed class Utils
         }
 
         return new SimpleName(lNode.Name.Name).Qualify();
+    }
+
+    public static string NewLabel(string name)
+    {
+        return $"{name}_{GenerateIdentifier()}";
     }
 
     private static QualifiedName ShrinkDottedModuleName(LNode lNode)
