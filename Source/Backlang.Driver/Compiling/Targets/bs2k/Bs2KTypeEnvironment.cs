@@ -13,6 +13,7 @@ public class Bs2KTypeEnvironment : TypeEnvironment
         Assembly = new DescribedAssembly(new SimpleName("System").Qualify());
 
         ((DescribedAssembly)Assembly).AddType(Void);
+        ((DescribedAssembly)Assembly).AddType(Boolean);
         ((DescribedAssembly)Assembly).AddType(String);
         ((DescribedAssembly)Assembly).AddType(Char);
         ((DescribedAssembly)Assembly).AddType(Object);
@@ -78,6 +79,7 @@ public class Bs2KTypeEnvironment : TypeEnvironment
     {
         integerType = sizeInBits switch
         {
+            1 => new BooleanType(Assembly),
             8 => new U8Type(Assembly),
             16 => new U16Type(Assembly),
             32 => new U32Type(Assembly),
