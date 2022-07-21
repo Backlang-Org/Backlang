@@ -181,8 +181,14 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         var while_start = block.Graph.AddBasicBlock(Utils.NewLabel("while_start"));
         AppendBlock(body, while_start, context, method, modulename);
 
+        var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
+        AppendExpression(while_condition, condition, (DescribedType)context.Environment.Boolean, method);
+        while_condition.Flow = new JumpFlow(while_start);
+
         var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
-        block.Flow = new JumpFlow(while_end);
+        block.Flow = new JumpFlow(while_condition);
+
+        while_start.Flow = new JumpFlow(while_end);
 
         if (condition.Calls(CodeSymbols.Bool))
         {
