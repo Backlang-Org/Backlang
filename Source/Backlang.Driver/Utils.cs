@@ -1,4 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
@@ -8,6 +10,14 @@ namespace Backlang.Driver;
 
 public sealed class Utils
 {
+    public static FlowGraphBuilder CreateGraphBuilder()
+    {
+        var graph = new FlowGraphBuilder();
+        graph.AddAnalysis(new ConstantAnalysis<ExceptionDelayability>(PermissiveExceptionDelayability.Instance));
+
+        return graph;
+    }
+
     public static string GenerateIdentifier()
     {
         var sb = new StringBuilder();

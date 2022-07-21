@@ -2,7 +2,6 @@
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
@@ -22,9 +21,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
         QualifiedName? modulename)
     {
-        var graph = new FlowGraphBuilder();
-        graph.AddAnalysis(new ConstantAnalysis<ExceptionDelayability>(PermissiveExceptionDelayability.Instance));
-
+        var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
 
         AppendBlock(function.Args[3], block, context, method, modulename);
@@ -372,8 +369,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
             }
 
-            var graph = new FlowGraphBuilder();
-            graph.AddAnalysis(new ConstantAnalysis<ExceptionDelayability>(PermissiveExceptionDelayability.Instance));
+            var graph = Utils.CreateGraphBuilder();
 
             var block = graph.EntryPoint;
 
