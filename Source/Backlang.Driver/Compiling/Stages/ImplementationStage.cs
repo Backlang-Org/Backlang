@@ -104,6 +104,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 AppendVariableDeclaration(context, method, block, node, modulename);
             }
+            else if (node.Calls(CodeSymbols.If))
+            {
+                block = AppendIf(context, method, block, node, modulename);
+            }
             else if (node.Calls(CodeSymbols.While))
             {
                 block = AppendWhile(context, method, block, node, modulename);
@@ -175,6 +179,37 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         return block;
     }
 
+    private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    {
+        var ifBlock = block.Graph.AddBasicBlock(Utils.NewLabel("if"));
+        AppendBlock(node.Args[0].Args[1], ifBlock, context, method, modulename);
+
+        if (node.Args[0].Args[2] != LNode.Missing)
+        {
+            var elseBlock = block.Graph.AddBasicBlock(Utils.NewLabel("else"));
+            AppendBlock(node.Args[0].Args[2], elseBlock, context, method, modulename);
+        }
+
+        var condition = node.Args[0].Args[0];
+        var if_condition = block.Graph.AddBasicBlock(Utils.NewLabel("if_condition"));
+        if (condition.Calls(CodeSymbols.Bool))
+        {
+            if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.True);
+        }
+        else
+        {
+            AppendExpression(if_condition, condition, context.Environment.Boolean, method);
+            if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
+        }
+
+        block.Flow = new JumpFlow(if_condition);
+
+        var after = block.Graph.AddBasicBlock(Utils.NewLabel("after"));
+        ifBlock.Flow = new JumpFlow(after);
+
+        return after;
+    }
+
     private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var condition = node.Args[0];
@@ -184,7 +219,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         AppendBlock(body, while_start, context, method, modulename);
 
         var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
-        AppendExpression(while_condition, condition, (DescribedType)context.Environment.Boolean, method);
+        AppendExpression(while_condition, condition, context.Environment.Boolean, method);
+        while_condition.Flow = new JumpFlow(while_start);
 
         var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
         block.Flow = new JumpFlow(while_condition);
