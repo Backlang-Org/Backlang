@@ -16,7 +16,10 @@ public class Bs2kAssembly : ITargetAssembly
     {
         var emitter = new Emitter(Contents.EntryPoint);
 
-        emitter.Emit($"jump {NameMangler.Mangle(Contents.EntryPoint)}", "call main method\n", 0);
+        if (!Contents.Assembly.IsLibrary)
+        {
+            emitter.Emit($"jump {NameMangler.Mangle(Contents.EntryPoint)}", "call main method\n", 0);
+        }
 
         var program = Contents.Assembly.Types.First(_ => _.FullName.ToString() == $".{Names.ProgramClass}");
 
