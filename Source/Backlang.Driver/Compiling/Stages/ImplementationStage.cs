@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -88,6 +88,13 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         foreach (var node in blkNode.Args)
         {
             if (!node.IsCall) continue;
+
+            if (node.Calls(Symbols.Block))
+            {
+                if (node.ArgCount == 0) continue;
+
+                AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename);
+            }
 
             if (node.Name == CodeSymbols.Var)
             {
