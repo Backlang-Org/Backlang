@@ -16,10 +16,17 @@ using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
+public enum ConditionalJumpKind
+{
+    NotEquals,
+    Equals,
+    True,
+}
+
 public sealed class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
-        QualifiedName? modulename)
+            QualifiedName? modulename)
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
@@ -97,8 +104,9 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 AppendVariableDeclaration(context, method, block, node, modulename);
             }
-            else if (node.Calls(CodeSymbols.If))
+            else if (node.Calls(CodeSymbols.While))
             {
+                AppendWhile(context, method, block, node, modulename);
             }
             else if (node.Calls((Symbol)"print"))
             {
@@ -162,6 +170,28 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                     context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'");
                 }
             }
+        }
+    }
+
+    private static void AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    {
+        var condition = node.Args[0];
+        var body = node.Args[1];
+
+        var while_start = block.Graph.AddBasicBlock(Utils.NewLabel("while_start"));
+        AppendBlock(body, while_start, context, method, modulename);
+
+        var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
+        block.Flow = new JumpFlow(while_end);
+
+        if (condition.Calls(CodeSymbols.Bool))
+        {
+            while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
+        }
+        else
+        {
+            AppendExpression(block, condition, (DescribedType)method.ParentType, method);
+            while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
         }
     }
 

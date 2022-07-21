@@ -11,6 +11,8 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
+    private static Dictionary<string, Mono.Cecil.Cil.Instruction> _labels = new Dictionary<string, Mono.Cecil.Cil.Instruction>();
+
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
@@ -90,6 +92,10 @@ public static class MethodBodyCompiler
             }
 
             ilProcessor.Emit(OpCodes.Ret);
+        }
+        else if (block.Flow is JumpFlow jf)
+        {
+            ilProcessor.Emit(OpCodes.Jmp, _labels[jf.Branch.Target.Name]);
         }
         else if (block.Flow is UnreachableFlow)
         {
@@ -173,6 +179,7 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Ldc_I4, 0);
                 ilProcessor.Emit(OpCodes.Ceq);
                 break;
+
             case "arith.<":
                 ilProcessor.Emit(OpCodes.Clt); break;
             case "arith.<=":
@@ -180,6 +187,7 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Ldc_I4, 0);
                 ilProcessor.Emit(OpCodes.Ceq);
                 break;
+
             case "arith.>":
                 ilProcessor.Emit(OpCodes.Cgt); break;
             case "arith.>=":
