@@ -10,6 +10,8 @@ namespace Backlang.Driver;
 
 public sealed class Utils
 {
+    private static int labelCounter;
+
     public static FlowGraphBuilder CreateGraphBuilder()
     {
         var graph = new FlowGraphBuilder();
@@ -83,7 +85,7 @@ public sealed class Utils
 
     public static string NewLabel(string name)
     {
-        return $"{name}_{GenerateIdentifier()}";
+        return $"{name}_{labelCounter++}";
     }
 
     private static QualifiedName ShrinkDottedModuleName(LNode lNode)
