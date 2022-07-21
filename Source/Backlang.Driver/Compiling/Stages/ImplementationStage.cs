@@ -196,7 +196,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         }
         else
         {
-            AppendExpression(block, condition, (DescribedType)method.ParentType, method);
+            AppendExpression(block, condition, method.ParentType, method);
             while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
         }
     }
@@ -288,7 +288,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
     }
 
-    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, DescribedType elementType, IMethod method)
+    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
     {
         if (node.ArgCount == 1 && node.Args[0].HasValue)
         {
