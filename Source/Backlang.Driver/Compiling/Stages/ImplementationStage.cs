@@ -87,7 +87,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         }
     }
 
-    private static void AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename)
+    private static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename)
     {
         foreach (var node in blkNode.Args)
         {
@@ -97,7 +97,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 if (node.ArgCount == 0) continue;
 
-                AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename);
+                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename);
             }
 
             if (node.Calls(CodeSymbols.Var))
@@ -106,7 +106,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             }
             else if (node.Calls(CodeSymbols.While))
             {
-                AppendWhile(context, method, block, node, modulename);
+                block = AppendWhile(context, method, block, node, modulename);
             }
             else if (node.Calls((Symbol)"print"))
             {
@@ -171,9 +171,11 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 }
             }
         }
+
+        return block;
     }
 
-    private static void AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var condition = node.Args[0];
         var body = node.Args[1];
@@ -183,7 +185,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
         AppendExpression(while_condition, condition, (DescribedType)context.Environment.Boolean, method);
-        while_condition.Flow = new JumpFlow(while_start);
 
         var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
         block.Flow = new JumpFlow(while_condition);
@@ -199,6 +200,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             AppendExpression(block, condition, method.ParentType, method);
             while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
         }
+
+        return block.Graph.AddBasicBlock();
     }
 
     private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
