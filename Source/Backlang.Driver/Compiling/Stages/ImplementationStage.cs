@@ -210,7 +210,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         return after;
     }
 
-    private static void AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
         var condition = node.Args[0];
         var body = node.Args[1];
