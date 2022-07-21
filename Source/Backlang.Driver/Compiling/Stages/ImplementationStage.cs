@@ -148,7 +148,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 //ToDo: continue implementing static function call in same type
                 var type = method.ParentType;
                 var calleeName = node.Target;
-                var callee = type.Methods.FirstOrDefault(_ => _.IsStatic && _.Name.ToString() == calleeName.Name.Name);
+                var callee = type.Methods.FirstOrDefault(_ => _.Name.ToString() == calleeName.Name.Name);
 
                 if (callee != null)
                 {
@@ -156,7 +156,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 }
                 else
                 {
-                    context.AddError(node, $"Cannot find static function '{calleeName.Name.Name}'");
+                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'");
                 }
             }
         }
