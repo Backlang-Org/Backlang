@@ -16,7 +16,10 @@
     <Description>The MSBuild SDK containing build targets and runtime.</Description>    
     <AssemblyVersion>$(Version)</AssemblyVersion>    
     <FileVersion>$(Version)</FileVersion>    
-    <Version>1.0.57</Version>
+    <Version>1.0.58</Version>    
+    <PackageIcon>logo.png</PackageIcon>    
+    <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>    
+    <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
@@ -46,6 +49,12 @@
       PostBuildEvent
     </CoreBuildDependsOn>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\..\VSCode-Extension\Source\media\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
