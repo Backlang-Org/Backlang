@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -237,7 +237,15 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             }
         }
 
-        block.AppendParameter(new BlockParameter(elementType, decl.Args[0].Name.Name));
+        var varname = decl.Args[0].Name.Name;
+        if (!block.Parameters.Select(_ => _.Tag.Name).Contains(varname))
+        {
+            block.AppendParameter(new BlockParameter(elementType, varname));
+        }
+        else
+        {
+            context.AddError(decl.Args[0], $"{varname} already declared");
+        }
 
         AppendExpression(block, decl.Args[1], elementType, method);
 
