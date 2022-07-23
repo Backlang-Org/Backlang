@@ -8,6 +8,10 @@ public static func main() {
 
 	let isCool : bool = k < l;
 
+	while true {
+		put_char('a');
+	}
+
 	if true {
 		put_char('y');
 		put_char('a');

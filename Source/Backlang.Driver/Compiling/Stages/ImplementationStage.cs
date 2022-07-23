@@ -181,64 +181,69 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
-        var ifBlock = block.Graph.AddBasicBlock(Utils.NewLabel("if"));
-        AppendBlock(node.Args[0].Args[1], ifBlock, context, method, modulename);
-
-        //node.Args[0].Args[2] != LNode.Missing
-        if (node is (_, (_, _, var body, var el)) && el != LNode.Missing)
+        if (node is (_, (_, var condition, var body, var el)))
         {
-            var elseBlock = block.Graph.AddBasicBlock(Utils.NewLabel("else"));
-            AppendBlock(node.Args[0].Args[2], elseBlock, context, method, modulename);
+            var ifBlock = block.Graph.AddBasicBlock(Utils.NewLabel("if"));
+            AppendBlock(body, ifBlock, context, method, modulename);
+
+            if (el != LNode.Missing)
+            {
+                var elseBlock = block.Graph.AddBasicBlock(Utils.NewLabel("else"));
+                AppendBlock(el, elseBlock, context, method, modulename);
+            }
+
+            var if_condition = block.Graph.AddBasicBlock(Utils.NewLabel("if_condition"));
+            if (condition.Calls(CodeSymbols.Bool))
+            {
+                if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.True);
+            }
+            else
+            {
+                AppendExpression(if_condition, condition, context.Environment.Boolean, method);
+                if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
+            }
+
+            block.Flow = new JumpFlow(if_condition);
+
+            var after = block.Graph.AddBasicBlock(Utils.NewLabel("after"));
+            ifBlock.Flow = new JumpFlow(after);
+
+            return after;
         }
 
-        var condition = node.Args[0].Args[0];
-        var if_condition = block.Graph.AddBasicBlock(Utils.NewLabel("if_condition"));
-        if (condition.Calls(CodeSymbols.Bool))
-        {
-            if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.True);
-        }
-        else
-        {
-            AppendExpression(if_condition, condition, context.Environment.Boolean, method);
-            if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
-        }
-
-        block.Flow = new JumpFlow(if_condition);
-
-        var after = block.Graph.AddBasicBlock(Utils.NewLabel("after"));
-        ifBlock.Flow = new JumpFlow(after);
-
-        return after;
+        return null;
     }
 
     private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
     {
-        var condition = node.Args[0];
-        var body = node.Args[1];
-
-        var while_start = block.Graph.AddBasicBlock(Utils.NewLabel("while_start"));
-        AppendBlock(body, while_start, context, method, modulename);
-
-        var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
-        AppendExpression(while_condition, condition, context.Environment.Boolean, method);
-        while_condition.Flow = new JumpFlow(while_start);
-
-        var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
-        block.Flow = new JumpFlow(while_condition);
-
-        while_start.Flow = new JumpFlow(while_end);
-
-        if (condition.Calls(CodeSymbols.Bool))
+        if (node is (_, var condition, var body))
         {
-            while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
-        }
-        else
-        {
-            AppendExpression(block, condition, method.ParentType, method);
-            while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
+            var while_start = block.Graph.AddBasicBlock(Utils.NewLabel("while_start"));
+            AppendBlock(body, while_start, context, method, modulename);
+
+            var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
+            AppendExpression(while_condition, condition, context.Environment.Boolean, method);
+            while_condition.Flow = new JumpFlow(while_start);
+
+            var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
+            block.Flow = new JumpFlow(while_condition);
+
+            while_start.Flow = new JumpFlow(while_end);
+
+            if (condition.Calls(CodeSymbols.Bool))
+            {
+                while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
+            }
+            else
+            {
+                AppendExpression(block, condition, method.ParentType, method);
+                while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
+            }
+
+            return block.Graph.AddBasicBlock();
         }
 
-        return block.Graph.AddBasicBlock();
+        return null;
     }
 
     private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
