@@ -184,7 +184,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         var ifBlock = block.Graph.AddBasicBlock(Utils.NewLabel("if"));
         AppendBlock(node.Args[0].Args[1], ifBlock, context, method, modulename);
 
-        if (node.Args[0].Args[2] != LNode.Missing)
+        //node.Args[0].Args[2] != LNode.Missing
+        if (node is (_, (_, _, var body, var el)) && el != LNode.Missing)
         {
             var elseBlock = block.Graph.AddBasicBlock(Utils.NewLabel("else"));
             AppendBlock(node.Args[0].Args[2], elseBlock, context, method, modulename);
