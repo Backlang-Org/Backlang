@@ -70,6 +70,12 @@ public class Emitter
             case "arith.|": Emit("or R1, R2, R3", null, indentlevel); break;
             case "arith.&": Emit("and R1, R2, R3", null, indentlevel); break;
             case "arith.^": Emit("xor R1, R2, R3", null, indentlevel); break;
+            case "arith.==": Emit("comp_eq R1, R2, R3", null, indentlevel); break;
+            case "arith.!=": Emit("comp_neq R1, R2, R3", null, indentlevel); break;
+            case "arith.<": Emit("comp_lt R1, R2, R3", null, indentlevel); break;
+            case "arith.<=": Emit("comp_le R1, R2, R3", null, indentlevel); break;
+            case "arith.>": Emit("comp_gt R1, R2, R3", null, indentlevel); break;
+            case "arith.>=": Emit("comp_ge R1, R2, R3", null, indentlevel); break;
             default:
                 break;
         }
