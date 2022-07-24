@@ -45,6 +45,9 @@ public static class IntrinsicHelper
             case NullConstant:
                 return null;
 
+            case EnumConstant obj:
+                return obj.Value;
+
             case IntegerConstant ic:
                 switch (ic.Spec.Size)
                 {

@@ -56,6 +56,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         else if (value.Calls(Symbols.Float32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
         else if (value.Calls(Symbols.Float64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
         else if (value is IdNode id) { } //todo: symbol table
+        else
+        {
+            return ClrTypeEnvironmentBuilder.ResolveType(resolver, value.Args[0].Value.GetType());
+        }
 
         return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
     }
@@ -175,7 +179,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                     {
                         context.AddError(node, $"Cannot find function '{callee.Name.Name}'");
                     }
-                } else
+                }
+                else
                 {
                     // ToDo: other things and so on...
                 }
@@ -323,6 +328,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
+        if (method == null) return;
+
         if (!method.IsStatic)
         {
             callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
@@ -456,7 +463,22 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 break;
 
             default:
-                constant = NullConstant.Instance;
+                if (value == null)
+                {
+                    constant = NullConstant.Instance;
+                }
+                else
+                {
+                    if (elementType.Attributes.Contains(IntrinsicAttribute.GetIntrinsicAttributeType("#Enum")))
+                    {
+                        constant = new EnumConstant(value, elementType);
+                    }
+                    else
+                    {
+                        constant = null;
+                    }
+                }
+
                 break;
         }
 

@@ -163,7 +163,7 @@ public class ClrTypeEnvironmentBuilder
     {
         foreach (var p in parameterInfos)
         {
-            var type = resolver.ResolveTypes(new SimpleName(p.ParameterType.Name).Qualify(p.ParameterType.Namespace)).FirstOrDefault();
+            var type = ClrTypeEnvironmentBuilder.ResolveType(resolver, p.ParameterType);
 
             if (type != null)
             {
