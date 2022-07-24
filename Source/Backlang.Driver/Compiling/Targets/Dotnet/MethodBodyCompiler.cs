@@ -6,23 +6,25 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Instruction = Mono.Cecil.Cil.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    private static Dictionary<string, Mono.Cecil.Cil.Instruction> _labels = new Dictionary<string, Mono.Cecil.Cil.Instruction>();
-
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
         var variables = new Dictionary<string, VariableDefinition>();
 
+        var labels = new Dictionary<string, Mono.Cecil.Cil.Instruction>();
+        var jumps = new Dictionary<Mono.Cecil.Cil.Instruction, string>();
+
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
             var blockLocals =
-                 CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType);
+                 CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, jumps);
 
             foreach (var local in blockLocals)
             {
@@ -30,14 +32,30 @@ public static class MethodBodyCompiler
             }
         }
 
+        AdjustJumps(ilProcessor, labels, jumps);
+
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
 
-    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType)
+    private static void AdjustJumps(ILProcessor ilProcessor, Dictionary<string, Instruction> labels, Dictionary<Instruction, string> jumps)
+    {
+        foreach (var jump in jumps)
+        {
+            var instruction = Instruction.Create(OpCodes.Br_S, labels[jump.Value]);
+            ilProcessor.InsertAfter(jump.Key, instruction);
+        }
+    }
+
+    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, string> jumps)
     {
         var variables = new Dictionary<string, VariableDefinition>();
+
+        var nop = Instruction.Create(OpCodes.Nop);
+        ilProcessor.Append(nop);
+
+        labels.Add(block.Tag.Name, nop);
 
         foreach (var item in block.NamedInstructions)
         {
@@ -95,7 +113,7 @@ public static class MethodBodyCompiler
         }
         else if (block.Flow is JumpFlow jf)
         {
-            ilProcessor.Emit(OpCodes.Jmp, _labels[jf.Branch.Target.Name]);
+            jumps.Add(nop, jf.Branch.Target.Name);
         }
         else if (block.Flow is UnreachableFlow)
         {
