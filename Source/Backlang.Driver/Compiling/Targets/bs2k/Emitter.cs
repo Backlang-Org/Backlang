@@ -47,7 +47,7 @@ public class Emitter
 
     public void Emit(string instruction, string comment = null, int indentlevel = 1)
     {
-        _builder.Append(new String('\t', indentlevel));
+        _builder.Append(new string('\t', indentlevel));
 
         if (comment == null)
         {

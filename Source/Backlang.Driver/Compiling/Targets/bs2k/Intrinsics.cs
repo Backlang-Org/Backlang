@@ -6,12 +6,13 @@ public static class Intrinsics
     public static Register register;
     public static Addresses addresses;
 
-    [IntrinsicAlias]
     public static Constants constants;
 
-    public static string Copy(string target, char value) => Copy(target, (int)value);
+    public static string Copy(char value, string target) => Copy((int)value, target);
 
-    public static string Copy(string target, int value) => $"copy {value}, {target}";
+    public static string Copy(int value, string target) => $"copy {value}, {target}";
+
+    public static string Copy(int value, Register target) => $"copy {value}, {target}";
 
     public static string Jump(string label) => $"jump {label}";
 
