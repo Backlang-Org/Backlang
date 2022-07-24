@@ -12,14 +12,14 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
+    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
         var variables = new Dictionary<string, VariableDefinition>();
 
-        var labels = new Dictionary<string, Mono.Cecil.Cil.Instruction>();
-        var jumps = new Dictionary<Mono.Cecil.Cil.Instruction, string>();
+        var labels = new Dictionary<string, Instruction>();
+        var jumps = new Dictionary<Instruction, (string, object)>();
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
@@ -39,16 +39,29 @@ public static class MethodBodyCompiler
         return variables;
     }
 
-    private static void AdjustJumps(ILProcessor ilProcessor, Dictionary<string, Instruction> labels, Dictionary<Instruction, string> jumps)
+    private static void AdjustJumps(ILProcessor ilProcessor,
+        Dictionary<string, Instruction> labels, Dictionary<Instruction, (string label, object selector)> jumps)
     {
         foreach (var jump in jumps)
         {
-            var instruction = Instruction.Create(OpCodes.Br_S, labels[jump.Value]);
+            OpCode opcode;
+
+            if (jump.Value.selector == null)
+            {
+                opcode = OpCodes.Br_S;
+            }
+            else
+            {
+                //ToDo: implement conditional jumps
+                opcode = OpCodes.Brtrue;
+            }
+
+            var instruction = Instruction.Create(opcode, labels[jump.Value.label]);
             ilProcessor.InsertAfter(jump.Key, instruction);
         }
     }
 
-    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, string> jumps)
+    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps)
     {
         var variables = new Dictionary<string, VariableDefinition>();
 
@@ -113,7 +126,11 @@ public static class MethodBodyCompiler
         }
         else if (block.Flow is JumpFlow jf)
         {
-            jumps.Add(nop, jf.Branch.Target.Name);
+            jumps.Add(nop, (jf.Branch.Target.Name, null));
+        }
+        else if (block.Flow is JumpConditionalFlow jcf)
+        {
+            jumps.Add(nop, (jcf.Branch.Target.Name, jcf.ConditionSelector));
         }
         else if (block.Flow is UnreachableFlow)
         {
@@ -223,7 +240,7 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Newobj, method);
     }
 
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, Furesoft.Core.CodeDom.Compiler.FlowGraph implementation)
+    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, FlowGraph implementation)
     {
         var callPrototype = (CallPrototype)instruction.Prototype;
 
@@ -327,7 +344,7 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 
