@@ -12,7 +12,7 @@ namespace Backlang.Driver.Compiling.Targets.bs2k;
 public class Emitter
 {
     private readonly IMethod _mainMethod;
-    private StringBuilder _builder = new();
+    private readonly StringBuilder _builder = new();
 
     public Emitter(IMethod mainMethod)
     {
