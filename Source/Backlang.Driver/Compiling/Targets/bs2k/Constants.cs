@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Driver.Compiling.Targets.bs2k;
 
-//ToDo: add way to specify aliasing constants -> call by int not by enum
+[IntrinsicAlias]
 public enum Constants
 {
     TERMINAL_CURSOR_MODE_BLINKING = 0,
