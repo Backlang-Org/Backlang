@@ -7,7 +7,7 @@ namespace Backlang.Driver.InternalMacros;
 [ContainsMacros]
 public static class IntrinsicsMacros
 {
-    private static string[] availableNames;
+    private static string[] intrinsicNames;
 
     [LexicalMacro("inline(dotnet) {}", "Make Intrinsics Usable", "inline", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode InlineBlock(LNode node, IMacroContext context)
@@ -38,9 +38,9 @@ public static class IntrinsicsMacros
             return LNode.Call((Symbol)"'{}");
         }
 
-        if (availableNames == null)
+        if (intrinsicNames == null)
         {
-            availableNames = InitAvailableNames(compContext.CompilationTarget.IntrinsicType);
+            intrinsicNames = InitAvailableIntrinsicNames(compContext.CompilationTarget.IntrinsicType);
         }
 
         var availableConstants = GetAvailableConstants(compContext.CompilationTarget.IntrinsicType);
@@ -48,7 +48,7 @@ public static class IntrinsicsMacros
         for (var i = 0; i < body.Args.Count; i++)
         {
             var calls = body.Args[i];
-            if (!availableNames.Contains(calls.Name.Name))
+            if (!intrinsicNames.Contains(calls.Name.Name))
             {
                 compContext.AddError(calls, $"{calls.Name.Name} is no intrinsic");
                 continue;
@@ -134,7 +134,7 @@ public static class IntrinsicsMacros
         return qualifiedName.dot(instrinsicType.Name).coloncolon(call);
     }
 
-    private static string[] InitAvailableNames(Type intrinsicType)
+    private static string[] InitAvailableIntrinsicNames(Type intrinsicType)
     {
         return intrinsicType.GetMethods()
             .Where(_ => _.IsStatic)
