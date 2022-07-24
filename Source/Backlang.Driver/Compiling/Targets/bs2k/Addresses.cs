@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Driver.Compiling.Targets.bs2k;
 
-//ToDo: Figure out address values for enum
+//ToDo: Figure out address values for enum and add rest: https://github.com/Backseating-Committee-2k/Upholsterer2k/blob/main/constants.c
 public enum Addresses
 {
     ENTRY_POINT,
