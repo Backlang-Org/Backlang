@@ -1,6 +1,8 @@
-﻿using LeMP;
+﻿using Backlang.Driver.Compiling;
+using LeMP;
 using Loyc;
 using Loyc.Syntax;
+using System.Reflection;
 
 namespace Backlang.Driver.InternalMacros;
 
@@ -43,7 +45,8 @@ public static class IntrinsicsMacros
             intrinsicNames = InitAvailableIntrinsicNames(compContext.CompilationTarget.IntrinsicType);
         }
 
-        var availableConstants = GetAvailableConstants(compContext.CompilationTarget.IntrinsicType);
+        var availableConstants =
+            GetAvailableConstants(compContext.CompilationTarget.IntrinsicType);
 
         for (var i = 0; i < body.Args.Count; i++)
         {
@@ -54,7 +57,7 @@ public static class IntrinsicsMacros
                 continue;
             }
 
-            calls = ConvertCall(calls, compContext, availableConstants);
+            calls = ConvertCall(calls, compContext, availableConstants, compContext.CompilationTarget.IntrinsicType);
 
             var newCall = ConvertIntrinsic(calls, compContext.CompilationTarget.IntrinsicType);
             newBodyArgs = newBodyArgs.Add(newCall);
@@ -63,7 +66,7 @@ public static class IntrinsicsMacros
         return LNode.Call((Symbol)"'{}", newBodyArgs).WithStyle(NodeStyle.Operator);
     }
 
-    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants)
+    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants, Type intrinsicType)
     {
         var newArgs = new LNodeList();
 
@@ -71,16 +74,25 @@ public static class IntrinsicsMacros
         {
             if (arg.IsId)
             {
-                var constantExists = availableConstants.ContainsKey(arg.Name.Name);
+                var constant = arg.Name.Name;
+                var constantExists = availableConstants.ContainsKey(constant);
 
                 if (!constantExists)
                 {
-                    context.AddError(arg, $"Constant '{arg.Name.Name}' does not exists");
+                    context.AddError(arg, $"Constant '{constant}' does not exists");
                     continue;
                 }
 
-                var constantValue = availableConstants[arg.Name.Name];
-                newArgs.Add(LNode.Call((Symbol)$"#{constantValue.GetType().Name}", LNode.List(LNode.Literal(constantValue))));
+                var constantValue = availableConstants[constant];
+
+                if (IsAlias(constantValue))
+                {
+                    newArgs.Add(LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal((int)constantValue))));
+                }
+                else
+                {
+                    newArgs.Add(LNode.Call((Symbol)$"#{constantValue.GetType().Name}", LNode.List(LNode.Literal(constantValue))));
+                }
             }
             else
             {
@@ -89,6 +101,13 @@ public static class IntrinsicsMacros
         }
 
         return calls.WithArgs(newArgs);
+    }
+
+    private static bool IsAlias(object value)
+    {
+        var aliasAttr = value.GetType().GetCustomAttribute<IntrinsicAliasAttribute>();
+
+        return aliasAttr != null;
     }
 
     private static Dictionary<string, object> GetAvailableConstants(Type intrinsicType)
