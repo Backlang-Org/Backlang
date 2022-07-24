@@ -112,7 +112,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 block = AppendWhile(context, method, block, node, modulename);
             }
-            else if (node.Calls((Symbol)"print"))
+            else if (node.Calls("print"))
             {
                 AppendCall(context, block, node, context.writeMethods, "Write");
             }
@@ -158,6 +158,28 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
                 AppendCall(context, block, callee, type.Methods, callee.Name.Name);
             }
+            else if (node.Calls(CodeSymbols.Dot))
+            {
+                if (node is ("'.", var target, var callee) && target is ("this", _))
+                {
+                    //AppendThis(block, method.ParentType); // we do that already in AppendCall
+
+                    var type = method.ParentType;
+                    var call = type.Methods.FirstOrDefault(_ => _.Name.ToString() == callee.Name.Name);
+
+                    if (callee != null)
+                    {
+                        AppendCall(context, block, callee, type.Methods);
+                    }
+                    else
+                    {
+                        context.AddError(node, $"Cannot find function '{callee.Name.Name}'");
+                    }
+                } else
+                {
+                    // ToDo: other things and so on...
+                }
+            }
             else
             {
                 //ToDo: continue implementing static function call in same type
@@ -177,6 +199,11 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         }
 
         return block;
+    }
+
+    private static void AppendThis(BasicBlockBuilder block, IType type)
+    {
+        block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
     }
 
     private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
@@ -296,7 +323,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
-        var call = Instruction.CreateCall(method, MethodLookup.Static, callTags);
+        if (!method.IsStatic)
+        {
+            callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
+        }
+
+        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
 
         block.AppendInstruction(call);
     }

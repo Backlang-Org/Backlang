@@ -7,19 +7,7 @@ public static func main() {
 	let m : i32 = 1 ^ 2;
 
 	let isCool : bool = k < l;
-
-	while true {
-		put_char('a');
-	}
-
-	if true {
-		put_char('y');
-		put_char('a');
-		put_char('y');
-	} else {
-		put_char('n');
-		put_char('o');
-	}
+	
 
 	/*inline(dotnet) {
 		ldc_i(32);
@@ -28,6 +16,13 @@ public static func main() {
 	inline(bs2k) {
 		copy("&0", 'A');
 	}
+}
+
+public func cool() -> none {
+	this.yessir();
+}
+
+public func yessir() {
 }
 
 public static func put_char(c : char) {
