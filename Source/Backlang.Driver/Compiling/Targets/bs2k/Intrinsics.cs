@@ -1,5 +1,6 @@
 ﻿namespace Backlang.Driver.Compiling.Targets.bs2k;
 
+//Hint: order in bssembler instructions: source, target
 public static class Intrinsics
 {
     public static Register register;
@@ -7,7 +8,7 @@ public static class Intrinsics
 
     public static string Copy(string target, char value) => Copy(target, (int)value);
 
-    public static string Copy(string target, int value) => $"copy {target}, {value}";
+    public static string Copy(string target, int value) => $"copy {value}, {target}";
 
     public static string Jump(string label) => $"jump {label}";
 
