@@ -3,6 +3,7 @@
 public static class Intrinsics
 {
     public static Register register;
+    public static Addresses addresses;
 
     public static string Copy(string target, char value) => Copy(target, (int)value);
 
