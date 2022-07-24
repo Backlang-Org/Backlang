@@ -166,12 +166,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
 
-                if (resolvedType == null) continue; //Todo: Add Error
+                if (resolvedType == null)
+                {
+                    context.AddError(annotation, $"{annotation.Name.Name} cannot be found");
+                    continue;
+                }
 
                 var customAttribute = new DescribedAttribute(resolvedType);
 
                 //ToDo: add arguments to custom attribute
-                //ToDo: only add attribute if attributeusage is right
 
                 var attrUsage = (DescribedAttribute)resolvedType.Attributes
                     .GetAll()
@@ -241,7 +244,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 {
                     ConvertEnum(context, node, modulename);
                 }
-                else if(node.Calls(Symbols.Union))
+                else if (node.Calls(Symbols.Union))
                 {
                     ConvertUnion(context, node, modulename);
                 }
