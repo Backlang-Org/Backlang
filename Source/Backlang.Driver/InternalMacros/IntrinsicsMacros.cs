@@ -50,11 +50,11 @@ public static class IntrinsicsMacros
             var calls = body.Args[i];
             if (!availableNames.Contains(calls.Name.Name))
             {
-                context.Error($"{calls.Name.Name} is no intrinsic");
+                compContext.AddError(calls, $"{calls.Name.Name} is no intrinsic");
                 continue;
             }
 
-            calls = ConvertCall(calls, context, availableConstants);
+            calls = ConvertCall(calls, compContext, availableConstants);
 
             var newCall = ConvertIntrinsic(calls, compContext.CompilationTarget.IntrinsicType);
             newBodyArgs = newBodyArgs.Add(newCall);
@@ -63,7 +63,7 @@ public static class IntrinsicsMacros
         return LNode.Call((Symbol)"'{}", newBodyArgs).WithStyle(NodeStyle.Operator);
     }
 
-    private static LNode ConvertCall(LNode calls, IMacroContext context, Dictionary<string, object> availableConstants)
+    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants)
     {
         var newArgs = new LNodeList();
 
@@ -75,7 +75,7 @@ public static class IntrinsicsMacros
 
                 if (!constantExists)
                 {
-                    context.Error($"Constant '{arg.Name.Name}' does not exists");
+                    context.AddError(arg, $"Constant '{arg.Name.Name}' does not exists");
                     continue;
                 }
 
