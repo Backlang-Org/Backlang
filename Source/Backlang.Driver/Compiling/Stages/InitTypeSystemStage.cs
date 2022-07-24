@@ -67,15 +67,43 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
 
         binder.AddAssembly(te.Void.Parent.Assembly);
 
+        var fields = type.GetFields().Where(_ => _.IsStatic);
+        foreach (var field in fields)
+        {
+            AddIntrinsicEnum(field.FieldType, qualifier, intrinsicAssembly);
+        }
+
         var methods = type.GetMethods().Where(_ => _.IsStatic);
 
         foreach (var method in methods)
         {
-            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, binder, method, method.Name.ToLower());
+            var tmpBinder = new TypeResolver(binder.Assemblies.First());
+            tmpBinder.AddAssembly(intrinsicAssembly);
+
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, tmpBinder, method, method.Name.ToLower());
         }
 
         intrinsicAssembly.AddType(instrinsicsType);
+
         binder.AddAssembly(intrinsicAssembly);
+    }
+
+    private static void AddIntrinsicEnum(Type fieldType, QualifiedName qualifier, DescribedAssembly intrinsicAssembly)
+    {
+        if (!fieldType.IsAssignableTo(typeof(Enum))) return;
+
+        var type = new DescribedType(new SimpleName(fieldType.Name).Qualify(qualifier), intrinsicAssembly);
+
+        type.AddAttribute(new IntrinsicAttribute("#Enum"));
+
+        foreach (var field in fieldType.GetFields())
+        {
+            var f = new DescribedField(type, new SimpleName(field.Name), true, type);
+
+            type.AddField(f);
+        }
+
+        intrinsicAssembly.AddType(type);
     }
 
     private void AddTarget<T>()
