@@ -7,7 +7,14 @@ public static func main() {
 	let m : i32 = 1 ^ 2;
 
 	let isCool : bool = k < l;
-	
+
+	if true {
+	}
+
+	switch k {
+		case 12: { break; }
+		break case 42: put_char('X');
+	}
 
 	/*inline(dotnet) {
 		ldc_i(32);

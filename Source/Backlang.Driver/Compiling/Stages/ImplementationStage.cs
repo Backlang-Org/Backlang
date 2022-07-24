@@ -112,6 +112,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 block = AppendIf(context, method, block, node, modulename);
             }
+            else if (node.Calls(CodeSymbols.SwitchStmt))
+            {
+                block = AppendSwitchStmt(context, method, block, node);
+            }
             else if (node.Calls(CodeSymbols.While))
             {
                 block = AppendWhile(context, method, block, node, modulename);
@@ -209,6 +213,32 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
     private static void AppendThis(BasicBlockBuilder block, IType type)
     {
         block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
+    }
+
+    private static BasicBlockBuilder AppendSwitchStmt(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node)
+    {
+        if (node is (_, var element, var cases))
+        {
+            var elemBlockParameter = block.AppendParameter(new BlockParameter(context.Environment.Int32, Utils.GenerateIdentifier()));
+            AppendExpression(block, element, (DescribedType)context.Environment.Int32, method); // ToDo: Deduce Type
+            block.AppendInstruction(Instruction.CreateAlloca(context.Environment.Int32));
+            var elementPointer = new Parameter(elemBlockParameter.Type, elemBlockParameter.Tag.Name);
+
+            List<BasicBlockBuilder> breakCases = new();
+            foreach (var @case in cases.Args) {
+                var condition = block.Graph.AddBasicBlock(Utils.NewLabel("condition"));
+                condition.AppendInstruction(Instruction.CreateLoadLocal(elementPointer));
+                breakCases.Add(condition);
+            }
+
+            var after = block.Graph.AddBasicBlock(Utils.NewLabel("after"));
+
+            breakCases.ForEach(_ => _.Flow = new JumpFlow(after));
+
+            return after;
+        }
+
+        return null;
     }
 
     private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
