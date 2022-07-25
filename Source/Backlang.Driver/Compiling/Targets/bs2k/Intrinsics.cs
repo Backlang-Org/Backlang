@@ -38,6 +38,8 @@ public static class Intrinsics
 
     public static string Pop(Register register) => $"pop {register}";
 
+    public static string Pop() => $"pop";
+
     public static string Ret() => "return";
 
     public static string NoOp() => "noop";
