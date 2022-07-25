@@ -1,5 +1,4 @@
-﻿using Backlang.Driver.Compiling.Targets.bs2k;
-using Backlang.Driver.Compiling.Targets.Dotnet;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
@@ -13,12 +12,13 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
     public InitTypeSystemStage()
     {
         AddTarget<DotNetTarget>();
-        AddTarget<BS2KTarget>();
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Binder = new TypeResolver();
+
+        InitPluginTargets(context.Plugins);
 
         if (string.IsNullOrEmpty(context.Target))
         {
@@ -104,6 +104,14 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
         }
 
         intrinsicAssembly.AddType(type);
+    }
+
+    private void InitPluginTargets(PluginContainer plugins)
+    {
+        foreach (var target in plugins.Targets)
+        {
+            _targets.Add(target.Name, target);
+        }
     }
 
     private void AddTarget<T>()

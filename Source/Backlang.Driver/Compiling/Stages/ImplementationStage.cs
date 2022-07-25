@@ -86,7 +86,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         foreach (var bodyCompilation in context.BodyCompilations)
         {
             bodyCompilation.method.Body =
-                CompileBody(bodyCompilation.function, bodyCompilation.context,
+                CompileBody(bodyCompilation.function, context,
                 bodyCompilation.method, bodyCompilation.modulename);
         }
     }

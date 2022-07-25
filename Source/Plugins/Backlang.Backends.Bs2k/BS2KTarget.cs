@@ -1,9 +1,11 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
+using System.ComponentModel.Composition;
 
 namespace Backlang.Driver.Compiling.Targets.bs2k;
 
+[Export(typeof(ICompilationTarget))]
 public class BS2KTarget : ICompilationTarget
 {
     public string Name => "bs2k";
