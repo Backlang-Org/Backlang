@@ -49,12 +49,6 @@
       PostBuildEvent
     </CoreBuildDependsOn>
   </PropertyGroup>
-  <ItemGroup>
-    <None Include="..\..\..\VSCode-Extension\Source\media\logo.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
