@@ -37,6 +37,8 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
             context.CompilationTarget = compilationTarget;
             context.Environment = compilationTarget.Init(context.Binder);
 
+            _targets.Clear();
+
             if (compilationTarget.HasIntrinsics)
             {
                 AddIntrinsicType(context.Binder, context.Environment, compilationTarget.IntrinsicType);
