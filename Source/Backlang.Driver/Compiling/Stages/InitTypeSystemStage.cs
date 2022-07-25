@@ -108,7 +108,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
 
     private void InitPluginTargets(PluginContainer plugins)
     {
-        foreach (var target in plugins.Targets)
+        foreach (var target in plugins?.Targets)
         {
             _targets.Add(target.Name, target);
         }

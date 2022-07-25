@@ -8,7 +8,7 @@ public sealed class PluginSystemStage : IHandler<CompilerContext, CompilerContex
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        var catalog = new DirectoryCatalog(".");
+        var catalog = new DirectoryCatalog("."); //ToDo: Change Plugin Directory
         var container = new CompositionContainer(catalog);
 
         var plugins = new PluginContainer();
