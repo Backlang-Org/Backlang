@@ -11,6 +11,9 @@ using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
+public record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod,
+    MethodDefinition ClrMethod, TypeDefinition ClrType);
+
 public class DotNetAssembly : ITargetAssembly
 {
     private static readonly List<MethodBodyCompilation> _methodBodyCompilations = new();
@@ -305,8 +308,6 @@ public class DotNetAssembly : ITargetAssembly
             }
         }
     }
-
-    private record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod, MethodDefinition ClrMethod, TypeDefinition ClrType);
 
     private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
     {

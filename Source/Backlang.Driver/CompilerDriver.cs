@@ -20,6 +20,10 @@ public class CompilerDriver
                _.Add<EmitTreeStage>();
            });
 
+           cfg.When(_ => !hasError(_.Messages) && _.Target != "dotnet", _ => {
+               _.Add<PluginSystemStage>();
+           });
+
            cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<InitTypeSystemStage>();
            });
