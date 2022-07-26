@@ -102,6 +102,19 @@ public sealed class TypeMemberDeclaration
                 args.Add(Statement.ParseBlock(parser));
             }
             setter = LNode.Call(CodeSymbols.set, args).WithAttrs(modifier);
+        } else if (iterator.IsMatch(TokenType.Init))
+        {
+            iterator.NextToken();
+            LNodeList args = LNode.List();
+            if (iterator.IsMatch(TokenType.Semicolon))
+            {
+                iterator.NextToken();
+            }
+            else
+            {
+                args.Add(Statement.ParseBlock(parser));
+            }
+            setter = LNode.Call(Symbols.init, args).WithAttrs(modifier);
         }
 
         iterator.Match(TokenType.CloseCurly);
