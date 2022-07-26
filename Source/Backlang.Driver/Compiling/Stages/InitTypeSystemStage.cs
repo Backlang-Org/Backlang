@@ -1,4 +1,5 @@
-﻿using Backlang.Driver.Compiling.Targets.Dotnet;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
@@ -43,6 +44,11 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
             {
                 AddIntrinsicType(context.Binder, context.Environment, compilationTarget.IntrinsicType);
             }
+        }
+        else
+        {
+            context.Messages.Add(Message.Error($"Target '{context.Target}' cannot be found"));
+            return await next.Invoke(context);
         }
 
         var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
@@ -110,6 +116,8 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
 
     private void InitPluginTargets(PluginContainer plugins)
     {
+        if (plugins == null) return;
+
         foreach (var target in plugins?.Targets)
         {
             _targets.Add(target.Name, target);
