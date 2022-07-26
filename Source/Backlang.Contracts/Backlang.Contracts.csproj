@@ -12,7 +12,7 @@
 	  <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
 	  <PackageIcon>logo.png</PackageIcon>
 	  <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
-	  <PackageTags>backlang, plugin, backend</PackageTags>
+	  <PackageTags>backlang</PackageTags>
   </PropertyGroup>
 
 	<ItemGroup>
