@@ -177,13 +177,18 @@ public class DotNetAssembly : ITargetAssembly
         return attr;
     }
 
-    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
+    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference, DescribedPropertyMethod propMethod, bool isInitOnly)
     {
-        var clrMethod = new MethodDefinition(property.Setter.Name.ToString(),
-                                GetMethodAttributes(property.Setter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+        var clrMethod = new MethodDefinition(propMethod.Name.ToString(),
+                                GetMethodAttributes(propMethod) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                 Resolve(new SimpleName("Void").Qualify("System")));
 
         clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
+       
+        if (isInitOnly)
+        {
+            clrMethod.ReturnType = new RequiredModifierType(_assemblyDefinition.MainModule.ImportReference(typeof(System.Runtime.CompilerServices.IsExternalInit)), clrMethod.ReturnType);
+        }
 
         var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
         clrMethod.Parameters.Add(param);
@@ -210,14 +215,24 @@ public class DotNetAssembly : ITargetAssembly
 
             clrType.Fields.Add(field);
 
-            var getter = GeneratePropertyGetter(property, field);
-            var setter = GeneratePropertySetter(property, field);
-
-            clrType.Methods.Add(getter);
-            clrType.Methods.Add(setter);
-
-            clrProp.GetMethod = getter;
-            clrProp.SetMethod = setter;
+            if (property.HasGetter)
+            {
+                var getter = GeneratePropertyGetter(property, field);
+                clrType.Methods.Add(getter);
+                clrProp.GetMethod = getter;
+            }
+            if (property.HasSetter)
+            {
+                var setter = GeneratePropertySetter(property, field, property.Setter, false);
+                clrType.Methods.Add(setter);
+                clrProp.SetMethod = setter;
+            }
+            else if (property.HasInitOnlySetter)
+            {
+                var initOnlySetter = GeneratePropertySetter(property, field, property.InitOnlySetter, true);
+                clrType.Methods.Add(initOnlySetter);
+                clrProp.SetMethod = initOnlySetter;
+            }
 
             clrType.Properties.Add(clrProp);
         }

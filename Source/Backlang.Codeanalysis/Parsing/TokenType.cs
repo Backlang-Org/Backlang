@@ -245,6 +245,9 @@ public enum TokenType
     [Keyword("set")]
     Set,
 
+    [Keyword("init")]
+    Init,
+
     [Keyword("switch")]
     Switch,
 

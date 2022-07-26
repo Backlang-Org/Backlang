@@ -1,5 +1,9 @@
 
+public class Person {
 
+	public prop Name: string { get; init; }
+
+}
 
 public static func main() {
 	inline(bs2k) {
@@ -29,9 +33,9 @@ public func cool() -> none {
 }
 
 public func yessir() {
-	while true {
+	/*while true {
 		put_char('A');
-	}
+	}*/
 }
 
 public static func put_char(c : char) {
