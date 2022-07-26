@@ -23,11 +23,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Core", "Backlang.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{126C2418-6071-4DB4-880D-D1EB3B7E8567}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlang.Contracts", "Backlang.Contracts\Backlang.Contracts.csproj", "{65AA1C8F-2437-4DE4-A376-DFBEE4B49BB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Contracts", "Backlang.Contracts\Backlang.Contracts.csproj", "{65AA1C8F-2437-4DE4-A376-DFBEE4B49BB9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{8B8E0DCF-F424-4760-93D1-75C76220DE27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlang.Backends.Bs2k", "Plugins\Backlang.Backends.Bs2k\Backlang.Backends.Bs2k.csproj", "{FFE47F73-4FB0-4E9E-8BE4-B492D4C02952}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Backends.Bs2k", "Plugins\Backlang.Backends.Bs2k\Backlang.Backends.Bs2k.csproj", "{FFE47F73-4FB0-4E9E-8BE4-B492D4C02952}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{543F3208-81F8-41CF-96D8-51F59A9BCD62}"
+	ProjectSection(SolutionItems) = preProject
+		Version.props = Version.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

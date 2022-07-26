@@ -8,5 +8,6 @@
   <ItemGroup>
     <PackageReference Include="LeMP" Version="30.1.0" />
   </ItemGroup>
-
+	
+	<Import Project="$(SolutionDir)\Version.props" />
 </Project>

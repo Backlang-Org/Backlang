@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
 	  <LangVersion>preview</LangVersion>
 	  <EnablePreviewFeatures>True</EnablePreviewFeatures>
-	  <Version>1.0.59</Version>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	  <Description>A library for writing custom Backlang plugins</Description>
 	  <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
@@ -34,4 +33,5 @@
 	  </None>
 	</ItemGroup>
 
+	<Import Project="$(SolutionDir)\Version.props" />
 </Project>

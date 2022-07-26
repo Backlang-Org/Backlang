@@ -33,5 +33,6 @@
 	  <ProjectReference Include="..\Backlang.Contracts\Backlang.Contracts.csproj" />
 	  <ProjectReference Include="..\Backlang.Core\Backlang.Core.csproj" />
 	</ItemGroup>
-	
+
+	<Import Project="$(SolutionDir)\Version.props" />
 </Project>

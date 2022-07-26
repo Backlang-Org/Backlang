@@ -33,4 +33,6 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
+
+	<Import Project="$(SolutionDir)\Version.props" />
 </Project>
