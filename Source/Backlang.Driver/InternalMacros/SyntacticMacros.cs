@@ -182,18 +182,16 @@ public static class SyntacticMacros
             return node;
         }
 
-        var typename = node.Args[0];
-
-        if (string.IsNullOrEmpty(typename.Args[0].Args[0].Name.Name))
+        if (node is (_, var typename, ("'=", _, var value)))
         {
-            var definiton = node.Args[1];
-            var value = definiton.Args[1];
-
-            if (TypenameTable.ContainsKey(value.Name))
+            if (typename == LNode.Missing)
             {
-                var newType = SyntaxTree.Type(TypenameTable[value.Name], LNode.List());
+                if (TypenameTable.ContainsKey(value.Name))
+                {
+                    var newType = SyntaxTree.Type(TypenameTable[value.Name], LNode.List());
 
-                return node.WithArgChanged(0, newType);
+                    return node.WithArgChanged(0, newType);
+                }
             }
         }
 
