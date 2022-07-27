@@ -166,12 +166,15 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
 
-                if (resolvedType == null) continue; //Todo: Add Error
+                if (resolvedType == null)
+                {
+                    context.AddError(annotation, $"{annotation.Name.Name} cannot be found");
+                    continue;
+                }
 
                 var customAttribute = new DescribedAttribute(resolvedType);
 
                 //ToDo: add arguments to custom attribute
-                //ToDo: only add attribute if attributeusage is right
 
                 var attrUsage = (DescribedAttribute)resolvedType.Attributes
                     .GetAll()
@@ -200,7 +203,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
 
         Utils.SetAccessModifier(member, property);
-
+        
         if (member.Args[1] != LNode.Missing)
         {
             // getter defined
@@ -211,11 +214,22 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         if (member.Args[2] != LNode.Missing)
         {
-            // setter defined
-            var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
-            setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
-            Utils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
-            property.Setter = setter;
+            if (member.Args[2].Name == Symbols.init)
+            {
+                // initonly setter defined
+                var initOnlySetter = new DescribedPropertyMethod(new SimpleName($"init_{property.Name}"), type);
+                initOnlySetter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
+                Utils.SetAccessModifier(member.Args[2], initOnlySetter, property.GetAccessModifier());
+                property.InitOnlySetter = initOnlySetter;
+            }
+            else
+            {
+                // setter defined
+                var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
+                setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
+                Utils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
+                property.Setter = setter;
+            }
         }
 
         return property;
@@ -241,7 +255,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 {
                     ConvertEnum(context, node, modulename);
                 }
-                else if(node.Calls(Symbols.Union))
+                else if (node.Calls(Symbols.Union))
                 {
                     ConvertUnion(context, node, modulename);
                 }

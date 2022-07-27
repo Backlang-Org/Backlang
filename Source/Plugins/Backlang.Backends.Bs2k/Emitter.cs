@@ -12,7 +12,7 @@ namespace Backlang.Driver.Compiling.Targets.bs2k;
 public class Emitter
 {
     private readonly IMethod _mainMethod;
-    private StringBuilder _builder = new();
+    private readonly StringBuilder _builder = new();
 
     public Emitter(IMethod mainMethod)
     {
@@ -47,7 +47,7 @@ public class Emitter
 
     public void Emit(string instruction, string comment = null, int indentlevel = 1)
     {
-        _builder.Append(new String('\t', indentlevel));
+        _builder.Append(new string('\t', indentlevel));
 
         if (comment == null)
         {
@@ -102,6 +102,7 @@ public class Emitter
     {
     }
 
+    //ToDo: Rewrite call to match coders code
     private void EmitCall(Instruction instruction, FlowGraph implementation, int indentlevel)
     {
         var prototype = (CallPrototype)instruction.Prototype;

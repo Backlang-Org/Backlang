@@ -1,22 +1,25 @@
-﻿using LeMP;
+﻿using Backlang.Driver.Compiling;
+using LeMP;
 using Loyc;
 using Loyc.Syntax;
+using System.Reflection;
 
 namespace Backlang.Driver.InternalMacros;
 
 [ContainsMacros]
 public static class IntrinsicsMacros
 {
-    private static string[] availableNames;
+    private static string[] intrinsicNames;
 
     [LexicalMacro("inline(dotnet) {}", "Make Intrinsics Usable", "inline", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode InlineBlock(LNode node, IMacroContext context)
     {
         var body = node.Args.Last();
+        var selectedTarget = node.Args[0].Name.Name;
+
         var newBodyArgs = new LNodeList();
 
         var target = (string)context.ScopedProperties["Target"];
-        var selectedTarget = node.Args[0].Name.Name;
 
         var compContext = (CompilerContext)context.ScopedProperties["Context"];
 
@@ -37,24 +40,92 @@ public static class IntrinsicsMacros
             return LNode.Call((Symbol)"'{}");
         }
 
-        if (availableNames == null)
+        if (intrinsicNames == null)
         {
-            availableNames = InitAvailableNames(compContext.CompilationTarget.IntrinsicType);
+            intrinsicNames = InitAvailableIntrinsicNames(compContext.CompilationTarget.IntrinsicType);
         }
 
-        foreach (var calls in body.Args)
+        var availableConstants =
+            GetAvailableConstants(compContext.CompilationTarget.IntrinsicType);
+
+        for (var i = 0; i < body.Args.Count; i++)
         {
-            if (!availableNames.Contains(calls.Name.Name))
+            var calls = body.Args[i];
+            if (!intrinsicNames.Contains(calls.Name.Name))
             {
-                context.Error($"{calls.Name.Name} is no intrinsic");
+                compContext.AddError(calls, $"{calls.Name.Name} is no intrinsic");
                 continue;
             }
+
+            calls = ConvertCall(calls, compContext, availableConstants, compContext.CompilationTarget.IntrinsicType);
 
             var newCall = ConvertIntrinsic(calls, compContext.CompilationTarget.IntrinsicType);
             newBodyArgs = newBodyArgs.Add(newCall);
         }
 
         return LNode.Call((Symbol)"'{}", newBodyArgs).WithStyle(NodeStyle.Operator);
+    }
+
+    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants, Type intrinsicType)
+    {
+        var newArgs = new LNodeList();
+
+        foreach (var arg in calls.Args)
+        {
+            if (arg.IsId)
+            {
+                var constant = arg.Name.Name;
+                var constantExists = availableConstants.ContainsKey(constant);
+
+                if (!constantExists)
+                {
+                    context.AddError(arg, $"Constant '{constant}' does not exists");
+                    continue;
+                }
+
+                var constantValue = availableConstants[constant];
+
+                if (IsAlias(constantValue))
+                {
+                    newArgs.Add(LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal((int)constantValue))));
+                }
+                else
+                {
+                    newArgs.Add(LNode.Call((Symbol)$"#{constantValue.GetType().Name}", LNode.List(LNode.Literal(constantValue))));
+                }
+            }
+            else
+            {
+                newArgs.Add(arg);
+            }
+        }
+
+        return calls.WithArgs(newArgs);
+    }
+
+    private static bool IsAlias(object value)
+    {
+        var aliasAttr = value.GetType().GetCustomAttribute<IntrinsicAliasAttribute>();
+
+        return aliasAttr != null;
+    }
+
+    private static Dictionary<string, object> GetAvailableConstants(Type intrinsicType)
+    {
+        var result = new Dictionary<string, object>();
+        foreach (var field in intrinsicType.GetFields())
+        {
+            if (field.FieldType.IsAssignableTo(typeof(Enum)))
+            {
+                var names = Enum.GetNames(field.FieldType);
+                foreach (var name in names)
+                {
+                    result.Add(name, Enum.Parse(field.FieldType, name));
+                }
+            }
+        }
+
+        return result;
     }
 
     private static LNode ConvertIntrinsic(LNode call, Type instrinsicType)
@@ -82,10 +153,10 @@ public static class IntrinsicsMacros
         return qualifiedName.dot(instrinsicType.Name).coloncolon(call);
     }
 
-    private static string[] InitAvailableNames(Type intrinsicType)
+    private static string[] InitAvailableIntrinsicNames(Type intrinsicType)
     {
         return intrinsicType.GetMethods()
             .Where(_ => _.IsStatic)
-            .Select(_ => _.Name.ToLower()).ToArray();
+            .Select(_ => _.Name.ToLower()).Distinct().ToArray();
     }
 }

@@ -1,5 +1,15 @@
 
+public class Person {
+
+	public prop Name: string { get; init; }
+
+}
+
 public static func main() {
+	inline(bs2k) {
+		copy(TERMINAL_BUFFER_SIZE, R2);
+	}
+
 	put_char('h');
 
 	let k : i32 = 42;
