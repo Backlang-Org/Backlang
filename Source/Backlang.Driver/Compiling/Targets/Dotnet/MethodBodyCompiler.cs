@@ -23,13 +23,7 @@ public static class MethodBodyCompiler
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
-            var blockLocals =
-                 CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, jumps);
-
-            foreach (var local in blockLocals)
-            {
-                variables.Add(local.Key, local.Value);
-            }
+            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, jumps, variables);
         }
 
         AdjustJumps(ilProcessor, labels, jumps);
@@ -61,10 +55,8 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps)
+    private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps, Dictionary<string, VariableDefinition> variables)
     {
-        var variables = new Dictionary<string, VariableDefinition>();
-
         var nop = Instruction.Create(OpCodes.Nop);
         ilProcessor.Append(nop);
 
@@ -103,7 +95,7 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadLocalPrototype lloc)
             {
-                EmitLoadLocal(clrMethod, ilProcessor, parentType, lloc, variables);
+                EmitLoadLocal(ilProcessor, lloc, variables);
             }
             else if (instruction.Prototype is GetFieldPointerPrototype fp)
             {
@@ -143,11 +135,9 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Throw);
             }
         }
-
-        return variables;
     }
 
-    private static void EmitLoadLocal(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeDefinition parentType, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
+    private static void EmitLoadLocal(ILProcessor ilProcessor, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
     {
         var definition = variables[lloc.Parameter.Name.ToString()];
         ilProcessor.Emit(OpCodes.Ldloc, definition);
