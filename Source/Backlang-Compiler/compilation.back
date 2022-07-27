@@ -23,6 +23,9 @@ public func cool() -> none {
 }
 
 public func yessir() {
+	while true {
+		put_char('B');
+	}
 }
 
 public static func put_char(c : char) {

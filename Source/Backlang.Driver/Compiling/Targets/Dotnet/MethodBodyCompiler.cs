@@ -57,7 +57,7 @@ public static class MethodBodyCompiler
             }
 
             var instruction = Instruction.Create(opcode, labels[jump.Value.label]);
-            ilProcessor.InsertAfter(jump.Key, instruction);
+            ilProcessor.Replace(jump.Key, instruction);
         }
     }
 
