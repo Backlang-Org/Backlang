@@ -32,9 +32,8 @@ public class ClrTypeEnvironmentBuilder
 
     public static void FillTypes(Assembly ass, TypeResolver resolver)
     {
-        foreach (var type in ass.GetTypes())
-        {
-            if (!type.IsPublic) continue;
+        Parallel.ForEach(ass.GetTypes(), type => {
+            if (!type.IsPublic) return;
 
             var t = ResolveType(resolver, type);
 
@@ -69,7 +68,7 @@ public class ClrTypeEnvironmentBuilder
             }
 
             AddMembers(type, t, resolver);
-        }
+        });
     }
 
     public static DescribedType ResolveType(TypeResolver resolver, Type type)
