@@ -14,6 +14,7 @@ using Loyc;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -511,25 +512,34 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         {
             var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(string)));
             toStringMethod.IsPublic = true;
+            toStringMethod.IsOverride = true;
 
             var graph = Utils.CreateGraphBuilder();
 
             var block = graph.EntryPoint;
 
-            var fields = new List<(IField field, string text)>();
-
-            var literalLength = name.Name.Length + 2; // structName() - 2: ()
-
-            var i = 0;
-            foreach (var field in type.Fields)
-            {
-                literalLength += (i == 0 ? field.Name.ToString().Length : field.Name.ToString().Length + 2);
-                i++;
-            }
-
-            var elementType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(DefaultInterpolatedStringHandler));
+            var elementType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StringBuilder));
             var varname = Utils.GenerateIdentifier();
-            block.AppendParameter(new BlockParameter(elementType, varname));
+            var p = block.AppendParameter(new BlockParameter(elementType, varname));
+
+            var ctor = elementType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
+            var appendLineMethod = elementType.Methods.First(_ => _.Name.ToString() == "AppendLine" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == "String");
+
+            block.AppendInstruction(Instruction.CreateNewObject(ctor, new List<ValueTag>()));
+            block.AppendInstruction(Instruction.CreateAlloca(elementType));
+
+            var t = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
+
+            var va = block.AppendInstruction(
+                Instruction.CreateConstant(new StringConstant("Hello World"), context.Environment.String));
+            var load = block.AppendInstruction(Instruction.CreateLoad(context.Environment.String, va));
+
+            block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual, new List<ValueTag> { t, load }));
+
+            var t2 = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
+            var tsM = elementType.Methods.First(_ => _.Name.ToString() == "ToString");
+
+            block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { t2 }));
 
             block.Flow = new ReturnFlow();
 
