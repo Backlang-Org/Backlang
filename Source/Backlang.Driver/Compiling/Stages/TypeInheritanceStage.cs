@@ -203,7 +203,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
 
         Utils.SetAccessModifier(member, property);
-        
+
         if (member.Args[1] != LNode.Missing)
         {
             // getter defined
@@ -290,49 +290,52 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void ConvertEnum(CompilerContext context, LNode node, QualifiedName modulename)
     {
-        var name = node.Args[0].Name;
-        var members = node.Args[2];
-
-        var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).First();
-
-        var i = -1;
-        foreach (var member in members.Args)
+        if (node is (_, (_, var nameNode, var typeNode, var membersNode)))
         {
-            if (member.Name == CodeSymbols.Var)
+            var name = nameNode.Name;
+            var members = membersNode;
+
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
+
+            var i = -1;
+            foreach (var member in members.Args)
             {
-                IType mtype;
-                if (member.Args[0] == LNode.Missing)
+                if (member.Name == CodeSymbols.Var)
                 {
-                    mtype = context.Environment.Int32;
-                }
-                else
-                {
-                    mtype = IntermediateStage.GetType(member.Args[0], context);
-                }
+                    IType mtype;
+                    if (member.Args[0] == LNode.Missing)
+                    {
+                        mtype = context.Environment.Int32;
+                    }
+                    else
+                    {
+                        mtype = IntermediateStage.GetType(member.Args[0], context);
+                    }
 
-                var mname = member.Args[1].Args[0].Name;
-                var mvalue = member.Args[1].Args[1];
+                    if (member is (_, var mt, (_, var mname, var mvalue)))
+                    {
+                        if (mvalue == LNode.Missing)
+                        {
+                            i++;
+                        }
+                        else
+                        {
+                            i = (int)mvalue.Args[0].Value;
+                        }
 
-                if (mvalue == LNode.Missing)
-                {
-                    i++;
+                        var field = new DescribedField(type, new SimpleName(mname.Name.Name), true, mtype);
+                        field.InitialValue = i;
+
+                        type.AddField(field);
+                    }
                 }
-                else
-                {
-                    i = (int)mvalue.Args[0].Value;
-                }
-
-                var field = new DescribedField(type, new SimpleName(mname.Name), true, mtype);
-                field.InitialValue = i;
-
-                type.AddField(field);
             }
+
+            var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
+            valueField.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+
+            type.AddField(valueField);
         }
-
-        var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
-        valueField.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
-
-        type.AddField(valueField);
     }
 
     private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename)

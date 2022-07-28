@@ -367,10 +367,6 @@ public class DotNetAssembly : ITargetAssembly
             var fieldType = Resolve(field.FieldType.FullName);
             var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
-            var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
-
-            fieldDefinition.IsRuntimeSpecialName = specialName != null;
-            fieldDefinition.IsSpecialName = specialName != null;
             fieldDefinition.IsStatic = field.IsStatic;
             fieldDefinition.IsInitOnly = !field.Owns(Attributes.Mutable);
 
@@ -464,6 +460,12 @@ public class DotNetAssembly : ITargetAssembly
             if (attr.AttributeType.FullName.ToString() == typeof(FieldOffsetAttribute).FullName)
             {
                 clrField.Offset = (int)attr.ConstructorArguments[0].Value;
+                continue;
+            }
+            else if (attr.AttributeType.Name.ToString() == "SpecialNameAttribute")
+            {
+                clrField.IsRuntimeSpecialName = true;
+                clrField.IsSpecialName = true;
                 continue;
             }
 

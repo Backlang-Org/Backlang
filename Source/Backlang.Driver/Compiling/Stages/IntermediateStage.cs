@@ -113,14 +113,17 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertEnum(CompilerContext context, LNode @enum, QualifiedName modulename)
     {
-        var name = @enum.Args[0].Name;
+        if (@enum is (_, (_, var nameNode, var typeNode, var membersNode)))
+        {
+            var name = nameNode.Name;
 
-        var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-        type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
+            var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
 
-        type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+            type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 
-        context.Assembly.AddType(type);
+            context.Assembly.AddType(type);
+        }
     }
 
     private static void ConvertTypeOrInterface(CompilerContext context, LNode st, QualifiedName modulename)
