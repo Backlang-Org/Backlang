@@ -12,6 +12,7 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages;
@@ -25,8 +26,28 @@ public enum ConditionalJumpKind
 
 public sealed class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
+    private static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
+    {
+        [CodeSymbols.Bool] = typeof(bool),
+
+        [CodeSymbols.String] = typeof(string),
+        [CodeSymbols.Char] = typeof(char),
+
+        [CodeSymbols.Int8] = typeof(byte),
+        [CodeSymbols.Int16] = typeof(short),
+        [CodeSymbols.UInt16] = typeof(ushort),
+        [CodeSymbols.Int32] = typeof(int),
+        [CodeSymbols.UInt32] = typeof(uint),
+        [CodeSymbols.Int64] = typeof(long),
+        [CodeSymbols.UInt64] = typeof(ulong),
+
+        [Symbols.Float16] = typeof(Half),
+        [Symbols.Float32] = typeof(float),
+        [Symbols.Float64] = typeof(double),
+    }.ToImmutableDictionary();
+
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
-            QualifiedName? modulename)
+                QualifiedName? modulename)
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
@@ -42,19 +63,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
     public static IType GetLiteralType(LNode value, TypeResolver resolver)
     {
-        if (value.Calls(CodeSymbols.String)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(string));
-        else if (value.Calls(CodeSymbols.Char)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(char));
-        else if (value.Calls(CodeSymbols.Bool)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(bool));
-        else if (value.Calls(CodeSymbols.Int8)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(byte));
-        else if (value.Calls(CodeSymbols.Int16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(short));
-        else if (value.Calls(CodeSymbols.UInt16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ushort));
-        else if (value.Calls(CodeSymbols.Int32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(int));
-        else if (value.Calls(CodeSymbols.UInt32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(uint));
-        else if (value.Calls(CodeSymbols.Int64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(long));
-        else if (value.Calls(CodeSymbols.UInt64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(ulong));
-        else if (value.Calls(Symbols.Float16)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(Half));
-        else if (value.Calls(Symbols.Float32)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(float));
-        else if (value.Calls(Symbols.Float64)) return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(double));
+        if (LiteralTypeMap.ContainsKey(value.Name))
+        {
+            return ClrTypeEnvironmentBuilder.ResolveType(resolver, LiteralTypeMap[value.Name]);
+        }
         else if (value is IdNode id) { } //todo: symbol table
         else
         {
