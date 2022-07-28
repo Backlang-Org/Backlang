@@ -512,11 +512,13 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
     {
-        var retType = function.Args[0].Args[0].Args[0];
-        var fullName = Utils.GetQualifiedName(retType);
+        if (function is (_, (_, (_, var retType))))
+        {
+            var fullName = Utils.GetQualifiedName(retType);
 
-        var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
+            var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
 
-        method.ReturnParameter = new Parameter(rtype);
+            method.ReturnParameter = new Parameter(rtype);
+        }
     }
 }

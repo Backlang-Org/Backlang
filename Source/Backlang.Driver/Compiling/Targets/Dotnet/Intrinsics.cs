@@ -10,4 +10,9 @@ public static class Intrinsics
     {
         iLProcessor.Emit(OpCodes.Ldnull);
     }
+
+    public static void Ld_Str(string value)
+    {
+        iLProcessor.Emit(OpCodes.Ldstr, value);
+    }
 }
