@@ -85,8 +85,7 @@ public class ClrTypeEnvironmentBuilder
 
     public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
     {
-        foreach (var member in type.GetMembers())
-        {
+        Parallel.ForEach(type.GetMembers(), member => {
             if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
@@ -116,7 +115,7 @@ public class ClrTypeEnvironmentBuilder
 
                 t.AddProperty(p);
             }
-        }
+        });
     }
 
     public static QualifiedName QualifyNamespace(string @namespace)
