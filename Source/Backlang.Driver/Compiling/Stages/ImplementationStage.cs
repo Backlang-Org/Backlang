@@ -84,10 +84,11 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
             foreach (var node in tree.Body)
             {
-                ConvertMethodBodies(context);
                 CollectImplementations(context, node, modulename);
-                ImplementDefaultConstructors(context, node, modulename);
+                ImplementDefaultsForStructs(context, node, modulename);
             }
+
+            ConvertMethodBodies(context);
         }
 
         return await next.Invoke(context);
@@ -498,13 +499,46 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                                            elementType);
     }
 
-    private static void ImplementDefaultConstructors(CompilerContext context, LNode st, QualifiedName modulename)
+    private static void ImplementDefaultsForStructs(CompilerContext context, LNode st, QualifiedName modulename)
     {
         if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
 
         var name = st.Args[0].Name;
         var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
 
+        // toString method
+        if (!type.Methods.Any(_ => _.Name.ToString() == "ToString" && _.Parameters.Count == 0))
+        {
+            var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(string)));
+            toStringMethod.IsPublic = true;
+
+            var graph = Utils.CreateGraphBuilder();
+
+            var block = graph.EntryPoint;
+
+            var fields = new List<(IField field, string text)>();
+
+            var literalLength = name.Name.Length + 2; // structName() - 2: ()
+
+            var i = 0;
+            foreach (var field in type.Fields)
+            {
+                literalLength += (i == 0 ? field.Name.ToString().Length : field.Name.ToString().Length + 2);
+                i++;
+            }
+
+            var elementType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(DefaultInterpolatedStringHandler));
+            var varname = Utils.GenerateIdentifier();
+            block.AppendParameter(new BlockParameter(elementType, varname));
+
+            block.Flow = new ReturnFlow();
+
+            toStringMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+
+            type.AddMethod(toStringMethod);
+        }
+
+        // default constructor
         if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
         {
             var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
@@ -512,7 +546,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 IsConstructor = true
             };
 
-            ctorMethod.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
+            ctorMethod.IsPublic = true;
 
             foreach (var field in type.Fields)
             {

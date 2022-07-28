@@ -1,7 +1,8 @@
 
-public class Person {
+public struct Person {
 
-	public prop Name: string { get; init; }
+	public let name: string;
+	public let age: i8;
 
 }
 
@@ -33,9 +34,9 @@ public func cool() -> none {
 }
 
 public func yessir() {
-	while true {
+	/*while true {
 		put_char('B');
-	}
+	}*/
 }
 
 public static func put_char(c : char) {
