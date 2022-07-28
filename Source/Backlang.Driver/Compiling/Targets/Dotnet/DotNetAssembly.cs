@@ -41,8 +41,7 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
-        foreach (DescribedType type in _assembly.Types)
-        {
+        Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
@@ -54,7 +53,9 @@ public class DotNetAssembly : ITargetAssembly
             ConvertMethods(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
-        }
+
+            return ValueTask.CompletedTask;
+        }).Wait();
 
         AdjustBaseTypesAndInterfaces();
 
@@ -184,7 +185,7 @@ public class DotNetAssembly : ITargetAssembly
                                 Resolve(new SimpleName("Void").Qualify("System")));
 
         clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
-       
+
         if (isInitOnly)
         {
             clrMethod.ReturnType = new RequiredModifierType(_assemblyDefinition.MainModule.ImportReference(typeof(System.Runtime.CompilerServices.IsExternalInit)), clrMethod.ReturnType);
@@ -308,8 +309,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private void CompileBodys()
     {
-        foreach (var bodyCompilation in _methodBodyCompilations)
-        {
+        Parallel.ForEach(_methodBodyCompilations, bodyCompilation => {
             var variables =
                                 MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
@@ -321,7 +321,7 @@ public class DotNetAssembly : ITargetAssembly
             {
                 bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
             }
-        }
+        });
     }
 
     private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
