@@ -528,18 +528,22 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             block.AppendInstruction(Instruction.CreateNewObject(ctor, new List<ValueTag>()));
             block.AppendInstruction(Instruction.CreateAlloca(elementType));
 
-            var t = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
+            var loadSb = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
 
-            var va = block.AppendInstruction(
-                Instruction.CreateConstant(new StringConstant("Hello World"), context.Environment.String));
-            var load = block.AppendInstruction(Instruction.CreateLoad(context.Environment.String, va));
+            foreach (var field in type.Fields)
+            {
+                var value = block.AppendInstruction(Instruction.CreateLoadField(field));
 
-            block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual, new List<ValueTag> { t, load }));
+                block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual, new List<ValueTag> { loadSb, value }));
 
-            var t2 = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
+                AppendLine(context, block, appendLineMethod, loadSb, field.Name + " = ");
+            }
+
+            AppendLine(context, block, appendLineMethod, loadSb, $"{type.FullName}:");
+
             var tsM = elementType.Methods.First(_ => _.Name.ToString() == "ToString");
 
-            block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { t2 }));
+            block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
             block.Flow = new ReturnFlow();
 
@@ -584,6 +588,15 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
             type.AddMethod(ctorMethod);
         }
+    }
+
+    private static void AppendLine(CompilerContext context, BasicBlockBuilder block, IMethod appendLineMethod, NamedInstructionBuilder argLoad, string valueStr)
+    {
+        var va = block.AppendInstruction(
+                        Instruction.CreateConstant(new StringConstant(valueStr), context.Environment.String));
+        var value = block.AppendInstruction(Instruction.CreateLoad(context.Environment.String, va));
+
+        block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual, new List<ValueTag> { argLoad, value }));
     }
 
     private static void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)

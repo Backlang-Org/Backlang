@@ -1,4 +1,4 @@
-struct Point {
+public struct Point {
 	let x: i32;
 }
 
