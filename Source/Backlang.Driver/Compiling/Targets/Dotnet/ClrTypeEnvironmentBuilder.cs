@@ -32,9 +32,8 @@ public class ClrTypeEnvironmentBuilder
 
     public static void FillTypes(Assembly ass, TypeResolver resolver)
     {
-        foreach (var type in ass.GetTypes())
-        {
-            if (!type.IsPublic) continue;
+        Parallel.ForEach(ass.GetTypes(), type => {
+            if (!type.IsPublic) return;
 
             var t = ResolveType(resolver, type);
 
@@ -69,7 +68,7 @@ public class ClrTypeEnvironmentBuilder
             }
 
             AddMembers(type, t, resolver);
-        }
+        });
     }
 
     public static DescribedType ResolveType(TypeResolver resolver, Type type)
@@ -86,8 +85,7 @@ public class ClrTypeEnvironmentBuilder
 
     public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
     {
-        foreach (var member in type.GetMembers())
-        {
+        Parallel.ForEach(type.GetMembers(), member => {
             if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
@@ -117,7 +115,7 @@ public class ClrTypeEnvironmentBuilder
 
                 t.AddProperty(p);
             }
-        }
+        });
     }
 
     public static QualifiedName QualifyNamespace(string @namespace)
@@ -163,7 +161,7 @@ public class ClrTypeEnvironmentBuilder
     {
         foreach (var p in parameterInfos)
         {
-            var type = resolver.ResolveTypes(new SimpleName(p.ParameterType.Name).Qualify(p.ParameterType.Namespace)).FirstOrDefault();
+            var type = ClrTypeEnvironmentBuilder.ResolveType(resolver, p.ParameterType);
 
             if (type != null)
             {

@@ -11,6 +11,9 @@ using System.Runtime.Versioning;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
+public record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod,
+    MethodDefinition ClrMethod, TypeDefinition ClrType);
+
 public class DotNetAssembly : ITargetAssembly
 {
     private static readonly List<MethodBodyCompilation> _methodBodyCompilations = new();
@@ -38,8 +41,7 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
-        foreach (DescribedType type in _assembly.Types)
-        {
+        Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
 
@@ -51,7 +53,9 @@ public class DotNetAssembly : ITargetAssembly
             ConvertMethods(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
-        }
+
+            return ValueTask.CompletedTask;
+        }).Wait();
 
         AdjustBaseTypesAndInterfaces();
 
@@ -174,13 +178,18 @@ public class DotNetAssembly : ITargetAssembly
         return attr;
     }
 
-    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference)
+    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference, DescribedPropertyMethod propMethod, bool isInitOnly)
     {
-        var clrMethod = new MethodDefinition(property.Setter.Name.ToString(),
-                                GetMethodAttributes(property.Setter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+        var clrMethod = new MethodDefinition(propMethod.Name.ToString(),
+                                GetMethodAttributes(propMethod) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
                                 Resolve(new SimpleName("Void").Qualify("System")));
 
         clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
+
+        if (isInitOnly)
+        {
+            clrMethod.ReturnType = new RequiredModifierType(_assemblyDefinition.MainModule.ImportReference(typeof(System.Runtime.CompilerServices.IsExternalInit)), clrMethod.ReturnType);
+        }
 
         var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
         clrMethod.Parameters.Add(param);
@@ -207,14 +216,24 @@ public class DotNetAssembly : ITargetAssembly
 
             clrType.Fields.Add(field);
 
-            var getter = GeneratePropertyGetter(property, field);
-            var setter = GeneratePropertySetter(property, field);
-
-            clrType.Methods.Add(getter);
-            clrType.Methods.Add(setter);
-
-            clrProp.GetMethod = getter;
-            clrProp.SetMethod = setter;
+            if (property.HasGetter)
+            {
+                var getter = GeneratePropertyGetter(property, field);
+                clrType.Methods.Add(getter);
+                clrProp.GetMethod = getter;
+            }
+            if (property.HasSetter)
+            {
+                var setter = GeneratePropertySetter(property, field, property.Setter, false);
+                clrType.Methods.Add(setter);
+                clrProp.SetMethod = setter;
+            }
+            else if (property.HasInitOnlySetter)
+            {
+                var initOnlySetter = GeneratePropertySetter(property, field, property.InitOnlySetter, true);
+                clrType.Methods.Add(initOnlySetter);
+                clrProp.SetMethod = initOnlySetter;
+            }
 
             clrType.Properties.Add(clrProp);
         }
@@ -290,8 +309,7 @@ public class DotNetAssembly : ITargetAssembly
 
     private void CompileBodys()
     {
-        foreach (var bodyCompilation in _methodBodyCompilations)
-        {
+        Parallel.ForEach(_methodBodyCompilations, bodyCompilation => {
             var variables =
                                 MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
@@ -303,10 +321,8 @@ public class DotNetAssembly : ITargetAssembly
             {
                 bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
             }
-        }
+        });
     }
-
-    private record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod, MethodDefinition ClrMethod, TypeDefinition ClrType);
 
     private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
     {

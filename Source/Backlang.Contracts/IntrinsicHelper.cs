@@ -45,6 +45,9 @@ public static class IntrinsicHelper
             case NullConstant:
                 return null;
 
+            case EnumConstant obj:
+                return obj.Value;
+
             case IntegerConstant ic:
                 switch (ic.Spec.Size)
                 {
@@ -117,17 +120,12 @@ public static class IntrinsicHelper
         return null;
     }
 
-    private static bool MatchesParameters(IMethod m, List<Type> argTypes)
+    private static bool MatchesParameters(IMethod method, List<Type> argTypes)
     {
-        var matches = false;
-        for (int i = 0; i < m.Parameters.Count; i++)
-        {
-            if (m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString())
-            {
-                matches = (matches || i == 0) && m.Parameters[i].Type.FullName.ToString() == argTypes[i].FullName.ToString();
-            }
-        }
+        //ToDo: refactor to improve code
+        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
 
-        return matches;
+        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 }

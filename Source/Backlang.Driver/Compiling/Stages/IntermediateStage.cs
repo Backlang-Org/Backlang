@@ -80,7 +80,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
         context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(string.Empty), context.Assembly)
         {
-            IsStatic = true
+            IsStatic = true,
+            IsPublic = true
         };
 
         foreach (var tree in context.Trees)
@@ -89,9 +90,18 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             foreach (var st in tree.Body)
             {
-                ConvertTypesOrInterfaces(context, st, modulename);
-                ConvertEnums(context, st, modulename);
-                ConvertDiscriminatedUnions(context, st, modulename);
+                if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
+                {
+                    ConvertTypeOrInterface(context, st, modulename);
+                }
+                else if (st.Calls(CodeSymbols.Enum))
+                {
+                    ConvertEnum(context, st, modulename);
+                }
+                else if (st.Calls(Symbols.DiscriminatedUnion))
+                {
+                    ConvertDiscriminatedUnion(context, st, modulename);
+                }
             }
         }
 
@@ -101,10 +111,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ConvertEnums(CompilerContext context, LNode @enum, QualifiedName modulename)
+    private static void ConvertEnum(CompilerContext context, LNode @enum, QualifiedName modulename)
     {
-        if (!(@enum.IsCall && @enum.Name == CodeSymbols.Enum)) return;
-
         var name = @enum.Args[0].Name;
 
         var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
@@ -115,10 +123,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         context.Assembly.AddType(type);
     }
 
-    private static void ConvertTypesOrInterfaces(CompilerContext context, LNode st, QualifiedName modulename)
+    private static void ConvertTypeOrInterface(CompilerContext context, LNode st, QualifiedName modulename)
     {
-        if (!(st.IsCall && (st.Name == CodeSymbols.Struct || st.Name == CodeSymbols.Class || st.Name == CodeSymbols.Interface))) return;
-
         var name = st.Args[0].Name;
 
         var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
@@ -149,10 +155,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private void ConvertDiscriminatedUnions(CompilerContext context, LNode discrim, QualifiedName modulename)
+    private void ConvertDiscriminatedUnion(CompilerContext context, LNode discrim, QualifiedName modulename)
     {
-        if (!(discrim.IsCall && discrim.Name == Symbols.DiscriminatedUnion)) return;
-
         var name = discrim.Args[0].Name;
 
         var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);

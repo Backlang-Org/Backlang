@@ -1,4 +1,4 @@
-﻿using Backlang.Driver.Compiling.Targets.bs2k;
+﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -13,17 +13,17 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
     public InitTypeSystemStage()
     {
         AddTarget<DotNetTarget>();
-        AddTarget<BS2KTarget>();
     }
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Binder = new TypeResolver();
 
+        InitPluginTargets(context.Plugins);
+
         if (string.IsNullOrEmpty(context.Target))
         {
             context.Target = "dotnet";
-            context.OutputFilename += ".dll";
         }
 
         if (context.OutputType == "dotnet")
@@ -38,10 +38,17 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
             context.CompilationTarget = compilationTarget;
             context.Environment = compilationTarget.Init(context.Binder);
 
+            _targets.Clear();
+
             if (compilationTarget.HasIntrinsics)
             {
                 AddIntrinsicType(context.Binder, context.Environment, compilationTarget.IntrinsicType);
             }
+        }
+        else
+        {
+            context.Messages.Add(Message.Error($"Target '{context.Target}' cannot be found"));
+            return await next.Invoke(context);
         }
 
         var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
@@ -68,15 +75,53 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
 
         binder.AddAssembly(te.Void.Parent.Assembly);
 
+        var fields = type.GetFields().Where(_ => _.IsStatic);
+        foreach (var field in fields)
+        {
+            AddIntrinsicEnum(field.FieldType, qualifier, intrinsicAssembly);
+        }
+
         var methods = type.GetMethods().Where(_ => _.IsStatic);
 
         foreach (var method in methods)
         {
-            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, binder, method, method.Name.ToLower());
+            var tmpBinder = new TypeResolver(binder.Assemblies.First());
+            tmpBinder.AddAssembly(intrinsicAssembly);
+
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, tmpBinder, method, method.Name.ToLower());
         }
 
         intrinsicAssembly.AddType(instrinsicsType);
+
         binder.AddAssembly(intrinsicAssembly);
+    }
+
+    private static void AddIntrinsicEnum(Type fieldType, QualifiedName qualifier, DescribedAssembly intrinsicAssembly)
+    {
+        if (!fieldType.IsAssignableTo(typeof(Enum))) return;
+
+        var type = new DescribedType(new SimpleName(fieldType.Name).Qualify(qualifier), intrinsicAssembly);
+
+        type.AddAttribute(new IntrinsicAttribute("#Enum"));
+
+        foreach (var field in fieldType.GetFields())
+        {
+            var f = new DescribedField(type, new SimpleName(field.Name), true, type);
+
+            type.AddField(f);
+        }
+
+        intrinsicAssembly.AddType(type);
+    }
+
+    private void InitPluginTargets(PluginContainer plugins)
+    {
+        if (plugins == null) return;
+
+        foreach (var target in plugins?.Targets)
+        {
+            _targets.Add(target.Name, target);
+        }
     }
 
     private void AddTarget<T>()

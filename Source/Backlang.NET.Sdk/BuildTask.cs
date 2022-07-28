@@ -170,9 +170,6 @@ namespace Backlang.NET.Sdk
 
             private bool LogCompleteMessage(string line)
             {
-                // TODO: following logs only Warnings and Errors,
-                // to log Info diagnostics properly, parse it by ourselves
-
                 return Log.LogMessageFromText(line.Trim(), MessageImportance.High);
             }
 

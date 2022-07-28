@@ -12,9 +12,13 @@ public sealed class CompilerContext
     public IEnumerable<IMethod> writeMethods;
 
     public ICompilationTarget CompilationTarget;
+    public PluginContainer Plugins;
+
     public DescribedAssembly Assembly { get; set; }
 
     public TypeResolver Binder { get; set; } = new();
+
+    public List<MethodBodyCompilation> BodyCompilations { get; set; } = new();
 
     public TypeEnvironment Environment { get; set; }
 

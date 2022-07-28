@@ -6,36 +6,63 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Instruction = Mono.Cecil.Cil.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, Mono.Cecil.MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
+    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
+        Intrinsics.iLProcessor = ilProcessor;
+
         var variables = new Dictionary<string, VariableDefinition>();
+
+        var labels = new Dictionary<string, Instruction>();
+        var jumps = new Dictionary<Instruction, (string, object)>();
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
-            var blockLocals =
-                 CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType);
-
-            foreach (var local in blockLocals)
-            {
-                variables.Add(local.Key, local.Value);
-            }
+            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, jumps, variables);
         }
+
+        AdjustJumps(ilProcessor, labels, jumps);
 
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
 
-    private static Dictionary<string, VariableDefinition> CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType)
+    private static void AdjustJumps(ILProcessor ilProcessor,
+        Dictionary<string, Instruction> labels, Dictionary<Instruction, (string label, object selector)> jumps)
     {
-        var variables = new Dictionary<string, VariableDefinition>();
+        foreach (var jump in jumps)
+        {
+            OpCode opcode;
+
+            if (jump.Value.selector == null)
+            {
+                opcode = OpCodes.Br_S;
+            }
+            else
+            {
+                //ToDo: implement conditional jumps
+                opcode = OpCodes.Brtrue;
+            }
+
+            var instruction = Instruction.Create(opcode, labels[jump.Value.label]);
+            ilProcessor.Replace(jump.Key, instruction);
+        }
+    }
+
+    private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps, Dictionary<string, VariableDefinition> variables)
+    {
+        var nop = Instruction.Create(OpCodes.Nop);
+        ilProcessor.Append(nop);
+
+        labels.Add(block.Tag.Name, nop);
 
         foreach (var item in block.NamedInstructions)
         {
@@ -43,7 +70,7 @@ public static class MethodBodyCompiler
 
             if (instruction.Prototype is CallPrototype)
             {
-                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph);
+                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
@@ -70,7 +97,7 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadLocalPrototype lloc)
             {
-                EmitLoadLocal(clrMethod, ilProcessor, parentType, lloc, variables);
+                EmitLoadLocal(ilProcessor, lloc, variables);
             }
             else if (instruction.Prototype is GetFieldPointerPrototype fp)
             {
@@ -91,6 +118,14 @@ public static class MethodBodyCompiler
 
             ilProcessor.Emit(OpCodes.Ret);
         }
+        else if (block.Flow is JumpFlow jf)
+        {
+            jumps.Add(nop, (jf.Branch.Target.Name, null));
+        }
+        else if (block.Flow is JumpConditionalFlow jcf)
+        {
+            jumps.Add(nop, (jcf.Branch.Target.Name, jcf.ConditionSelector));
+        }
         else if (block.Flow is UnreachableFlow)
         {
             if (clrMethod.ReturnType.Name == "Void")
@@ -102,11 +137,9 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Throw);
             }
         }
-
-        return variables;
     }
 
-    private static void EmitLoadLocal(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeDefinition parentType, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
+    private static void EmitLoadLocal(ILProcessor ilProcessor, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
     {
         var definition = variables[lloc.Parameter.Name.ToString()];
         ilProcessor.Emit(OpCodes.Ldloc, definition);
@@ -166,6 +199,29 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Or); break;
             case "arith.^":
                 ilProcessor.Emit(OpCodes.Xor); break;
+            case "arith.==":
+                ilProcessor.Emit(OpCodes.Ceq); break;
+            case "arith.!=":
+                ilProcessor.Emit(OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+
+            case "arith.<":
+                ilProcessor.Emit(OpCodes.Clt); break;
+            case "arith.<=":
+                ilProcessor.Emit(OpCodes.Cgt);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+
+            case "arith.>":
+                ilProcessor.Emit(OpCodes.Cgt); break;
+            case "arith.>=":
+                ilProcessor.Emit(OpCodes.Clt);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
         }
     }
 
@@ -176,9 +232,15 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Newobj, method);
     }
 
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, Furesoft.Core.CodeDom.Compiler.FlowGraph implementation)
+    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, FlowGraph implementation, BasicBlock block)
     {
         var callPrototype = (CallPrototype)instruction.Prototype;
+
+        if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
+        {
+            IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics), callPrototype.Callee, instruction, block);
+            return;
+        }
 
         var method = GetMethod(assemblyDefinition, callPrototype.Callee);
 
@@ -280,7 +342,7 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 

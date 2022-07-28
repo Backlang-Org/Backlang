@@ -1,0 +1,238 @@
+﻿using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Text;
+using MethodBody = Furesoft.Core.CodeDom.Compiler.MethodBody;
+
+namespace Backlang.Driver.Compiling.Targets.bs2k;
+
+public class Emitter
+{
+    private readonly IMethod _mainMethod;
+    private readonly StringBuilder _builder = new();
+
+    public Emitter(IMethod mainMethod)
+    {
+        _mainMethod = mainMethod;
+    }
+
+    public void EmitFunctionDefinition(DescribedBodyMethod method)
+    {
+        var signature = NameMangler.Mangle(method);
+
+        Emit($"{signature}:", null, 0);
+
+        if (method == _mainMethod)
+        {
+            Emit("copy sp, R0", "save current stack pointer into R0 (this is the new stack frame base pointer)");
+        }
+
+        Emit("");
+
+        EmitMethodBody(method, method.Body);
+
+        Emit("");
+
+        if (method == _mainMethod)
+        {
+            Emit("halt");
+            Emit("");
+        }
+    }
+
+    public override string ToString() => _builder.ToString();
+
+    public void Emit(string instruction, string comment = null, int indentlevel = 1)
+    {
+        _builder.Append(new string('\t', indentlevel));
+
+        if (comment == null)
+        {
+            _builder.AppendLine(instruction);
+            return;
+        }
+
+        _builder.AppendLine($"{instruction} // {comment}");
+    }
+
+    private void EmitBinary(IntrinsicPrototype arith, int indentlevel)
+    {
+        Emit("pop R2", $"store rhs for {arith.Name}-operator in R1", indentlevel);
+        Emit("pop R1", $"store lhs for {arith.Name}-operator in R1", indentlevel);
+
+        switch (arith.Name)
+        {
+            case "arith.+": Emit("add R1, R2, R3", "push result onto stack", indentlevel); break;
+            case "arith.*": Emit("mult R1, R2, R3, R4", "multiply values", indentlevel); break;
+            case "arith.|": Emit("or R1, R2, R3", null, indentlevel); break;
+            case "arith.&": Emit("and R1, R2, R3", null, indentlevel); break;
+            case "arith.^": Emit("xor R1, R2, R3", null, indentlevel); break;
+            case "arith.==": Emit("comp_eq R1, R2, R3", null, indentlevel); break;
+            case "arith.!=": Emit("comp_neq R1, R2, R3", null, indentlevel); break;
+            case "arith.<": Emit("comp_lt R1, R2, R3", null, indentlevel); break;
+            case "arith.<=": Emit("comp_le R1, R2, R3", null, indentlevel); break;
+            case "arith.>": Emit("comp_gt R1, R2, R3", null, indentlevel); break;
+            case "arith.>=": Emit("comp_ge R1, R2, R3", null, indentlevel); break;
+            default:
+                break;
+        }
+
+        Emit("push R3", "push result onto stack", indentlevel);
+
+        Emit("");
+    }
+
+    //Todo: Fix intrinsic double emit constant
+    private void EmitConstant(ConstantPrototype consProto, int indentlevel)
+    {
+        if (consProto.Value is IntegerConstant ic)
+        {
+            Emit("//push immeditate onto stack", null, indentlevel);
+            Emit($"copy {ic.ToInt32()}, R1", null, indentlevel);
+            Emit("push R1", null, indentlevel);
+
+            Emit("");
+        }
+    }
+
+    private void EmitVariableDeclaration(NamedInstruction item, AllocaPrototype allocA, int indentlevel)
+    {
+    }
+
+    //ToDo: Rewrite call to match coders code
+    private void EmitCall(Instruction instruction, FlowGraph implementation, int indentlevel)
+    {
+        var prototype = (CallPrototype)instruction.Prototype;
+
+        Emit($"copy {NameMangler.Mangle(prototype.Callee)}, R1", "get address of label", indentlevel);
+        Emit("push R1", "push address of label onto stack", indentlevel);
+        Emit("pop R5", "get jump address", indentlevel);
+
+        Emit("copy sp, R6", "store address of return address placeholder", indentlevel);
+        Emit("add sp, 4, sp", "reserve stack space for the return address placeholder", indentlevel);
+
+        Emit("push R0", "store current stack frame base pointer for later", indentlevel);
+        Emit("copy sp, R7", "this will be the new stack frame base pointer", indentlevel);
+
+        Emit("", "evaluate arguments in current stack frame", indentlevel);
+        /*
+        for (const auto&argument : expression.arguments) {
+            argument->accept(*this);
+        }
+        */
+
+        Emit("copy R7, R0", "set the new stack frame base pointer", indentlevel);
+        Emit("");
+
+        Emit("add ip, 24, R1", "calculate return address", indentlevel);
+        Emit("copy R1, *R6", "fill return address placeholder", indentlevel);
+        Emit("jump R5", "call function", indentlevel);
+
+        // after the call the return value is inside R1
+        Emit("push R1", "push return value onto stack", indentlevel);
+    }
+
+    private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
+    {
+        foreach (var block in method.Body.Implementation.BasicBlocks)
+        {
+            EmitBlock(block, 1);
+        }
+    }
+
+    private void EmitBlock(BasicBlock block, int indentlevel)
+    {
+        if (!string.IsNullOrEmpty(block.Tag.Name) && !block.IsEntryPoint)
+        {
+            Emit($"{block.Tag.Name}:", null, indentlevel++);
+        }
+
+        foreach (var item in block.NamedInstructions)
+        {
+            EmitItem(item, block, indentlevel);
+        }
+
+        EmitBlockFlow(block, indentlevel);
+    }
+
+    private void EmitItem(NamedInstruction item, BasicBlock block, int indentlevel)
+    {
+        var instruction = item.Instruction;
+
+        if (instruction.Prototype is AllocaPrototype allocA)
+        {
+            EmitVariableDeclaration(item, allocA, indentlevel);
+            return;
+        }
+
+        EmitInstruction(block, instruction, indentlevel);
+    }
+
+    private void EmitInstruction(BasicBlock block, Instruction instruction, int indentlevel)
+    {
+        switch (instruction.Prototype)
+        {
+            case CallPrototype callPrototype:
+                {
+                    if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
+                    {
+                        var intrinsic = IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics),
+                                        callPrototype.Callee, instruction, block).ToString();
+
+                        Emit("//emited from intrinsic", null, indentlevel);
+                        foreach (var intr in intrinsic.Split("\n"))
+                        {
+                            Emit(intr, null, indentlevel);
+                        }
+
+                        return;
+                    }
+
+                    var callee = callPrototype.Callee
+                            .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.ProgramClass
+                           ? callPrototype.Callee.Name.ToString() : callPrototype.Callee.FullName.ToString();
+
+                    Emit($"// Calling '{callee}'", null, indentlevel);
+                    EmitCall(instruction, block.Graph, indentlevel);
+                    break;
+                }
+
+            case NewObjectPrototype newObjectPrototype:
+                break;
+
+            case ConstantPrototype consProto:
+                EmitConstant(consProto, indentlevel);
+                break;
+
+            case IntrinsicPrototype arith:
+                EmitBinary(arith, indentlevel);
+                break;
+        }
+    }
+
+    private void EmitBlockFlow(BasicBlock block, int indentlevel)
+    {
+        if (block.Flow is ReturnFlow rf)
+        {
+            if (rf.HasReturnValue)
+            {
+                EmitInstruction(block, rf.ReturnValue, indentlevel);
+            }
+
+            Emit("copy R0, sp", "clear current stack frame", indentlevel);
+            Emit("pop R0", "restore previous stack frame", indentlevel);
+            Emit("return", null, indentlevel);
+        }
+        else if (block.Flow is JumpFlow jf)
+        {
+            Emit("jump " + jf.Branch.Target.Name, null, indentlevel);
+        }
+        else if (block.Flow is JumpConditionalFlow jcf)
+        {
+            Emit("jump_gt R1, " + jcf.Branch.Target.Name, null, indentlevel);
+        }
+    }
+}

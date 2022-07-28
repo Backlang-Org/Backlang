@@ -147,6 +147,10 @@ public enum TokenType
     [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
     EqualsEquals,
 
+    [Lexeme("!=")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
+    NotEquals,
+
     [Lexeme("<->")]
     [BinaryOperatorInfo(BinaryOpPrecedences.SwapOperator)]
     SwapOperator,
@@ -240,6 +244,9 @@ public enum TokenType
 
     [Keyword("set")]
     Set,
+
+    [Keyword("init")]
+    Init,
 
     [Keyword("switch")]
     Switch,

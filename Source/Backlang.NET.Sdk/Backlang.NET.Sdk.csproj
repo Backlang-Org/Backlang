@@ -16,7 +16,9 @@
     <Description>The MSBuild SDK containing build targets and runtime.</Description>    
     <AssemblyVersion>$(Version)</AssemblyVersion>    
     <FileVersion>$(Version)</FileVersion>    
-    <Version>1.0.57</Version>
+    <PackageIcon>logo.png</PackageIcon>    
+    <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>    
+    <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
@@ -80,5 +82,7 @@
     </ItemGroup>
     <WriteLinesToFile File="build\Backlang.Version.props" Overwrite="true" Lines="@(_PropsLine)" />
   </Target>
+
+	<Import Project="$(SolutionDir)\Version.props" />
 
 </Project>

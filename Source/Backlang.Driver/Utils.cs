@@ -1,4 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
@@ -8,6 +10,16 @@ namespace Backlang.Driver;
 
 public sealed class Utils
 {
+    private static int labelCounter;
+
+    public static FlowGraphBuilder CreateGraphBuilder()
+    {
+        var graph = new FlowGraphBuilder();
+        graph.AddAnalysis(new ConstantAnalysis<ExceptionDelayability>(PermissiveExceptionDelayability.Instance));
+
+        return graph;
+    }
+
     public static string GenerateIdentifier()
     {
         var sb = new StringBuilder();
@@ -16,7 +28,7 @@ public sealed class Utils
 
         for (var i = 0; i < random.Next(5, 9); i++)
         {
-            sb.Append(ALPHABET[random.Next()]);
+            sb.Append(ALPHABET[random.Next(ALPHABET.Length)]);
         }
 
         return sb.ToString();
@@ -69,6 +81,11 @@ public sealed class Utils
         }
 
         return new SimpleName(lNode.Name.Name).Qualify();
+    }
+
+    public static string NewLabel(string name)
+    {
+        return $"{name}_{labelCounter++}";
     }
 
     private static QualifiedName ShrinkDottedModuleName(LNode lNode)

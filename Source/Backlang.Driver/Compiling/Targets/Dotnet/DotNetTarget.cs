@@ -12,9 +12,9 @@ public class DotNetTarget : ICompilationTarget
 {
     public string Name => "dotnet";
 
-    public bool HasIntrinsics => false;
+    public bool HasIntrinsics => true;
 
-    public Type IntrinsicType => throw new NotImplementedException();
+    public Type IntrinsicType => typeof(Intrinsics);
 
     public void AfterCompiling(CompilerContext context)
     {
