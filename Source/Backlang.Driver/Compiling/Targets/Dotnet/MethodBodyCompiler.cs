@@ -16,6 +16,8 @@ public static class MethodBodyCompiler
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
+        Intrinsics.iLProcessor = ilProcessor;
+
         var variables = new Dictionary<string, VariableDefinition>();
 
         var labels = new Dictionary<string, Instruction>();
@@ -68,7 +70,7 @@ public static class MethodBodyCompiler
 
             if (instruction.Prototype is CallPrototype)
             {
-                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph);
+                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
             }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
@@ -230,9 +232,15 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Newobj, method);
     }
 
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, FlowGraph implementation)
+    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, FlowGraph implementation, BasicBlock block)
     {
         var callPrototype = (CallPrototype)instruction.Prototype;
+
+        if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
+        {
+            IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics), callPrototype.Callee, instruction, block);
+            return;
+        }
 
         var method = GetMethod(assemblyDefinition, callPrototype.Callee);
 
