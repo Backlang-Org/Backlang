@@ -537,12 +537,18 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 var loadSbf = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
 
                 AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
+                var value = AppendLoadField(block, field);
 
-                AppendThis(block, field.ParentType);
-                var value = block.AppendInstruction(Instruction.CreateLoadField(field));
+                var callee = elementType.Methods.FirstOrDefault(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
 
-                var callee = elementType.Methods.First(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
-                block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+                if (callee != null)
+                {
+                    block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+                }
+                else
+                {
+                    // call tostring on field
+                }
             }
 
             var tsM = elementType.Methods.First(_ => _.Name.ToString() == "ToString");
@@ -592,6 +598,13 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
             type.AddMethod(ctorMethod);
         }
+    }
+
+    private static NamedInstructionBuilder AppendLoadField(BasicBlockBuilder block, IField field)
+    {
+        AppendThis(block, field.ParentType);
+        var value = block.AppendInstruction(Instruction.CreateLoadField(field));
+        return value;
     }
 
     private static void AppendLine(CompilerContext context, BasicBlockBuilder block, IMethod appendLineMethod, NamedInstructionBuilder argLoad, string valueStr)
