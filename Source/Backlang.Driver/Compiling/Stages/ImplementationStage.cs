@@ -530,16 +530,20 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
             var loadSb = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
 
+            AppendLine(context, block, appendLineMethod, loadSb, $"{type.FullName}:");
+
             foreach (var field in type.Fields)
             {
+                var loadSbf = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
+
+                AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
+
+                AppendThis(block, field.ParentType);
                 var value = block.AppendInstruction(Instruction.CreateLoadField(field));
 
-                block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual, new List<ValueTag> { loadSb, value }));
-
-                AppendLine(context, block, appendLineMethod, loadSb, field.Name + " = ");
+                var callee = elementType.Methods.First(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
+                block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
             }
-
-            AppendLine(context, block, appendLineMethod, loadSb, $"{type.FullName}:");
 
             var tsM = elementType.Methods.First(_ => _.Name.ToString() == "ToString");
 
