@@ -380,6 +380,10 @@ public class DotNetAssembly : ITargetAssembly
                     fieldDefinition.IsSpecialName = false;
                     fieldDefinition.IsLiteral = true;
                 }
+                else
+                {
+                    fieldDefinition.IsInitOnly = true;
+                }
             }
 
             ConvertCustomAttributes(field, fieldDefinition);
