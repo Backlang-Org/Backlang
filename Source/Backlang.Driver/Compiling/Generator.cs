@@ -68,9 +68,9 @@ public static class Generator
         type.AddMethod(toStringMethod);
     }
 
-    public static void GeneratorDefaultCtor(CompilerContext context, DescribedType type)
+    public static void GenerateDefaultCtor(CompilerContext context, DescribedType type)
     {
-        var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
+        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
         {
             IsConstructor = true
         };

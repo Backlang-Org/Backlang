@@ -510,7 +510,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         // default constructor
         if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
         {
-            Generator.GeneratorDefaultCtor(context, type);
+            Generator.GenerateDefaultCtor(context, type);
         }
     }
 

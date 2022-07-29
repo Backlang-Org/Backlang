@@ -1,14 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Flow;
-using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
@@ -188,49 +183,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 discType.AddField(fieldType);
             }
 
-            var constructor = new DescribedBodyMethod(discType, new SimpleName(".ctor"), false, context.Environment.Void);
-            constructor.IsConstructor = true;
-            constructor.IsPublic = true;
-
-            foreach (var field in discType.Fields)
-            {
-                constructor.AddParameter(new Parameter(field.FieldType, field.Name));
-            }
-
-            var graph = new FlowGraphBuilder();
-            // Use a permissive exception delayability model to make the optimizer's
-            // life easier.
-            graph.AddAnalysis(
-                new ConstantAnalysis<ExceptionDelayability>(
-                    PermissiveExceptionDelayability.Instance));
-
-            // Grab the entry point block.
-            var block = graph.EntryPoint;
-
-            block.Flow = new ReturnFlow();
-
-            var objType = context.Binder.ResolveTypes(new SimpleName("Object").Qualify("System")).First();
-            var baseCtor = objType.Methods.First(_ => _.IsConstructor);
-
-            block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
-            block.AppendInstruction(Instruction.CreateCall(baseCtor, Furesoft.Core.CodeDom.Compiler.Instructions.MethodLookup.Static, new[] { new ValueTag() }));
-
-            for (var i = 0; i < constructor.Parameters.Count; i++)
-            {
-                var p = constructor.Parameters[i];
-                var f = discType.Fields[i];
-
-                block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(discType))); //this ptr
-
-                block.AppendInstruction(Instruction.CreateLoadArg(p));
-                block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
-            }
-
-            block.Flow = new ReturnFlow();
-
-            constructor.Body = new MethodBody(new Parameter(), new Parameter(discType), EmptyArray<Parameter>.Value, graph.ToImmutable());
-
-            discType.AddMethod(constructor);
+            Generator.GenerateDefaultCtor(context, discType);
+            Generator.GenerateToString(context, discType);
         }
     }
 }
