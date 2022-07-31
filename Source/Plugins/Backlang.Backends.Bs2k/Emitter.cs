@@ -50,7 +50,7 @@ public class Emitter
         foreach (DescribedBodyMethod method in program.Methods)
         {
             var instructions = method.Body.Implementation.BasicBlocks.SelectMany(_ => _.NamedInstructions);
-            var strings = instructions.Where(_ => _ is StringConstant);
+            var strings = instructions.Where(_ => _.Prototype is ConstantPrototype cP && cP.Value is StringConstant);
 
             foreach (var str in strings)
             {
@@ -59,10 +59,12 @@ public class Emitter
                 var strValue = value.Value;
                 var hashCode = strValue.GetHashCode();
 
-                Emit($"str{hashCode}: .string \"{strValue}\"");
+                Emit($"str{hashCode}: .string \"{strValue}\"", null, 0);
                 _stringConstants.Add(hashCode, strValue);
             }
         }
+
+        Emit("\n", null, 0);
     }
 
     public override string ToString() => _builder.ToString();
