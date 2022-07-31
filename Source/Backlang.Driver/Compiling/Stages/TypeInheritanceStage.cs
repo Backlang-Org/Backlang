@@ -116,8 +116,16 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    public static DescribedType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
+    public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
     {
+        bool isPointer = fullName.ToString().EndsWith("*");
+
+        if (isPointer)
+        {
+            var newName = fullName.FullyUnqualifiedName.ToString().Substring(0, fullName.FullyUnqualifiedName.ToString().Length - 1);
+            fullName = new SimpleName(newName).Qualify();
+        }
+
         var resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
 
         if (resolvedType == null)
@@ -144,7 +152,12 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
-        return (DescribedType)resolvedType;
+        if (isPointer)
+        {
+            resolvedType = resolvedType.MakePointerType(PointerKind.Transient);
+        }
+
+        return resolvedType;
     }
 
     public static void ConvertAnnotations(LNode st, IMember type,
@@ -342,9 +355,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename)
     {
         var ftype = member.Args[0].Args[0].Args[0];
-        var fullname = Utils.GetQualifiedName(ftype);
+        var fullname = Utils.GetQualifiedName(member.Args[0]);
 
-        var mtype = ResolveTypeWithModule(ftype, context, modulename, fullname);
+        var mtype = ResolveTypeWithModule(member.Args[0], context, modulename, fullname);
 
         var mvar = member.Args[1];
         var mname = mvar.Args[0].Name;
@@ -425,7 +438,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         foreach (var inheritance in inheritances.Args)
         {
             var fullName = Utils.GetQualifiedName(inheritance);
-            var btype = ResolveTypeWithModule(inheritance, context, modulename, fullName);
+            var btype = (DescribedType)ResolveTypeWithModule(inheritance, context, modulename, fullName);
 
             if (btype != null)
             {
@@ -513,9 +526,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
     {
-        if (function is (_, (_, (_, var retType))))
-        {
-            var fullName = Utils.GetQualifiedName(retType);
+        var retType = function.Args[0];
+        var fullName = Utils.GetQualifiedName(retType);
 
             var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
 

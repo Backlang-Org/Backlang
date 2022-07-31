@@ -73,6 +73,18 @@ public sealed class Utils
 
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
+        bool isPointer = false;
+        if (lNode is ("#type*", var arg))
+        {
+            isPointer = true;
+            lNode = arg;
+        }
+
+        if (lNode is ("#type", (_, var type)))
+        {
+            lNode = type;
+        }
+
         if (lNode.Calls(CodeSymbols.Dot))
         {
             QualifiedName qname = GetQualifiedName(lNode.Args[0]);
@@ -80,7 +92,7 @@ public sealed class Utils
             return GetQualifiedName(lNode.Args[1]).Qualify(qname);
         }
 
-        return new SimpleName(lNode.Name.Name).Qualify();
+        return new SimpleName(lNode.Name.Name + (isPointer ? "*" : "")).Qualify();
     }
 
     public static string NewLabel(string name)
