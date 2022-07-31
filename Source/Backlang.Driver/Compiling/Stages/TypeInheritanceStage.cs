@@ -529,9 +529,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var retType = function.Args[0];
         var fullName = Utils.GetQualifiedName(retType);
 
-            var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
+        var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
 
-            method.ReturnParameter = new Parameter(rtype);
-        }
+        method.ReturnParameter = new Parameter(rtype);
     }
 }
