@@ -1,5 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<Version>1.0.63</Version>
+		<Version>1.0.64</Version>
 	</PropertyGroup>
 </Project>

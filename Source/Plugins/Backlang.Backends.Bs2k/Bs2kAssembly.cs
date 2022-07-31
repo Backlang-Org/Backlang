@@ -23,6 +23,8 @@ public class Bs2kAssembly : ITargetAssembly
 
         var program = Contents.Assembly.Types.First(_ => _.FullName.ToString() == $".{Names.ProgramClass}");
 
+        emitter.EmitStringConstants(program);
+
         foreach (var method in program.Methods)
         {
             if (method is DescribedBodyMethod m)

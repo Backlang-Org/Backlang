@@ -14,6 +14,8 @@ public class Emitter
     private readonly IMethod _mainMethod;
     private readonly StringBuilder _builder = new();
 
+    private Dictionary<int, string> _stringConstants = new();
+
     public Emitter(IMethod mainMethod)
     {
         _mainMethod = mainMethod;
@@ -40,6 +42,26 @@ public class Emitter
         {
             Emit("halt");
             Emit("");
+        }
+    }
+
+    public void EmitStringConstants(IType program)
+    {
+        foreach (DescribedBodyMethod method in program.Methods)
+        {
+            var instructions = method.Body.Implementation.BasicBlocks.SelectMany(_ => _.NamedInstructions);
+            var strings = instructions.Where(_ => _ is StringConstant);
+
+            foreach (var str in strings)
+            {
+                var constant = (ConstantPrototype)str.Prototype;
+                var value = (StringConstant)constant.Value;
+                var strValue = value.Value;
+                var hashCode = strValue.GetHashCode();
+
+                Emit($"str{hashCode}: .string \"{strValue}\"");
+                _stringConstants.Add(hashCode, strValue);
+            }
         }
     }
 
