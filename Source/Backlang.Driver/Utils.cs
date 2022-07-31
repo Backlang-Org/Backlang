@@ -71,6 +71,7 @@ public sealed class Utils
         return new SimpleName("").Qualify();
     }
 
+    //ToDo: Fix GetQualifiedName
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
         bool isPointer = false;

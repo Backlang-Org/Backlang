@@ -18,6 +18,13 @@ public static class TypeUtils
 
     public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, string ns, string type)
     {
+        bool isPointer = false;
+        if (type.EndsWith(" transient*"))
+        {
+            type = type.Substring(0, type.Length - " transient*".Length);
+            isPointer = true;
+        }
+
         foreach (var ar in _assemblyDefinition.MainModule.AssemblyReferences)
         {
             var ass = _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar, new ReaderParameters() { });
@@ -26,12 +33,25 @@ public static class TypeUtils
 
             if (tr?.Resolve() != null)
             {
-                return _assemblyDefinition.MainModule.ImportReference(tr);
+                var rtype = _assemblyDefinition.MainModule.ImportReference(tr);
+                if (isPointer)
+                {
+                    return new PointerType(rtype);
+                }
+
+                return rtype;
             }
         }
 
         var trr = new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule).Resolve();
 
-        return _assemblyDefinition.MainModule.ImportReference(trr);
+        var rrtype = _assemblyDefinition.MainModule.ImportReference(trr);
+
+        if (isPointer)
+        {
+            return new PointerType(rrtype);
+        }
+
+        return rrtype;
     }
 }
