@@ -99,7 +99,7 @@ public static class MethodBodyCompiler
             {
                 EmitLoadLocal(ilProcessor, lloc, variables);
             }
-            else if (instruction.Prototype is GetFieldPointerPrototype fp)
+            else if (instruction.Prototype is LoadFieldPrototype fp)
             {
                 EmitLoadField(parentType, ilProcessor, fp);
             }
@@ -152,7 +152,7 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Stfld, field);
     }
 
-    private static void EmitLoadField(TypeDefinition parentType, ILProcessor ilProcessor, GetFieldPointerPrototype fp)
+    private static void EmitLoadField(TypeDefinition parentType, ILProcessor ilProcessor, LoadFieldPrototype fp)
     {
         var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
 

@@ -1,45 +1,6 @@
-
-public class Person {
-
-	public prop Name: string { get; init; }
-
+public struct Point {
+	let x: i32;
 }
 
 public static func main() {
-	inline(bs2k) {
-		copy(TERMINAL_BUFFER_SIZE, R2);
-	}
-
-	put_char('h');
-
-	let k : i32 = 42;
-	let l : i32 = 2 + 3 * 15;
-	let m : i32 = 1 ^ 2;
-
-	let isCool : bool = k < l;
-	
-
-	/*inline(dotnet) {
-		ldc_i(32);
-	}*/
-
-	inline(bs2k) {
-		copy("&0", 'A');
-	}
-}
-
-public func cool() -> none {
-	this.yessir();
-}
-
-public func yessir() {
-	while true {
-		put_char('B');
-	}
-}
-
-public static func put_char(c : char) {
-	inline(bs2k) {
-		copy("&0", 'A');
-	}
 }

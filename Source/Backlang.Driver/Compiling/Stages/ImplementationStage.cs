@@ -84,10 +84,11 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
             foreach (var node in tree.Body)
             {
-                ConvertMethodBodies(context);
                 CollectImplementations(context, node, modulename);
-                ImplementDefaultConstructors(context, node, modulename);
+                ImplementDefaultsForStructs(context, node, modulename);
             }
+
+            ConvertMethodBodies(context);
         }
 
         return await next.Invoke(context);
@@ -216,11 +217,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         }
 
         return block;
-    }
-
-    private static void AppendThis(BasicBlockBuilder block, IType type)
-    {
-        block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
     }
 
     private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
@@ -498,47 +494,23 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                                            elementType);
     }
 
-    private static void ImplementDefaultConstructors(CompilerContext context, LNode st, QualifiedName modulename)
+    private static void ImplementDefaultsForStructs(CompilerContext context, LNode st, QualifiedName modulename)
     {
         if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
 
         var name = st.Args[0].Name;
         var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
 
+        // toString method
+        if (!type.Methods.Any(_ => _.Name.ToString() == "ToString" && _.Parameters.Count == 0))
+        {
+            Generator.GenerateToString(context, type);
+        }
+
+        // default constructor
         if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
         {
-            var ctorMethod = new DescribedBodyMethod(type, new SimpleName("new"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
-            {
-                IsConstructor = true
-            };
-
-            ctorMethod.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
-
-            foreach (var field in type.Fields)
-            {
-                ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
-            }
-
-            var graph = Utils.CreateGraphBuilder();
-
-            var block = graph.EntryPoint;
-
-            for (var i = 0; i < ctorMethod.Parameters.Count; i++)
-            {
-                var p = ctorMethod.Parameters[i];
-                var f = type.Fields[i];
-
-                block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type))); //this ptr
-
-                block.AppendInstruction(Instruction.CreateLoadArg(p));
-                block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
-            }
-
-            block.Flow = new ReturnFlow();
-
-            ctorMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
-
-            type.AddMethod(ctorMethod);
+            Generator.GenerateDefaultCtor(context, type);
         }
     }
 

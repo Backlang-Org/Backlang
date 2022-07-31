@@ -17,6 +17,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static readonly ImmutableDictionary<string, string> Aliases = new Dictionary<string, string>()
     {
         ["bool"] = "Boolean",
+        ["obj"] = "Object",
 
         ["i8"] = "Byte",
         ["i16"] = "Int16",
