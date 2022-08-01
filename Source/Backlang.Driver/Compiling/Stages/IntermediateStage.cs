@@ -5,71 +5,11 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
-using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>()
-    {
-        ["obj"] = typeof(object),
-
-        ["bool"] = typeof(bool),
-
-        ["u8"] = typeof(byte),
-        ["u16"] = typeof(ushort),
-        ["u32"] = typeof(uint),
-        ["u64"] = typeof(ulong),
-
-        ["i8"] = typeof(sbyte),
-        ["i16"] = typeof(short),
-        ["i32"] = typeof(int),
-        ["i64"] = typeof(long),
-
-        ["f16"] = typeof(Half),
-        ["f32"] = typeof(float),
-        ["f64"] = typeof(double),
-
-        ["char"] = typeof(char),
-        ["string"] = typeof(string),
-    }.ToImmutableDictionary();
-
-    public static IType GetType(LNode type, CompilerContext context)
-    {
-        //function without return type set
-        if (type.ArgCount > 0)
-            type = type.Args[0].Args[0];
-
-        if (type == LNode.Missing || type.ArgCount > 0 && type.Args[0].Name.Name == "#")
-            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
-
-        if (type.Name == CodeSymbols.Fn)
-        {
-            string typename = string.Empty;
-            typename = type.Args[0] == LNode.Missing ? "Action`" + (type.Args[2].ArgCount) : "Func`" + (type.Args[2].ArgCount + 1);
-
-            var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typename, "System");
-            foreach (var garg in type.Args[2])
-            {
-                fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
-            }
-
-            return fnType;
-        }
-
-        var name = type.ArgCount > 0 ? type.Args[0].Name.ToString().Replace("#", "") : type.Name.ToString();
-
-        if (TypenameTable.ContainsKey(name))
-        {
-            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, TypenameTable[name]);
-        }
-        else
-        {
-            return ClrTypeEnvironmentBuilder.ResolveType(context.Binder, name, context.Assembly.Name.Qualify().FullName);
-        }
-    }
-
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
