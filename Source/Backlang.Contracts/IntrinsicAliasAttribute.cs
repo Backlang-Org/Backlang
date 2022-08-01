@@ -1,4 +1,4 @@
-﻿namespace Backlang.Driver.Compiling;
+﻿namespace Backlang.Contracts;
 
 [AttributeUsage(AttributeTargets.Enum)]
 public class IntrinsicAliasAttribute : Attribute

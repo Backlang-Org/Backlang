@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Contracts;
 using Backlang.Driver.Compiling.Stages;
 
 namespace Backlang.Driver;

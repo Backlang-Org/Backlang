@@ -1,7 +1,8 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Pipeline;
+﻿using Backlang.Contracts;
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 public class Bs2kAssembly : ITargetAssembly
 {

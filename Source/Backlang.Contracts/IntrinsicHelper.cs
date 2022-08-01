@@ -4,7 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System.Reflection;
 
-namespace Backlang.Driver.Compiling;
+namespace Backlang.Contracts;
 
 public static class IntrinsicHelper
 {

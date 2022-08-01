@@ -1,6 +1,5 @@
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
-using Backlang.Driver;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -10,6 +9,7 @@ using Loyc.Syntax;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Backlang.Contracts;
 
 namespace Backlang.Driver.Compiling.Stages;
 

@@ -1,4 +1,5 @@
-﻿using Backlang.Driver;
+﻿using Backlang.Contracts;
+using Backlang.Driver;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;

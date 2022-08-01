@@ -1,4 +1,6 @@
-﻿namespace Backlang.Driver.Compiling.Targets.bs2k;
+﻿using Backlang.Contracts;
+
+namespace Backlang.Backends.Bs2k;
 
 [IntrinsicAlias]
 public enum Constants

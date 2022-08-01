@@ -1,9 +1,10 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+﻿using Backlang.Contracts;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 using System.ComponentModel.Composition;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 [Export(typeof(ICompilationTarget))]
 public class BS2KTarget : ICompilationTarget

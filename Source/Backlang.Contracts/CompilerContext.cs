@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
-namespace Backlang.Driver;
+namespace Backlang.Contracts;
 
 public sealed class CompilerContext
 {

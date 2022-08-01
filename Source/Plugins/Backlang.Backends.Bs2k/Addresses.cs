@@ -1,4 +1,4 @@
-﻿namespace Backlang.Driver.Compiling.Targets.bs2k;
+﻿namespace Backlang.Backends.Bs2k;
 
 public enum Addresses
 {

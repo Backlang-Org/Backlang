@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 
-namespace Backlang.Driver;
+namespace Backlang.Contracts;
 
 public sealed class PluginContainer
 {

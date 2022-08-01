@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler;
+﻿using Backlang.Contracts;
+using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
@@ -7,7 +8,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Text;
 using MethodBody = Furesoft.Core.CodeDom.Compiler.MethodBody;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 public class Emitter
 {

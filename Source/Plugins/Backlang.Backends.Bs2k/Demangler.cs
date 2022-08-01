@@ -2,7 +2,7 @@
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 public static class Demangler
 {
@@ -31,9 +31,9 @@ public static class Demangler
 
     private static QualifiedName QualifyNamespace(string[] namespaces)
     {
-        QualifiedName qualified = new SimpleName("").Qualify();
+        var qualified = new SimpleName("").Qualify();
 
-        for (int i = 0; i < namespaces.Length; i++)
+        for (var i = 0; i < namespaces.Length; i++)
         {
             if (i == 0) qualified = new QualifiedName(namespaces[i]);
             else qualified = qualified.Qualify(namespaces[i]);

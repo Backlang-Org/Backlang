@@ -2,7 +2,7 @@
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k.TypeSystem;
+namespace Backlang.Backends.Bs2k.TypeSystem;
 
 public class U8Type : DescribedType
 {

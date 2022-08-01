@@ -1,4 +1,4 @@
-﻿namespace Backlang.Driver.Compiling.Targets.bs2k;
+﻿namespace Backlang.Backends.Bs2k;
 
 //Hint: order in bssembler instructions: source, target
 public static class Intrinsics
