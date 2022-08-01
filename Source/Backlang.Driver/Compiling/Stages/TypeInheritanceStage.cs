@@ -1,5 +1,6 @@
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Driver.Compiling.Targets.Dotnet;
+using Backlang.Driver;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -14,28 +15,29 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static readonly ImmutableDictionary<string, string> Aliases = new Dictionary<string, string>()
+    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>()
     {
-        ["bool"] = "Boolean",
-        ["obj"] = "Object",
+        ["obj"] = typeof(object),
+        ["none"] = typeof(void),
 
-        ["i8"] = "Byte",
-        ["i16"] = "Int16",
-        ["i32"] = "Int32",
-        ["i64"] = "Int64",
+        ["bool"] = typeof(bool),
 
-        ["u8"] = "Byte",
-        ["u16"] = "UInt16",
-        ["u32"] = "UInt32",
-        ["u64"] = "UInt64",
+        ["u8"] = typeof(byte),
+        ["u16"] = typeof(ushort),
+        ["u32"] = typeof(uint),
+        ["u64"] = typeof(ulong),
 
-        ["f16"] = "Half",
-        ["f32"] = "Single",
-        ["f64"] = "Double",
+        ["i8"] = typeof(sbyte),
+        ["i16"] = typeof(short),
+        ["i32"] = typeof(int),
+        ["i64"] = typeof(long),
 
-        ["char"] = "Char",
-        ["string"] = "String",
-        ["none"] = "Void",
+        ["f16"] = typeof(Half),
+        ["f32"] = typeof(float),
+        ["f64"] = typeof(double),
+
+        ["char"] = typeof(char),
+        ["string"] = typeof(string),
     }.ToImmutableDictionary();
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
@@ -111,39 +113,48 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
             else if (member.Calls(CodeSymbols.Property))
             {
-                type.AddProperty(ConvertProperty(context, type, member));
+                type.AddProperty(ConvertProperty(context, type, member, modulename));
             }
         }
     }
 
+    public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename)
+        => ResolveTypeWithModule(typeNode, context, modulename, Utils.GetQualifiedName(typeNode));
+
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
     {
-        bool isPointer = fullName.ToString().EndsWith("*");
-
-        if (isPointer)
+        bool isPointer;
+        if (fullName.FullyUnqualifiedName is PointerName pName)
         {
-            var newName = fullName.FullyUnqualifiedName.ToString().Substring(0, fullName.FullyUnqualifiedName.ToString().Length - 1);
-            fullName = new SimpleName(newName).Qualify();
+            isPointer = true;
+            fullName = pName.ElementName;
+        }
+        else
+        {
+            isPointer = false;
         }
 
-        var resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
-
-        if (resolvedType == null)
+        IType resolvedType;
+        if (TypenameTable.ContainsKey(fullName.ToString()))
         {
-            resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
+            resolvedType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
+        }
+        else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
+        {
+            var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, func, "System");
+            foreach (var garg in typeNode.Args[2])
+            {
+                fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
+            }
+            resolvedType = fnType;
+        }
+        else
+        {
+            resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
 
             if (resolvedType == null)
             {
-                var primitiveName = GetNameOfPrimitiveType(context.Binder, fullName.FullyUnqualifiedName.ToString());
-
-                if (!primitiveName.HasValue)
-                {
-                    resolvedType = null;
-                }
-                else
-                {
-                    resolvedType = context.Binder.ResolveTypes(primitiveName.Value).FirstOrDefault();
-                }
+                resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
 
                 if (resolvedType == null)
                 {
@@ -212,9 +223,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member)
+    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member, QualifiedName modulename)
     {
-        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), IntermediateStage.GetType(member.Args[0], context), type);
+        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), ResolveTypeWithModule(member.Args[0], context, modulename), type);
 
         Utils.SetAccessModifier(member, property);
 
@@ -323,7 +334,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                     }
                     else
                     {
-                        mtype = IntermediateStage.GetType(member.Args[0], context);
+                        mtype = ResolveTypeWithModule(member.Args[0], context, modulename);
                     }
 
                     if (member is (_, var mt, (_, var mname, var mvalue)))
@@ -355,9 +366,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename)
     {
         var ftype = member.Args[0].Args[0].Args[0];
-        var fullname = Utils.GetQualifiedName(member.Args[0]);
 
-        var mtype = ResolveTypeWithModule(member.Args[0], context, modulename, fullname);
+        var mtype = ResolveTypeWithModule(member.Args[0], context, modulename);
 
         var mvar = member.Args[1];
         var mname = mvar.Args[0].Name;
@@ -405,9 +415,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)
     {
         var ptype = p.Args[0].Args[0].Args[0];
-        var fullname = Utils.GetQualifiedName(ptype);
 
-        var type = ResolveTypeWithModule(ptype, context, modulename, fullname);
+        var type = ResolveTypeWithModule(ptype, context, modulename);
         var assignment = p.Args[1];
 
         var name = assignment.Args[0].Name;
@@ -437,8 +446,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         foreach (var inheritance in inheritances.Args)
         {
-            var fullName = Utils.GetQualifiedName(inheritance);
-            var btype = (DescribedType)ResolveTypeWithModule(inheritance, context, modulename, fullName);
+            var btype = (DescribedType)ResolveTypeWithModule(inheritance, context, modulename);
 
             if (btype != null)
             {
@@ -480,9 +488,8 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             if (member.Name == CodeSymbols.Var)
             {
                 var ftype = member.Args[0].Args[0].Args[0];
-                var fullname = Utils.GetQualifiedName(ftype);
 
-                var mtype = ResolveTypeWithModule(ftype, context, modulename, fullname);
+                var mtype = ResolveTypeWithModule(ftype, context, modulename);
 
                 var mvar = member.Args[1];
                 var mname = mvar.Args[0].Name;
@@ -507,29 +514,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         context.Assembly.AddType(type);
     }
 
-    private static QualifiedName? GetNameOfPrimitiveType(TypeResolver binder, string name)
-    {
-        if (Aliases.ContainsKey(name))
-        {
-            name = Aliases[name];
-        }
-
-        var primitiveType = ClrTypeEnvironmentBuilder.ResolveType(binder, name, "System");
-
-        if (primitiveType is not null)
-        {
-            return primitiveType.FullName;
-        }
-
-        return null;
-    }
-
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
     {
         var retType = function.Args[0];
-        var fullName = Utils.GetQualifiedName(retType);
 
-        var rtype = ResolveTypeWithModule(retType, context, modulename, fullName);
+        var rtype = ResolveTypeWithModule(retType, context, modulename);
 
         method.ReturnParameter = new Parameter(rtype);
     }

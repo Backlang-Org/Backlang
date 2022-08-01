@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -74,6 +75,7 @@ public sealed class Utils
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
         bool isPointer = false;
+
         if (lNode is ("#type*", var arg))
         {
             isPointer = true;
@@ -85,6 +87,13 @@ public sealed class Utils
             lNode = type;
         }
 
+        if (lNode.ArgCount == 3 && lNode is ("#fn", var retType, _, var args))
+        {
+            string typename = retType == LNode.Missing ? "Action`" + (args.ArgCount) : "Func`" + (args.ArgCount + 1);
+
+            return new SimpleName(typename).Qualify("System");
+        }
+
         if (lNode.Calls(CodeSymbols.Dot))
         {
             QualifiedName qname = GetQualifiedName(lNode.Args[0]);
@@ -92,7 +101,9 @@ public sealed class Utils
             return GetQualifiedName(lNode.Args[1]).Qualify(qname);
         }
 
-        return new SimpleName(lNode.Name.Name + (isPointer ? "*" : "")).Qualify();
+        var name = new SimpleName(lNode.Name.Name).Qualify();
+
+        return isPointer ? new PointerName(name, PointerKind.Transient).Qualify() : name;
     }
 
     public static string NewLabel(string name)
