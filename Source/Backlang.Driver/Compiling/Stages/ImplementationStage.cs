@@ -411,6 +411,14 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
             }
         }
+        else if (node is ("'*", var address))
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == address.Name.Name);
+            if (localPrms.Any())
+            {
+                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
+            }
+        }
 
         return null;
     }
