@@ -53,6 +53,10 @@ public class CompilerDriver
                _.Add<ImplementationStage>();
            });
 
+           cfg.When(_ => _.EmbeddedResource.Any(), _ => {
+               _.Add<InitEmbeddedResourcesStage>();
+           });
+
            cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<CompileTargetStage>();
            });

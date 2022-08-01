@@ -61,6 +61,14 @@ public class DotNetAssembly : ITargetAssembly
 
         CompileBodys();
 
+        //ToDo: Parallelize Resource Embedding
+        foreach (EmbeddedResourceAttribute er in _assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute))
+        {
+            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, File.OpenRead(er.Filename));
+
+            _assemblyDefinition.MainModule.Resources.Add(err);
+        }
+
         _assemblyDefinition.Write(output);
 
         output.Close();

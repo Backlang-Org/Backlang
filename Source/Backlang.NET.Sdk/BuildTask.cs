@@ -88,6 +88,7 @@ namespace Backlang.NET.Sdk
                 context.MacroReferences = MacroReferences;
                 context.ResultingOutputPath = ResultingOutputPath;
                 context.ProjectFile = ProjectFile;
+                context.EmbeddedResource = Resources.Select(_ => _.GetMetadata("Include")).ToArray();
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {
