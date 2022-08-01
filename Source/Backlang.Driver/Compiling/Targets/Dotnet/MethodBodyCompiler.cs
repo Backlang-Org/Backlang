@@ -72,6 +72,11 @@ public static class MethodBodyCompiler
             {
                 EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
             }
+            else if (instruction.Prototype is LoadLocalAPrototype lda)
+            {
+                var definition = variables[lda.Parameter.Name.ToString()];
+                ilProcessor.Emit(OpCodes.Ldloca_S, definition);
+            }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
                 EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);

@@ -403,6 +403,14 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
             }
         }
+        else if (node is ("'&", var p))
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == p.Name.Name);
+            if (localPrms.Any())
+            {
+                return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+            }
+        }
 
         return null;
     }
