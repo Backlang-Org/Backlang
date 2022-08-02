@@ -100,7 +100,14 @@ namespace Backlang.NET.Sdk
 
                 foreach (var msg in context.Messages)
                 {
-                    Log.LogError(msg.ToString());
+                    if (msg.Severity == Codeanalysis.Parsing.MessageSeverity.Error)
+                    {
+                        Log.LogError(msg.ToString());
+                    }
+                    else
+                    {
+                        Log.LogWarning(msg.ToString());
+                    }
                 }
 
                 return !context.Messages.Any();
