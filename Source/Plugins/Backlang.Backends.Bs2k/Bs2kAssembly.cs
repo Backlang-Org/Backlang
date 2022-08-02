@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts;
+using Backlang.Driver.Compiling;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
@@ -18,6 +19,11 @@ public class Bs2kAssembly : ITargetAssembly
         var emitter = new Emitter(Contents.EntryPoint);
 
         var program = Contents.Assembly.Types.First(_ => _.FullName.ToString() == $".{Names.ProgramClass}");
+
+        foreach (var er in Contents.Assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>()) {
+            emitter.EmitResource(er.Name.Replace('.', '$').Replace('/', '$'), File.ReadAllBytes(er.Filename));
+        }
+
         emitter.EmitStringConstants(program);
 
         if (!Contents.Assembly.IsLibrary)
@@ -32,7 +38,7 @@ public class Bs2kAssembly : ITargetAssembly
                 emitter.EmitFunctionDefinition(m);
             }
         }
-;
+
         var sw = new StreamWriter(output);
         sw.Write(emitter.ToString());
 

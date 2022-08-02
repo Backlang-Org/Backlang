@@ -46,6 +46,11 @@ public class Emitter
         }
     }
 
+    public void EmitResource(string name, byte[] data)
+    {
+        Emit($"res{name}: .words[{string.Join(",", data)}]");
+    }
+
     public void EmitStringConstants(IType program)
     {
         foreach (DescribedBodyMethod method in program.Methods)

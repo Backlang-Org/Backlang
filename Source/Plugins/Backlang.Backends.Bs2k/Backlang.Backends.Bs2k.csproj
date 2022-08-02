@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Backlang.Contracts\Backlang.Contracts.csproj" />
+	  <ProjectReference Include="..\..\Backlang.Driver\Backlang.Driver.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
