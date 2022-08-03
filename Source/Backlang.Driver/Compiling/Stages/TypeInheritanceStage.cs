@@ -43,7 +43,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     }.ToImmutableDictionary();
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
-        LNode function, QualifiedName modulename, Scope scope, string methodName = null, bool hasBody = true)
+        LNode function, QualifiedName modulename, Scope parentScope, string methodName = null, bool hasBody = true)
     {
         if (methodName == null) methodName = GetMethodName(function);
 
@@ -87,18 +87,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.IsDestructor = true;
         }
 
+        var scope = parentScope.CreateChildScope();
+        var functionItem = new FunctionScopeItem { Name = methodName, IsStatic = method.IsStatic, SubScope = scope, Method = method };
+
         if (hasBody)
         {
             context.BodyCompilations.Add(new(function, context, method, modulename, scope));
         }
 
-        if (type.Methods.Any(_ => _.FullName.FullName.Equals(method.FullName.FullName)))
+        if (parentScope.Add(functionItem))
         {
-            context.AddError(function, "Function '" + method.FullName + "' is already defined.");
-            return null;
+            return method;
         }
 
-        return method;
+        context.AddError(function, "Function '" + method.FullName + "' is already defined.");
+        return null;
     }
 
     public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename, Scope scope)
