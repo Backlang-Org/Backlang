@@ -531,8 +531,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var typenode = st.Args[0].Args[0].Args[0].Args[0];
         var fullname = Utils.GetQualifiedName(typenode);
-
-        if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
+        
+        if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem)) // TODO: when couldn't found, resolve other types like u8
         {
             context.AddError(typenode, $"Cannot implement {fullname.FullName}, type not found");
             return;
