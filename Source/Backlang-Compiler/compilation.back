@@ -11,6 +11,9 @@ public static func main() {
 	print("hello :D");
 }
 
+public func hello(cool: bool) {
+}
+
 implement Point {
 	func cool() -> none {}
 }

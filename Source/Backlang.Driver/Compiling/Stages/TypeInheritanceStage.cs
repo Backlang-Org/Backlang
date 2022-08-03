@@ -75,7 +75,9 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.AddAttribute(FlagAttribute.Abstract);
         }
 
-        AddParameters(method, function, context, modulename);
+        var scope = parentScope.CreateChildScope();
+
+        AddParameters(method, function, context, modulename, scope);
         SetReturnType(method, function, context, modulename);
 
         if (methodName == ".ctor")
@@ -87,7 +89,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             method.IsDestructor = true;
         }
 
-        var scope = parentScope.CreateChildScope();
         var functionItem = new FunctionScopeItem { Name = methodName, SubScope = scope, Method = method };
 
         if (hasBody)
@@ -307,14 +308,21 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return function.Args[1].Args[0].Args[0].Name.Name;
     }
 
-    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename, Scope scope)
     {
         var param = function.Args[2];
 
         foreach (var p in param.Args)
         {
             var pa = ConvertParameter(p, context, modulename);
-            method.AddParameter(pa);
+            if (scope.Add(new ParameterScopeItem { Name = pa.FullName.ToString(), Parameter = pa }))
+            {
+                method.AddParameter(pa);
+            }
+            else
+            {
+                context.AddError(param, $"Function Parameter {pa.FullName.ToString()} was already defined.");
+            }
         }
     }
 
