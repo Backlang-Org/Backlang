@@ -61,7 +61,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
         DescribedType targetType = null;
         Scope typeScope = null;
-        if (context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
+        if (context.GlobalScope.TryGet<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
         {
             targetType = (DescribedType)typeItem.Type;
             typeItem.Deconstruct(out _, out _, out typeScope, out _);

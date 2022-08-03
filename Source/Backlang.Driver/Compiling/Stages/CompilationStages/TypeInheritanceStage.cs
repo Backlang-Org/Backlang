@@ -240,7 +240,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         var inheritances = node.Args[1];
         var members = node.Args[2];
 
-        if (!scope.TryFind<TypeScopeItem>(name.FullName.ToString(), out var typeItem))
+        if (!scope.TryGet<TypeScopeItem>(name.FullName.ToString(), out var typeItem))
         {
             context.AddError(node, $"Type {typeItem.Name} is not found");
             return;

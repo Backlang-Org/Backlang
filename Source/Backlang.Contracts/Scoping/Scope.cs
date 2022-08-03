@@ -22,26 +22,15 @@ public class Scope
 
     public bool Contains(string name) => _items.Any(_ => _.Name == name);
 
-    public bool TryFind<T>(string name, out T? result) where T : ScopeItem
-    {
-        result = _items.FirstOrDefault(_ => _ is T && _.Name == name) as T;
-        return result != null;
-    }
-
-    public bool TryFind<T>(Func<ScopeItem, bool> test, out T? result) where T : ScopeItem
-    {
-        result = _items.FirstOrDefault(_ => _ is T && test(_)) as T;
-        return result != null;
-    }
-
     public Scope CreateChildScope()
     {
         return new Scope(this);
     }
 
-    public bool TryGet(string name, out ScopeItem? item)
+    public bool TryGet<T>(string name, out T? item)
+        where T : ScopeItem
     {
-        item = _items.FirstOrDefault(i => i.Name == name);
+        item = (T)_items.FirstOrDefault(i => i.Name == name);
 
         if (Parent != null)
         {
