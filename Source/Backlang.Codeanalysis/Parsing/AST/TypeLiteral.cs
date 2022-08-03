@@ -7,19 +7,20 @@ public sealed class TypeLiteral
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         LNode typeNode;
+        var typeToken = iterator.Current;
 
         if (iterator.IsMatch(TokenType.Identifier))
         {
             var typename = iterator.Match(TokenType.Identifier).Text;
             var args = new LNodeList();
 
-            typeNode = SyntaxTree.Type(typename, new());
+            typeNode = SyntaxTree.Type(typename, new()).WithRange(typeToken);
 
             if (iterator.IsMatch(TokenType.Star))
             {
                 iterator.NextToken();
 
-                typeNode = SyntaxTree.Pointer(typeNode);
+                typeNode = SyntaxTree.Pointer(typeNode).WithRange(typeToken, iterator.Prev);
             }
             else if (iterator.IsMatch(TokenType.OpenSquare))
             {
@@ -36,7 +37,7 @@ public sealed class TypeLiteral
 
                 iterator.Match(TokenType.CloseSquare);
 
-                typeNode = SyntaxTree.Array(typeNode, dimensions);
+                typeNode = SyntaxTree.Array(typeNode, dimensions).WithRange(typeToken, iterator.Prev);
             }
             else if (iterator.IsMatch(TokenType.LessThan))
             {
@@ -62,7 +63,7 @@ public sealed class TypeLiteral
         }
         else if (iterator.IsMatch(TokenType.None))
         {
-            typeNode = SyntaxTree.Type("none", LNode.List()); // Missing is the normal type for none
+            typeNode = SyntaxTree.Type("none", LNode.List()).WithRange(typeToken); // Missing is the normal type for none
             iterator.NextToken();
         }
         else if (iterator.IsMatch(TokenType.OpenParen))
@@ -80,11 +81,13 @@ public sealed class TypeLiteral
                 returnType = TypeLiteral.Parse(iterator, parser);
             }
 
-            typeNode = LNode.Call(CodeSymbols.Fn, LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters)));
+            typeNode = LNode.Call(CodeSymbols.Fn,
+                LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters))).WithRange(typeToken, iterator.Prev);
         }
         else
         {
-            parser.Messages.Add(Message.Error(parser.Document, "Expected Identifier or Function-Signature as TypeLiteral, but got " + iterator.Current.Type, parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+            parser.AddError("Expected Identifier or Function-Signature as TypeLiteral, but got " + iterator.Current.Type);
+
             typeNode = LNode.Missing;
             iterator.NextToken();
         }
