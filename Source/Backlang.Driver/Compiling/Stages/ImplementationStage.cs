@@ -538,9 +538,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             return;
         }
 
+        var targetType = (DescribedType)typeItem.Type;
         var typeScope = typeItem.SubScope;
-
-        var targetType = (DescribedType)TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
 
         var body = st.Args[0].Args[1].Args;
 
