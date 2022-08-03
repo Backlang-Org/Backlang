@@ -1,11 +1,11 @@
-﻿namespace Backlang.Driver.Compiling.Scoping;
+﻿namespace Backlang.Contracts.Scoping;
 
 public enum ScopeType
 {
-    Global,
     Field,
-    Variable,
+    Variable, // done
     Function,
     Type,
     Parameter,
+    Property
 }

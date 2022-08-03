@@ -1,4 +1,4 @@
-﻿namespace Backlang.Driver.Compiling.Scoping;
+﻿namespace Backlang.Contracts.Scoping;
 
 public class Scope
 {
@@ -19,6 +19,12 @@ public class Scope
     }
 
     public bool Contains(string name) => _items.Any(_ => _.Name == name);
+
+    public bool TryFind<T>(Func<ScopeItem, bool> test, out T result) where T: ScopeItem
+    {
+        result = _items.FirstOrDefault(test) as T;
+        return result != null;
+    }
 
     public Scope CreateChildScope()
     {

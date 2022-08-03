@@ -10,3 +10,7 @@ public static func main() {
 	}
 	print("hello :D");
 }
+
+implement Point {
+	func cool() -> none {}
+}

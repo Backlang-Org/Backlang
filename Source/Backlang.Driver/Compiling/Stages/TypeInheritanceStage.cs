@@ -10,6 +10,8 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Backlang.Contracts;
+using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -41,7 +43,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
     }.ToImmutableDictionary();
 
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
-        LNode function, QualifiedName modulename, string methodName = null, bool hasBody = true)
+        LNode function, QualifiedName modulename, Scope scope, string methodName = null, bool hasBody = true)
     {
         if (methodName == null) methodName = GetMethodName(function);
 
@@ -87,7 +89,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
         if (hasBody)
         {
-            context.BodyCompilations.Add(new(function, context, method, modulename));
+            context.BodyCompilations.Add(new(function, context, method, modulename, scope));
         }
 
         if (type.Methods.Any(_ => _.FullName.FullName.Equals(method.FullName.FullName)))
@@ -99,17 +101,17 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return method;
     }
 
-    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename)
+    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename, Scope scope)
     {
         foreach (var member in members.Args)
         {
             if (member.Name == CodeSymbols.Var)
             {
-                ConvertFields(type, context, member, modulename);
+                ConvertFields(type, context, member, modulename, scope);
             }
             else if (member.Calls(CodeSymbols.Fn))
             {
-                type.AddMethod(ConvertFunction(context, type, member, modulename, hasBody: false));
+                type.AddMethod(ConvertFunction(context, type, member, modulename, scope, hasBody: false));
             }
             else if (member.Calls(CodeSymbols.Property))
             {
@@ -270,11 +272,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             {
                 if (node.Calls(CodeSymbols.Struct) || node.Calls(CodeSymbols.Class) || node.Calls(CodeSymbols.Interface))
                 {
-                    ConvertTypeOrInterface(context, node, modulename);
+                    ConvertTypeOrInterface(context, node, modulename, context.GlobalScope);
                 }
                 else if (node.Calls(CodeSymbols.Fn))
                 {
-                    ConvertFreeFunction(context, node, modulename);
+                    ConvertFreeFunction(context, node, modulename, context.GlobalScope);
                 }
                 else if (node.Calls(CodeSymbols.Enum))
                 {
@@ -363,7 +365,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename)
+    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename, Scope scope)
     {
         var ftype = member.Args[0].Args[0].Args[0];
 
@@ -379,15 +381,23 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             field.InitialValue = mvalue.Args[0].Value;
         }
-        if (member.Attrs.Any(_ => _.Name == Symbols.Mutable))
+        var isMutable = member.Attrs.Any(_ => _.Name == Symbols.Mutable);
+        if (isMutable)
         {
             field.AddAttribute(Attributes.Mutable);
         }
 
-        type.AddField(field);
+        if (scope.Add(new FieldScopeItem { Name = mname.Name, IsMutable = isMutable, Field = field }))
+        {
+            type.AddField(field);
+        }
+        else
+        {
+            context.AddError(member, $"Field {mname} is already defined.");
+        }
     }
 
-    private static void ConvertFreeFunction(CompilerContext context, LNode node, QualifiedName modulename)
+    private static void ConvertFreeFunction(CompilerContext context, LNode node, QualifiedName modulename, Scope scope)
     {
         DescribedType type;
 
@@ -407,7 +417,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         string methodName = GetMethodName(node);
         if (methodName == "main") methodName = "Main";
 
-        var method = ConvertFunction(context, type, node, modulename, methodName: methodName);
+        var method = ConvertFunction(context, type, node, modulename, scope, methodName: methodName);
 
         if (method != null) type.AddMethod(method);
     }
@@ -432,7 +442,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return param;
     }
 
-    private static void ConvertTypeOrInterface(CompilerContext context, LNode node, QualifiedName modulename)
+    private static void ConvertTypeOrInterface(CompilerContext context, LNode node, QualifiedName modulename, Scope scope)
     {
         var name = Utils.GetQualifiedName(node.Args[0]);
         var inheritances = node.Args[1];
@@ -461,7 +471,10 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             }
         }
 
-        ConvertTypeMembers(members, type, context, modulename);
+        scope.TryFind<TypeScopeItem>(_ => _ is TypeScopeItem && _.Name == name.FullName.ToString(), out var typeItem);
+        var subScope = typeItem.SubScope;
+
+        ConvertTypeMembers(members, type, context, modulename, subScope);
     }
 
     private static void ConvertUnion(CompilerContext context, LNode node, QualifiedName modulename)

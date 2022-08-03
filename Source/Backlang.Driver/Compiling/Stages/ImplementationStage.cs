@@ -1,7 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
-using Backlang.Driver.Compiling.Scoping;
-using Backlang.Driver.Compiling.Scoping.Items;
+using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -50,12 +50,10 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
     }.ToImmutableDictionary();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
-                QualifiedName? modulename)
+                QualifiedName? modulename, Scope scope)
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
-
-        Scope scope = new Scope(null);
 
         AppendBlock(function.Args[3], block, context, method, modulename, scope);
 
@@ -105,7 +103,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         {
             bodyCompilation.method.Body =
                 CompileBody(bodyCompilation.function, context,
-                bodyCompilation.method, bodyCompilation.modulename);
+                bodyCompilation.method, bodyCompilation.modulename, bodyCompilation.scope);
         }
     }
 
@@ -537,18 +535,21 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var body = st.Args[0].Args[1].Args;
 
+        context.GlobalScope.TryFind<TypeScopeItem>(_ => _ is TypeScopeItem && _.Name == targetType.Name.ToString(), out var typeItem);
+        var typeScope = typeItem.SubScope;
+
         foreach (var node in body)
         {
             if (node.Name == CodeSymbols.Fn)
             {
                 if (targetType.Parent.Assembly == context.Assembly)
                 {
-                    var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node, modulename);
+                    var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node, modulename, typeScope);
                     targetType.AddMethod(fn);
                 }
                 else
                 {
-                    var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node, modulename);
+                    var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node, modulename, typeScope);
 
                     fn.IsStatic = true;
 

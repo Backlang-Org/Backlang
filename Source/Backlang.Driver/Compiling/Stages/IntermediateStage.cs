@@ -1,5 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
+using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
@@ -28,7 +30,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             {
                 if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
                 {
-                    ConvertTypeOrInterface(context, st, modulename);
+                    ConvertTypeOrInterface(context, st, modulename, context.GlobalScope);
                 }
                 else if (st.Calls(CodeSymbols.Enum))
                 {
@@ -62,7 +64,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void ConvertTypeOrInterface(CompilerContext context, LNode st, QualifiedName modulename)
+    private static void ConvertTypeOrInterface(CompilerContext context, LNode st, QualifiedName modulename, Scope scope)
     {
         var name = st.Args[0].Name;
 
@@ -79,7 +81,14 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         Utils.SetAccessModifier(st, type);
         SetOtherModifiers(st, type);
 
-        context.Assembly.AddType(type);
+        if (scope.Add(new TypeScopeItem { Name = name.Name, IsMutable = false, Type = type, SubScope = scope.CreateChildScope()}))
+        {
+            context.Assembly.AddType(type);
+        }
+        else
+        {
+            context.AddError(st, $"Type {name.Name} is already defined.");
+        }
     }
 
     private static void SetOtherModifiers(LNode node, DescribedType type)

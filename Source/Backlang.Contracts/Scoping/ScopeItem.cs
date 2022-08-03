@@ -1,9 +1,9 @@
-﻿namespace Backlang.Driver.Compiling.Scoping;
+﻿namespace Backlang.Contracts.Scoping;
 
 public abstract class ScopeItem
 {
-    public bool IsMutable { get; set; }
-    public string Name { get; set; }
+    public bool IsMutable { get; init; }
+    public string Name { get; init; }
 
     public void Deconstruct(out string name, out bool isMutable)
     {
