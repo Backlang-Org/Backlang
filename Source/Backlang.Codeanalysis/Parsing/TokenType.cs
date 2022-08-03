@@ -54,6 +54,7 @@ public enum TokenType
     Slash,
 
     [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
     [Lexeme("*")]
     Star,
 

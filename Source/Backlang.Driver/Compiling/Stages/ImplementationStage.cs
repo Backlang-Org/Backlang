@@ -412,6 +412,15 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
                 return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
             }
         }
+        else if (node is ("'*", var o) && node.ArgCount == 1)
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == o.Name.Name);
+            if (localPrms.Any())
+            {
+                AppendExpression(block, o, elementType, method);
+                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
+            }
+        }
 
         return null;
     }

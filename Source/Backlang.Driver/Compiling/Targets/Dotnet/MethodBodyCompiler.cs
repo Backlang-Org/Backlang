@@ -78,6 +78,10 @@ public static class MethodBodyCompiler
                 var definition = variables[lda.Parameter.Name.ToString()];
                 ilProcessor.Emit(OpCodes.Ldloca_S, definition);
             }
+            else if (instruction.Prototype is LoadIndirectPrototype ldi)
+            {
+                ilProcessor.Emit(OpCodes.Ldind_I4);
+            }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
                 EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
