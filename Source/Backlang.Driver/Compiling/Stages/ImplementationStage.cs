@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Contracts.Scoping.Items;
@@ -531,16 +531,26 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var typenode = st.Args[0].Args[0].Args[0].Args[0];
         var fullname = Utils.GetQualifiedName(typenode);
-        
-        if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem)) // TODO: when couldn't found, resolve other types like u8
+
+        DescribedType targetType = null;
+        Scope typeScope = null;
+        if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
         {
-            context.AddError(typenode, $"Cannot implement {fullname.FullName}, type not found");
-            return;
+            targetType = (DescribedType)TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
+
+            if (targetType == null)
+            {
+                context.AddError(typenode, $"Cannot implement {fullname.FullName}, type not found");
+                return;
+            }
+
+            typeScope = context.GlobalScope.CreateChildScope();
         }
-
-        typeItem.Deconstruct(out _, out _, out var typeScope, out _);
-
-        var targetType = (DescribedType)typeItem.Type;
+        else
+        {
+            targetType = (DescribedType)typeItem.Type;
+            typeItem.Deconstruct(out _, out _, out typeScope, out _);
+        }
 
         var body = st.Args[0].Args[1].Args;
 
