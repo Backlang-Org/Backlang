@@ -2,7 +2,7 @@
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Loyc.Syntax;
 
-namespace Backlang.Driver.Core;
+namespace Backlang.Driver.Core.Implementors;
 
 public interface IExpressionImplementor
 {

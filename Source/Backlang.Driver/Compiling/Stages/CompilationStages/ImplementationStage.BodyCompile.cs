@@ -1,9 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
-using Backlang.Driver.Core;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
+using Backlang.Driver.Core.Implementors.Statements;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
@@ -17,7 +17,7 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public partial class ImplementationStage
 {
-    private static readonly ImmutableDictionary<Symbol, IImplementor> _implementations = new Dictionary<Symbol, IImplementor>()
+    private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementations = new Dictionary<Symbol, IStatementImplementor>()
     {
         [CodeSymbols.Var] = new VariableImplementor(),
         [CodeSymbols.If] = new IfImplementor(),

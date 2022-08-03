@@ -6,9 +6,9 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Loyc.Syntax;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
-namespace Backlang.Driver.Core.Implementors;
+namespace Backlang.Driver.Core.Implementors.Statements;
 
-public class CallImplementor : IImplementor
+public class CallImplementor : IStatementImplementor
 {
     public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
         LNode node, QualifiedName? modulename, Scope scope)
