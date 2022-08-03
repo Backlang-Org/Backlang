@@ -79,7 +79,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 
-    private static Instruction ConvertConstant(IType elementType, object value)
+    public static Instruction ConvertConstant(IType elementType, object value)
     {
         Constant constant;
         switch (value)
