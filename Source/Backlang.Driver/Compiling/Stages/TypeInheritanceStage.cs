@@ -382,12 +382,11 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             field.InitialValue = mvalue.Args[0].Value;
         }
         var isMutable = member.Attrs.Any(_ => _.Name == Symbols.Mutable);
-        if (isMutable)
-        {
-            field.AddAttribute(Attributes.Mutable);
-        }
+        if (isMutable) field.AddAttribute(Attributes.Mutable);
+        var isStatic = member.Attrs.Any(_ => _.Name == CodeSymbols.Static);
+        if (isStatic) field.IsStatic = true;
 
-        if (scope.Add(new FieldScopeItem { Name = mname.Name, IsMutable = isMutable, IsStatic = false, Field = field })) // TODO: Static Fields
+        if (scope.Add(new FieldScopeItem { Name = mname.Name, IsMutable = isMutable, IsStatic = isStatic, Field = field }))
         {
             type.AddField(field);
         }
