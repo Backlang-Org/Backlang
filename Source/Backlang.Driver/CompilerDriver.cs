@@ -25,15 +25,7 @@ public class CompilerDriver
            });
 
            cfg.When(_ => !hasError(_.Messages) && _.Target != "dotnet", _ => {
-               _.Add<PluginSystemStage>();
-           });
-
-           cfg.When(_ => !hasError(_.Messages), _ => {
-               _.Add<InitTypeSystemStage>();
-           });
-
-           cfg.When(_ => _.References.Any(), _ => {
-               _.Add<InitReferencesStage>();
+               _.Add<InitStage>();
            });
 
            cfg.When(_ => !hasError(_.Messages), _ => {
@@ -54,10 +46,6 @@ public class CompilerDriver
 
            cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<ImplementationStage>();
-           });
-
-           cfg.When(_ => _.EmbeddedResource.Any() && !hasError(_.Messages), _ => {
-               _.Add<InitEmbeddedResourcesStage>();
            });
 
            cfg.When(_ => !hasError(_.Messages), _ => {
