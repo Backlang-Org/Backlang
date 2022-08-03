@@ -114,15 +114,15 @@ public static class SyntaxTree
     {
         return Factory.Call(
             CodeSymbols.For,
-                Factory.List(Factory.AltList(
-                    Factory.List(LNode.Call(CodeSymbols.In,
-                        Factory.List(init, arr)).SetStyle(NodeStyle.Operator))), LNode.Missing,
+                Factory.AltList(Factory.AltList(
+                    Factory.AltList(LNode.Call(CodeSymbols.In,
+                        Factory.AltList(init, arr)).SetStyle(NodeStyle.Operator))), LNode.Missing,
                             Factory.AltList(), body));
     }
 
     public static LNode If(LNode cond, LNode ifBody, LNode elseBody)
     {
-        return Factory.Call(CodeSymbols.If, Factory.List(cond, ifBody, elseBody));
+        return Factory.Call(CodeSymbols.If, Factory.AltList(cond, ifBody, elseBody));
     }
 
     public static LNode ImplDecl(LNode target, LNodeList body)
@@ -130,7 +130,7 @@ public static class SyntaxTree
         var attributes = new LNodeList();
 
         return Factory.Call(Symbols.Implementation,
-           Factory.List(target, LNode.Call(CodeSymbols.Braces,
+           Factory.AltList(target, LNode.Call(CodeSymbols.Braces,
                body).SetStyle(NodeStyle.StatementBlock))).WithAttrs(attributes);
     }
 
@@ -199,7 +199,7 @@ public static class SyntaxTree
 
     public static LNode Type(string name, LNodeList arguments)
     {
-        return Factory.Call(Symbols.TypeLiteral, Factory.List(Factory.Id(name), Factory.Call(CodeSymbols.Of, arguments)));
+        return Factory.Call(Symbols.TypeLiteral, Factory.AltList(Factory.Id(name), Factory.Call(CodeSymbols.Of, arguments)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)
@@ -209,7 +209,7 @@ public static class SyntaxTree
 
     public static LNode Union(string name, LNodeList members)
     {
-        return Factory.Call(Symbols.Union, LNode.List(Factory.Id(name)).Add(LNode.Call(CodeSymbols.AltList, members)));
+        return Factory.Call(Symbols.Union, LNode.List(Factory.Id(name)).Add(Factory.AltList(members)));
     }
 
     public static LNode Using(LNode from, LNode to)
