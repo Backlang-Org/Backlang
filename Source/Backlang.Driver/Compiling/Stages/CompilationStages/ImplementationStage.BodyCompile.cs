@@ -20,7 +20,8 @@ public partial class ImplementationStage
 {
     private static readonly ImmutableDictionary<Symbol, IImplementor> _implementations = new Dictionary<Symbol, IImplementor>()
     {
-        [CodeSymbols.Var] = new VariableImplementor()
+        [CodeSymbols.Var] = new VariableImplementor(),
+        [CodeSymbols.If] = new IfImplementor()
     }.ToImmutableDictionary();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
@@ -38,60 +39,6 @@ public partial class ImplementationStage
             graph.ToImmutable());
     }
 
-    public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
-    {
-        if (node.ArgCount == 1 && node.Args[0].HasValue)
-        {
-            var constant = ConvertConstant(elementType, node.Args[0].Value);
-            var value = block.AppendInstruction(constant);
-
-            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
-        }
-        else if (node.ArgCount == 2)
-        {
-            var lhs = AppendExpression(block, node.Args[0], elementType, method);
-            var rhs = AppendExpression(block, node.Args[1], elementType, method);
-
-            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
-        }
-        else if (node.IsId)
-        {
-            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
-
-            if (!par.Any())
-            {
-                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
-                if (localPrms.Any())
-                {
-                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-                }
-            }
-            else
-            {
-                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
-            }
-        }
-        else if (node is ("'&", var p))
-        {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == p.Name.Name);
-            if (localPrms.Any())
-            {
-                return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-            }
-        }
-        else if (node is ("'*", var o) && node.ArgCount == 1)
-        {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == o.Name.Name);
-            if (localPrms.Any())
-            {
-                AppendExpression(block, o, elementType, method);
-                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
-            }
-        }
-
-        return null;
-    }
-
     private static void ConvertMethodBodies(CompilerContext context)
     {
         foreach (var bodyCompilation in context.BodyCompilations)
@@ -102,7 +49,7 @@ public partial class ImplementationStage
         }
     }
 
-    private static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
+    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
     {
         foreach (var node in blkNode.Args)
         {
@@ -120,12 +67,8 @@ public partial class ImplementationStage
                 block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
                 continue;
             }
-
-            if (node.Calls(CodeSymbols.If))
-            {
-                block = AppendIf(context, method, block, node, modulename, scope);
-            }
-            else if (node.Calls(CodeSymbols.While))
+            
+            if (node.Calls(CodeSymbols.While))
             {
                 block = AppendWhile(context, method, block, node, modulename, scope);
             }
@@ -219,36 +162,55 @@ public partial class ImplementationStage
         return block;
     }
 
-    private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
+    public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
     {
-        if (node is (_, (_, var condition, var body, var el)))
+        if (node.ArgCount == 1 && node.Args[0].HasValue)
         {
-            var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
-            AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
+            var constant = ConvertConstant(elementType, node.Args[0].Value);
+            var value = block.AppendInstruction(constant);
 
-            if (el != LNode.Missing)
-            {
-                var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
-                AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
-            }
+            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
+        }
+        else if (node.ArgCount == 2)
+        {
+            var lhs = AppendExpression(block, node.Args[0], elementType, method);
+            var rhs = AppendExpression(block, node.Args[1], elementType, method);
 
-            var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
-            if (condition.Calls(CodeSymbols.Bool))
+            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        }
+        else if (node.IsId)
+        {
+            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
+
+            if (!par.Any())
             {
-                if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.True);
+                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
+                if (localPrms.Any())
+                {
+                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                }
             }
             else
             {
-                AppendExpression(if_condition, condition, context.Environment.Boolean, method);
-                if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
+                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
             }
-
-            block.Flow = new JumpFlow(if_condition);
-
-            var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
-            ifBlock.Flow = new JumpFlow(after);
-
-            return after;
+        }
+        else if (node is ("'&", var p))
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == p.Name.Name);
+            if (localPrms.Any())
+            {
+                return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+            }
+        }
+        else if (node is ("'*", var o) && node.ArgCount == 1)
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == o.Name.Name);
+            if (localPrms.Any())
+            {
+                AppendExpression(block, o, elementType, method);
+                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
+            }
         }
 
         return null;
