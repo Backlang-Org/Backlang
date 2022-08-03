@@ -1,7 +1,8 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
-using Backlang.Contracts.Scoping.Items;
+using Backlang.Driver.Core;
+using Backlang.Driver.Core.Implementors;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
@@ -9,21 +10,18 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public partial class ImplementationStage
 {
-    private static void ConvertMethodBodies(CompilerContext context)
+    private static readonly ImmutableDictionary<Symbol, IImplementor> _implementations = new Dictionary<Symbol, IImplementor>()
     {
-        foreach (var bodyCompilation in context.BodyCompilations)
-        {
-            bodyCompilation.method.Body =
-                CompileBody(bodyCompilation.function, context,
-                bodyCompilation.method, bodyCompilation.modulename, bodyCompilation.scope);
-        }
-    }
+        [CodeSymbols.Var] = new VariableImplementor()
+    }.ToImmutableDictionary();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
                 QualifiedName? modulename, Scope scope)
@@ -40,6 +38,70 @@ public partial class ImplementationStage
             graph.ToImmutable());
     }
 
+    public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
+    {
+        if (node.ArgCount == 1 && node.Args[0].HasValue)
+        {
+            var constant = ConvertConstant(elementType, node.Args[0].Value);
+            var value = block.AppendInstruction(constant);
+
+            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
+        }
+        else if (node.ArgCount == 2)
+        {
+            var lhs = AppendExpression(block, node.Args[0], elementType, method);
+            var rhs = AppendExpression(block, node.Args[1], elementType, method);
+
+            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        }
+        else if (node.IsId)
+        {
+            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
+
+            if (!par.Any())
+            {
+                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
+                if (localPrms.Any())
+                {
+                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+                }
+            }
+            else
+            {
+                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+            }
+        }
+        else if (node is ("'&", var p))
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == p.Name.Name);
+            if (localPrms.Any())
+            {
+                return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
+            }
+        }
+        else if (node is ("'*", var o) && node.ArgCount == 1)
+        {
+            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == o.Name.Name);
+            if (localPrms.Any())
+            {
+                AppendExpression(block, o, elementType, method);
+                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
+            }
+        }
+
+        return null;
+    }
+
+    private static void ConvertMethodBodies(CompilerContext context)
+    {
+        foreach (var bodyCompilation in context.BodyCompilations)
+        {
+            bodyCompilation.method.Body =
+                CompileBody(bodyCompilation.function, context,
+                bodyCompilation.method, bodyCompilation.modulename, bodyCompilation.scope);
+        }
+    }
+
     private static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
     {
         foreach (var node in blkNode.Args)
@@ -53,11 +115,13 @@ public partial class ImplementationStage
                 block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
             }
 
-            if (node.Calls(CodeSymbols.Var))
+            if (_implementations.ContainsKey(node.Name))
             {
-                AppendVariableDeclaration(context, method, block, node, modulename, scope);
+                block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
+                continue;
             }
-            else if (node.Calls(CodeSymbols.If))
+
+            if (node.Calls(CodeSymbols.If))
             {
                 block = AppendIf(context, method, block, node, modulename, scope);
             }
@@ -258,83 +322,5 @@ public partial class ImplementationStage
         var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
 
         block.AppendInstruction(call);
-    }
-
-    private static void AppendVariableDeclaration(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
-    {
-        var decl = node.Args[1];
-
-        var name = ConversionUtils.GetQualifiedName(node.Args[0]);
-        var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
-
-        var varname = decl.Args[0].Name.Name;
-        var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
-
-        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = isMutable }))
-        {
-            block.AppendParameter(new BlockParameter(elementType, varname));
-        }
-        else
-        {
-            context.AddError(decl.Args[0], $"{varname} already declared");
-        }
-
-        AppendExpression(block, decl.Args[1], elementType, method);
-
-        block.AppendInstruction(Instruction.CreateAlloca(elementType));
-    }
-
-    private static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
-    {
-        if (node.ArgCount == 1 && node.Args[0].HasValue)
-        {
-            var constant = ConvertConstant(elementType, node.Args[0].Value);
-            var value = block.AppendInstruction(constant);
-
-            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
-        }
-        else if (node.ArgCount == 2)
-        {
-            var lhs = AppendExpression(block, node.Args[0], elementType, method);
-            var rhs = AppendExpression(block, node.Args[1], elementType, method);
-
-            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
-        }
-        else if (node.IsId)
-        {
-            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
-
-            if (!par.Any())
-            {
-                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
-                if (localPrms.Any())
-                {
-                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-                }
-            }
-            else
-            {
-                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
-            }
-        }
-        else if (node is ("'&", var p))
-        {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == p.Name.Name);
-            if (localPrms.Any())
-            {
-                return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-            }
-        }
-        else if (node is ("'*", var o) && node.ArgCount == 1)
-        {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == o.Name.Name);
-            if (localPrms.Any())
-            {
-                AppendExpression(block, o, elementType, method);
-                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
-            }
-        }
-
-        return null;
     }
 }

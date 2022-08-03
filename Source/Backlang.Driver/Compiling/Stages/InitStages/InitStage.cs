@@ -7,9 +7,10 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
+        InitTypeSystem(context);
+
         InitEmbeddedResources(context);
         InitReferences(context);
-        InitTypeSystem(context);
 
         InitPlugins(context);
 
