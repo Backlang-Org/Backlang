@@ -71,7 +71,18 @@ public sealed class TypeLiteral
 
             iterator.Match(TokenType.OpenParen);
 
-            var parameters = Expression.ParseList(parser, TokenType.CloseParen);
+            var parameters = new LNodeList();
+            while (parser.Iterator.Current.Type != TokenType.CloseParen)
+            {
+                parameters.Add(TypeLiteral.Parse(iterator, parser));
+
+                if (parser.Iterator.Current.Type != TokenType.CloseParen)
+                {
+                    parser.Iterator.Match(TokenType.Comma);
+                }
+            }
+
+            parser.Iterator.Match(TokenType.CloseParen);
 
             if (iterator.Current.Type == TokenType.Arrow)
             {

@@ -1,6 +1,6 @@
 public struct Point {
 	let x: i32*;
-	let callback: (cool) -> none;
+	let callback: (i32, bool) -> none;
 }
 
 public static func main() {

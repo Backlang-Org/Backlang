@@ -144,7 +144,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, func, "System");
             foreach (var garg in typeNode.Args[2])
             {
-                fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
+                // TODO: Add "ResolveTypeWithModule(garg, context, modulename)" as parameter to fnType
             }
             resolvedType = fnType;
         }
