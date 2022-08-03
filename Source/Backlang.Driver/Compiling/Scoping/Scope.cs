@@ -2,7 +2,7 @@
 
 public class Scope
 {
-    private readonly List<IScopeItem> _items = new();
+    private readonly List<ScopeItem> _items = new();
 
     public Scope(Scope parent)
     {
@@ -11,7 +11,7 @@ public class Scope
 
     public Scope Parent { get; set; }
 
-    public void Add(IScopeItem item) => _items.Add(item);
+    public void Add(ScopeItem item) => _items.Add(item);
 
     public bool Contains(string name) => _items.Any(_ => _.Name == name);
 
@@ -20,7 +20,7 @@ public class Scope
         return new Scope(this);
     }
 
-    public bool TryGet(string name, out IScopeItem item)
+    public bool TryGet(string name, out ScopeItem item)
     {
         item = _items.FirstOrDefault(i => i.Name == name);
 

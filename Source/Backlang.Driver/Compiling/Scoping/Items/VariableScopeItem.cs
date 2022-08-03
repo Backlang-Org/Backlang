@@ -1,7 +1,6 @@
 ﻿namespace Backlang.Driver.Compiling.Scoping.Items;
 
-public class VariableScopeItem : IScopeItem
+public class VariableScopeItem : ScopeItem
 {
-    public bool IsMutable { get; set; }
-    public string Name { get; set; }
+    
 }
