@@ -387,7 +387,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
             field.AddAttribute(Attributes.Mutable);
         }
 
-        if (scope.Add(new FieldScopeItem { Name = mname.Name, IsMutable = isMutable, Field = field }))
+        if (scope.Add(new FieldScopeItem { Name = mname.Name, IsMutable = isMutable, IsStatic = false, Field = field })) // TODO: Static Fields
         {
             type.AddField(field);
         }

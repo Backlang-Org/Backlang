@@ -2,4 +2,5 @@
 
 public class VariableScopeItem : ScopeItem
 {
+    public bool IsMutable { get; init; }
 }
