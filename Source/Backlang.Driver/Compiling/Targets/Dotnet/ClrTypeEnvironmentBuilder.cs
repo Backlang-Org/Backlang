@@ -19,7 +19,7 @@ public class ClrTypeEnvironmentBuilder
         {
             if (!type.IsPublic) continue;
 
-            var ns = QualifyNamespace(type.Namespace);
+            var ns = Utils.QualifyNamespace(type.Namespace);
 
             var dt = new DescribedType(new SimpleName(type.Name).Qualify(ns), assembly);
             dt.IsSealed = type.IsSealed;
@@ -35,11 +35,11 @@ public class ClrTypeEnvironmentBuilder
         Parallel.ForEach(ass.GetTypes(), type => {
             if (!type.IsPublic) return;
 
-            var t = ResolveType(resolver, type);
+            var t = Utils.ResolveType(resolver, type);
 
             if (type.BaseType != null)
             {
-                var bt = ResolveType(resolver, type.BaseType);
+                var bt = Utils.ResolveType(resolver, type.BaseType);
 
                 if (bt != null)
                 {
@@ -55,13 +55,13 @@ public class ClrTypeEnvironmentBuilder
             foreach (var attr in type.GetCustomAttributes())
             {
                 var attrType = attr.GetType();
-                var attribute = new DescribedAttribute(ResolveType(resolver, attrType));
+                var attribute = new DescribedAttribute(Utils.ResolveType(resolver, attrType));
 
                 foreach (var prop in attrType.GetProperties())
                 {
                     var value = prop.GetValue(attr);
 
-                    attribute.ConstructorArguments.Add(new AttributeArgument(ResolveType(resolver, prop.PropertyType), value));
+                    attribute.ConstructorArguments.Add(new AttributeArgument(Utils.ResolveType(resolver, prop.PropertyType), value));
                 }
 
                 t.AddAttribute(attribute);
@@ -71,25 +71,13 @@ public class ClrTypeEnvironmentBuilder
         });
     }
 
-    public static DescribedType ResolveType(TypeResolver resolver, Type type)
-    {
-        var ns = QualifyNamespace(type.Namespace);
-
-        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(ns))?.FirstOrDefault();
-    }
-
-    public static DescribedType ResolveType(TypeResolver resolver, string name, string ns)
-    {
-        return (DescribedType)resolver.ResolveTypes(new SimpleName(name).Qualify(ns))?.FirstOrDefault();
-    }
-
     public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
     {
         Parallel.ForEach(type.GetMembers(), member => {
             if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
-                    new SimpleName(ctor.Name), ctor.IsStatic, ResolveType(resolver, typeof(void)));
+                    new SimpleName(ctor.Name), ctor.IsStatic, Utils.ResolveType(resolver, typeof(void)));
 
                 method.IsConstructor = true;
 
@@ -104,54 +92,35 @@ public class ClrTypeEnvironmentBuilder
             else if (member is FieldInfo field && field.IsPublic)
             {
                 var f = new DescribedField(t, new SimpleName(field.Name),
-                    field.IsStatic, ResolveType(resolver, field.FieldType));
+                    field.IsStatic, Utils.ResolveType(resolver, field.FieldType));
 
                 t.AddField(f);
             }
             else if (member is PropertyInfo prop)
             {
                 var p = new DescribedProperty(new SimpleName(prop.Name),
-                     ResolveType(resolver, prop.PropertyType), t);
+                     Utils.ResolveType(resolver, prop.PropertyType), t);
 
                 t.AddProperty(p);
             }
         });
     }
 
-    public static QualifiedName QualifyNamespace(string @namespace)
-    {
-        var spl = @namespace.Split('.');
-
-        QualifiedName? name = null;
-
-        foreach (var path in spl)
-        {
-            if (name == null)
-            {
-                name = new SimpleName(path).Qualify();
-                continue;
-            }
-
-            name = new SimpleName(path).Qualify(name.Value);
-        }
-
-        return name.Value;
-    }
-
     public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m, string newName = null)
     {
-        var method = new DescribedMethod(t, new SimpleName(newName ?? m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
+        var method = new DescribedMethod(t, new SimpleName(newName ?? m.Name),
+            m.IsStatic, Utils.ResolveType(resolver, m.ReturnType));
 
         ConvertParameter(m.GetParameters(), method, resolver);
 
         foreach (var attr in m.GetCustomAttributes())
         {
-            method.AddAttribute(new DescribedAttribute(ResolveType(resolver, attr.GetType())));
+            method.AddAttribute(new DescribedAttribute(Utils.ResolveType(resolver, attr.GetType())));
         }
 
         if (m.IsSpecialName)
         {
-            method.AddAttribute(new DescribedAttribute(ResolveType(resolver, typeof(SpecialNameAttribute))));
+            method.AddAttribute(new DescribedAttribute(Utils.ResolveType(resolver, typeof(SpecialNameAttribute))));
         }
 
         t.AddMethod(method);
@@ -161,7 +130,7 @@ public class ClrTypeEnvironmentBuilder
     {
         foreach (var p in parameterInfos)
         {
-            var type = ClrTypeEnvironmentBuilder.ResolveType(resolver, p.ParameterType);
+            var type = Utils.ResolveType(resolver, p.ParameterType);
 
             if (type != null)
             {

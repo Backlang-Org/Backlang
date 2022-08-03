@@ -1,7 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Contracts;
 using Backlang.Core.CompilerService;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -44,7 +43,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         if (context.OutputType == "MacroLib")
         {
-            attributes = new AttributeMap(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(MacroLibAttribute))));
+            attributes = new AttributeMap(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(MacroLibAttribute))));
         }
 
         var entryPoint = GetEntryPoint(context);

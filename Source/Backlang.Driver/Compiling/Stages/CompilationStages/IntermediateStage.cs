@@ -22,7 +22,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var tree in context.Trees)
         {
-            var modulename = Utils.GetModuleName(tree);
+            var modulename = ConversionUtils.GetModuleName(tree);
 
             foreach (var st in tree.Body)
             {
@@ -76,7 +76,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             type.AddAttribute(FlagAttribute.InterfaceType);
         }
 
-        Utils.SetAccessModifier(st, type);
+        ConversionUtils.SetAccessModifier(st, type);
         SetOtherModifiers(st, type);
 
         if (scope.Add(new TypeScopeItem { Name = name.Name, Type = type, SubScope = scope.CreateChildScope() }))
@@ -106,7 +106,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         var name = discrim.Args[0].Name;
 
         var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-        Utils.SetAccessModifier(discrim, baseType);
+        ConversionUtils.SetAccessModifier(discrim, baseType);
         baseType.IsAbstract = true;
 
         context.Assembly.AddType(baseType);
@@ -115,14 +115,21 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             var discName = type.Args[0].Name;
             var discType = new DescribedType(new SimpleName(discName.Name).Qualify(modulename), context.Assembly);
-            Utils.SetAccessModifier(discrim, discType);
+            ConversionUtils.SetAccessModifier(discrim, discType);
             discType.AddBaseType(baseType);
             context.Assembly.AddType(discType);
 
             foreach (var field in type.Args[1].Args)
             {
                 var fieldName = field.Args[1].Args[0].Name;
-                var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name), false, TypeInheritanceStage.ResolveTypeWithModule(field.Args[0].Args[0].Args[0], context, modulename, Utils.GetQualifiedName(field.Args[0].Args[0].Args[0])));
+                var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name),
+                    false,
+                    TypeInheritanceStage.ResolveTypeWithModule(
+                        field.Args[0].Args[0].Args[0], context,
+                        modulename, ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0])
+                        )
+                    );
+
                 if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
                     fieldType.AddAttribute(Attributes.Mutable);
@@ -131,8 +138,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 discType.AddField(fieldType);
             }
 
-            Generator.GenerateDefaultCtor(context, discType);
-            Generator.GenerateToString(context, discType);
+            IRGenerator.GenerateDefaultCtor(context, discType);
+            IRGenerator.GenerateToString(context, discType);
         }
     }
 }

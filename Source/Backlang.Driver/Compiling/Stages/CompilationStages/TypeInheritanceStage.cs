@@ -2,7 +2,6 @@ using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Contracts.Scoping.Items;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -46,11 +45,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 annotation = annotation.Attrs[0];
 
-                var fullname = Utils.GetQualifiedName(annotation.Target);
+                var fullname = ConversionUtils.GetQualifiedName(annotation.Target);
 
                 if (!fullname.FullyUnqualifiedName.ToString().EndsWith("Attribute"))
                 {
-                    fullname = Utils.AppendAttributeToName(fullname);
+                    fullname = ConversionUtils.AppendAttributeToName(fullname);
                 }
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
@@ -91,13 +90,13 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     {
         var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), ResolveTypeWithModule(member.Args[0], context, modulename), type);
 
-        Utils.SetAccessModifier(member, property);
+        ConversionUtils.SetAccessModifier(member, property);
 
         if (member.Args[1] != LNode.Missing)
         {
             // getter defined
             var getter = new DescribedPropertyMethod(new SimpleName($"get_{property.Name}"), type);
-            Utils.SetAccessModifier(member.Args[1], getter, property.GetAccessModifier());
+            ConversionUtils.SetAccessModifier(member.Args[1], getter, property.GetAccessModifier());
             property.Getter = getter;
         }
 
@@ -108,7 +107,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                 // initonly setter defined
                 var initOnlySetter = new DescribedPropertyMethod(new SimpleName($"init_{property.Name}"), type);
                 initOnlySetter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
-                Utils.SetAccessModifier(member.Args[2], initOnlySetter, property.GetAccessModifier());
+                ConversionUtils.SetAccessModifier(member.Args[2], initOnlySetter, property.GetAccessModifier());
                 property.InitOnlySetter = initOnlySetter;
             }
             else
@@ -116,7 +115,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                 // setter defined
                 var setter = new DescribedPropertyMethod(new SimpleName($"set_{property.Name}"), type);
                 setter.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private));
-                Utils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
+                ConversionUtils.SetAccessModifier(member.Args[2], setter, property.GetAccessModifier());
                 property.Setter = setter;
             }
         }
@@ -128,7 +127,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     {
         foreach (var tree in context.Trees)
         {
-            var modulename = Utils.GetModuleName(tree);
+            var modulename = ConversionUtils.GetModuleName(tree);
 
             foreach (var node in tree.Body)
             {
@@ -198,7 +197,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             }
 
             var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
-            valueField.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+            valueField.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
 
             type.AddField(valueField);
         }
@@ -237,7 +236,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
     private static void ConvertTypeOrInterface(CompilerContext context, LNode node, QualifiedName modulename, Scope scope)
     {
-        var name = Utils.GetQualifiedName(node.Args[0]);
+        var name = ConversionUtils.GetQualifiedName(node.Args[0]);
         var inheritances = node.Args[1];
         var members = node.Args[2];
 
@@ -277,14 +276,14 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     private static void ConvertUnion(CompilerContext context, LNode node, QualifiedName modulename)
     {
         var type = new DescribedType(new SimpleName(node.Args[0].Name.Name).Qualify(modulename), context.Assembly);
-        type.AddBaseType(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(ValueType)));
+        type.AddBaseType(Utils.ResolveType(context.Binder, typeof(ValueType)));
 
-        var attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StructLayoutAttribute));
+        var attributeType = Utils.ResolveType(context.Binder, typeof(StructLayoutAttribute));
 
         var attribute = new DescribedAttribute(attributeType);
         attribute.ConstructorArguments.Add(
             new AttributeArgument(
-                ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(LayoutKind)),
+                Utils.ResolveType(context.Binder, typeof(LayoutKind)),
                 LayoutKind.Explicit)
             );
 
@@ -307,7 +306,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
                 var field = new DescribedField(type, new SimpleName(mname.Name), false, mtype);
 
-                attributeType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
+                attributeType = Utils.ResolveType(context.Binder, typeof(FieldOffsetAttribute));
                 attribute = new DescribedAttribute(attributeType);
                 attribute.ConstructorArguments.Add(
                     new AttributeArgument(

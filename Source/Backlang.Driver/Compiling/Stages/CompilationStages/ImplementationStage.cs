@@ -2,20 +2,16 @@ using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Contracts.Scoping.Items;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
-using Loyc;
 using Loyc.Syntax;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
@@ -27,28 +23,8 @@ public enum ConditionalJumpKind
     True,
 }
 
-public sealed class ImplementationStage : IHandler<CompilerContext, CompilerContext>
+public sealed partial class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
-    {
-        [CodeSymbols.Bool] = typeof(bool),
-
-        [CodeSymbols.String] = typeof(string),
-        [CodeSymbols.Char] = typeof(char),
-
-        [CodeSymbols.Int8] = typeof(byte),
-        [CodeSymbols.Int16] = typeof(short),
-        [CodeSymbols.UInt16] = typeof(ushort),
-        [CodeSymbols.Int32] = typeof(int),
-        [CodeSymbols.UInt32] = typeof(uint),
-        [CodeSymbols.Int64] = typeof(long),
-        [CodeSymbols.UInt64] = typeof(ulong),
-
-        [Symbols.Float16] = typeof(Half),
-        [Symbols.Float32] = typeof(float),
-        [Symbols.Float64] = typeof(double),
-    }.ToImmutableDictionary();
-
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
                 QualifiedName? modulename, Scope scope)
     {
@@ -64,26 +40,11 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             graph.ToImmutable());
     }
 
-    public static IType GetLiteralType(LNode value, TypeResolver resolver)
-    {
-        if (LiteralTypeMap.ContainsKey(value.Name))
-        {
-            return ClrTypeEnvironmentBuilder.ResolveType(resolver, LiteralTypeMap[value.Name]);
-        }
-        else if (value is IdNode id) { } //todo: symbol table
-        else
-        {
-            return ClrTypeEnvironmentBuilder.ResolveType(resolver, value.Args[0].Value.GetType());
-        }
-
-        return ClrTypeEnvironmentBuilder.ResolveType(resolver, typeof(void));
-    }
-
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         foreach (var tree in context.Trees)
         {
-            var modulename = Utils.GetModuleName(tree);
+            var modulename = ConversionUtils.GetModuleName(tree);
 
             foreach (var node in tree.Body)
             {
@@ -161,7 +122,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
                 if (node.Args[0].Name.Name == "#string")
                 {
-                    var exceptionType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(Exception));
+                    var exceptionType = Utils.ResolveType(context.Binder, typeof(Exception));
                     var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
 
                     block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
@@ -172,7 +133,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             else if (node.Calls(Symbols.ColonColon))
             {
                 var callee = node.Args[1];
-                var typename = Utils.GetQualifiedName(node.Args[0]);
+                var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
 
                 var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
 
@@ -226,16 +187,16 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
     {
         if (node is (_, (_, var condition, var body, var el)))
         {
-            var ifBlock = block.Graph.AddBasicBlock(Utils.NewLabel("if"));
+            var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
             AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
 
             if (el != LNode.Missing)
             {
-                var elseBlock = block.Graph.AddBasicBlock(Utils.NewLabel("else"));
+                var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
                 AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
             }
 
-            var if_condition = block.Graph.AddBasicBlock(Utils.NewLabel("if_condition"));
+            var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
             if (condition.Calls(CodeSymbols.Bool))
             {
                 if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.True);
@@ -248,7 +209,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
             block.Flow = new JumpFlow(if_condition);
 
-            var after = block.Graph.AddBasicBlock(Utils.NewLabel("after"));
+            var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
             ifBlock.Flow = new JumpFlow(after);
 
             return after;
@@ -261,14 +222,14 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
     {
         if (node is (_, var condition, var body))
         {
-            var while_start = block.Graph.AddBasicBlock(Utils.NewLabel("while_start"));
+            var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 
-            var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
+            var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
             AppendExpression(while_condition, condition, context.Environment.Boolean, method);
             while_condition.Flow = new JumpFlow(while_start);
 
-            var while_end = block.Graph.AddBasicBlock(Utils.NewLabel("while_end"));
+            var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
             block.Flow = new JumpFlow(while_condition);
 
             while_start.Flow = new JumpFlow(while_end);
@@ -287,30 +248,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         }
 
         return null;
-    }
-
-    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
-    {
-        foreach (var m in methods)
-        {
-            if (m.Name.ToString() != methodname) continue;
-
-            if (m.Parameters.Count == argTypes.Count)
-            {
-                if (MatchesParameters(m, argTypes))
-                    return m;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool MatchesParameters(IMethod method, List<IType> argTypes)
-    {
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
-        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
-
-        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 
     private static void AppendCall(CompilerContext context, BasicBlockBuilder block,
@@ -355,11 +292,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
     {
         var decl = node.Args[1];
 
-        var name = Utils.GetQualifiedName(node.Args[0]);
+        var name = ConversionUtils.GetQualifiedName(node.Args[0]);
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
 
         var varname = decl.Args[0].Name.Name;
         var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
+
         if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = isMutable }))
         {
             block.AppendParameter(new BlockParameter(elementType, varname));
@@ -428,83 +366,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         return null;
     }
 
-    private static Instruction ConvertConstant(IType elementType, object value)
-    {
-        Constant constant;
-        switch (value)
-        {
-            case uint v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case int v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case long v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case ulong v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case byte v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case short v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case ushort v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case float v:
-                constant = new Float32Constant(v);
-                break;
-
-            case double v:
-                constant = new Float64Constant(v);
-                break;
-
-            case string v:
-                constant = new StringConstant(v);
-                break;
-
-            case char v:
-                constant = new IntegerConstant(v);
-                break;
-
-            case bool v:
-                constant = BooleanConstant.Create(v);
-                break;
-
-            default:
-                if (value == null)
-                {
-                    constant = NullConstant.Instance;
-                }
-                else
-                {
-                    if (elementType.Attributes.Contains(IntrinsicAttribute.GetIntrinsicAttributeType("#Enum")))
-                    {
-                        constant = new EnumConstant(value, elementType);
-                    }
-                    else
-                    {
-                        constant = null;
-                    }
-                }
-
-                break;
-        }
-
-        return Instruction.CreateConstant(constant,
-                                           elementType);
-    }
-
     private static void ImplementDefaultsForStructs(CompilerContext context, LNode st, QualifiedName modulename)
     {
         if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
@@ -515,13 +376,13 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         // toString method
         if (!type.Methods.Any(_ => _.Name.ToString() == "ToString" && _.Parameters.Count == 0))
         {
-            Generator.GenerateToString(context, type);
+            IRGenerator.GenerateToString(context, type);
         }
 
         // default constructor
         if (!type.Methods.Any(_ => _.Name.ToString() == "new" && _.Parameters.Count == type.Fields.Count))
         {
-            Generator.GenerateDefaultCtor(context, type);
+            IRGenerator.GenerateDefaultCtor(context, type);
         }
     }
 
@@ -530,7 +391,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         if (!(st.IsCall && st.Name == Symbols.Implementation)) return;
 
         var typenode = st.Args[0].Args[0].Args[0].Args[0];
-        var fullname = Utils.GetQualifiedName(typenode);
+        var fullname = ConversionUtils.GetQualifiedName(typenode);
 
         DescribedType targetType = null;
         Scope typeScope = null;
@@ -574,8 +435,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
                     param.Insert(0, thisParameter);
 
-                    var extType = ClrTypeEnvironmentBuilder
-                        .ResolveType(context.Binder, typeof(ExtensionAttribute));
+                    var extType = Utils.ResolveType(context.Binder, typeof(ExtensionAttribute));
 
                     fn.AddAttribute(new DescribedAttribute(extType));
 

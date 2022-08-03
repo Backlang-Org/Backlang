@@ -1,7 +1,6 @@
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Contracts.Scoping.Items;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -17,22 +16,22 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
         LNode function, QualifiedName modulename, Scope parentScope, string methodName = null, bool hasBody = true)
     {
-        if (methodName == null) methodName = Utils.GetMethodName(function);
+        if (methodName == null) methodName = ConversionUtils.GetMethodName(function);
 
-        var returnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
+        var returnType = Utils.ResolveType(context.Binder, typeof(void));
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
             function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), returnType);
 
-        Utils.SetAccessModifier(function, method);
+        ConversionUtils.SetAccessModifier(function, method);
 
         ConvertAnnotations(function, method, context, modulename,
             AttributeTargets.Method, (attr, t) => ((DescribedBodyMethod)t).AddAttribute(attr));
 
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
-            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+            method.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
         {
@@ -112,7 +111,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $".{Names.ProgramClass}");
         }
 
-        string methodName = Utils.GetMethodName(node);
+        string methodName = ConversionUtils.GetMethodName(node);
         if (methodName == "main") methodName = "Main";
 
         var method = ConvertFunction(context, type, node, modulename, scope, methodName: methodName);
