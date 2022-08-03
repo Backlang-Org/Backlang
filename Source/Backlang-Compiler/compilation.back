@@ -1,19 +1,6 @@
-public struct Point {
-	let x: i32*;
-	let callback: (cool) -> none;
-}
-
 public static func main() {
 	if(true)
 	{
 		let mut chrisIQ: i32 = 155;
 	}
-	print("hello :D");
-}
-
-public func hello(cool: bool) {
-}
-
-implement Point {
-	func cool() -> none {}
 }
