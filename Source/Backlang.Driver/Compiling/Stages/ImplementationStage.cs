@@ -531,12 +531,18 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         var typenode = st.Args[0].Args[0].Args[0].Args[0];
         var fullname = Utils.GetQualifiedName(typenode);
+
+        if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
+        {
+            context.AddError(st, $"Cannot implement {fullname.FullName}, type not found");
+            return;
+        }
+
+        var typeScope = typeItem.SubScope;
+
         var targetType = (DescribedType)TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
 
         var body = st.Args[0].Args[1].Args;
-
-        context.GlobalScope.TryFind<TypeScopeItem>(_ => _ is TypeScopeItem && _.Name == targetType.Name.ToString(), out var typeItem);
-        var typeScope = typeItem.SubScope;
 
         foreach (var node in body)
         {

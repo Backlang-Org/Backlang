@@ -20,9 +20,9 @@ public class Scope
 
     public bool Contains(string name) => _items.Any(_ => _.Name == name);
 
-    public bool TryFind<T>(Func<ScopeItem, bool> test, out T result) where T: ScopeItem
+    public bool TryFind<T>(string name, out T result) where T : ScopeItem
     {
-        result = _items.FirstOrDefault(test) as T;
+        result = _items.FirstOrDefault(_ => _.Name == name) as T;
         return result != null;
     }
 

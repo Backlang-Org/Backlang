@@ -1,4 +1,7 @@
 using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Contracts;
+using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
@@ -9,9 +12,6 @@ using Loyc.Syntax;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
-using Backlang.Contracts.Scoping.Items;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -448,7 +448,14 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var inheritances = node.Args[1];
         var members = node.Args[2];
 
-        var type = (DescribedType)context.Binder.ResolveTypes(name.Qualify(modulename)).FirstOrDefault();
+        if (!scope.TryFind<TypeScopeItem>(name.FullName.ToString(), out var typeItem))
+        {
+            context.AddError(node, $"Type {typeItem.Name} is not found");
+            return;
+        }
+
+        var subScope = typeItem.SubScope;
+        var type = (DescribedType)typeItem.Type;
 
         ConvertAnnotations(node, type, context, modulename,
             AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct,
@@ -470,9 +477,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
                 }
             }
         }
-
-        scope.TryFind<TypeScopeItem>(_ => _ is TypeScopeItem && _.Name == name.FullName.ToString(), out var typeItem);
-        var subScope = typeItem.SubScope;
 
         ConvertTypeMembers(members, type, context, modulename, subScope);
     }
