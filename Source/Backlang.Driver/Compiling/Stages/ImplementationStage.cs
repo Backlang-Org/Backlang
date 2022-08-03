@@ -534,7 +534,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         DescribedType targetType = null;
         Scope typeScope = null;
-        if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
+        if (context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
+        {
+            targetType = (DescribedType)typeItem.Type;
+            typeItem.Deconstruct(out _, out _, out typeScope, out _);
+        }
+        else
         {
             targetType = (DescribedType)TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
 
@@ -545,11 +550,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             }
 
             typeScope = context.GlobalScope.CreateChildScope();
-        }
-        else
-        {
-            targetType = (DescribedType)typeItem.Type;
-            typeItem.Deconstruct(out _, out _, out typeScope, out _);
         }
 
         var body = st.Args[0].Args[1].Args;
