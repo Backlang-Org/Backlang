@@ -73,6 +73,10 @@ public partial class ImplementationStage
             {
                 AppendCall(context, block, node, context.writeMethods, "Write");
             }
+            else if (node.Calls("println"))
+            {
+                AppendCall(context, block, node, context.writeMethods, "WriteLine");
+            }
             else
             {
                 //ToDo: continue implementing static function call in same type
