@@ -1,5 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
+using Backlang.Driver.Compiling.Scoping;
+using Backlang.Driver.Compiling.Scoping.Items;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
@@ -53,7 +55,9 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
 
-        AppendBlock(function.Args[3], block, context, method, modulename);
+        Scope scope = new Scope(null);
+
+        AppendBlock(function.Args[3], block, context, method, modulename, scope);
 
         return new MethodBody(
             method.ReturnParameter,
@@ -105,7 +109,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         }
     }
 
-    private static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename)
+    private static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
     {
         foreach (var node in blkNode.Args)
         {
@@ -115,20 +119,20 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             {
                 if (node.ArgCount == 0) continue;
 
-                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename);
+                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
             }
 
             if (node.Calls(CodeSymbols.Var))
             {
-                AppendVariableDeclaration(context, method, block, node, modulename);
+                AppendVariableDeclaration(context, method, block, node, modulename, scope);
             }
             else if (node.Calls(CodeSymbols.If))
             {
-                block = AppendIf(context, method, block, node, modulename);
+                block = AppendIf(context, method, block, node, modulename, scope);
             }
             else if (node.Calls(CodeSymbols.While))
             {
-                block = AppendWhile(context, method, block, node, modulename);
+                block = AppendWhile(context, method, block, node, modulename, scope);
             }
             else if (node.Calls("print"))
             {
@@ -220,17 +224,17 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         return block;
     }
 
-    private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static BasicBlockBuilder AppendIf(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
     {
         if (node is (_, (_, var condition, var body, var el)))
         {
             var ifBlock = block.Graph.AddBasicBlock(Utils.NewLabel("if"));
-            AppendBlock(body, ifBlock, context, method, modulename);
+            AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
 
             if (el != LNode.Missing)
             {
                 var elseBlock = block.Graph.AddBasicBlock(Utils.NewLabel("else"));
-                AppendBlock(el, elseBlock, context, method, modulename);
+                AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
             }
 
             var if_condition = block.Graph.AddBasicBlock(Utils.NewLabel("if_condition"));
@@ -255,12 +259,12 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         return null;
     }
 
-    private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
     {
         if (node is (_, var condition, var body))
         {
             var while_start = block.Graph.AddBasicBlock(Utils.NewLabel("while_start"));
-            AppendBlock(body, while_start, context, method, modulename);
+            AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 
             var while_condition = block.Graph.AddBasicBlock(Utils.NewLabel("while_condition"));
             AppendExpression(while_condition, condition, context.Environment.Boolean, method);
@@ -349,7 +353,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         block.AppendInstruction(call);
     }
 
-    private static void AppendVariableDeclaration(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename)
+    private static void AppendVariableDeclaration(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
     {
         var decl = node.Args[1];
 
@@ -365,6 +369,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         {
             context.AddError(decl.Args[0], $"{varname} already declared");
         }
+
+        scope.Add(new VariableScopeItem { Name = varname, IsMutable = false }); // TODO: Check Mutable for AppendVariableDeclaration
 
         AppendExpression(block, decl.Args[1], elementType, method);
 

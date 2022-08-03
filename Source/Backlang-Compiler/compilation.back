@@ -4,5 +4,9 @@ public struct Point {
 }
 
 public static func main() {
+	if(true)
+	{
+		let chrisIQ = 155;
+	}
 	print("hello :D");
 }
