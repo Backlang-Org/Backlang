@@ -13,6 +13,13 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed partial class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
+    public enum ConditionalJumpKind
+    {
+        NotEquals,
+        Equals,
+        True,
+    }
+
     private static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
     {
         [CodeSymbols.Bool] = typeof(bool),
