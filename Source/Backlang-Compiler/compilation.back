@@ -6,8 +6,7 @@ public struct Point {
 public static func main() {
 	if(true)
 	{
-		let chrisIQ: i32 = 155;
-		let chrisIQ: i32 = 144;
+		let mut chrisIQ: i32 = 155;
 	}
 	print("hello :D");
 }

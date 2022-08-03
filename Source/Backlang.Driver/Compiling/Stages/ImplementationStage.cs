@@ -361,7 +361,8 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
 
         var varname = decl.Args[0].Name.Name;
-        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = false })) // TODO: Check Mutable for AppendVariableDeclaration
+        var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
+        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = isMutable }))
         {
             block.AppendParameter(new BlockParameter(elementType, varname));
         }
