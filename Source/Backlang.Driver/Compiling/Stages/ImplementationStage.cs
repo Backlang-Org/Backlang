@@ -534,7 +534,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
 
         if (!context.GlobalScope.TryFind<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
         {
-            context.AddError(st, $"Cannot implement {fullname.FullName}, type not found");
+            context.AddError(typenode, $"Cannot implement {fullname.FullName}, type not found");
             return;
         }
 
