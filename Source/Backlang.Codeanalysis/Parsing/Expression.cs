@@ -100,19 +100,19 @@ public static class Expression
         where TParser : Core.BaseParser<TLexer, TParser>
         where TLexer : BaseLexer, new()
     {
-        var list = new LNodeList();
-        while (parser.Iterator.Current.Type != terminator)
+        if (parser.Iterator.IsMatch(terminator))
         {
-            list.Add(Expression.Parse(parser, parsePoints));
-
-            if (parser.Iterator.Current.Type != terminator)
-            {
-                parser.Iterator.Match(TokenType.Comma);
-            }
+            parser.Iterator.Match(terminator);
+            return LNodeList.Empty;
         }
 
-        parser.Iterator.Match(terminator);
+        var list = new LNodeList();
+        do
+        {
+            list.Add(Expression.Parse(parser, parsePoints));
+        } while (parser.Iterator.ConsumeIfMatch(TokenType.Comma));
 
+        parser.Iterator.Match(terminator);
         return list;
     }
 
