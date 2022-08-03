@@ -8,7 +8,6 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Loyc;
 using Loyc.Syntax;
@@ -21,7 +20,10 @@ public partial class ImplementationStage
     private static readonly ImmutableDictionary<Symbol, IImplementor> _implementations = new Dictionary<Symbol, IImplementor>()
     {
         [CodeSymbols.Var] = new VariableImplementor(),
-        [CodeSymbols.If] = new IfImplementor()
+        [CodeSymbols.If] = new IfImplementor(),
+        [CodeSymbols.While] = new WhileImplementor(),
+        [CodeSymbols.Return] = new ReturnImplementor(),
+        [CodeSymbols.Throw] = new ThrowImplementor(),
     }.ToImmutableDictionary();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
@@ -68,46 +70,9 @@ public partial class ImplementationStage
                 continue;
             }
             
-            if (node.Calls(CodeSymbols.While))
-            {
-                block = AppendWhile(context, method, block, node, modulename, scope);
-            }
-            else if (node.Calls("print"))
+            if (node.Calls("print"))
             {
                 AppendCall(context, block, node, context.writeMethods, "Write");
-            }
-            else if (node.Calls(CodeSymbols.Return))
-            {
-                if (node.ArgCount == 1)
-                {
-                    var valueNode = node.Args[0];
-
-                    AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
-
-                    block.Flow = new ReturnFlow();
-                }
-                else
-                {
-                    block.Flow = new ReturnFlow();
-                }
-            }
-            else if (node.Calls(CodeSymbols.Throw))
-            {
-                var valueNode = node.Args[0].Args[0];
-                var constant = block.AppendInstruction(ConvertConstant(
-                    GetLiteralType(valueNode, context.Binder), valueNode.Value));
-
-                var msg = block.AppendInstruction(Instruction.CreateLoad(GetLiteralType(valueNode, context.Binder), constant));
-
-                if (node.Args[0].Name.Name == "#string")
-                {
-                    var exceptionType = Utils.ResolveType(context.Binder, typeof(Exception));
-                    var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
-
-                    block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
-                }
-
-                block.Flow = UnreachableFlow.Instance;
             }
             else if (node.Calls(Symbols.ColonColon))
             {
@@ -211,38 +176,6 @@ public partial class ImplementationStage
                 AppendExpression(block, o, elementType, method);
                 return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
             }
-        }
-
-        return null;
-    }
-
-    private static BasicBlockBuilder AppendWhile(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
-    {
-        if (node is (_, var condition, var body))
-        {
-            var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
-            AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
-
-            var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
-            AppendExpression(while_condition, condition, context.Environment.Boolean, method);
-            while_condition.Flow = new JumpFlow(while_start);
-
-            var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
-            block.Flow = new JumpFlow(while_condition);
-
-            while_start.Flow = new JumpFlow(while_end);
-
-            if (condition.Calls(CodeSymbols.Bool))
-            {
-                while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
-            }
-            else
-            {
-                AppendExpression(block, condition, method.ParentType, method);
-                while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
-            }
-
-            return block.Graph.AddBasicBlock();
         }
 
         return null;
