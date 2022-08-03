@@ -26,6 +26,12 @@ public class Scope
         return result != null;
     }
 
+    public bool TryFind<T>(Func<ScopeItem, bool> test, out T result) where T : ScopeItem
+    {
+        result = _items.FirstOrDefault(_ => _ is T && test(_)) as T;
+        return result != null;
+    }
+
     public Scope CreateChildScope()
     {
         return new Scope(this);
