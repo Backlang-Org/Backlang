@@ -55,7 +55,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
 
         context.writeMethods = consoleType?.Methods.Where(
-            method => method.Name.ToString() == "Write"
+            method => (method.Name.ToString() == "Write" || method.Name.ToString() == "WriteLine")
                 && method.IsStatic
                 && method.ReturnParameter.Type == context.Environment.Void);
     }
