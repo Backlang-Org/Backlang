@@ -64,7 +64,7 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
 
     private static void AddIntrinsicType(TypeResolver binder, TypeEnvironment te, Type type)
     {
-        var qualifier = ClrTypeEnvironmentBuilder.QualifyNamespace(type.Namespace);
+        var qualifier = Utils.QualifyNamespace(type.Namespace);
         var intrinsicAssembly = new DescribedAssembly(qualifier);
 
         var instrinsicsType = new DescribedType(

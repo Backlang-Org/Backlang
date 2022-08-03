@@ -1,5 +1,4 @@
 ﻿using Backlang.Contracts;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
@@ -13,11 +12,11 @@ using System.Text;
 
 namespace Backlang.Driver.Compiling;
 
-public static class Generator
+public static class IRGenerator
 {
     public static void GenerateToString(CompilerContext context, DescribedType type)
     {
-        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(string)));
+        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
         toStringMethod.IsPublic = true;
         toStringMethod.IsOverride = true;
 
@@ -25,7 +24,7 @@ public static class Generator
 
         var block = graph.EntryPoint;
 
-        var elementType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(StringBuilder));
+        var elementType = Utils.ResolveType(context.Binder, typeof(StringBuilder));
         var varname = Utils.GenerateIdentifier();
         var p = block.AppendParameter(new BlockParameter(elementType, varname));
 
@@ -71,7 +70,7 @@ public static class Generator
 
     public static void GenerateDefaultCtor(CompilerContext context, DescribedType type)
     {
-        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), true, ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void)))
+        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), true, Utils.ResolveType(context.Binder, typeof(void)))
         {
             IsConstructor = true
         };

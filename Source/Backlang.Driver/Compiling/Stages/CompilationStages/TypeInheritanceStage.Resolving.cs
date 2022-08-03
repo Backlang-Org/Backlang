@@ -1,5 +1,4 @@
 using Backlang.Contracts;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -37,7 +36,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     }.ToImmutableDictionary();
 
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename)
-        => ResolveTypeWithModule(typeNode, context, modulename, Utils.GetQualifiedName(typeNode));
+        => ResolveTypeWithModule(typeNode, context, modulename, ConversionUtils.GetQualifiedName(typeNode));
 
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
     {
@@ -55,11 +54,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         IType resolvedType;
         if (TypenameTable.ContainsKey(fullName.ToString()))
         {
-            resolvedType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
+            resolvedType = Utils.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
         }
         else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
         {
-            var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, func, "System");
+            var fnType = Utils.ResolveType(context.Binder, func, "System");
             foreach (var garg in typeNode.Args[2])
             {
                 fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
