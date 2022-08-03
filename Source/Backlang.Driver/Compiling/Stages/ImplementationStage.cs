@@ -538,7 +538,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
             return;
         }
 
-        typeItem.Deconstruct(out _, out _, out var typeScope);
+        typeItem.Deconstruct(out _, out _, out var typeScope, out _);
 
         var targetType = (DescribedType)typeItem.Type;
 
