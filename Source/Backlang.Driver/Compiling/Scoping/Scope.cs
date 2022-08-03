@@ -11,7 +11,12 @@ public class Scope
 
     public Scope Parent { get; set; }
 
-    public void Add(ScopeItem item) => _items.Add(item);
+    public bool Add(ScopeItem item)
+    {
+        if (Contains(item.Name)) return false;
+        _items.Add(item);
+        return true;
+    }
 
     public bool Contains(string name) => _items.Any(_ => _.Name == name);
 

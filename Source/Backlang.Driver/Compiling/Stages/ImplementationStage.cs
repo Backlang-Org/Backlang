@@ -361,7 +361,7 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
 
         var varname = decl.Args[0].Name.Name;
-        if (!block.Parameters.Select(_ => _.Tag.Name).Contains(varname))
+        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = false })) // TODO: Check Mutable for AppendVariableDeclaration
         {
             block.AppendParameter(new BlockParameter(elementType, varname));
         }
@@ -369,8 +369,6 @@ public sealed class ImplementationStage : IHandler<CompilerContext, CompilerCont
         {
             context.AddError(decl.Args[0], $"{varname} already declared");
         }
-
-        scope.Add(new VariableScopeItem { Name = varname, IsMutable = false }); // TODO: Check Mutable for AppendVariableDeclaration
 
         AppendExpression(block, decl.Args[1], elementType, method);
 
