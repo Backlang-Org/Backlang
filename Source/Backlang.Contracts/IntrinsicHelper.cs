@@ -6,6 +6,8 @@ using System.Reflection;
 
 namespace Backlang.Contracts;
 
+#nullable disable
+
 public static class IntrinsicHelper
 {
     public static bool IsIntrinsicType(Type intrinsicType, CallPrototype callPrototype)

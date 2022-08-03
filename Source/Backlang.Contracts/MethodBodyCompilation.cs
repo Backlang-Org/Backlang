@@ -5,5 +5,5 @@ using Loyc.Syntax;
 
 namespace Backlang.Contracts;
 
-public readonly record struct MethodBodyCompilation(LNode function, CompilerContext context,
-    DescribedBodyMethod method, QualifiedName? modulename, Scope scope);
+public readonly record struct MethodBodyCompilation(LNode Function, CompilerContext Context,
+    DescribedBodyMethod Method, QualifiedName? Modulename, Scope Scope);

@@ -13,13 +13,6 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed partial class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    public enum ConditionalJumpKind
-    {
-        NotEquals,
-        Equals,
-        True,
-    }
-
     private static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
     {
         [CodeSymbols.Bool] = typeof(bool),
@@ -40,43 +33,26 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         [Symbols.Float64] = typeof(double),
     }.ToImmutableDictionary();
 
+    public enum ConditionalJumpKind
+    {
+        NotEquals,
+        Equals,
+        True,
+    }
+
     public static IType GetLiteralType(LNode value, TypeResolver resolver)
     {
         if (LiteralTypeMap.ContainsKey(value.Name))
         {
             return Utils.ResolveType(resolver, LiteralTypeMap[value.Name]);
         }
-        else if (value is IdNode id) { } //todo: symbol table
+        else if (value is IdNode id) { } //todo: symbol table (Lixou)
         else
         {
             return Utils.ResolveType(resolver, value.Args[0].Value.GetType());
         }
 
         return Utils.ResolveType(resolver, typeof(void));
-    }
-
-    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
-    {
-        foreach (var m in methods)
-        {
-            if (m.Name.ToString() != methodname) continue;
-
-            if (m.Parameters.Count == argTypes.Count)
-            {
-                if (MatchesParameters(m, argTypes))
-                    return m;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool MatchesParameters(IMethod method, List<IType> argTypes)
-    {
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
-        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
-
-        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 
     public static Instruction ConvertConstant(IType elementType, object value)
@@ -154,5 +130,29 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
         return Instruction.CreateConstant(constant,
                                            elementType);
+    }
+
+    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
+    {
+        foreach (var m in methods)
+        {
+            if (m.Name.ToString() != methodname) continue;
+
+            if (m.Parameters.Count == argTypes.Count)
+            {
+                if (MatchesParameters(m, argTypes))
+                    return m;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool MatchesParameters(IMethod method, List<IType> argTypes)
+    {
+        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
+
+        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 }

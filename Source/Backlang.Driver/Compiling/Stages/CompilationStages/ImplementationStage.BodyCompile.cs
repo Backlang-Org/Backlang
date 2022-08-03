@@ -28,8 +28,17 @@ public partial class ImplementationStage
         [CodeSymbols.Dot] = new CallImplementor(),
     }.ToImmutableDictionary();
 
+    private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
+    {
+        new AddressExpressionImplementor(),
+        new BinaryExpressionImplementor(),
+        new IdentifierExpressionImplementor(),
+        new PointerExpressionImplementor(),
+        new UnaryExpressionImplementor()
+    }.ToImmutableList();
+
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
-                QualifiedName? modulename, Scope scope)
+                    QualifiedName? modulename, Scope scope)
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
@@ -41,16 +50,6 @@ public partial class ImplementationStage
             new Parameter(method.ParentType),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
-    }
-
-    private static void ConvertMethodBodies(CompilerContext context)
-    {
-        foreach (var bodyCompilation in context.BodyCompilations)
-        {
-            bodyCompilation.method.Body =
-                CompileBody(bodyCompilation.function, context,
-                bodyCompilation.method, bodyCompilation.modulename, bodyCompilation.scope);
-        }
     }
 
     public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
@@ -99,15 +98,6 @@ public partial class ImplementationStage
         return block;
     }
 
-    private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
-    {
-        new AddressExpressionImplementor(),
-        new BinaryExpressionImplementor(),
-        new IdentifierExpressionImplementor(),
-        new PointerExpressionImplementor(),
-        new UnaryExpressionImplementor()
-    }.ToImmutableList();
-
     public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
     {
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
@@ -151,5 +141,15 @@ public partial class ImplementationStage
         var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
 
         block.AppendInstruction(call);
+    }
+
+    private static void ConvertMethodBodies(CompilerContext context)
+    {
+        foreach (var bodyCompilation in context.BodyCompilations)
+        {
+            bodyCompilation.Method.Body =
+                CompileBody(bodyCompilation.Function, context,
+                bodyCompilation.Method, bodyCompilation.Modulename, bodyCompilation.Scope);
+        }
     }
 }

@@ -14,13 +14,12 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         InitEmbeddedResources(context);
         InitReferences(context);
 
-
         return await next.Invoke(context);
     }
 
     private static void InitReferences(CompilerContext context)
     {
-        context.CompilationTarget.InitReferences(context);
+        context.CompilationTarget?.InitReferences(context);
     }
 
     private static void InitPlugins(CompilerContext context)

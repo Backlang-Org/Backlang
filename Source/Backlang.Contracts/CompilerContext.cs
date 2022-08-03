@@ -8,6 +8,8 @@ using Loyc.Syntax;
 
 namespace Backlang.Contracts;
 
+#nullable disable
+
 public sealed class CompilerContext
 {
     public IEnumerable<IMethod> writeMethods;
