@@ -7,7 +7,6 @@ using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Loyc;
 using Loyc.Syntax;
@@ -24,6 +23,8 @@ public partial class ImplementationStage
         [CodeSymbols.While] = new WhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
         [CodeSymbols.Throw] = new ThrowImplementor(),
+        [CodeSymbols.ColonColon] = new StaticCallColonImplementor(),
+        [CodeSymbols.Dot] = new CallImplementor(),
     }.ToImmutableDictionary();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
@@ -67,44 +68,10 @@ public partial class ImplementationStage
             if (_implementations.ContainsKey(node.Name))
             {
                 block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
-                continue;
             }
-            
-            if (node.Calls("print"))
+            else if (node.Calls("print"))
             {
                 AppendCall(context, block, node, context.writeMethods, "Write");
-            }
-            else if (node.Calls(Symbols.ColonColon))
-            {
-                var callee = node.Args[1];
-                var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
-
-                var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
-
-                AppendCall(context, block, callee, type.Methods, callee.Name.Name);
-            }
-            else if (node.Calls(CodeSymbols.Dot))
-            {
-                if (node is ("'.", var target, var callee) && target is ("this", _))
-                {
-                    //AppendThis(block, method.ParentType); // we do that already in AppendCall
-
-                    var type = method.ParentType;
-                    var call = type.Methods.FirstOrDefault(_ => _.Name.ToString() == callee.Name.Name);
-
-                    if (callee != null)
-                    {
-                        AppendCall(context, block, callee, type.Methods);
-                    }
-                    else
-                    {
-                        context.AddError(node, $"Cannot find function '{callee.Name.Name}'");
-                    }
-                }
-                else
-                {
-                    // ToDo: other things and so on...
-                }
             }
             else
             {
@@ -181,7 +148,7 @@ public partial class ImplementationStage
         return null;
     }
 
-    private static void AppendCall(CompilerContext context, BasicBlockBuilder block,
+    public static void AppendCall(CompilerContext context, BasicBlockBuilder block,
         LNode node, IEnumerable<IMethod> methods, string methodName = null)
     {
         var argTypes = new List<IType>();
