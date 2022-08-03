@@ -3,6 +3,7 @@ using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Driver.Core;
 using Backlang.Driver.Core.Implementors;
+using Backlang.Driver.Core.Implementors.Expressions;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
@@ -98,58 +99,20 @@ public partial class ImplementationStage
         return block;
     }
 
+    private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
+    {
+        new AddressExpressionImplementor(),
+        new BinaryExpressionImplementor(),
+        new IdentifierExpressionImplementor(),
+        new PointerExpressionImplementor(),
+        new UnaryExpressionImplementor()
+    }.ToImmutableList();
+
     public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
     {
-        if (node.ArgCount == 1 && node.Args[0].HasValue)
-        {
-            var constant = ConvertConstant(elementType, node.Args[0].Value);
-            var value = block.AppendInstruction(constant);
+        var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
-            return block.AppendInstruction(Instruction.CreateLoad(elementType, value));
-        }
-        else if (node.ArgCount == 2)
-        {
-            var lhs = AppendExpression(block, node.Args[0], elementType, method);
-            var rhs = AppendExpression(block, node.Args[1], elementType, method);
-
-            return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
-        }
-        else if (node.IsId)
-        {
-            var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
-
-            if (!par.Any())
-            {
-                var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
-                if (localPrms.Any())
-                {
-                    return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-                }
-            }
-            else
-            {
-                return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
-            }
-        }
-        else if (node is ("'&", var p))
-        {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == p.Name.Name);
-            if (localPrms.Any())
-            {
-                return block.AppendInstruction(Instruction.CreateLoadLocalAdress(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-            }
-        }
-        else if (node is ("'*", var o) && node.ArgCount == 1)
-        {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == o.Name.Name);
-            if (localPrms.Any())
-            {
-                AppendExpression(block, o, elementType, method);
-                return block.AppendInstruction(Instruction.CreateLoadIndirect(localPrms.First().Type));
-            }
-        }
-
-        return null;
+        return fetch == null ? null : fetch.Handle(node, block, elementType, method);
     }
 
     public static void AppendCall(CompilerContext context, BasicBlockBuilder block,
