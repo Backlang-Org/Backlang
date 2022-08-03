@@ -70,7 +70,7 @@ namespace Backlang.NET.Sdk
             Path = Path.Substring(0, Path.Length - filename.Length);
 
             Compile = Compile.Select(_ => Path + _).ToArray();
-            Resources = Resources.Select(_ => Path + _).ToArray();
+            Resources = Resources == null ? Array.Empty<string>() : Resources.Select(_ => Path + _).ToArray();
 
             try
             {
