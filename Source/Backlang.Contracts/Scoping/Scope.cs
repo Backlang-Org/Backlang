@@ -22,7 +22,7 @@ public class Scope
 
     public bool TryFind<T>(string name, out T result) where T : ScopeItem
     {
-        result = _items.FirstOrDefault(_ => _.Name == name) as T;
+        result = _items.FirstOrDefault(_ => _ is T && _.Name == name) as T;
         return result != null;
     }
 
