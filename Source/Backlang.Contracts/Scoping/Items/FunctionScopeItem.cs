@@ -5,7 +5,7 @@ namespace Backlang.Contracts.Scoping.Items;
 public class FunctionScopeItem : ScopeItem
 {
     public IMethod Method { get; init; }
-    public bool IsStatic { get; init; }
+    public bool IsStatic => Method.IsStatic;
     public Scope SubScope { get; init; }
 
     public void Deconstruct(out string name, out IMethod method, out bool isStatic, out Scope subScope)

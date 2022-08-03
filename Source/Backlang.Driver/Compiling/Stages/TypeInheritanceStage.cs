@@ -88,7 +88,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
 
         var scope = parentScope.CreateChildScope();
-        var functionItem = new FunctionScopeItem { Name = methodName, IsStatic = method.IsStatic, SubScope = scope, Method = method };
+        var functionItem = new FunctionScopeItem { Name = methodName, SubScope = scope, Method = method };
 
         if (hasBody)
         {
@@ -389,7 +389,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         var isStatic = member.Attrs.Any(_ => _.Name == CodeSymbols.Static);
         if (isStatic) field.IsStatic = true;
 
-        if (scope.Add(new FieldScopeItem { Name = mname.Name, IsMutable = isMutable, IsStatic = isStatic, Field = field }))
+        if (scope.Add(new FieldScopeItem { Name = mname.Name, Field = field }))
         {
             type.AddField(field);
         }
