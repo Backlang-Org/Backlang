@@ -10,7 +10,7 @@ public sealed class Annotation
         var name = Expression.Parse(parser);
         var args = LNode.List();
 
-        if (iterator.Current.Type == TokenType.OpenParen)
+        if (iterator.IsMatch(TokenType.OpenParen))
         {
             iterator.NextToken();
 
