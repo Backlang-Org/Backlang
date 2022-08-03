@@ -18,7 +18,7 @@ using Loyc.Syntax;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public enum ConditionalJumpKind
 {

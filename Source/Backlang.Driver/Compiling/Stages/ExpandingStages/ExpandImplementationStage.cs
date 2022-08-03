@@ -6,7 +6,7 @@ using Loyc;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
 
 public sealed class ExpandImplementationStage : IHandler<CompilerContext, CompilerContext>
 {

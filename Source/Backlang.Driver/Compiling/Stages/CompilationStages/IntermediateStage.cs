@@ -2,14 +2,12 @@
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Contracts.Scoping.Items;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {

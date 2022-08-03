@@ -5,7 +5,7 @@ using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.InitStages;
 
 public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerContext>
 {

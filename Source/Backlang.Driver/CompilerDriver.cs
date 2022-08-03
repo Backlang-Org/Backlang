@@ -1,6 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Contracts;
 using Backlang.Driver.Compiling.Stages;
+using Backlang.Driver.Compiling.Stages.CompilationStages;
+using Backlang.Driver.Compiling.Stages.ExpandingStages;
+using Backlang.Driver.Compiling.Stages.InitStages;
 
 namespace Backlang.Driver;
 

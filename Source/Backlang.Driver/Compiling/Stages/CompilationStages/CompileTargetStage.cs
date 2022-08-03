@@ -7,7 +7,7 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerContext>
 {

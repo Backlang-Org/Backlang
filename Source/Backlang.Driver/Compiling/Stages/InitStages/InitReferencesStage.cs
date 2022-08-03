@@ -1,7 +1,7 @@
 ﻿using Backlang.Contracts;
 using Flo;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.InitStages;
 
 public sealed class InitReferencesStage : IHandler<CompilerContext, CompilerContext>
 {

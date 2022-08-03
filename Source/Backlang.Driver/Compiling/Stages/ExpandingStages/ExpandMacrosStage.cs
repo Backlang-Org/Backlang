@@ -9,7 +9,7 @@ using Loyc.Collections;
 using Loyc.Syntax;
 using System.Runtime.Loader;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
 
 public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContext>
 {

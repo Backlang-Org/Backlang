@@ -1,5 +1,4 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
@@ -109,6 +108,18 @@ public sealed class Utils
     public static string NewLabel(string name)
     {
         return $"{name}_{labelCounter++}";
+    }
+
+    public static QualifiedName AppendAttributeToName(QualifiedName fullname)
+    {
+        var qualifier = fullname.Slice(0, fullname.PathLength - 1);
+
+        return new SimpleName(fullname.FullyUnqualifiedName.ToString() + "Attribute").Qualify(qualifier);
+    }
+
+    public static string GetMethodName(LNode function)
+    {
+        return function.Args[1].Args[0].Args[0].Name.Name;
     }
 
     private static QualifiedName ShrinkDottedModuleName(LNode lNode)

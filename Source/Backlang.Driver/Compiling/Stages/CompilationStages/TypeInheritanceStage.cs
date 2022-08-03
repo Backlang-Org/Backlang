@@ -9,102 +9,13 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Loyc.Syntax;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Backlang.Driver.Compiling.Stages;
 
-public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
+public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>()
-    {
-        ["obj"] = typeof(object),
-        ["none"] = typeof(void),
-
-        ["bool"] = typeof(bool),
-
-        ["u8"] = typeof(byte),
-        ["u16"] = typeof(ushort),
-        ["u32"] = typeof(uint),
-        ["u64"] = typeof(ulong),
-
-        ["i8"] = typeof(sbyte),
-        ["i16"] = typeof(short),
-        ["i32"] = typeof(int),
-        ["i64"] = typeof(long),
-
-        ["f16"] = typeof(Half),
-        ["f32"] = typeof(float),
-        ["f64"] = typeof(double),
-
-        ["char"] = typeof(char),
-        ["string"] = typeof(string),
-    }.ToImmutableDictionary();
-
-    public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
-        LNode function, QualifiedName modulename, Scope parentScope, string methodName = null, bool hasBody = true)
-    {
-        if (methodName == null) methodName = GetMethodName(function);
-
-        var returnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(void));
-
-        var method = new DescribedBodyMethod(type,
-            new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), returnType);
-
-        Utils.SetAccessModifier(function, method);
-
-        ConvertAnnotations(function, method, context, modulename,
-            AttributeTargets.Method, (attr, t) => ((DescribedBodyMethod)t).AddAttribute(attr));
-
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
-        {
-            method.AddAttribute(new DescribedAttribute(ClrTypeEnvironmentBuilder.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
-        }
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
-        {
-            method.IsOverride = true;
-        }
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
-        {
-            method.IsExtern = true;
-        }
-        if (function.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
-        {
-            method.AddAttribute(FlagAttribute.Abstract);
-        }
-
-        var scope = parentScope.CreateChildScope();
-
-        AddParameters(method, function, context, modulename, scope);
-        SetReturnType(method, function, context, modulename);
-
-        if (methodName == ".ctor")
-        {
-            method.IsConstructor = true;
-        }
-        else if (methodName == ".dtor")
-        {
-            method.IsDestructor = true;
-        }
-
-        var functionItem = new FunctionScopeItem { Name = methodName, SubScope = scope, Method = method };
-
-        if (hasBody)
-        {
-            context.BodyCompilations.Add(new(function, context, method, modulename, scope));
-        }
-
-        if (parentScope.Add(functionItem))
-        {
-            return method;
-        }
-
-        context.AddError(function, "Function '" + method.FullName + "' is already defined.");
-        return null;
-    }
-
     public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename, Scope scope)
     {
         foreach (var member in members.Args)
@@ -124,59 +35,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
     }
 
-    public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename)
-        => ResolveTypeWithModule(typeNode, context, modulename, Utils.GetQualifiedName(typeNode));
-
-    public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
-    {
-        bool isPointer;
-        if (fullName.FullyUnqualifiedName is PointerName pName)
-        {
-            isPointer = true;
-            fullName = pName.ElementName;
-        }
-        else
-        {
-            isPointer = false;
-        }
-
-        IType resolvedType;
-        if (TypenameTable.ContainsKey(fullName.ToString()))
-        {
-            resolvedType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
-        }
-        else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
-        {
-            var fnType = ClrTypeEnvironmentBuilder.ResolveType(context.Binder, func, "System");
-            foreach (var garg in typeNode.Args[2])
-            {
-                fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
-            }
-            resolvedType = fnType;
-        }
-        else
-        {
-            resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
-
-            if (resolvedType == null)
-            {
-                resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
-
-                if (resolvedType == null)
-                {
-                    context.AddError(typeNode, $"Type {fullName} cannot be found");
-                }
-            }
-        }
-
-        if (isPointer)
-        {
-            resolvedType = resolvedType.MakePointerType(PointerKind.Transient);
-        }
-
-        return resolvedType;
-    }
-
     public static void ConvertAnnotations(LNode st, IMember type,
         CompilerContext context, QualifiedName modulename, AttributeTargets targets,
         Action<DescribedAttribute, IMember> applyAttributeCallback)
@@ -192,7 +50,7 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
 
                 if (!fullname.FullyUnqualifiedName.ToString().EndsWith("Attribute"))
                 {
-                    fullname = AppendAttributeToName(fullname);
+                    fullname = Utils.AppendAttributeToName(fullname);
                 }
 
                 var resolvedType = ResolveTypeWithModule(annotation.Target, context, modulename, fullname);
@@ -296,36 +154,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         return await next.Invoke(context);
     }
 
-    private static QualifiedName AppendAttributeToName(QualifiedName fullname)
-    {
-        var qualifier = fullname.Slice(0, fullname.PathLength - 1);
-
-        return new SimpleName(fullname.FullyUnqualifiedName.ToString() + "Attribute").Qualify(qualifier);
-    }
-
-    private static string GetMethodName(LNode function)
-    {
-        return function.Args[1].Args[0].Args[0].Name.Name;
-    }
-
-    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename, Scope scope)
-    {
-        var param = function.Args[2];
-
-        foreach (var p in param.Args)
-        {
-            var pa = ConvertParameter(p, context, modulename);
-            if (scope.Add(new ParameterScopeItem { Name = pa.FullName.ToString(), Parameter = pa }))
-            {
-                method.AddParameter(pa);
-            }
-            else
-            {
-                context.AddError(param, $"Function Parameter {pa.FullName.ToString()} was already defined.");
-            }
-        }
-    }
-
     private static void ConvertEnum(CompilerContext context, LNode node, QualifiedName modulename)
     {
         if (node is (_, (_, var nameNode, var typeNode, var membersNode)))
@@ -405,51 +233,6 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         {
             context.AddError(member, $"Field {mname} is already defined.");
         }
-    }
-
-    private static void ConvertFreeFunction(CompilerContext context, LNode node, QualifiedName modulename, Scope scope)
-    {
-        DescribedType type;
-
-        if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $".{Names.ProgramClass}"))
-        {
-            type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
-            type.IsStatic = true;
-            type.IsPublic = true;
-
-            context.Assembly.AddType(type);
-        }
-        else
-        {
-            type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $".{Names.ProgramClass}");
-        }
-
-        string methodName = GetMethodName(node);
-        if (methodName == "main") methodName = "Main";
-
-        var method = ConvertFunction(context, type, node, modulename, scope, methodName: methodName);
-
-        if (method != null) type.AddMethod(method);
-    }
-
-    private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)
-    {
-        var ptype = p.Args[0].Args[0].Args[0];
-
-        var type = ResolveTypeWithModule(ptype, context, modulename);
-        var assignment = p.Args[1];
-
-        var name = assignment.Args[0].Name;
-
-        var param = new Parameter(type, name.ToString());
-
-        if (!assignment.Args[1].Args.IsEmpty)
-        {
-            param.HasDefault = true;
-            param.DefaultValue = assignment.Args[1].Args[0].Value;
-        }
-
-        return param;
     }
 
     private static void ConvertTypeOrInterface(CompilerContext context, LNode node, QualifiedName modulename, Scope scope)
@@ -539,14 +322,5 @@ public sealed class TypeInheritanceStage : IHandler<CompilerContext, CompilerCon
         }
 
         context.Assembly.AddType(type);
-    }
-
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
-    {
-        var retType = function.Args[0];
-
-        var rtype = ResolveTypeWithModule(retType, context, modulename);
-
-        method.ReturnParameter = new Parameter(rtype);
     }
 }
