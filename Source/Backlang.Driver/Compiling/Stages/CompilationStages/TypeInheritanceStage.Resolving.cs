@@ -72,11 +72,6 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             if (resolvedType == null)
             {
                 resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
-
-                if (resolvedType == null)
-                {
-                    context.AddError(typeNode, $"Type {fullName} cannot be found");
-                }
             }
         }
 
