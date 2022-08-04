@@ -30,7 +30,7 @@ public enum TokenType
     [Lexeme("..")]
     RangeOperator,
 
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.Minus)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
     [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
     [Lexeme("-")]
     Minus,
@@ -43,6 +43,10 @@ public enum TokenType
     [Lexeme("|")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Pipe,
+
+    [Lexeme("~")]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.LogicalNot)]
+    Tilde,
 
     [Lexeme("^")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
@@ -76,7 +80,7 @@ public enum TokenType
     [Lexeme("||")]
     Or,
 
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.Negative)]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.LogicalNot)]
     [Lexeme("!")]
     Exclamation,
 
@@ -170,6 +174,10 @@ public enum TokenType
 
     [Lexeme("@")]
     At,
+
+    [Lexeme("as")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Casting)]
+    As,
 
     [Keyword("true")]
     TrueLiteral,
@@ -332,9 +340,6 @@ public enum TokenType
 
     [Keyword("using")]
     Using,
-
-    [Keyword("as")]
-    As,
 
     [Keyword("union")]
     Union,

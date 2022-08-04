@@ -1,11 +1,14 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Contracts.Scoping;
 using CommandLine;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
 namespace Backlang.Contracts;
+
+#nullable disable
 
 public sealed class CompilerContext
 {
@@ -17,6 +20,8 @@ public sealed class CompilerContext
     public DescribedAssembly Assembly { get; set; }
 
     public TypeResolver Binder { get; set; } = new();
+
+    public Scope GlobalScope { get; } = new(null);
 
     public List<MethodBodyCompilation> BodyCompilations { get; set; } = new();
 

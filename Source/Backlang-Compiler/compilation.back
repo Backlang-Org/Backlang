@@ -1,8 +1,16 @@
-public struct Point {
-	let x: i32*;
-	let callback: (cool) -> none;
+public static func main() -> i32 {
+	let n = default(i32);
+
+  println(default(i32));
+
+  System.Console::WriteLine(greet("Chris"));
+
+
+  return 0;
 }
 
-public static func main() {
-	print("hello :D");
+public static func greet(name: string) -> string {
+  return "Morning " + name + "! :D";
 }
+
+class hh {}

@@ -8,7 +8,7 @@ public class DefaultExprTests : ParserTestBase
     [TestMethod]
     public void Default_With_Type_Should_Pass()
     {
-        var src = "default<i32>;";
+        var src = "default(i32);";
         var tree = ParseAndGetNodesInFunction(src);
     }
 

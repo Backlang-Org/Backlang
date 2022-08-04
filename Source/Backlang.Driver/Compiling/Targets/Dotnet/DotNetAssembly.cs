@@ -5,6 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -41,6 +42,8 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
+        var types = new ConcurrentBag<TypeDefinition>();
+
         Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
@@ -52,10 +55,15 @@ public class DotNetAssembly : ITargetAssembly
             ConvertProperties(type, clrType);
             ConvertMethods(type, clrType);
 
-            _assemblyDefinition.MainModule.Types.Add(clrType);
+            types.Add(clrType);
 
             return ValueTask.CompletedTask;
         }).Wait();
+
+        foreach (var type in types)
+        {
+            _assemblyDefinition.MainModule.Types.Add(type);
+        }
 
         AdjustBaseTypesAndInterfaces();
 

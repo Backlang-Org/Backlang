@@ -9,13 +9,11 @@ using Loyc.Collections;
 using Loyc.Syntax;
 using System.Runtime.Loader;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
 
 public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContext>
 {
     private MacroProcessor _macroProcessor;
-
-    private bool hasBeforeExpandMacrosCalled;
 
     public ExpandMacrosStage()
     {
@@ -30,11 +28,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        if (!hasBeforeExpandMacrosCalled)
-        {
-            context.CompilationTarget.BeforeExpandMacros(_macroProcessor); //Only calls once
-            hasBeforeExpandMacrosCalled = true;
-        }
+        context.CompilationTarget.BeforeExpandMacros(_macroProcessor); //Only calls once
 
         if (context.MacroReferences != null)
         {

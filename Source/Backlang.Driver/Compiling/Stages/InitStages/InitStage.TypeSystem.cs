@@ -5,18 +5,18 @@ using Flo;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.InitStages;
 
-public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerContext>
+public sealed partial class InitStage : IHandler<CompilerContext, CompilerContext>
 {
     private readonly Dictionary<string, ICompilationTarget> _targets = new();
 
-    public InitTypeSystemStage()
+    public InitStage()
     {
         AddTarget<DotNetTarget>();
     }
 
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public void InitTypeSystem(CompilerContext context)
     {
         context.Binder = new TypeResolver();
 
@@ -49,22 +49,20 @@ public sealed class InitTypeSystemStage : IHandler<CompilerContext, CompilerCont
         else
         {
             context.Messages.Add(Message.Error($"Target '{context.Target}' cannot be found"));
-            return await next.Invoke(context);
+            return;
         }
 
         var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
 
         context.writeMethods = consoleType?.Methods.Where(
-            method => method.Name.ToString() == "Write"
+            method => (method.Name.ToString() == "Write" || method.Name.ToString() == "WriteLine")
                 && method.IsStatic
                 && method.ReturnParameter.Type == context.Environment.Void);
-
-        return await next.Invoke(context);
     }
 
     private static void AddIntrinsicType(TypeResolver binder, TypeEnvironment te, Type type)
     {
-        var qualifier = ClrTypeEnvironmentBuilder.QualifyNamespace(type.Namespace);
+        var qualifier = Utils.QualifyNamespace(type.Namespace);
         var intrinsicAssembly = new DescribedAssembly(qualifier);
 
         var instrinsicsType = new DescribedType(

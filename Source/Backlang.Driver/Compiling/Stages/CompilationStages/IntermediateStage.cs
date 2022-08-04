@@ -1,13 +1,13 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
-using Backlang.Driver.Compiling.Targets.Dotnet;
+using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
-namespace Backlang.Driver.Compiling.Stages;
+namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
@@ -22,13 +22,13 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var tree in context.Trees)
         {
-            var modulename = Utils.GetModuleName(tree);
+            var modulename = ConversionUtils.GetModuleName(tree);
 
             foreach (var st in tree.Body)
             {
                 if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
                 {
-                    ConvertTypeOrInterface(context, st, modulename);
+                    ConvertTypeOrInterface(context, st, modulename, context.GlobalScope);
                 }
                 else if (st.Calls(CodeSymbols.Enum))
                 {
@@ -62,7 +62,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void ConvertTypeOrInterface(CompilerContext context, LNode st, QualifiedName modulename)
+    private static void ConvertTypeOrInterface(CompilerContext context, LNode st, QualifiedName modulename, Scope scope)
     {
         var name = st.Args[0].Name;
 
@@ -76,10 +76,17 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             type.AddAttribute(FlagAttribute.InterfaceType);
         }
 
-        Utils.SetAccessModifier(st, type);
+        ConversionUtils.SetAccessModifier(st, type);
         SetOtherModifiers(st, type);
 
-        context.Assembly.AddType(type);
+        if (scope.Add(new TypeScopeItem { Name = name.Name, TypeInfo = type, SubScope = scope.CreateChildScope() }))
+        {
+            context.Assembly.AddType(type);
+        }
+        else
+        {
+            context.AddError(st, $"Type {name.Name} is already defined.");
+        }
     }
 
     private static void SetOtherModifiers(LNode node, DescribedType type)
@@ -99,7 +106,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         var name = discrim.Args[0].Name;
 
         var baseType = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-        Utils.SetAccessModifier(discrim, baseType);
+        ConversionUtils.SetAccessModifier(discrim, baseType);
         baseType.IsAbstract = true;
 
         context.Assembly.AddType(baseType);
@@ -108,14 +115,21 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             var discName = type.Args[0].Name;
             var discType = new DescribedType(new SimpleName(discName.Name).Qualify(modulename), context.Assembly);
-            Utils.SetAccessModifier(discrim, discType);
+            ConversionUtils.SetAccessModifier(discrim, discType);
             discType.AddBaseType(baseType);
             context.Assembly.AddType(discType);
 
             foreach (var field in type.Args[1].Args)
             {
                 var fieldName = field.Args[1].Args[0].Name;
-                var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name), false, TypeInheritanceStage.ResolveTypeWithModule(field.Args[0].Args[0].Args[0], context, modulename, Utils.GetQualifiedName(field.Args[0].Args[0].Args[0])));
+                var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name),
+                    false,
+                    TypeInheritanceStage.ResolveTypeWithModule(
+                        field.Args[0].Args[0].Args[0], context,
+                        modulename, ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0])
+                        )
+                    );
+
                 if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
                     fieldType.AddAttribute(Attributes.Mutable);
@@ -124,8 +138,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 discType.AddField(fieldType);
             }
 
-            Generator.GenerateDefaultCtor(context, discType);
-            Generator.GenerateToString(context, discType);
+            IRGenerator.GenerateDefaultCtor(context, discType);
+            IRGenerator.GenerateToString(context, discType);
         }
     }
 }
