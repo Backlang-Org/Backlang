@@ -55,6 +55,13 @@ public static class TypeDeducer
                 return Deduce(type, scope, context);
             }
         }
+        else if (node.Calls(CodeSymbols.New))
+        {
+            if (node is (_, var call))
+            {
+                return Deduce(call.Target, scope, context);
+            }
+        }
         else if (node.ArgCount == 1 && node.Name.Name.StartsWith("'"))
         {
             return DeduceUnary(node, scope, context);
