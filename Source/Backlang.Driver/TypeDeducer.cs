@@ -52,7 +52,7 @@ public static class TypeDeducer
         {
             return DeduceBinary(node, scope, context);
         }
-        else if (node.IsId)
+        else if (node.IsId || node.IsCall)
         {
             if (scope.TryGet<ScopeItem>(node.Name.Name, out var item))
             {

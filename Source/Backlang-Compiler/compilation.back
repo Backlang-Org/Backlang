@@ -1,14 +1,8 @@
-public static func main() {
-	System.Console::WriteLine("Hello sttaic");
-
-	let m = System.Int32::Parse("42");
-
-	let msg = "Hello World";
-
-	System.Console::WriteLine(System.Console::ReadLine());
-
+func main() -> i32 {
+  System.Console::WriteLine(greet());
+  return 0;
 }
 
-public static func kk() {
-	kk();
+func greet() -> string {
+  return "Morning Lixou! :D";
 }

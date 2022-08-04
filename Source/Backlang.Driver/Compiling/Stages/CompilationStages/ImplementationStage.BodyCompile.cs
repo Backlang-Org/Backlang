@@ -36,7 +36,8 @@ public partial class ImplementationStage
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
         new ConstantExpressionEmitter(),
-        new StaticCallImplementor()
+        new StaticCallImplementor(),
+        new CallExpressionEmitter(), //should be added as last
     }.ToImmutableList();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
