@@ -16,6 +16,8 @@ public class WhileImplementor : IStatementImplementor
     {
         if (node is (_, var condition, var body))
         {
+            TypeDeducer.ExpectType(condition, scope, context, context.Environment.Boolean);
+
             var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 

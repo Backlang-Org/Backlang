@@ -57,6 +57,16 @@ public static class TypeDeducer
         return null;
     }
 
+    public static void ExpectType(LNode condition, Scope scope, CompilerContext context, IType expectedType)
+    {
+        var deducedType = Deduce(condition, scope, context);
+
+        if (deducedType != expectedType)
+        {
+            context.AddError(condition, $"Type Mismatch. Expected {expectedType}, got {deducedType}");
+        }
+    }
+
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context)
     {
         var left = Deduce(node.Args[0], scope, context);
