@@ -44,6 +44,17 @@ public static class TypeDeducer
         {
             return ImplementationStage.GetLiteralType(node, context, scope);
         }
+        if (TypenameTable.ContainsKey(node.Name.Name))
+        {
+            return Deduce(LNode.Id(TypenameTable[node.Name.Name]), scope, context);
+        }
+        else if (node.ArgCount == 1 && node.Calls(CodeSymbols.Default))
+        {
+            if (node is (_, (_, (_, var type))))
+            {
+                return Deduce(type, scope, context);
+            }
+        }
         else if (node.ArgCount == 1 && node.Name.Name.StartsWith("'"))
         {
             return DeduceUnary(node, scope, context);

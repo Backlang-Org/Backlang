@@ -1,8 +1,16 @@
-func main() -> i32 {
-  System.Console::WriteLine(greet());
+public static func main() -> i32 {
+	let n = default(i32);
+
+  println(default(i32));
+
+  System.Console::WriteLine(greet("Chris"));
+
+
   return 0;
 }
 
-func greet() -> string {
-  return "Morning Lixou! :D";
+public static func greet(name: string) -> string {
+  return "Morning " + name + "! :D";
 }
+
+class hh {}

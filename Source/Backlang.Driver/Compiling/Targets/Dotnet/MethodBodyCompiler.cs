@@ -89,7 +89,7 @@ public static class MethodBodyCompiler
             else if (instruction.Prototype is LoadPrototype)
             {
                 var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
-                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
+                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
@@ -123,7 +123,7 @@ public static class MethodBodyCompiler
         {
             if (rf.HasReturnValue)
             {
-                EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
             }
 
             ilProcessor.Emit(OpCodes.Ret);
@@ -277,7 +277,7 @@ public static class MethodBodyCompiler
             );
     }
 
-    private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
+    private static void EmitConstant(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, ConstantPrototype consProto)
     {
         dynamic v = consProto.Value;
 
