@@ -22,7 +22,7 @@ public class WhileImplementor : IStatementImplementor
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 
             var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
-            AppendExpression(while_condition, condition, context.Environment.Boolean, method);
+            AppendExpression(while_condition, condition, context.Environment.Boolean, method, context);
             while_condition.Flow = new JumpFlow(while_start);
 
             var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
@@ -36,7 +36,7 @@ public class WhileImplementor : IStatementImplementor
             }
             else
             {
-                AppendExpression(block, condition, method.ParentType, method);
+                AppendExpression(block, condition, method.ParentType, method, context);
                 while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
             }
 

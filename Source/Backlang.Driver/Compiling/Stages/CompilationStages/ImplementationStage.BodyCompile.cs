@@ -8,6 +8,7 @@ using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Loyc;
 using Loyc.Syntax;
@@ -98,11 +99,22 @@ public partial class ImplementationStage
         return block;
     }
 
-    public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node, IType elementType, IMethod method)
+    public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node,
+        IType elementType, IMethod method, CompilerContext context)
     {
+        if (node.Calls(CodeSymbols.ColonColon))
+        {
+            var callee = node.Args[1];
+            var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
+
+            var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
+
+            AppendCall(context, block, callee, type.Methods, callee.Name.Name);
+        }
+
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
-        return fetch == null ? null : fetch.Handle(node, block, elementType, method);
+        return fetch == null ? null : fetch.Handle(node, block, elementType, method, context);
     }
 
     public static void AppendCall(CompilerContext context, BasicBlockBuilder block,

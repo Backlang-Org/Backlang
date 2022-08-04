@@ -19,7 +19,7 @@ public class ReturnImplementor : IStatementImplementor
         {
             var valueNode = node.Args[0];
 
-            AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method); //ToDo: Deduce Type
+            AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method, context); //ToDo: Deduce Type
 
             block.Flow = new ReturnFlow();
         }

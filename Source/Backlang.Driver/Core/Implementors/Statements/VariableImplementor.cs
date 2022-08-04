@@ -48,7 +48,7 @@ public class VariableImplementor : IStatementImplementor
 
         if (deducedType == null) return null;
 
-        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, method);
+        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, method, context);
 
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
 
