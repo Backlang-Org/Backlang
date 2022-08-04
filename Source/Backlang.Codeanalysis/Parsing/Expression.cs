@@ -63,7 +63,7 @@ public static class Expression
 
             var operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
-            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand).WithRange(operatorToken.Start, operand.Range.EndIndex);
+            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand).WithRange(operatorToken.Start, operand.Range.EndIndex).WithStyle(NodeStyle.PrefixNotation);
         }
         else
         {
