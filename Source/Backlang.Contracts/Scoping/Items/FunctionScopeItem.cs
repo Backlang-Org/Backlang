@@ -8,6 +8,8 @@ public class FunctionScopeItem : ScopeItem
     public bool IsStatic => Method.IsStatic;
     public Scope SubScope { get; init; }
 
+    public override IType Type => Method.ReturnParameter.Type;
+
     public void Deconstruct(out string name, out IMethod method, out bool isStatic, out Scope subScope)
     {
         name = Name;

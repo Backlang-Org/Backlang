@@ -79,7 +79,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         ConversionUtils.SetAccessModifier(st, type);
         SetOtherModifiers(st, type);
 
-        if (scope.Add(new TypeScopeItem { Name = name.Name, Type = type, SubScope = scope.CreateChildScope() }))
+        if (scope.Add(new TypeScopeItem { Name = name.Name, TypeInfo = type, SubScope = scope.CreateChildScope() }))
         {
             context.Assembly.AddType(type);
         }
