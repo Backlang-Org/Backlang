@@ -171,6 +171,10 @@ public enum TokenType
     [Lexeme("@")]
     At,
 
+    [Lexeme("as")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Casting)]
+    As,
+
     [Keyword("true")]
     TrueLiteral,
 
