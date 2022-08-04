@@ -1,5 +1,6 @@
 ﻿using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Loyc.Syntax;
@@ -11,9 +12,11 @@ public class IdentifierExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node) => node.IsId;
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, IMethod method, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope)
     {
-        var par = method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
+        scope.TryGet<FunctionScopeItem>(node.Name.Name, out var fn);
+
+        var par = fn.Method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
 
         if (!par.Any())
         {

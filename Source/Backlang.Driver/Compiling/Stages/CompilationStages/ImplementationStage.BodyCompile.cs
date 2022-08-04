@@ -35,7 +35,7 @@ public partial class ImplementationStage
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
-        new UnaryExpressionImplementor(),
+        new ConstantExpressionEmitter(),
         new StaticCallImplementor()
     }.ToImmutableList();
 
@@ -101,11 +101,11 @@ public partial class ImplementationStage
     }
 
     public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node,
-        IType elementType, IMethod method, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope)
     {
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
-        return fetch == null ? null : fetch.Handle(node, block, elementType, method, context, scope);
+        return fetch == null ? null : fetch.Handle(node, block, elementType, context, scope);
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
@@ -121,12 +121,9 @@ public partial class ImplementationStage
 
             if (!arg.IsId)
             {
-                var constant = block.AppendInstruction(
-                ConvertConstant(type, arg.Args[0].Value));
+                var val = AppendExpression(block, arg, type, context, scope);
 
-                block.AppendInstruction(Instruction.CreateLoad(type, constant));
-
-                callTags.Add(constant);
+                callTags.Add(val);
             }
             else
             {
@@ -140,6 +137,10 @@ public partial class ImplementationStage
                     else if (scopeItem is ParameterScopeItem psi)
                     {
                         vt = block.AppendInstruction(Instruction.CreateLoadArg(psi.Parameter));
+                    }
+                    else if (scopeItem is FieldScopeItem fsi)
+                    {
+                        vt = block.AppendInstruction(Instruction.CreateLoadField(fsi.Field));
                     }
 
                     callTags.Add(vt);

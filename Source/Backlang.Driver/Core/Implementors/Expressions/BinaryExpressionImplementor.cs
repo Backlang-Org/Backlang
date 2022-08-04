@@ -12,10 +12,10 @@ public class BinaryExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node) => node.ArgCount == 2 && !node.Calls(CodeSymbols.ColonColon);
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, IMethod method, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope)
     {
-        var lhs = AppendExpression(block, node.Args[0], elementType, method, context, scope);
-        var rhs = AppendExpression(block, node.Args[1], elementType, method, context, scope);
+        var lhs = AppendExpression(block, node.Args[0], elementType, context, scope);
+        var rhs = AppendExpression(block, node.Args[1], elementType, context, scope);
 
         return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
     }

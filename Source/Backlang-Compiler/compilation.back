@@ -5,7 +5,7 @@ public static func main() {
 
 	let msg = "Hello World";
 
-	System.Console::WriteLine(msg);
+	System.Console::WriteLine(System.Console::ReadLine());
 
 }
 

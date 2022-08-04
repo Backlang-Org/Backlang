@@ -9,7 +9,7 @@ namespace Backlang.Driver.Core.Implementors;
 public interface IExpressionImplementor
 {
     NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, IMethod method, CompilerContext context, Scope scope);
+        IType elementType, CompilerContext context, Scope scope);
 
     bool CanHandle(LNode node);
 }

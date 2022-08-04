@@ -7,12 +7,12 @@ using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationSt
 
 namespace Backlang.Driver.Core.Implementors.Expressions;
 
-public class UnaryExpressionImplementor : IExpressionImplementor
+public class ConstantExpressionEmitter : IExpressionImplementor
 {
     public bool CanHandle(LNode node) => node.ArgCount == 1 && node.Args[0].HasValue;
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, IMethod method, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope)
     {
         var constant = ConvertConstant(elementType, node.Args[0].Value);
         var value = block.AppendInstruction(constant);
