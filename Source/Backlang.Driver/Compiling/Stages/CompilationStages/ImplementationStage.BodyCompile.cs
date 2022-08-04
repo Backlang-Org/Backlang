@@ -24,7 +24,7 @@ public partial class ImplementationStage
         [CodeSymbols.While] = new WhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
         [CodeSymbols.Throw] = new ThrowImplementor(),
-        [CodeSymbols.ColonColon] = new StaticCallColonImplementor(),
+        [CodeSymbols.ColonColon] = new StaticCallImplementor(),
         [CodeSymbols.Dot] = new CallImplementor(),
     }.ToImmutableDictionary();
 

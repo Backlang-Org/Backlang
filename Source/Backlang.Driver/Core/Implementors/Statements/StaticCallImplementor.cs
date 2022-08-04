@@ -9,7 +9,7 @@ using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationSt
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
-public class StaticCallColonImplementor : IStatementImplementor
+public class StaticCallImplementor : IStatementImplementor
 {
     public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
         LNode node, QualifiedName? modulename, Scope scope)
