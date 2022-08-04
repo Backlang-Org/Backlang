@@ -22,7 +22,7 @@ public class CallImplementor : IStatementImplementor
 
             if (callee != null)
             {
-                AppendCall(context, block, callee, type.Methods);
+                AppendCall(context, block, callee, type.Methods, scope);
             }
             else
             {

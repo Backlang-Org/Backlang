@@ -37,7 +37,12 @@ public class VariableImplementor : IStatementImplementor
         var varname = decl.Args[0].Name.Name;
         var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
 
-        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = isMutable, Parameter = new Parameter(elementType) }))
+        if (scope.Add(new VariableScopeItem
+        {
+            Name = varname,
+            IsMutable = isMutable,
+            Parameter = new Parameter(elementType, varname)
+        }))
         {
             block.AppendParameter(new BlockParameter(elementType, varname));
         }
@@ -48,7 +53,7 @@ public class VariableImplementor : IStatementImplementor
 
         if (deducedType == null) return null;
 
-        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, method, context);
+        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, method, context, scope);
 
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
 

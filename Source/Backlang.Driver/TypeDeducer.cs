@@ -42,7 +42,7 @@ public static class TypeDeducer
     {
         if (ImplementationStage.LiteralTypeMap.ContainsKey(node.Name))
         {
-            return ImplementationStage.GetLiteralType(node, context.Binder);
+            return ImplementationStage.GetLiteralType(node, context, scope);
         }
         else if (node.ArgCount == 1)
         {

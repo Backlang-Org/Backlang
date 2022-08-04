@@ -1,6 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
@@ -72,11 +73,11 @@ public partial class ImplementationStage
             }
             else if (node.Calls("print"))
             {
-                AppendCall(context, block, node, context.writeMethods, "Write");
+                AppendCall(context, block, node, context.writeMethods, scope, "Write");
             }
             else if (node.Calls("println"))
             {
-                AppendCall(context, block, node, context.writeMethods, "WriteLine");
+                AppendCall(context, block, node, context.writeMethods, scope, "WriteLine");
             }
             else
             {
@@ -87,7 +88,7 @@ public partial class ImplementationStage
 
                 if (callee != null)
                 {
-                    AppendCall(context, block, node, type.Methods);
+                    AppendCall(context, block, node, type.Methods, scope);
                 }
                 else
                 {
@@ -100,30 +101,55 @@ public partial class ImplementationStage
     }
 
     public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node,
-        IType elementType, IMethod method, CompilerContext context)
+        IType elementType, IMethod method, CompilerContext context, Scope scope)
     {
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
-        return fetch == null ? null : fetch.Handle(node, block, elementType, method, context);
+        return fetch == null ? null : fetch.Handle(node, block, elementType, method, context, scope);
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
-        LNode node, IEnumerable<IMethod> methods, string methodName = null)
+        LNode node, IEnumerable<IMethod> methods, Scope scope, string methodName = null)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
         foreach (var arg in node.Args)
         {
-            var type = GetLiteralType(arg, context.Binder);
+            var type = TypeDeducer.Deduce(arg, scope, context);
             argTypes.Add(type);
 
-            var constant = block.AppendInstruction(
-            ConvertConstant(type, arg.Args[0].Value));
+            if (!arg.IsId)
+            {
+                var constant = block.AppendInstruction(
+                ConvertConstant(type, arg.Args[0].Value));
 
-            block.AppendInstruction(Instruction.CreateLoad(type, constant));
+                block.AppendInstruction(Instruction.CreateLoad(type, constant));
 
-            callTags.Add(constant);
+                callTags.Add(constant);
+            }
+            else
+            {
+                if (scope.TryGet<ScopeItem>(arg.Name.Name, out var scopeItem))
+                {
+                    ValueTag vt = null;
+                    if (scopeItem is VariableScopeItem vsi)
+                    {
+                        vt = block.AppendInstruction(Instruction.CreateLoadLocal(vsi.Parameter));
+                    }
+                    else if (scopeItem is ParameterScopeItem psi)
+                    {
+                        vt = block.AppendInstruction(Instruction.CreateLoadArg(psi.Parameter));
+                    }
+
+                    callTags.Add(vt);
+                }
+                else
+                {
+                    context.AddError(arg, $"{arg.Name.Name} cannot be found");
+                }
+                //ToDo: add loading id from scope
+            }
         }
 
         if (methodName == null)

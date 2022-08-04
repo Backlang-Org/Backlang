@@ -3,7 +3,6 @@ using Backlang.Contracts.Scoping;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Loyc.Syntax;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
@@ -19,7 +18,8 @@ public class ReturnImplementor : IStatementImplementor
         {
             var valueNode = node.Args[0];
 
-            AppendExpression(block, valueNode, (DescribedType)context.Environment.Int32, method, context); //ToDo: Deduce Type
+            AppendExpression(block, valueNode,
+                TypeDeducer.Deduce(valueNode, scope, context), method, context, scope);
 
             block.Flow = new ReturnFlow();
         }

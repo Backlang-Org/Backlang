@@ -34,7 +34,7 @@ public class IfImplementor : IStatementImplementor
             }
             else
             {
-                AppendExpression(if_condition, condition, context.Environment.Boolean, method, context);
+                AppendExpression(if_condition, condition, context.Environment.Boolean, method, context, scope);
                 if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
             }
 

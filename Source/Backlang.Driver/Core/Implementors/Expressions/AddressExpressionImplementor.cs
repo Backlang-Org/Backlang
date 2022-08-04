@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts;
+using Backlang.Contracts.Scoping;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Loyc.Syntax;
@@ -9,7 +10,8 @@ public class AddressExpressionImplementor : IExpressionImplementor
 {
     public bool CanHandle(LNode node) => node is ("'&", _);
 
-    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType, IMethod method, CompilerContext context)
+    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
+        IType elementType, IMethod method, CompilerContext context, Scope scope)
     {
         if (node is (_, var p))
         {

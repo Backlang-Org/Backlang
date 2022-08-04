@@ -1,5 +1,6 @@
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Contracts;
+using Backlang.Contracts.Scoping;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
@@ -40,19 +41,18 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         True,
     }
 
-    public static IType GetLiteralType(LNode value, TypeResolver resolver)
+    public static IType GetLiteralType(LNode value, CompilerContext context, Scope scope)
     {
         if (LiteralTypeMap.ContainsKey(value.Name))
         {
-            return Utils.ResolveType(resolver, LiteralTypeMap[value.Name]);
+            return Utils.ResolveType(context.Binder, LiteralTypeMap[value.Name]);
         }
-        else if (value is IdNode id) { } //todo: symbol table (Lixou)
-        else
+        else if (value.IsId)
         {
-            return Utils.ResolveType(resolver, value.Args[0].Value.GetType());
+            return TypeDeducer.Deduce(value, scope, context);
         }
 
-        return Utils.ResolveType(resolver, typeof(void));
+        return Utils.ResolveType(context.Binder, typeof(void));
     }
 
     public static Instruction ConvertConstant(IType elementType, object value)

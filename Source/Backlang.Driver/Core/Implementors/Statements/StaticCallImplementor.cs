@@ -13,20 +13,21 @@ public class StaticCallImplementor : IStatementImplementor, IExpressionImplement
 {
     public bool CanHandle(LNode node) => node.Calls(CodeSymbols.ColonColon);
 
-    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType, IMethod method, CompilerContext context)
+    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
+        IType elementType, IMethod method, CompilerContext context, Scope scope)
     {
         var callee = node.Args[1];
         var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
 
         var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
 
-        return ImplementationStage.AppendCall(context, block, callee, type.Methods, callee.Name.Name);
+        return ImplementationStage.AppendCall(context, block, callee, type.Methods, scope, callee.Name.Name);
     }
 
     public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
         LNode node, QualifiedName? modulename, Scope scope)
     {
-        Handle(node, block, TypeDeducer.Deduce(node, scope, context), method, context);
+        Handle(node, block, TypeDeducer.Deduce(node, scope, context), method, context, scope);
 
         return block;
     }

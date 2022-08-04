@@ -2,4 +2,13 @@ public static func main() {
 	System.Console::WriteLine("Hello sttaic");
 
 	let m = System.Int32::Parse("42");
+
+	let msg = "Hello World";
+
+	System.Console::WriteLine(msg);
+
+}
+
+public static func kk() {
+	kk();
 }
