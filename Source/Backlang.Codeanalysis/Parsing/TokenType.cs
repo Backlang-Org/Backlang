@@ -337,9 +337,6 @@ public enum TokenType
     [Keyword("using")]
     Using,
 
-    [Keyword("as")]
-    As,
-
     [Keyword("union")]
     Union,
 
