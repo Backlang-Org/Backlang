@@ -1,10 +1,10 @@
-﻿using Backlang.Driver.Compiling.Targets.bs2k.TypeSystem;
+﻿using Backlang.Backends.Bs2k.TypeSystem;
 using Furesoft.Core.CodeDom.Backends.CLR;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 public class Bs2KTypeEnvironment : TypeEnvironment
 {

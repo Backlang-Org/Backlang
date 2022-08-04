@@ -1,4 +1,4 @@
-﻿namespace Backlang.Driver.Compiling;
+﻿namespace Backlang.Contracts;
 
 public static class Names
 {

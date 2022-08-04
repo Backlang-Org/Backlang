@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 public class NameMangler
 {

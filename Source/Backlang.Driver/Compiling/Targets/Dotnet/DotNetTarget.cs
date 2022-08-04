@@ -1,4 +1,5 @@
-﻿using Backlang.Core;
+﻿using Backlang.Contracts;
+using Backlang.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;

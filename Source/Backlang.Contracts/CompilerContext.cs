@@ -1,11 +1,14 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Contracts.Scoping;
 using CommandLine;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc.Syntax;
 
-namespace Backlang.Driver;
+namespace Backlang.Contracts;
+
+#nullable disable
 
 public sealed class CompilerContext
 {
@@ -17,6 +20,8 @@ public sealed class CompilerContext
     public DescribedAssembly Assembly { get; set; }
 
     public TypeResolver Binder { get; set; } = new();
+
+    public Scope GlobalScope { get; } = new(null);
 
     public List<MethodBodyCompilation> BodyCompilations { get; set; } = new();
 
@@ -53,6 +58,9 @@ public sealed class CompilerContext
 
     public string TempOutputPath { get; set; }
     public List<CompilationUnit> Trees { get; set; } = new();
+
+    [Option('e', longName: "resource", HelpText = "Embedd files into the assembly as resource")]
+    public IEnumerable<string> EmbeddedResource { get; set; }
 
     public void AddError(LNode node, string msg)
     {

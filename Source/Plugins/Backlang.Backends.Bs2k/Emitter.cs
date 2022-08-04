@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler;
+﻿using Backlang.Contracts;
+using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
@@ -7,12 +8,14 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Text;
 using MethodBody = Furesoft.Core.CodeDom.Compiler.MethodBody;
 
-namespace Backlang.Driver.Compiling.Targets.bs2k;
+namespace Backlang.Backends.Bs2k;
 
 public class Emitter
 {
     private readonly IMethod _mainMethod;
     private readonly StringBuilder _builder = new();
+
+    private Dictionary<int, string> _stringConstants = new();
 
     public Emitter(IMethod mainMethod)
     {
@@ -41,6 +44,33 @@ public class Emitter
             Emit("halt");
             Emit("");
         }
+    }
+
+    public void EmitResource(string name, byte[] data)
+    {
+        Emit($"res{name}: .words[{string.Join(",", data)}]");
+    }
+
+    public void EmitStringConstants(IType program)
+    {
+        foreach (DescribedBodyMethod method in program.Methods)
+        {
+            var instructions = method.Body.Implementation.BasicBlocks.SelectMany(_ => _.NamedInstructions);
+            var strings = instructions.Where(_ => _.Prototype is ConstantPrototype cP && cP.Value is StringConstant);
+
+            foreach (var str in strings)
+            {
+                var constant = (ConstantPrototype)str.Prototype;
+                var value = (StringConstant)constant.Value;
+                var strValue = value.Value;
+                var hashCode = strValue.GetHashCode();
+
+                Emit($"str{hashCode}: .string \"{strValue}\"", null, 0);
+                _stringConstants.Add(hashCode, strValue);
+            }
+        }
+
+        Emit("\n", null, 0);
     }
 
     public override string ToString() => _builder.ToString();

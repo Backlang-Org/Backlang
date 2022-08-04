@@ -1,4 +1,5 @@
-﻿using Backlang.Driver;
+﻿using Backlang.Contracts;
+using Backlang.Driver;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
@@ -41,7 +42,7 @@ namespace Backlang.NET.Sdk
         public string Path { get; set; }
         public string ProjectFile { get; set; }
         public string[] ReferencePath { get; set; }
-        public ITaskItem[] Resources { get; set; }
+        public string[] Resources { get; set; }
         public string ResultingOutputPath { get; set; }
         public string Target { get; set; }
 
@@ -69,6 +70,7 @@ namespace Backlang.NET.Sdk
             Path = Path.Substring(0, Path.Length - filename.Length);
 
             Compile = Compile.Select(_ => Path + _).ToArray();
+            Resources = Resources == null ? Array.Empty<string>() : Resources.Select(_ => Path + _).ToArray();
 
             try
             {
@@ -87,6 +89,7 @@ namespace Backlang.NET.Sdk
                 context.MacroReferences = MacroReferences;
                 context.ResultingOutputPath = ResultingOutputPath;
                 context.ProjectFile = ProjectFile;
+                context.EmbeddedResource = Resources;
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {
@@ -97,7 +100,14 @@ namespace Backlang.NET.Sdk
 
                 foreach (var msg in context.Messages)
                 {
-                    Log.LogError(msg.ToString());
+                    if (msg.Severity == Codeanalysis.Parsing.MessageSeverity.Error)
+                    {
+                        Log.LogError(msg.ToString());
+                    }
+                    else
+                    {
+                        Log.LogWarning(msg.ToString());
+                    }
                 }
 
                 return !context.Messages.Any();

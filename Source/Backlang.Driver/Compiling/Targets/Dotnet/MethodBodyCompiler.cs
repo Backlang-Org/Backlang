@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler;
+﻿using Backlang.Contracts;
+using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
@@ -72,6 +73,15 @@ public static class MethodBodyCompiler
             {
                 EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
             }
+            else if (instruction.Prototype is LoadLocalAPrototype lda)
+            {
+                var definition = variables[lda.Parameter.Name.ToString()];
+                ilProcessor.Emit(OpCodes.Ldloca_S, definition);
+            }
+            else if (instruction.Prototype is LoadIndirectPrototype ldi)
+            {
+                ilProcessor.Emit(OpCodes.Ldind_I4);
+            }
             else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
             {
                 EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
@@ -79,7 +89,7 @@ public static class MethodBodyCompiler
             else if (instruction.Prototype is LoadPrototype)
             {
                 var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
-                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
+                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
@@ -99,7 +109,7 @@ public static class MethodBodyCompiler
             {
                 EmitLoadLocal(ilProcessor, lloc, variables);
             }
-            else if (instruction.Prototype is GetFieldPointerPrototype fp)
+            else if (instruction.Prototype is LoadFieldPrototype fp)
             {
                 EmitLoadField(parentType, ilProcessor, fp);
             }
@@ -113,7 +123,7 @@ public static class MethodBodyCompiler
         {
             if (rf.HasReturnValue)
             {
-                EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
             }
 
             ilProcessor.Emit(OpCodes.Ret);
@@ -152,7 +162,7 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Stfld, field);
     }
 
-    private static void EmitLoadField(TypeDefinition parentType, ILProcessor ilProcessor, GetFieldPointerPrototype fp)
+    private static void EmitLoadField(TypeDefinition parentType, ILProcessor ilProcessor, LoadFieldPrototype fp)
     {
         var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
 
@@ -166,7 +176,10 @@ public static class MethodBodyCompiler
         if (param != null)
         {
             var index = clrMethod.Parameters.IndexOf(param);
-            ilProcessor.Emit(OpCodes.Ldarg, index + 1);
+
+            if (!clrMethod.IsStatic) index++;
+
+            ilProcessor.Emit(OpCodes.Ldarg, index);
         }
         else
         {
@@ -264,7 +277,7 @@ public static class MethodBodyCompiler
             );
     }
 
-    private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
+    private static void EmitConstant(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, ConstantPrototype consProto)
     {
         dynamic v = consProto.Value;
 

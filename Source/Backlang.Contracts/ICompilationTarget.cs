@@ -2,7 +2,7 @@
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 
-namespace Backlang.Driver;
+namespace Backlang.Contracts;
 
 public interface ICompilationTarget : ITarget
 {

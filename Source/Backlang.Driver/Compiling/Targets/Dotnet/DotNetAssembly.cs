@@ -5,6 +5,7 @@ using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -41,6 +42,8 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
+        var types = new ConcurrentBag<TypeDefinition>();
+
         Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                 type.Name.ToString(), TypeAttributes.Class);
@@ -52,14 +55,25 @@ public class DotNetAssembly : ITargetAssembly
             ConvertProperties(type, clrType);
             ConvertMethods(type, clrType);
 
-            _assemblyDefinition.MainModule.Types.Add(clrType);
+            types.Add(clrType);
 
             return ValueTask.CompletedTask;
         }).Wait();
 
+        foreach (var type in types)
+        {
+            _assemblyDefinition.MainModule.Types.Add(type);
+        }
+
         AdjustBaseTypesAndInterfaces();
 
         CompileBodys();
+
+        Parallel.ForEach(_assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>(), (er) => {
+            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, File.OpenRead(er.Filename));
+
+            _assemblyDefinition.MainModule.Resources.Add(err);
+        });
 
         _assemblyDefinition.Write(output);
 
@@ -367,10 +381,6 @@ public class DotNetAssembly : ITargetAssembly
             var fieldType = Resolve(field.FieldType.FullName);
             var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
-            var specialName = field.Attributes.GetAll().FirstOrDefault(_ => _.AttributeType.Name.ToString() == "SpecialNameAttribute");
-
-            fieldDefinition.IsRuntimeSpecialName = specialName != null;
-            fieldDefinition.IsSpecialName = specialName != null;
             fieldDefinition.IsStatic = field.IsStatic;
             fieldDefinition.IsInitOnly = !field.Owns(Attributes.Mutable);
 
@@ -383,6 +393,10 @@ public class DotNetAssembly : ITargetAssembly
                     fieldDefinition.IsRuntimeSpecialName = false;
                     fieldDefinition.IsSpecialName = false;
                     fieldDefinition.IsLiteral = true;
+                }
+                else
+                {
+                    fieldDefinition.IsInitOnly = true;
                 }
             }
 
@@ -464,6 +478,12 @@ public class DotNetAssembly : ITargetAssembly
             if (attr.AttributeType.FullName.ToString() == typeof(FieldOffsetAttribute).FullName)
             {
                 clrField.Offset = (int)attr.ConstructorArguments[0].Value;
+                continue;
+            }
+            else if (attr.AttributeType.Name.ToString() == "SpecialNameAttribute")
+            {
+                clrField.IsRuntimeSpecialName = true;
+                clrField.IsSpecialName = true;
                 continue;
             }
 

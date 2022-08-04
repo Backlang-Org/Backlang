@@ -1,4 +1,5 @@
-﻿using Backlang.Driver;
+﻿using Backlang.Contracts;
+using Backlang.Driver;
 using CommandLine;
 
 namespace Backlang_Compiler;

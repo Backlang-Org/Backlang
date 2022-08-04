@@ -1,5 +1,9 @@
 ﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Contracts;
 using Backlang.Driver.Compiling.Stages;
+using Backlang.Driver.Compiling.Stages.CompilationStages;
+using Backlang.Driver.Compiling.Stages.ExpandingStages;
+using Backlang.Driver.Compiling.Stages.InitStages;
 
 namespace Backlang.Driver;
 
@@ -20,16 +24,8 @@ public class CompilerDriver
                _.Add<EmitTreeStage>();
            });
 
-           cfg.When(_ => !hasError(_.Messages) && _.Target != "dotnet", _ => {
-               _.Add<PluginSystemStage>();
-           });
-
            cfg.When(_ => !hasError(_.Messages), _ => {
-               _.Add<InitTypeSystemStage>();
-           });
-
-           cfg.When(_ => _.References.Any(), _ => {
-               _.Add<InitReferencesStage>();
+               _.Add<InitStage>();
            });
 
            cfg.When(_ => !hasError(_.Messages), _ => {

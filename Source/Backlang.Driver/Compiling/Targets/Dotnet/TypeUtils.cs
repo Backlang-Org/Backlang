@@ -13,6 +13,11 @@ public static class TypeUtils
 
     public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, QualifiedName type)
     {
+        if (type.Qualifier is PointerName pn)
+        {
+            return new PointerType(ImportType(_assemblyDefinition, pn.ElementName));
+        }
+
         return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());
     }
 
