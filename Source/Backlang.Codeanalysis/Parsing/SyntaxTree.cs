@@ -212,21 +212,14 @@ public static class SyntaxTree
         return Factory.Call(Symbols.Union, LNode.List(Factory.Id(name)).Add(Factory.AltList(members)));
     }
 
-    public static LNode Using(LNode from, LNode to)
+    public static LNode Using(LNode expr)
     {
-        var args = new LNodeList();
-
-        if (!from.Calls("#error") && from.Name != LNode.Missing.Name)
+        if(!expr.Calls(CodeSymbols.As)) // TODO: throw error in intermediate stage when has only one arg
         {
-            args.Add(from);
+            return Factory.Call(CodeSymbols.UsingStmt, LNode.Missing);
         }
 
-        if (!to.Calls("#error") && to.Name != LNode.Missing.Name)
-        {
-            args.Add(to);
-        }
-
-        return Factory.Call(CodeSymbols.UsingStmt, args);
+        return Factory.Call(CodeSymbols.UsingStmt, LNode.List(expr[0], expr[1]));
     }
 
     public static LNode When(LNode binOp, LNode rightHand, LNode body)
