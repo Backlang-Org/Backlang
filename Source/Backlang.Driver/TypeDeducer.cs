@@ -49,7 +49,7 @@ public static class TypeDeducer
         }
     }
 
-    public static void NotExpectType(LNode node, Scope scope, CompilerContext context, IType expectedType)
+    public static IType NotExpectType(LNode node, Scope scope, CompilerContext context, IType expectedType)
     {
         var deducedType = Deduce(node, scope, context);
 
@@ -57,12 +57,14 @@ public static class TypeDeducer
         {
             context.AddError(node, $"{expectedType} is not allowed here");
         }
+
+        return deducedType;
     }
 
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context)
     {
         if (node.Calls(CodeSymbols.Add) || node.Calls(CodeSymbols.Mul)
-                || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub))
+                || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) || node.Calls(CodeSymbols.AndBits) || node.Calls(CodeSymbols.OrBits))
         {
             return DeduceBinaryHelper(node, scope, context);
         }
@@ -107,6 +109,14 @@ public static class TypeDeducer
             ExpectType(node.Args[0], scope, context, context.Environment.Boolean);
 
             return context.Environment.Boolean;
+        }
+        else if (node.Calls(CodeSymbols.NotBits))
+        {
+            return Deduce(node.Args[0], scope, context);
+        }
+        else if (node.Calls(CodeSymbols._Negate))
+        {
+            return NotExpectType(node.Args[0], scope, context, context.Environment.Boolean);
         }
 
         return null;
