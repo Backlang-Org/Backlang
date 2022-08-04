@@ -32,7 +32,7 @@ public class Scope
     {
         item = (T)_items.FirstOrDefault(i => i.Name == name);
 
-        if (Parent != null)
+        if (item == null && Parent != null)
         {
             if (!Parent.TryGet(name, out item))
             {
