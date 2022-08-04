@@ -16,33 +16,48 @@ public static class TypeDeducer
         {
             return ImplementationStage.GetLiteralType(node, context.Binder);
         }
-
-        if (node.Calls(CodeSymbols.Add) || node.CallsMin(CodeSymbols.Mul, 2)
-            || node.Calls(CodeSymbols.Div)
-            || node.Calls(CodeSymbols.Sub))
+        else if (node.ArgCount == 1)
         {
-            return DeduceBinary(node, scope, context);
-        }
-
-        if (node.Calls(CodeSymbols._AddressOf))
-        {
-            var inner = Deduce(node.Args[0], scope, context);
-
-            return inner.MakePointerType(PointerKind.Transient);
-        }
-        if (node.Calls(CodeSymbols.Mul))
-        {
-            var t = Deduce(node.Args[0], scope, context);
-
-            if (t is PointerType pt)
+            if (node.Calls(CodeSymbols._AddressOf))
             {
-                return pt.ElementType;
+                var inner = Deduce(node.Args[0], scope, context);
+
+                return inner.MakePointerType(PointerKind.Transient);
             }
+            else if (node.Calls(CodeSymbols.Mul))
+            {
+                var t = Deduce(node.Args[0], scope, context);
 
-            context.AddError(node, "Cannot dereference non pointer type");
+                if (t is PointerType pt)
+                {
+                    return pt.ElementType;
+                }
+
+                context.AddError(node, "Cannot dereference non pointer type");
+            }
         }
+        else if (node.ArgCount == 2)
+        {
+            if (node.Calls(CodeSymbols.Add) || node.Calls(CodeSymbols.Mul)
+                || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub))
+            {
+                return DeduceBinary(node, scope, context);
+            }
+            else if (node.Calls(CodeSymbols.LT)
+                || node.Calls(CodeSymbols.GT) || node.Calls(CodeSymbols.LE)
+                || node.Calls(CodeSymbols.GE))
+            {
+                NotExpectType(node[0], scope, context, context.Environment.Boolean);
+                NotExpectType(node[1], scope, context, context.Environment.Boolean);
 
-        if (node.IsId)
+                return context.Environment.Boolean;
+            }
+            else if (node.Calls(CodeSymbols.Eq) || node.Calls(CodeSymbols.NotEq))
+            {
+                return context.Environment.Boolean;
+            }
+        }
+        else if (node.IsId)
         {
             if (scope.TryGet<ScopeItem>(node.Name.Name, out var item))
             {
@@ -57,13 +72,23 @@ public static class TypeDeducer
         return null;
     }
 
-    public static void ExpectType(LNode condition, Scope scope, CompilerContext context, IType expectedType)
+    public static void ExpectType(LNode node, Scope scope, CompilerContext context, IType expectedType)
     {
-        var deducedType = Deduce(condition, scope, context);
+        var deducedType = Deduce(node, scope, context);
 
         if (deducedType != expectedType)
         {
-            context.AddError(condition, $"Type Mismatch. Expected {expectedType}, got {deducedType}");
+            context.AddError(node, $"Type Mismatch. Expected {expectedType}, got {deducedType}");
+        }
+    }
+
+    public static void NotExpectType(LNode node, Scope scope, CompilerContext context, IType expectedType)
+    {
+        var deducedType = Deduce(node, scope, context);
+
+        if (deducedType == expectedType)
+        {
+            context.AddError(node, $"{expectedType} is not allowed here");
         }
     }
 
