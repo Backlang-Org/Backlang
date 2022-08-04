@@ -125,7 +125,48 @@ public static class TypeDeducer
             var qualified = ConversionUtils.GetQualifiedName(node);
             var resolved = context.Binder.ResolveTypes(qualified).FirstOrDefault();
 
+            if (resolved == null)
+            {
+                var left = Deduce(node.Args[0], scope, context); //Todo: implement deducing for members
+            }
+
             return resolved;
+        }
+        else if (node.Calls(CodeSymbols.ColonColon))
+        {
+            var type = Deduce(node.Args[0], scope, context);
+            var fnName = node.Args[1].Name;
+
+            var methods = type.Methods.Where(_ => _.Name.ToString() == fnName.ToString());
+            var deducedArgs = new List<IType>();
+
+            foreach (var arg in node.Args[1].Args)
+            {
+                deducedArgs.Add(Deduce(arg, scope, context));
+            }
+
+            methods = methods.Where(_ => _.Parameters.Count == deducedArgs.Count);
+
+            if (methods.Any())
+            {
+                foreach (var method in methods)
+                {
+                    var methodPs = string.Join(',',
+                        method.Parameters.Select(_ => _.Type.FullName.ToString()));
+
+                    var deducedPs = string.Join(',',
+                        deducedArgs.Select(_ => _.FullName.ToString()));
+
+                    if (methodPs == deducedPs)
+                    {
+                        return method.ReturnParameter.Type;
+                    }
+                }
+            }
+            else
+            {
+                context.AddError(node, $"Mismatching Parameter count: {type.FullName.ToString() + "::" + fnName}()");
+            }
         }
 
         return null;
