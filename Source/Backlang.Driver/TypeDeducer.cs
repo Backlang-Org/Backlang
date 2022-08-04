@@ -44,11 +44,11 @@ public static class TypeDeducer
         {
             return ImplementationStage.GetLiteralType(node, context, scope);
         }
-        else if (node.ArgCount == 1)
+        else if (node.ArgCount == 1 && node.Name.Name.StartsWith("'"))
         {
             return DeduceUnary(node, scope, context);
         }
-        else if (node.ArgCount == 2)
+        else if (node.ArgCount == 2 && node.Name.Name.StartsWith("'"))
         {
             return DeduceBinary(node, scope, context);
         }

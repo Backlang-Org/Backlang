@@ -176,7 +176,10 @@ public static class MethodBodyCompiler
         if (param != null)
         {
             var index = clrMethod.Parameters.IndexOf(param);
-            ilProcessor.Emit(OpCodes.Ldarg, index + 1);
+
+            if (!clrMethod.IsStatic) index++;
+
+            ilProcessor.Emit(OpCodes.Ldarg, index);
         }
         else
         {

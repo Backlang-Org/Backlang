@@ -14,21 +14,16 @@ public class IdentifierExpressionImplementor : IExpressionImplementor
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope)
     {
-        scope.TryGet<FunctionScopeItem>(node.Name.Name, out var fn);
+        scope.TryGet<ScopeItem>(node.Name.Name, out var item);
 
-        var par = fn.Method.Parameters.Where(_ => _.Name.ToString() == node.Name.Name);
-
-        if (!par.Any())
+        if (item is ParameterScopeItem psi)
         {
-            var localPrms = block.Parameters.Where(_ => _.Tag.Name.ToString() == node.Name.Name);
-            if (localPrms.Any())
-            {
-                return block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(localPrms.First().Type, localPrms.First().Tag.Name)));
-            }
+            return block.AppendInstruction(Instruction.CreateLoadArg(psi.Parameter));
         }
-        else
+
+        if (item is VariableScopeItem vsi)
         {
-            return block.AppendInstruction(Instruction.CreateLoadArg(par.First()));
+            return block.AppendInstruction(Instruction.CreateLoadLocal(vsi.Parameter));
         }
 
         return null;

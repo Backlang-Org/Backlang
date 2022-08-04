@@ -30,7 +30,7 @@ public class Scope
     public bool TryGet<T>(string name, out T? item)
         where T : ScopeItem
     {
-        item = (T)_items.FirstOrDefault(i => i.Name == name);
+        item = (T)_items.FirstOrDefault(i => i is T && i.Name == name);
 
         if (item == null && Parent != null)
         {
