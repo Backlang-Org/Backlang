@@ -1,14 +1,42 @@
-﻿using Backlang.Contracts;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Driver.Compiling.Stages.CompilationStages;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Loyc;
 using Loyc.Syntax;
+using System.Collections.Immutable;
 
 namespace Backlang.Driver;
 
 public static class TypeDeducer
 {
+    public static readonly ImmutableDictionary<string, Symbol> TypenameTable = new Dictionary<string, Symbol>()
+    {
+        ["obj"] = CodeSymbols.Object,
+        ["none"] = CodeSymbols.Void,
+
+        ["bool"] = CodeSymbols.Bool,
+
+        ["u8"] = CodeSymbols.UInt8,
+        ["u16"] = CodeSymbols.UInt16,
+        ["u32"] = CodeSymbols.UInt32,
+        ["u64"] = CodeSymbols.UInt64,
+
+        ["i8"] = CodeSymbols.Int8,
+        ["i16"] = CodeSymbols.Int16,
+        ["i32"] = CodeSymbols.Int32,
+        ["i64"] = CodeSymbols.Int64,
+
+        ["f16"] = Symbols.Float16,
+        ["f32"] = Symbols.Float32,
+        ["f64"] = Symbols.Float64,
+
+        ["char"] = CodeSymbols.Char,
+        ["string"] = CodeSymbols.String,
+    }.ToImmutableDictionary();
+
     //ToDo: check for implicit cast
     public static IType Deduce(LNode node, Scope scope, CompilerContext context)
     {
@@ -64,7 +92,8 @@ public static class TypeDeducer
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context)
     {
         if (node.Calls(CodeSymbols.Add) || node.Calls(CodeSymbols.Mul)
-                || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) || node.Calls(CodeSymbols.AndBits) || node.Calls(CodeSymbols.OrBits))
+                || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) || node.Calls(CodeSymbols.AndBits)
+                || node.Calls(CodeSymbols.OrBits) || node.Calls(CodeSymbols.Xor) || node.Calls(CodeSymbols.Mod))
         {
             return DeduceBinaryHelper(node, scope, context);
         }
@@ -80,6 +109,23 @@ public static class TypeDeducer
         else if (node.Calls(CodeSymbols.Eq) || node.Calls(CodeSymbols.NotEq))
         {
             return context.Environment.Boolean;
+        }
+        else if (node.Calls(CodeSymbols.As))
+        {
+            if (TypenameTable.ContainsKey(node.Args[1].Name.Name))
+            {
+                var typName = LNode.Id(TypenameTable[node.Args[1].Name.Name]);
+                return Deduce(typName, scope, context);
+            }
+
+            return Deduce(node.Args[1], scope, context);
+        }
+        else if (node.Calls(CodeSymbols.Dot))
+        {
+            var qualified = ConversionUtils.GetQualifiedName(node);
+            var resolved = context.Binder.ResolveTypes(qualified).FirstOrDefault();
+
+            return resolved;
         }
 
         return null;
@@ -129,6 +175,19 @@ public static class TypeDeducer
 
         if (left != right)
         {
+            if (left.IsPointerType())
+            {
+                ExpectType(node.Args[1], scope, context, context.Environment.Int32);
+
+                return left;
+            }
+            else if (right.IsPointerType())
+            {
+                ExpectType(node.Args[0], scope, context, context.Environment.Int32);
+
+                return right;
+            }
+
             context.AddError(node, "Type mismatch");
             return null;
         }
