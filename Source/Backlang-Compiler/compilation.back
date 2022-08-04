@@ -1,6 +1,5 @@
 public static func main() {
-	if(true)
-	{
-		let mut chrisIQ: i32 = 155;
-	}
+	System.Console::WriteLine("Hello sttaic");
+
+	let m = System.Int32::Parse("42");
 }

@@ -8,7 +8,6 @@ using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Loyc;
 using Loyc.Syntax;
@@ -35,7 +34,8 @@ public partial class ImplementationStage
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
-        new UnaryExpressionImplementor()
+        new UnaryExpressionImplementor(),
+        new StaticCallImplementor()
     }.ToImmutableList();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
@@ -102,22 +102,12 @@ public partial class ImplementationStage
     public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node,
         IType elementType, IMethod method, CompilerContext context)
     {
-        if (node.Calls(CodeSymbols.ColonColon))
-        {
-            var callee = node.Args[1];
-            var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
-
-            var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
-
-            AppendCall(context, block, callee, type.Methods, callee.Name.Name);
-        }
-
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
         return fetch == null ? null : fetch.Handle(node, block, elementType, method, context);
     }
 
-    public static void AppendCall(CompilerContext context, BasicBlockBuilder block,
+    public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
         LNode node, IEnumerable<IMethod> methods, string methodName = null)
     {
         var argTypes = new List<IType>();
@@ -143,7 +133,7 @@ public partial class ImplementationStage
 
         var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
-        if (method == null) return;
+        if (method == null) return null;
 
         if (!method.IsStatic)
         {
@@ -152,7 +142,7 @@ public partial class ImplementationStage
 
         var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
 
-        block.AppendInstruction(call);
+        return block.AppendInstruction(call);
     }
 
     private static void ConvertMethodBodies(CompilerContext context)
