@@ -13,7 +13,7 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed partial class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
+    public static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
     {
         [CodeSymbols.Bool] = typeof(bool),
 

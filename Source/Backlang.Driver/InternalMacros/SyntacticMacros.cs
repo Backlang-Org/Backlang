@@ -1,5 +1,4 @@
 ﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
 using LeMP;
 using Loyc;
 using Loyc.Syntax;
@@ -9,30 +8,6 @@ namespace Backlang.Driver.InternalMacros;
 [ContainsMacros]
 public static class SyntacticMacros
 {
-    public static readonly Dictionary<Symbol, string> TypenameTable = new()
-    {
-        [CodeSymbols.Object] = "obj",
-
-        [CodeSymbols.Bool] = "bool",
-
-        [CodeSymbols.UInt8] = "u8",
-        [CodeSymbols.UInt16] = "u16",
-        [CodeSymbols.UInt32] = "u32",
-        [CodeSymbols.UInt64] = "u64",
-
-        [CodeSymbols.Int8] = "i8",
-        [CodeSymbols.Int16] = "i16",
-        [CodeSymbols.Int32] = "i32",
-        [CodeSymbols.Int64] = "i64",
-
-        [Symbols.Float16] = "f16",
-        [Symbols.Float32] = "f32",
-        [Symbols.Float64] = "f64",
-
-        [CodeSymbols.Char] = "char",
-        [CodeSymbols.String] = "string",
-    };
-
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
@@ -172,30 +147,6 @@ public static class SyntacticMacros
     public static LNode AndEquals(LNode @operator, IMacroContext context)
     {
         return ConvertToAssignment(@operator, CodeSymbols.And);
-    }
-
-    [LexicalMacro("let k = 42;", "Type Inference For Let", "#var", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode TypeInferenceForLet(LNode node, IMacroContext context)
-    {
-        if (node.ArgCount == 0)
-        {
-            return node;
-        }
-
-        if (node is (_, var typename, ("'=", _, var value)))
-        {
-            if (typename == LNode.Missing)
-            {
-                if (TypenameTable.ContainsKey(value.Name))
-                {
-                    var newType = SyntaxTree.Type(TypenameTable[value.Name], LNode.List());
-
-                    return node.WithArgChanged(0, newType);
-                }
-            }
-        }
-
-        return node;
     }
 
     [LexicalMacro("**", "Power Operator", "'**", Mode = MacroMode.MatchIdentifierOrCall)]

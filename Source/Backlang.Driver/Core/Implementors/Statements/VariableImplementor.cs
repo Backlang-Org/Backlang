@@ -19,12 +19,17 @@ public class VariableImplementor : IStatementImplementor
         var decl = node.Args[1];
 
         var name = ConversionUtils.GetQualifiedName(node.Args[0]);
+
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
+        if (elementType == null)
+        {
+            elementType = TypeDeducer.Deduce(decl.Args[1], scope, context);
+        }
 
         var varname = decl.Args[0].Name.Name;
         var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
 
-        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = isMutable }))
+        if (scope.Add(new VariableScopeItem { Name = varname, IsMutable = isMutable, Parameter = new Parameter(elementType) }))
         {
             block.AppendParameter(new BlockParameter(elementType, varname));
         }
