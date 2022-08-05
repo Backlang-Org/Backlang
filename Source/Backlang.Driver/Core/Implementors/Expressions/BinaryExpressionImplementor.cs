@@ -5,7 +5,7 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class BinaryExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.ArgCount == 2 && !node.Calls(CodeSymbols.ColonColon);
+    public bool CanHandle(LNode node) => node.ArgCount == 2 && !node.Calls(CodeSymbols.ColonColon) && node.Name.Name.StartsWith("'");
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope)

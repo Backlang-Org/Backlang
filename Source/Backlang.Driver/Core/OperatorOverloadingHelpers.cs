@@ -10,7 +10,7 @@ public static class OperatorOverloadingHelpers
         ["'*"] = "op_Multiply",
         ["'%"] = "op_Modulus",
 
-        ["'!"] = "op_Not",
+        ["'!"] = "op_LogicalNot",
     }.ToImmutableDictionary();
 
     public static bool TryGetOperator(this IType type, string op, out IMethod opMethod, params IType[] args)

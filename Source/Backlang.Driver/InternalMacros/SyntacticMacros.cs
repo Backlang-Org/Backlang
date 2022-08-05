@@ -178,7 +178,7 @@ public static class SyntacticMacros
             ["mul"] = "Multiply",
             ["div"] = "Division",
             ["mod"] = "Modulus",
-            ["not"] = "Not",
+            ["logical_not"] = "LogicalNot",
         };
     }
 }
