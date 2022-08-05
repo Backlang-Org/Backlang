@@ -42,28 +42,27 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
-        var types = new ConcurrentBag<TypeDefinition>();
+        var typeMap = new ConcurrentDictionary<DescribedType, TypeDefinition>();
 
-        Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
+        foreach (var type in _assembly.Types.Cast<DescribedType>())
+        {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
-                type.Name.ToString(), TypeAttributes.Class);
+               type.Name.ToString(), TypeAttributes.Class);
+            _assemblyDefinition.MainModule.Types.Add(clrType);
 
-            ConvertCustomAttributes(type, clrType);
-            ApplyModifiers(type, clrType);
-            SetBaseType(type, clrType);
-            ConvertFields(type, clrType);
-            ConvertProperties(type, clrType);
-            ConvertMethods(type, clrType);
+            typeMap.AddOrUpdate(type, (_) => clrType, (_, __) => clrType);
+        }
 
-            types.Add(clrType);
+        Parallel.ForEachAsync(typeMap.AsParallel(), (KeyValuePair, ct) => {
+            ConvertCustomAttributes(KeyValuePair.Key, KeyValuePair.Value);
+            ApplyModifiers(KeyValuePair.Key, KeyValuePair.Value);
+            SetBaseType(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertFields(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertProperties(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertMethods(KeyValuePair.Key, KeyValuePair.Value);
 
             return ValueTask.CompletedTask;
         }).Wait();
-
-        foreach (var type in types)
-        {
-            _assemblyDefinition.MainModule.Types.Add(type);
-        }
 
         AdjustBaseTypesAndInterfaces();
 
@@ -377,7 +376,6 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (DescribedField field in type.Fields)
         {
-            //ToDo: fix fieldtype emit: (type is not available)
             var fieldType = Resolve(field.FieldType.FullName);
             var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
