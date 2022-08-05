@@ -55,14 +55,19 @@ implement Window {
         return 1;
     }
 
+    public operator func logical_not(wndw: Window) -> bool {
+        return true;
+    }
     
+    operator func deref(wndw : Window) -> Window {
+        return *wndw;
+    }
 }
 
 public static func main() {
 
     let w : Window = none;
-    let nn = w - 1;
-    let n = w + 1;
+    let n = *w;
 
     print("hello world");
 }

@@ -9,44 +9,44 @@ public enum MessageSeverity
 
 public sealed class Message
 {
-    public Message(SourceFile<StreamCharSource> document, MessageSeverity severity, string text, int line, int column)
+    public Message(MessageSeverity severity, string text, SourceRange range)
     {
-        Document = document;
+        Document = (SourceFile<StreamCharSource>)range.Source;
         Severity = severity;
         Text = text;
-        Column = column;
-        Line = line;
+        Range = range;
     }
 
-    public int Column { get; set; }
+    public SourceRange Range { get; set; }
+
     public SourceFile<StreamCharSource> Document { get; }
-    public int Line { get; set; }
+
     public MessageSeverity Severity { get; set; }
     public string Text { get; set; }
 
-    public static Message Error(SourceFile<StreamCharSource> document, string message, int line, int column)
+    public static Message Error(string message, SourceRange range)
     {
-        return new Message(document, MessageSeverity.Error, message, line, column);
+        return new Message(MessageSeverity.Error, message, range);
     }
 
     public static Message Error(string message)
     {
-        return Error(null, message, -1, -1);
+        return Error(message, SourceRange.Synthetic);
     }
 
-    public static Message Info(SourceFile<StreamCharSource> document, string message, int line, int column)
+    public static Message Info(string message, SourceRange range)
     {
-        return new Message(document, MessageSeverity.Info, message, line, column);
+        return new Message(MessageSeverity.Info, message, range);
     }
 
-    public static Message Warning(SourceFile<StreamCharSource> document, string message, int line, int column)
+    public static Message Warning(string message, SourceRange range)
     {
-        return new Message(document, MessageSeverity.Warning, message, line, column);
+        return new Message(MessageSeverity.Warning, message, range);
     }
 
     public override string ToString()
     {
         if (Document == null) return Text;
-        return $"{Document.FileName}:{Line}:{Column} {Text}";
+        return $"{Document.FileName}:{Range.Start.Line}:{Range.Start.Column} {Text}";
     }
 }

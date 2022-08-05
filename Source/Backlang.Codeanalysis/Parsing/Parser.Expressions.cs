@@ -21,14 +21,14 @@ public sealed partial class Parser
         {"d", Symbols.Float64},
     };
 
-    public void AddError(string message, int line, int column)
+    public void AddError(string message, SourceRange range)
     {
-        Messages.Add(Message.Error(Document, message, line, column));
+        Messages.Add(Message.Error(message, range));
     }
 
     public void AddError(string message)
     {
-        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
+        Messages.Add(Message.Error(message, new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length)));
     }
 
     internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
@@ -157,8 +157,7 @@ public sealed partial class Parser
             }
             else
             {
-                Messages.Add(Message.Error(Document, $"Unknown Literal {Iterator.Current.Text}",
-                    Iterator.Current.Line, Iterator.Current.Column));
+                AddError($"Unknown Literal {Iterator.Current.Text}");
 
                 result = LNode.Missing;
             }

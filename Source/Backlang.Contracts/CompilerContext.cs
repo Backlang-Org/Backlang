@@ -58,6 +58,6 @@ public sealed class CompilerContext
     {
         if (node.Range.Source is not SourceFile<StreamCharSource>) return;
 
-        Messages.Add(Message.Error((SourceFile<StreamCharSource>)node.Range.Source, msg, node.Range.Start.Line, node.Range.Start.Column));
+        Messages.Add(Message.Error(msg, node.Range));
     }
 }

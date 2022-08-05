@@ -1,5 +1,6 @@
 using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
+using Loyc.Syntax;
 using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -163,7 +164,8 @@ public sealed class Lexer : BaseLexer
 
         if (Current() == '\n' || Current() == '\r')
         {
-            Messages.Add(Message.Error(_document, $"Unterminated CharLiteral", _line, oldColumn));
+            var range = new SourceRange(_document, _column, 1);
+            Messages.Add(Message.Error($"Unterminated CharLiteral", range));
 
             return Token.Invalid;
         }
@@ -214,7 +216,8 @@ public sealed class Lexer : BaseLexer
         {
             if (Current() == '\n' || Current() == '\r')
             {
-                Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
+                var range = new SourceRange(_document, _column, 1);
+                Messages.Add(Message.Error($"Unterminated String", range));
             }
 
             Advance();
@@ -325,7 +328,8 @@ public sealed class Lexer : BaseLexer
                 }
                 else
                 {
-                    Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
+                    var range = new SourceRange(_document, _column, 1);
+                    Messages.Add(Message.Error("Multiline comment is not closed.", range));
                     return;
                 }
 

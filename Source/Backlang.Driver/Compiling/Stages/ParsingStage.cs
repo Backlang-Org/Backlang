@@ -17,7 +17,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
             }
             else
             {
-                context.Messages.Add(Message.Error(null, $"File '{filename}' does not exists", 0, 0));
+                context.Messages.Add(Message.Error($"File '{filename}' does not exists", SourceRange.Synthetic));
             }
 
             return ValueTask.CompletedTask;
