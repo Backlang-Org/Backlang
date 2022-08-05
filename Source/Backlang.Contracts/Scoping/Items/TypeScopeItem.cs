@@ -1,7 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-
-namespace Backlang.Contracts.Scoping.Items;
+﻿namespace Backlang.Contracts.Scoping.Items;
 
 public class TypeScopeItem : ScopeItem
 {

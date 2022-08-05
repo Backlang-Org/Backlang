@@ -1,8 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Contracts;
-using Backlang.Core.CompilerService;
+﻿using Backlang.Core.CompilerService;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 

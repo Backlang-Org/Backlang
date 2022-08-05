@@ -1,10 +1,4 @@
-using Backlang.Contracts;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Loyc.Syntax;
-using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages;
 

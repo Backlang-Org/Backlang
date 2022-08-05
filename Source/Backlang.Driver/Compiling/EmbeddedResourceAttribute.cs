@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-
-namespace Backlang.Driver.Compiling;
+﻿namespace Backlang.Driver.Compiling;
 
 public class EmbeddedResourceAttribute : IAttribute
 {

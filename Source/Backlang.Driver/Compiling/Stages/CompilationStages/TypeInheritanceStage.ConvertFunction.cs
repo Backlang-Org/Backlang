@@ -1,12 +1,6 @@
-using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
 using Backlang.Contracts.Scoping.Items;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
-using Loyc.Syntax;
 using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Stages;

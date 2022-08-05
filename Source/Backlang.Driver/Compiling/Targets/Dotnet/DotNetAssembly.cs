@@ -1,7 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
+﻿using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;

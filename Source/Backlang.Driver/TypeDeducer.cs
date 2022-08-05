@@ -1,15 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
-using Backlang.Driver.Compiling.Stages.CompilationStages;
-using Backlang.Driver.Core;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Loyc;
-using Loyc.Syntax;
-using System.Collections.Immutable;
-
-namespace Backlang.Driver;
+﻿namespace Backlang.Driver;
 
 public static class TypeDeducer
 {

@@ -1,18 +1,9 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
-using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Loyc;
-using Loyc.Syntax;
-using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 

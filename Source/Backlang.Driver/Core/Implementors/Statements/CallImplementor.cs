@@ -1,10 +1,4 @@
-﻿using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Loyc.Syntax;
-using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
+﻿using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 

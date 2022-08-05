@@ -1,6 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Mono.Cecil;
+﻿using Mono.Cecil;
+using PointerType = Mono.Cecil.PointerType;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 

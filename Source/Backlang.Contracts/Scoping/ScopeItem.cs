@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-
-namespace Backlang.Contracts.Scoping;
+﻿namespace Backlang.Contracts.Scoping;
 
 public abstract class ScopeItem
 {

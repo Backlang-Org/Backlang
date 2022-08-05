@@ -1,7 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Loyc.Syntax;
-
-namespace Backlang.Driver;
+﻿namespace Backlang.Driver;
 public static class ExtensionUtils
 {
     public static LNode dot(this string s, string other)

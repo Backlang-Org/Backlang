@@ -1,7 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+﻿using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 

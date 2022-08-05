@@ -1,12 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Contracts.Scoping;
-using CommandLine;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Loyc.Syntax;
-
-namespace Backlang.Contracts;
+﻿namespace Backlang.Contracts;
 
 #nullable disable
 

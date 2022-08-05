@@ -1,6 +1,4 @@
-﻿using Loyc.Syntax;
-
-namespace Backlang.Driver;
+﻿namespace Backlang.Driver;
 
 public static class LNodeDeconstructors
 {

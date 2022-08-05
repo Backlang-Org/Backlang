@@ -1,14 +1,5 @@
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Loyc;
-using Loyc.Syntax;
-using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 

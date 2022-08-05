@@ -1,10 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using System.Text;
-
-namespace Backlang.Driver;
+﻿namespace Backlang.Driver;
 
 public static class Utils
 {
