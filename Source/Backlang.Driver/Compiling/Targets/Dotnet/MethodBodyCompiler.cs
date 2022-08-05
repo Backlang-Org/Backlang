@@ -393,9 +393,19 @@ public static class MethodBodyCompiler
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
     {
         //ToDo: refactor to improve code
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var methodParams = string.Join(',', method.Parameters.Select(_ => NormalizeTypename(_.Type.FullName.ToString())));
         var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
         return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
+    }
+
+    private static string NormalizeTypename(string str)
+    {
+        if (str.StartsWith("."))
+        {
+            return str.Substring(1);
+        }
+
+        return str;
     }
 }
