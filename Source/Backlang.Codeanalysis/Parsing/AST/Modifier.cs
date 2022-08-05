@@ -18,22 +18,13 @@ public sealed class Modifier
         { TokenType.Extern, CodeSymbols.Extern },
     }.ToImmutableDictionary();
 
-    public static LNode Parse(TokenIterator iterator, Parser parser)
-    {
-        var currentToken = iterator.Current;
-        var mod = SyntaxTree.Factory.Id(possibleModifiers[currentToken.Type]);
-        iterator.NextToken();
-
-        return mod.WithRange(currentToken);
-    }
-
     public static bool TryParse(Parser parser, out LNodeList node)
     {
         var modifiers = new LNodeList();
 
         while (possibleModifiers.ContainsKey(parser.Iterator.Current.Type))
         {
-            var modifier = Parse(parser.Iterator, parser);
+            var modifier = ParseSingle(parser.Iterator, parser);
             if (modifiers.Contains(modifier))
             {
                 parser.AddError($"Modifier '{modifier.Name.Name}' is already applied");
@@ -45,5 +36,14 @@ public sealed class Modifier
         node = modifiers;
 
         return modifiers.Count > 0;
+    }
+
+    private static LNode ParseSingle(TokenIterator iterator, Parser parser)
+    {
+        var currentToken = iterator.Current;
+        var mod = SyntaxTree.Factory.Id(possibleModifiers[currentToken.Type]);
+        iterator.NextToken();
+
+        return mod.WithRange(currentToken);
     }
 }

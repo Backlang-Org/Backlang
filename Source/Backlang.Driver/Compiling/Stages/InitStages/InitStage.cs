@@ -11,8 +11,8 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
         InitTypeSystem(context);
 
-        InitEmbeddedResources(context);
         InitReferences(context);
+        InitEmbeddedResources(context);
 
         return await next.Invoke(context);
     }

@@ -105,7 +105,7 @@ public static class SyntacticMacros
         return node;
     }
 
-    [LexicalMacro("target(CLR) {}", "Only Compile Code If CompilationTarget Is CLR", "target", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("target(dotnet) {}", "Only Compile Code If CompilationTarget Is Selected", "target", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode TargetMacro(LNode node, IMacroContext context)
     {
         var target = (string)context.ScopedProperties["Target"];
@@ -115,6 +115,8 @@ public static class SyntacticMacros
         {
             return node.Args[1];
         }
+
+        context.DropRemainingNodes = true;
 
         return LNode.Call((Symbol)"'{}");
     }
