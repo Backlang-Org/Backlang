@@ -1,16 +1,68 @@
-public static func main() -> i32 {
-	let n = default(i32);
+public interface IGame {
+    
+    func earlyInit() -> none;
 
-  println(default(i32));
+    func lateInit() -> none;
 
-  System.Console::WriteLine(greet("Chris"));
+    func input() -> none;
+    
+    func update() -> none;
 
+    //func render(ctx: DrawContext) -> none;
 
-  return 0;
 }
 
-public static func greet(name: string) -> string {
-  return "Morning " + name + "! :D";
+
+    public struct Vector2 {
+        let x: f32;
+        let y: f32;
+    }
+
+
+public struct Vector3 {
+    let x: f32;
+    let y: f32;
+    let z: f32;
 }
 
-class hh {}
+public abstract class Game : ILogic {
+
+}
+
+
+
+public class Window {
+    let mut title: string;
+    let width: i32;
+    let height: i32;
+    let mut targetFPS: i32 = 60;
+}
+
+implement Window {
+    /* does not work currently this.name
+    public constructor(title: string, width: i32, height: i32) {
+        this.title = title;
+        this.width = width;
+        this.height = height;
+    }
+    */
+
+    public func spawn() {
+        
+    }
+
+    public operator func add(left: Window, right: i32) -> i32 {
+        return 1;
+    }
+
+    
+}
+
+public static func main() {
+
+    let w : Window = none;
+    let nn = w - 1;
+    let n = w + 1;
+
+    print("hello world");
+}

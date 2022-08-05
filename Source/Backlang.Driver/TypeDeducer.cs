@@ -2,6 +2,7 @@
 using Backlang.Contracts;
 using Backlang.Contracts.Scoping;
 using Backlang.Driver.Compiling.Stages.CompilationStages;
+using Backlang.Driver.Core;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Loyc;
@@ -192,17 +193,20 @@ public static class TypeDeducer
 
     private static IType DeduceUnary(LNode node, Scope scope, CompilerContext context)
     {
+        var left = Deduce(node.Args[0], scope, context);
+
+        if (left.TryGetOperator(node.Name.Name, out var opMethod, left))
+        {
+            return opMethod.ReturnParameter.Type;
+        }
+
         if (node.Calls(CodeSymbols._AddressOf))
         {
-            var inner = Deduce(node.Args[0], scope, context);
-
-            return inner.MakePointerType(PointerKind.Transient);
+            return left.MakePointerType(PointerKind.Transient);
         }
         else if (node.Calls(CodeSymbols.Mul))
         {
-            var t = Deduce(node.Args[0], scope, context);
-
-            if (t is PointerType pt)
+            if (left is PointerType pt)
             {
                 return pt.ElementType;
             }
@@ -231,6 +235,11 @@ public static class TypeDeducer
     {
         var left = Deduce(node.Args[0], scope, context);
         var right = Deduce(node.Args[1], scope, context);
+
+        if (left.TryGetOperator(node.Name.Name, out var opMethod, left, right))
+        {
+            return opMethod.ReturnParameter.Type;
+        }
 
         if (left != right)
         {
