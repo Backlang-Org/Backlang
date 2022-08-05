@@ -20,6 +20,9 @@ public static class OperatorOverloadingHelpers
         ["'!"] = "op_LogicalNot",
         ["'-"] = "op_UnaryNegation",
         ["'~"] = "op_OnesComplement",
+
+        ["'*"] = "op_Deref",
+        ["'&"] = "op_AddressOf",
     }.ToImmutableDictionary();
 
     public static bool TryGetOperator(this IType type, string op, out IMethod opMethod, params IType[] args)

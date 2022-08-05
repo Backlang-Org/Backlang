@@ -188,6 +188,9 @@ public static class SyntacticMacros
             ["exclusive_or"] = "ExclusiveOr",
 
             ["bitwise_not"] = "OnesComplement",
+
+            ["deref"] = "Deref",
+            ["addrof"] = "AddressOf",
         };
     }
 }
