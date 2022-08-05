@@ -58,7 +58,7 @@ public static class SyntacticMacros
             var opMap = GetOpMap();
             if (fnName is (_, (_, var name)) && opMap.ContainsKey(name.Name.Name))
             {
-                var newTarget = SyntaxTree.Factory.Id("op_" + opMap[name.Name.Name]).WithRange(fnName.Range);
+                var newTarget = SyntaxTree.Type("op_" + opMap[name.Name.Name], LNode.List()).WithRange(fnName.Range);
                 return modChanged.WithArgChanged(1, newTarget);
             }
         }
