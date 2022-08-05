@@ -48,7 +48,7 @@ public static class SyntacticMacros
     [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
     {
-        var operatorAttribute = LNode.Id((Symbol)"#operator");
+        var operatorAttribute = SyntaxTree.Factory.Id((Symbol)"#operator");
         if (@operator.Attrs.Contains(operatorAttribute))
         {
             var newAttrs = new LNodeList() { LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static), LNode.Id(CodeSymbols.Operator) };
@@ -56,9 +56,9 @@ public static class SyntacticMacros
             var fnName = @operator.Args[1];
 
             var opMap = GetOpMap();
-            if (opMap.ContainsKey(fnName.Name.Name))
+            if (fnName is (_, (_, var name)) && opMap.ContainsKey(name.Name.Name))
             {
-                var newTarget = LNode.Id("op_" + opMap[fnName.Name.Name]);
+                var newTarget = SyntaxTree.Factory.Id("op_" + opMap[name.Name.Name]).WithRange(fnName.Range);
                 return modChanged.WithArgChanged(1, newTarget);
             }
         }
