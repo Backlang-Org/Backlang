@@ -25,10 +25,12 @@ public partial class ImplementationStage
         new DefaultExpressionImplementor(),
         new AddressExpressionImplementor(),
         new BinaryExpressionImplementor(),
+        new UnaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
         new ConstantExpressionEmitter(),
         new StaticCallImplementor(),
+
         new CallExpressionEmitter(), //should be added as last
     }.ToImmutableList();
 
