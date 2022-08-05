@@ -72,6 +72,9 @@ public partial class ImplementationStage
             if (_implementations.ContainsKey(node.Name))
             {
                 block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
+
+                if (block == null)
+                    return block;
             }
             else if (node.Calls("print"))
             {

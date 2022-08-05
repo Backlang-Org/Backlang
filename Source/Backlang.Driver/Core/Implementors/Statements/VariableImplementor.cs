@@ -22,16 +22,17 @@ public class VariableImplementor : IStatementImplementor
 
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
 
-        var deducedType = TypeDeducer.Deduce(decl.Args[1], scope, context);
+        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context);
 
         if (elementType == null)
         {
-            elementType = deducedType;
+            elementType = deducedValueType;
         }
         else
         {
             //ToDo: check for implicit cast
-            context.AddError(node, $"Type mismatch {elementType} {deducedType}");
+            if (deducedValueType == null && elementType != deducedValueType)
+                context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
         }
 
         var varname = decl.Args[0].Name.Name;
@@ -51,7 +52,7 @@ public class VariableImplementor : IStatementImplementor
             context.AddError(decl.Args[0], $"{varname} already declared");
         }
 
-        if (deducedType == null) return null;
+        if (deducedValueType == null) return null;
 
         ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope);
 

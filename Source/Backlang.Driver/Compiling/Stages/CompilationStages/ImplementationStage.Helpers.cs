@@ -32,6 +32,8 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         [Symbols.Float16] = typeof(Half),
         [Symbols.Float32] = typeof(float),
         [Symbols.Float64] = typeof(double),
+
+        [CodeSymbols.Void] = typeof(void),
     }.ToImmutableDictionary();
 
     public enum ConditionalJumpKind
