@@ -178,7 +178,16 @@ public static class SyntacticMacros
             ["mul"] = "Multiply",
             ["div"] = "Division",
             ["mod"] = "Modulus",
+
             ["logical_not"] = "LogicalNot",
+
+            ["neg"] = "UnaryNegation",
+
+            ["bitwise_and"] = "BitwiseAnd",
+            ["bitwise_or"] = "BitwiseOr",
+            ["exclusive_or"] = "ExclusiveOr",
+
+            ["bitwise_not"] = "OnesComplement",
         };
     }
 }
