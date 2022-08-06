@@ -10,14 +10,16 @@ public class MifTranslator
         var wordWidth = (int)file.Options["WIDTH"];
         var wordCount = (int)file.Options["DEPTH"];
 
-        var byteCount = wordWidth <= 8 ? wordCount : wordCount * wordWidth;
-        var buffer = new byte[byteCount];
+        var byteCount = wordWidth / 8;
+        var bufferLength = wordWidth <= 8 ? wordCount : wordCount * wordWidth / 8;
+
+        var buffer = new long[wordCount];
 
         foreach (var rule in file.DataRules)
         {
             if (rule is SimpleDataRule sdr)
             {
-                SetBytes(wordWidth, buffer, sdr.Address, sdr.Value);
+                buffer[sdr.Address] = sdr.Value;
             }
             else if (rule is RangeDataRule rdr)
             {
@@ -25,12 +27,14 @@ public class MifTranslator
 
                 foreach (var addr in addrRange)
                 {
-                    SetBytes(wordWidth, buffer, addr, rdr.Value);
+                    buffer[addr] = rdr.Value;
                 }
             }
         }
 
-        return buffer;
+        return buffer
+            .SelectMany(_ => BitConverter.GetBytes(_).Take((int)byteCount))
+            .ToArray();
     }
 
     private static void SetBytes(int wordWidth, byte[] buffer, int address, long value)
