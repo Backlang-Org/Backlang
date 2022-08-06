@@ -1,7 +1,4 @@
-﻿-- comment line
---
-
-WIDTH=8; -- word width
+﻿WIDTH=8; -- word width
 DEPTH=256; -- number of words
 
 ADDRESS_RADIX=HEX;
