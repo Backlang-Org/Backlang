@@ -66,7 +66,7 @@ public class DotNetAssembly : ITargetAssembly
         CompileBodys();
 
         Parallel.ForEach(_assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>(), (er) => {
-            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, File.OpenRead(er.Filename));
+            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, er.Strm);
 
             _assemblyDefinition.MainModule.Resources.Add(err);
         });

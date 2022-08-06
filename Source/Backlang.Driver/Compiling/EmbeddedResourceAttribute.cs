@@ -2,14 +2,14 @@
 
 public class EmbeddedResourceAttribute : IAttribute
 {
-    public EmbeddedResourceAttribute(string name, string filename)
+    public EmbeddedResourceAttribute(string name, Stream strm)
     {
         Name = name;
-        Filename = filename;
+        Strm = strm;
     }
 
     public string Name { get; set; }
-    public string Filename { get; set; }
+    public Stream Strm { get; }
 
     public IType AttributeType => null;
 }

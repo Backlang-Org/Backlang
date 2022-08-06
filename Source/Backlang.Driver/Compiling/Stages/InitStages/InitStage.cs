@@ -31,8 +31,18 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
     {
         foreach (var resource in context.EmbeddedResource)
         {
-            var attr = new EmbeddedResourceAttribute(Path.GetFileName(resource), resource);
-            context.Assembly.AddAttribute(attr);
+            Stream strm = File.OpenRead(resource);
+
+            foreach (var preprocessor in context.Plugins.Preprocessors)
+            {
+                if (preprocessor.Extension == Path.GetExtension(resource))
+                {
+                    strm = preprocessor.Preprocess(strm);
+                }
+
+                var attr = new EmbeddedResourceAttribute(Path.GetFileName(resource), strm);
+                context.Assembly.AddAttribute(attr);
+            }
         }
     }
 }
