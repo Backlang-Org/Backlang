@@ -116,26 +116,15 @@ public class MifParser
     {
         var token = NextToken();
 
-        switch (radix)
+        return radix switch
         {
-            case Radix.BIN:
-                return Convert.ToInt64(token.Value, 2);
-
-            case Radix.OCT:
-                return Convert.ToInt64(token.Value, 8);
-
-            case Radix.HEX:
-                return Convert.ToInt64(token.Value, 16);
-
-            case Radix.DEC:
-                return Convert.ToInt64(token.Value, 10);
-
-            case Radix.UNS:
-                return Convert.ToInt64(token.Value, 10);
-
-            default:
-                return 0;
-        }
+            Radix.BIN => Convert.ToInt64(token.Value, 2),
+            Radix.OCT => Convert.ToInt64(token.Value, 8),
+            Radix.HEX => Convert.ToInt64(token.Value, 16),
+            Radix.DEC => Convert.ToInt64(token.Value, 10),
+            Radix.UNS => Convert.ToInt64(token.Value, 10),
+            _ => 0,
+        };
     }
 
     private void ParseHeader(MifFile file)
