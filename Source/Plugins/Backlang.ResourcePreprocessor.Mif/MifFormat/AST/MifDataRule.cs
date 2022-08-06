@@ -1,5 +1,5 @@
 ﻿namespace Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
 
-public abstract class MifNode
+public abstract class MifDataRule
 {
 }

@@ -2,5 +2,6 @@
 
 public class MifFile
 {
-    public Dictionary<string, object> Options { get; init; } = new();
+    public Dictionary<string, object> Options { get; } = new();
+    public List<MifDataRule> DataRules { get; } = new();
 }
