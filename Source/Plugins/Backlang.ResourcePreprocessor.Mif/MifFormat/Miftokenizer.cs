@@ -6,8 +6,8 @@ public readonly struct Token<TType>
 {
     public Token(TType type, string value)
     {
-        this.Type = type;
-        this.Value = value;
+        Type = type;
+        Value = value;
     }
 
     public TType Type { get; }
@@ -25,15 +25,23 @@ public class Tokenizer<TType>
     public Tokenizer<TType> Token(TType type, params string[] matchingRegexs)
     {
         foreach (var matchingRegex in matchingRegexs)
-            this.tokenTypes.Add(new TokenType(type, matchingRegex));
+            tokenTypes.Add(new TokenType(type, matchingRegex, false));
+
+        return this;
+    }
+
+    public Tokenizer<TType> Ignore(TType type, params string[] matchingRegexs)
+    {
+        foreach (var matchingRegex in matchingRegexs)
+            tokenTypes.Add(new TokenType(type, matchingRegex, true));
 
         return this;
     }
 
     public IList<Token<TType>> Tokenize(string input)
     {
-        IEnumerable<Token<TType>> tokens = new[] { new Token<TType>(this.defaultTokenType, input) };
-        foreach (var type in this.tokenTypes)
+        IEnumerable<Token<TType>> tokens = new[] { new Token<TType>(defaultTokenType, input) };
+        foreach (var type in tokenTypes)
             tokens = ExtractTokenType(tokens, type);
 
         return tokens.ToList();
@@ -47,7 +55,7 @@ public class Tokenizer<TType>
         var tokenMatcher = new Regex(toExtract.MatchingRegex, RegexOptions.Multiline);
         foreach (var token in tokens)
         {
-            if (!token.Type.Equals(this.defaultTokenType))
+            if (!token.Type.Equals(defaultTokenType))
             {
                 yield return token;
                 continue;
@@ -63,10 +71,12 @@ public class Tokenizer<TType>
             var currentIndex = 0;
             foreach (Match match in matches)
             {
+                if (toExtract.Ignore) continue;
+
                 if (currentIndex < match.Index)
                 {
                     yield return new Token<TType>(
-                        this.defaultTokenType,
+                        defaultTokenType,
                         token.Value.Substring(currentIndex, match.Index - currentIndex));
                 }
 
@@ -77,7 +87,7 @@ public class Tokenizer<TType>
             if (currentIndex < token.Value.Length)
             {
                 yield return new Token<TType>(
-                    this.defaultTokenType,
+                    defaultTokenType,
                     token.Value.Substring(currentIndex, token.Value.Length - currentIndex));
             }
         }
@@ -85,14 +95,16 @@ public class Tokenizer<TType>
 
     private readonly struct TokenType
     {
-        public TokenType(TType type, string matchingRegex)
+        public TokenType(TType type, string matchingRegex, bool ignore)
         {
-            this.Type = type;
-            this.MatchingRegex = matchingRegex;
+            Type = type;
+            MatchingRegex = matchingRegex;
+            Ignore = ignore;
         }
 
         public TType Type { get; }
 
         public string MatchingRegex { get; }
+        public bool Ignore { get; }
     }
 }
