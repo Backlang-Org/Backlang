@@ -1,4 +1,4 @@
-﻿using Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
+using Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
 using Backlang.ResourcePreprocessor.Mif.MifFormat.AST.DataRules;
 
 namespace Backlang.ResourcePreprocessor.Mif.MifFormat;
@@ -90,26 +90,26 @@ public class MifParser
         file.DataRules.Add(new SimpleDataRule(addr, value));
     }
 
-    private int ParseNumber(Radix radix)
+    private long ParseNumber(Radix radix)
     {
         var token = NextToken();
 
         switch (radix)
         {
             case Radix.BIN:
-                return Convert.ToInt32(token.Value, 2);
+                return Convert.ToInt64(token.Value, 2);
 
             case Radix.OCT:
-                return Convert.ToInt32(token.Value, 8);
+                return Convert.ToInt64(token.Value, 8);
 
             case Radix.HEX:
-                return Convert.ToInt32(token.Value, 16);
+                return Convert.ToInt64(token.Value, 16);
 
             case Radix.DEC:
-                return Convert.ToInt32(token.Value, 10);
+                return Convert.ToInt64(token.Value, 10);
 
             case Radix.UNS:
-                return Convert.ToInt32(token.Value, 10);
+                return Convert.ToInt64(token.Value, 10);
 
             default:
                 return 0;

@@ -2,7 +2,7 @@
 
 public class SimpleDataRule : MifDataRule
 {
-    public SimpleDataRule(int addr, int value)
+    public SimpleDataRule(int addr, long value)
     {
         Address = addr;
         Value = value;
