@@ -33,22 +33,7 @@ public class MifTranslator
         }
 
         return buffer
-            .SelectMany(_ => BitConverter.GetBytes(_).Take((int)byteCount))
+            .SelectMany(_ => BitConverter.GetBytes(_).Take(byteCount))
             .ToArray();
-    }
-
-    private static void SetBytes(int wordWidth, byte[] buffer, int address, long value)
-    {
-        var bytes = GetBytes(value, wordWidth);
-
-        Array.Copy(bytes, 0, buffer, address, bytes.Length);
-    }
-
-    private static byte[] GetBytes(long value, int wordWidth)
-    {
-        var bytes = BitConverter.GetBytes(value);
-        int byteCount = wordWidth / 8;
-
-        return bytes.Take(byteCount).ToArray();
     }
 }
