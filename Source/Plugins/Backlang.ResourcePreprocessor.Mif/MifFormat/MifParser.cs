@@ -21,7 +21,7 @@ public class MifParser
             .Token(TokenType.DATA_RADIX, @"DATA_RADIX")
             .Token(TokenType.Radix, string.Join('|', Enum.GetNames<Radix>()))
 
-            .Token(TokenType.Number, @"[0-9A-F]+")
+            .Token(TokenType.Number, @"[-]?[0-9A-F]+")
             .Token(TokenType.Colon, @":")
             .Ignore(TokenType.Comment, @"--.+")
             .Token(TokenType.Semicolon, @";")
@@ -123,7 +123,7 @@ public class MifParser
             Radix.OCT => Convert.ToInt64(token.Value, 8),
             Radix.HEX => Convert.ToInt64(token.Value, 16),
             Radix.DEC => Convert.ToInt64(token.Value, 10),
-            Radix.UNS => Convert.ToInt64(token.Value, 10),
+            Radix.UNS => (long)Convert.ToUInt64(token.Value, 10),
             _ => 0,
         };
     }
