@@ -3,7 +3,6 @@
 public enum TokenType
 {
     Invalid,
-    Identifier,
     Colon,
     Eq,
     Semicolon,
@@ -15,4 +14,8 @@ public enum TokenType
     Comment,
     EOF,
     Radix,
+    Width,
+    DEPTH,
+    ADDRESS_RADIX,
+    DATA_RADIX,
 }

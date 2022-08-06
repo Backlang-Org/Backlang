@@ -9,5 +9,5 @@ public class SimpleDataRule : MifDataRule
     }
 
     public int Address { get; set; }
-    public int Value { get; set; }
+    public long Value { get; set; }
 }

@@ -15,8 +15,13 @@ public class MifParser
     {
         tokenizer = new Tokenizer<TokenType>(TokenType.Invalid)
             .Token(TokenType.ContentBegin, @"CONTENT BEGIN")
+            .Token(TokenType.Width, @"WIDTH")
+            .Token(TokenType.DEPTH, @"DEPTH")
+            .Token(TokenType.ADDRESS_RADIX, @"ADDRESS_RADIX")
+            .Token(TokenType.DATA_RADIX, @"DATA_RADIX")
+            .Token(TokenType.Radix, string.Join('|', Enum.GetNames<Radix>()))
+
             .Token(TokenType.Number, @"[0-9A-F]+")
-            .Token(TokenType.Identifier, @"[A-Z_]+")
             .Token(TokenType.Colon, @":")
             .Ignore(TokenType.Comment, @"--.+")
             .Token(TokenType.Semicolon, @";")
@@ -121,27 +126,32 @@ public class MifParser
 
     private void ParserOption(MifFile file)
     {
-        var key = Match(TokenType.Identifier);
+        var keyToken = Peek(0);
+        var key = ParseOptionName();
 
         Match(TokenType.Eq);
 
-        var value = ParseOptionValue();
+        object value = null;
+        if (keyToken.Type == TokenType.Width || keyToken.Type == TokenType.DEPTH)
+        {
+            value = ParseNumber();
+        }
+        else if (keyToken.Type == TokenType.DATA_RADIX || keyToken.Type == TokenType.ADDRESS_RADIX)
+        {
+            value = ParseRadix();
+        }
 
         if (value != null)
-            file.Options.Add(key.Value, value);
+            file.Options.Add(key, value);
 
         Match(TokenType.Semicolon);
     }
 
-    private object ParseOptionValue()
+    private string ParseOptionName()
     {
-        if (IsMatch(TokenType.Number))
+        if (IsMatch(TokenType.Width, TokenType.DEPTH, TokenType.ADDRESS_RADIX, TokenType.DATA_RADIX))
         {
-            return ParseNumber();
-        }
-        if (IsMatch(TokenType.Identifier))
-        {
-            return ParseRadix();
+            return NextToken().Value;
         }
 
         return null;
@@ -195,10 +205,15 @@ public class MifParser
         return new Token<TokenType>(TokenType.EOF, string.Empty);
     }
 
-    private bool IsMatch(TokenType type)
+    private bool IsMatch(params TokenType[] types)
     {
         var token = Peek(0);
 
-        return token.Type == type;
+        foreach (var t in types)
+        {
+            if (token.Type == t) return true;
+        }
+
+        return false;
     }
 }
