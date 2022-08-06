@@ -91,11 +91,12 @@ public class MifParser
         Match(TokenType.DotDot);
         var to = (int)ParseNumber((Radix)file.Options["ADDRESS_RADIX"]);
 
-        Match(TokenType.Eq);
+        Match(TokenType.CloseSquare);
+
+        Match(TokenType.Colon);
 
         var value = ParseNumber((Radix)file.Options["DATA_RADIX"]);
-
-        Match(TokenType.CloseSquare);
+        Match(TokenType.Semicolon);
 
         file.DataRules.Add(new RangeDataRule(from, to, value));
     }
