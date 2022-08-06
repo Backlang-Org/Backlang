@@ -1,0 +1,23 @@
+﻿-- comment line
+--
+
+WIDTH=8; -- word width
+DEPTH=256; -- number of words
+
+ADDRESS_RADIX=HEX;
+DATA_RADIX=HEX;
+
+CONTENT BEGIN
+	000 : 0C;
+	001 : 1E;
+	[002..003] : 33;
+	004 : 3F;
+	[005..006] : 33;
+	007 : 00;
+	008 : 3F;
+	[009..00A] : 66;
+	00B : 3E;
+	[00C..00D] : 66;
+	00E : 3F;
+	00F : 00;
+	010 : 3C;

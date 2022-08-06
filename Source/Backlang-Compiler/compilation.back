@@ -67,6 +67,8 @@ implement Window {
 public static func main() {
 
     let w : Window = none;
+    let nn = w + 1;
+    let ln = !w;
     let n = *w;
 
     print("hello world");
