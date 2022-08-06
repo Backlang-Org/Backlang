@@ -1,4 +1,4 @@
-using Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
+﻿using Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
 using Backlang.ResourcePreprocessor.Mif.MifFormat.AST.DataRules;
 
 namespace Backlang.ResourcePreprocessor.Mif.MifFormat;
@@ -76,11 +76,33 @@ public class MifParser
         {
             ParseSimpleDataRule(file);
         }
+        else if (IsMatch(TokenType.OpenSquare))
+        {
+            ParseRangeRule(file);
+        }
+    }
+
+    private void ParseRangeRule(MifFile file)
+    {
+        Match(TokenType.OpenSquare);
+
+        var from = (int)ParseNumber((Radix)file.Options["ADDRESS_RADIX"]);
+
+        Match(TokenType.DotDot);
+        var to = (int)ParseNumber((Radix)file.Options["ADDRESS_RADIX"]);
+
+        Match(TokenType.Eq);
+
+        var value = ParseNumber((Radix)file.Options["DATA_RADIX"]);
+
+        Match(TokenType.CloseSquare);
+
+        file.DataRules.Add(new RangeDataRule(from, to, value));
     }
 
     private void ParseSimpleDataRule(MifFile file)
     {
-        var addr = ParseNumber((Radix)file.Options["ADDRESS_RADIX"]);
+        var addr = (int)ParseNumber((Radix)file.Options["ADDRESS_RADIX"]);
 
         Match(TokenType.Colon);
         var value = ParseNumber((Radix)file.Options["DATA_RADIX"]);
