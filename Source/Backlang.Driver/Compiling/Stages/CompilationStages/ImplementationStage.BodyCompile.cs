@@ -55,7 +55,7 @@ public partial class ImplementationStage
         {
             if (!node.IsCall) continue;
 
-            if (node.Calls(Symbols.Block))
+            if (node.Calls(CodeSymbols.Braces))
             {
                 if (node.ArgCount == 0) continue;
 
@@ -79,6 +79,7 @@ public partial class ImplementationStage
             }
             else
             {
+                //ToDo: May with Scope?
                 //ToDo: continue implementing static function call in same type
                 var type = method.ParentType;
                 var calleeName = node.Target;
