@@ -1,10 +1,32 @@
-﻿using LeMP;
+using LeMP;
 
 namespace Backlang.Driver.InternalMacros;
 
 [ContainsMacros]
 public static class SyntacticMacros
 {
+    private static readonly Dictionary<string, (string OperatorName, int ArgumentCount)> OpMap = new()
+    {
+        ["add"] = ("Addition", 2),
+        ["sub"] = ("Subtraction", 2),
+        ["mul"] = ("Multiply", 2),
+        ["div"] = ("Division", 2),
+        ["mod"] = ("Modulus", 2),
+
+        ["logical_not"] = ("LogicalNot", 1),
+
+        ["neg"] = ("UnaryNegation", 1),
+
+        ["bitwise_and"] = ("BitwiseAnd", 2),
+        ["bitwise_or"] = ("BitwiseOr", 2),
+        ["exclusive_or"] = ("ExclusiveOr", 2),
+
+        ["bitwise_not"] = ("OnesComplement", 1),
+
+        ["deref"] = ("Deref", 1),
+        ["addrof"] = ("AddressOf", 2),
+    };
+
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
@@ -167,30 +189,5 @@ public static class SyntacticMacros
         var arg2 = @operator.Args[1];
 
         return F.Call(CodeSymbols.Assign, arg1, F.Call(symbol, arg1, arg2));
-    }
-
-    private static Dictionary<string, string> GetOpMap()
-    {
-        return new()
-        {
-            ["add"] = "Addition",
-            ["sub"] = "Subtraction",
-            ["mul"] = "Multiply",
-            ["div"] = "Division",
-            ["mod"] = "Modulus",
-
-            ["logical_not"] = "LogicalNot",
-
-            ["neg"] = "UnaryNegation",
-
-            ["bitwise_and"] = "BitwiseAnd",
-            ["bitwise_or"] = "BitwiseOr",
-            ["exclusive_or"] = "ExclusiveOr",
-
-            ["bitwise_not"] = "OnesComplement",
-
-            ["deref"] = "Deref",
-            ["addrof"] = "AddressOf",
-        };
     }
 }
