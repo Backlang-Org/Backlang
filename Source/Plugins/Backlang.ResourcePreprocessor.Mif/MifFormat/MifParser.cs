@@ -1,4 +1,4 @@
-﻿using Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
+using Backlang.ResourcePreprocessor.Mif.MifFormat.AST;
 using Backlang.ResourcePreprocessor.Mif.MifFormat.AST.DataRules;
 
 namespace Backlang.ResourcePreprocessor.Mif.MifFormat;
@@ -28,7 +28,8 @@ public class MifParser
             .Token(TokenType.DotDot, @"\.\.")
             .Token(TokenType.OpenSquare, @"\[")
             .Token(TokenType.CloseSquare, @"\]")
-            .Token(TokenType.Eq, @"=");
+            .Token(TokenType.Eq, @"=")
+            .Token(TokenType.EOF, @"END");
     }
 
     public static MifFile Parse(string src)
