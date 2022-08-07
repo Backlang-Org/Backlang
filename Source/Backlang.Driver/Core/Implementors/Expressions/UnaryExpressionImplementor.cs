@@ -20,6 +20,11 @@ public class UnaryExpressionImplementor : IExpressionImplementor
                 Instruction.CreateCall(opMethod, MethodLookup.Static, new ValueTag[] { lhs }));
         }
 
+        if (node.Calls(CodeSymbols._Dereference))
+        {
+            return block.AppendInstruction(Instruction.CreateLoadIndirect(leftType));
+        }
+
         return block.AppendInstruction(Instruction.CreateArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, new[] { leftType }, new ValueTag[] { lhs }));
     }
 }
