@@ -22,7 +22,7 @@ public class VariableImplementor : IStatementImplementor
         else
         {
             //ToDo: check for implicit cast
-            if (deducedValueType == null && elementType != deducedValueType)
+            if (elementType != deducedValueType)
                 context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
         }
 
