@@ -35,9 +35,12 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
     {
         bool isPointer;
+        PointerKind pointerKind = PointerKind.Transient;
+
         if (fullName.FullyUnqualifiedName is PointerName pName)
         {
             isPointer = true;
+            pointerKind = pName.Kind;
             fullName = pName.ElementName;
         }
         else
@@ -71,7 +74,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         if (isPointer)
         {
-            resolvedType = resolvedType.MakePointerType(PointerKind.Transient);
+            resolvedType = resolvedType.MakePointerType(pointerKind);
         }
 
         return resolvedType;

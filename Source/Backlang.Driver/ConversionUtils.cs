@@ -42,11 +42,19 @@ public static class ConversionUtils
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
         bool isPointer = false;
+        PointerKind pointerKind = PointerKind.Transient;
 
         if (lNode is ("#type*", var arg))
         {
             isPointer = true;
+            pointerKind = PointerKind.Transient;
             lNode = arg;
+        }
+        else if (lNode is ("#type&", var arg2))
+        {
+            isPointer = true;
+            pointerKind = PointerKind.Reference;
+            lNode = arg2;
         }
 
         if (lNode is ("#type", (_, var type)))
@@ -70,7 +78,7 @@ public static class ConversionUtils
 
         var name = new SimpleName(lNode.Name.Name).Qualify();
 
-        return isPointer ? new PointerName(name, PointerKind.Transient).Qualify() : name;
+        return isPointer ? new PointerName(name, pointerKind).Qualify() : name;
     }
 
     public static string GetMethodName(LNode function)

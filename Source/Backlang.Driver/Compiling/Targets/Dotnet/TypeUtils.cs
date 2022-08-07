@@ -14,7 +14,16 @@ public static class TypeUtils
     {
         if (type.Qualifier is PointerName pn)
         {
-            return new PointerType(ImportType(_assemblyDefinition, pn.ElementName));
+            var ptrType = ImportType(_assemblyDefinition, pn.ElementName);
+
+            if (pn.Kind == PointerKind.Transient)
+            {
+                return new PointerType(ptrType);
+            }
+            else if (pn.Kind == PointerKind.Reference)
+            {
+                return new ByReferenceType(ptrType);
+            }
         }
 
         return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());

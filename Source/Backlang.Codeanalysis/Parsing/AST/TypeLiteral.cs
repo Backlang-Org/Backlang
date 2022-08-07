@@ -22,6 +22,12 @@ public sealed class TypeLiteral
 
                 typeNode = SyntaxTree.Pointer(typeNode).WithRange(typeToken, iterator.Prev);
             }
+            if (iterator.IsMatch(TokenType.Ampersand))
+            {
+                iterator.NextToken();
+
+                typeNode = SyntaxTree.RefType(typeNode).WithRange(typeToken, iterator.Prev);
+            }
             else if (iterator.IsMatch(TokenType.OpenSquare))
             {
                 iterator.NextToken();
