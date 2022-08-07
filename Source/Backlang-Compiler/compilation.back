@@ -55,6 +55,10 @@ implement Window {
         return 1;
     }
 
+     public operator func add(left: Window) -> i32 {
+        return 1;
+    }
+
     public operator func logical_not(wndw: Window) -> bool {
         return true;
     }

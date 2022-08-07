@@ -1,4 +1,4 @@
-using LeMP;
+﻿using LeMP;
 
 namespace Backlang.Driver.InternalMacros;
 
@@ -74,10 +74,16 @@ public static class SyntacticMacros
             var modChanged = @operator.WithAttrs(newAttrs);
             var fnName = @operator.Args[1];
 
-            var opMap = GetOpMap();
-            if (fnName is (_, (_, var name)) && opMap.ContainsKey(name.Name.Name))
+            if (fnName is (_, (_, var name)) && OpMap.ContainsKey(name.Name.Name))
             {
-                var newTarget = SyntaxTree.Type("op_" + opMap[name.Name.Name], LNode.List()).WithRange(fnName.Range);
+                var op = OpMap[name.Name.Name];
+
+                if (@operator[2].ArgCount != op.ArgumentCount)
+                {
+                    context.Error($"Cannot overload operator, parameter count mismatch. {op.ArgumentCount} parameters expected");
+                }
+
+                var newTarget = SyntaxTree.Type("op_" + op.OperatorName, LNode.List()).WithRange(fnName.Range);
                 return modChanged.WithArgChanged(1, newTarget);
             }
         }
