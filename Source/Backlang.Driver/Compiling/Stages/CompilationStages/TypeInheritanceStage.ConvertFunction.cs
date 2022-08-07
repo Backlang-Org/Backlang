@@ -54,7 +54,12 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             method.IsDestructor = true;
         }
 
-        var functionItem = new FunctionScopeItem { Name = methodName, SubScope = scope, Method = method };
+        var functionItem = new FunctionScopeItem
+        {
+            Name = methodName,
+            SubScope = scope,
+            Overloads = new() { method }
+        };
 
         if (hasBody)
         {

@@ -1,4 +1,6 @@
-﻿namespace Backlang.Contracts.Scoping;
+﻿using Backlang.Contracts.Scoping.Items;
+
+namespace Backlang.Contracts.Scoping;
 
 #nullable enable
 
@@ -15,9 +17,18 @@ public class Scope
 
     public bool Add(ScopeItem item)
     {
-        if (Contains(item.Name)) return false;
-        _items.Add(item);
-        return true;
+        if (_items.FirstOrDefault(_ => _.Name == item.Name) is FunctionScopeItem fsi && item is FunctionScopeItem isI)
+        {
+            fsi.Overloads.AddRange(isI.Overloads);
+            return true;
+        }
+        else
+        {
+            if (Contains(item.Name)) return false;
+
+            _items.Add(item);
+            return true;
+        }
     }
 
     public bool Contains(string name) => _items.Any(_ => _.Name == name);

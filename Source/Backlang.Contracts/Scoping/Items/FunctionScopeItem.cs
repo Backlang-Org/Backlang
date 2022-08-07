@@ -2,16 +2,16 @@
 
 public class FunctionScopeItem : ScopeItem
 {
-    public IMethod Method { get; init; }
-    public bool IsStatic => Method.IsStatic;
+    public List<IMethod> Overloads { get; init; } = new();
+    public bool IsStatic => Overloads[0].IsStatic;
     public Scope SubScope { get; init; }
 
-    public override IType Type => Method.ReturnParameter.Type;
+    public override IType Type => Overloads[0].ReturnParameter.Type;
 
-    public void Deconstruct(out string name, out IMethod method, out bool isStatic, out Scope subScope)
+    public void Deconstruct(out string name, out List<IMethod> method, out bool isStatic, out Scope subScope)
     {
         name = Name;
-        method = Method;
+        method = Overloads;
         isStatic = IsStatic;
         subScope = SubScope;
     }
