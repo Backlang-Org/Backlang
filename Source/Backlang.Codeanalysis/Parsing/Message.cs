@@ -13,7 +13,7 @@ public sealed class Message
     {
         if (range.Source is SourceFile<StreamCharSource> doc)
         {
-            Document = (SourceFile<StreamCharSource>)range.Source;
+            Document = doc;
         }
 
         Severity = severity;
