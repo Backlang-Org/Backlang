@@ -44,7 +44,7 @@ public partial class ImplementationStage
 
         return new MethodBody(
             method.ReturnParameter,
-            new Parameter(method.ParentType),
+            method.IsStatic ? new Parameter() : Parameter.CreateThisParameter(method.ParentType),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
     }
