@@ -11,7 +11,11 @@ public sealed class Message
 {
     public Message(MessageSeverity severity, string text, SourceRange range)
     {
-        Document = (SourceFile<StreamCharSource>)range.Source;
+        if (range.Source is SourceFile<StreamCharSource> doc)
+        {
+            Document = (SourceFile<StreamCharSource>)range.Source;
+        }
+
         Severity = severity;
         Text = text;
         Range = range;

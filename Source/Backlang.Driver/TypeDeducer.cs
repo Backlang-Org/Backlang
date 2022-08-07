@@ -193,7 +193,7 @@ public static class TypeDeducer
         {
             return left.MakePointerType(PointerKind.Transient);
         }
-        else if (node.Calls(CodeSymbols.Mul))
+        else if (node.Calls(CodeSymbols._Dereference))
         {
             if (left is PointerType pt)
             {
