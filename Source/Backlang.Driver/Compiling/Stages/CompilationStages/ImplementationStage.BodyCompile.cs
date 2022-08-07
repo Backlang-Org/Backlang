@@ -81,12 +81,18 @@ public partial class ImplementationStage
             {
                 //ToDo: May with Scope?
                 //ToDo: continue implementing static function call in same type
-                var type = method.ParentType;
+                var type = (DescribedType)method.ParentType;
                 var calleeName = node.Target;
-                var callee = type.Methods.FirstOrDefault(_ => _.Name.ToString() == calleeName.Name.Name);
 
-                if (callee != null)
+                if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
                 {
+                    if (type.IsStatic && !callee.IsStatic)
+                    {
+                        context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
+                        return block;
+                    }
+
+                    //ToDo: add overload AppendCall with known callee
                     AppendCall(context, block, node, type.Methods, scope);
                 }
                 else
