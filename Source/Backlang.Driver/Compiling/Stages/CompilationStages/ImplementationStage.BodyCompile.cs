@@ -24,8 +24,8 @@ public partial class ImplementationStage
     {
         new DefaultExpressionImplementor(),
         new AddressExpressionImplementor(),
-        new BinaryExpressionImplementor(),
         new UnaryExpressionImplementor(),
+        new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
         new ConstantExpressionEmitter(),
