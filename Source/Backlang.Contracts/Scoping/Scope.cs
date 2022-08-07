@@ -17,7 +17,8 @@ public class Scope
 
     public bool Add(ScopeItem item)
     {
-        if (_items.FirstOrDefault(_ => _.Name == item.Name) is FunctionScopeItem fsi && item is FunctionScopeItem isI)
+        if (_items.FirstOrDefault(_ => _.Name == item.Name) is FunctionScopeItem fsi
+            && item is FunctionScopeItem isI)
         {
             fsi.Overloads.AddRange(isI.Overloads);
             return true;

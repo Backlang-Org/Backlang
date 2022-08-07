@@ -117,6 +117,27 @@ public partial class ImplementationStage
         LNode node, IEnumerable<IMethod> methods, Scope scope, string methodName = null)
     {
         var argTypes = new List<IType>();
+
+        foreach (var arg in node.Args)
+        {
+            var type = TypeDeducer.Deduce(arg, scope, context);
+            argTypes.Add(type);
+        }
+
+        if (methodName == null)
+        {
+            methodName = node.Name.Name;
+        }
+
+        var method = GetMatchingMethod(context, argTypes, methods, methodName);
+
+        return AppendCall(context, block, node, method, scope);
+    }
+
+    public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
+        LNode node, IMethod method, Scope scope)
+    {
+        var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
         foreach (var arg in node.Args)
@@ -156,13 +177,6 @@ public partial class ImplementationStage
                 }
             }
         }
-
-        if (methodName == null)
-        {
-            methodName = node.Name.Name;
-        }
-
-        var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
         if (method == null) return null;
 
