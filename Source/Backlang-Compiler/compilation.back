@@ -55,7 +55,7 @@ implement Window {
         return 1;
     }
 
-     public operator func add(left: Window) -> i32 {
+    public operator func add(left: Window) -> i32 {
         return 1;
     }
 

@@ -64,7 +64,8 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Div);
     }
 
-    [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("operator", "Convert to public static op_", "#fn",
+        Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverride)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
     {
         var operatorAttribute = SyntaxTree.Factory.Id((Symbol)"#operator");
@@ -73,6 +74,7 @@ public static class SyntacticMacros
             var newAttrs = new LNodeList() { LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static), LNode.Id(CodeSymbols.Operator) };
             var modChanged = @operator.WithAttrs(newAttrs);
             var fnName = @operator.Args[1];
+            var compContext = (CompilerContext)context.ScopedProperties["Context"];
 
             if (fnName is (_, (_, var name)) && OpMap.ContainsKey(name.Name.Name))
             {
@@ -80,7 +82,7 @@ public static class SyntacticMacros
 
                 if (@operator[2].ArgCount != op.ArgumentCount)
                 {
-                    context.Error($"Cannot overload operator, parameter count mismatch. {op.ArgumentCount} parameters expected");
+                    compContext.AddError(@operator, $"Cannot overload operator, parameter count mismatch. {op.ArgumentCount} parameters expected");
                 }
 
                 var newTarget = SyntaxTree.Type("op_" + op.OperatorName, LNode.List()).WithRange(fnName.Range);
