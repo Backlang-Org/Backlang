@@ -21,6 +21,17 @@ public class BinaryExpressionImplementor : IExpressionImplementor
             return block.AppendInstruction(
                 Instruction.CreateCall(opMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs }));
         }
+        else if (leftType == context.Environment.String || rightType == context.Environment.String)
+        {
+            var concatMethods = context.Environment.String.Methods
+                .Where(_ => _.Name.ToString() == "Concat" && _.Parameters.Count == 2);
+
+            var matchingConcatMethod = concatMethods.FirstOrDefault(_ => _.Parameters[0].Type == leftType && _.Parameters[1].Type == rightType);
+
+            var call = Instruction.CreateCall(matchingConcatMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs });
+
+            return block.AppendInstruction(call);
+        }
 
         return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
     }
