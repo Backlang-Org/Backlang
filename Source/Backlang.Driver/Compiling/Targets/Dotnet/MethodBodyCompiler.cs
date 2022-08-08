@@ -110,9 +110,13 @@ public static class MethodBodyCompiler
             {
                 EmitLoadField(parentType, ilProcessor, fp);
             }
-            else if (instruction.Prototype is StoreFieldPointerPrototype sp)
+            else if (instruction.Prototype is StorePrototype sp)
             {
-                EmitStoreField(parentType, ilProcessor, sp);
+                EmitStore(parentType, ilProcessor, sp, variables, instruction);
+            }
+            else if (instruction.Prototype is StoreFieldPointerPrototype sfp)
+            {
+                EmitStoreField(parentType, ilProcessor, sfp);
             }
         }
 
@@ -144,6 +148,12 @@ public static class MethodBodyCompiler
                 ilProcessor.Emit(OpCodes.Throw);
             }
         }
+    }
+
+    private static void EmitStore(TypeDefinition parentType, ILProcessor ilProcessor, StorePrototype sp, Dictionary<string, VariableDefinition> variables, Furesoft.Core.CodeDom.Compiler.Instruction instruction)
+    {
+        var n = instruction.Arguments[0];
+        ilProcessor.Emit(OpCodes.Stloc, variables[n.Name]);
     }
 
     private static void EmitLoadLocal(ILProcessor ilProcessor, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
