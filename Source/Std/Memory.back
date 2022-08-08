@@ -1,8 +1,10 @@
-func Memory::clear(start : u32*, end : u32*) static {
+module Memory;
+
+public static func clear(start : u32*, end : u32*) {
     Memory::set(start, end, 0);
 }
 
-func Memory::set(start : u32*, end : u32*, value : u32) static {
+public static func set(start : u32*, end : u32*, value : u32) {
     if end < start {
         return error(nameof(end) + " must be greater than " + start);
     }
@@ -13,11 +15,11 @@ func Memory::set(start : u32*, end : u32*, value : u32) static {
     }
 }
 
-func Memory::copy(src : u32*, dest : u32*) static {
+public static func copy(src : u32*, dest : u32*) {
     *dest = *src;
 }
 
-func Memory::copy<T>(src : T[], dst : T[]) static
+public static func copy<T>(src : T[], dst : T[])
     where T : u8..u32, i8, i32
 {
     if src.length != dst.length {
