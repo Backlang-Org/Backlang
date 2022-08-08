@@ -44,7 +44,7 @@ public class VariableImplementor : IStatementImplementor
             Parameter = new Parameter(elementType, varname)
         }))
         {
-            block.AppendParameter(new BlockParameter(elementType, varname));
+            block.AppendParameter(new BlockParameter(elementType, varname, !isMutable));
         }
         else
         {
