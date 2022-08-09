@@ -1,4 +1,4 @@
-module Keyword;
+module Keyboard;
 
 public static func isKeyDown<T>(key : T) -> bool
     where T : KeyCode, u8 {
