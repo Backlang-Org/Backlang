@@ -116,12 +116,20 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             foreach (var field in type.Args[1].Args)
             {
                 var fieldName = field.Args[1].Args[0].Name;
+                var qualifiedFieldTypename = ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0]);
+                var resolvedFieldType = TypeInheritanceStage.ResolveTypeWithModule(
+                                        field.Args[0].Args[0].Args[0], context,
+                                        modulename, qualifiedFieldTypename
+                                        );
+
+                if (resolvedFieldType == null && qualifiedFieldTypename.ToString() == baseType.Name.ToString())
+                {
+                    resolvedFieldType = baseType;
+                }
+
                 var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name),
                     false,
-                    TypeInheritanceStage.ResolveTypeWithModule(
-                        field.Args[0].Args[0].Args[0], context,
-                        modulename, ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0])
-                        )
+                    resolvedFieldType
                     );
 
                 if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
