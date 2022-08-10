@@ -1,4 +1,5 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.Precedences;
+
 public enum BinaryOpPrecedences
 {
     Casting = 1, // as
@@ -17,7 +18,7 @@ public enum BinaryOpPrecedences
     Or = Percent,
     Comparisons = Or, // < <= >= >
     SwapOperator = 2,
-    
+
     FunctionCalls = 7, // . ::
 
     PipeOperator = 8, // |>
@@ -25,4 +26,5 @@ public enum BinaryOpPrecedences
     OperationShortcuts = 9, // += -= *= /=
     Equals = OperationShortcuts,
 
+    Dot = 10,
 }
