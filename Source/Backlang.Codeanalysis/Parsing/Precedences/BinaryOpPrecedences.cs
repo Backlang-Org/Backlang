@@ -2,29 +2,27 @@
 
 public enum BinaryOpPrecedences
 {
-    Casting = 1, // as
+    Hat = 1,
+    SwapOperator = Hat,
 
-    Hat = 2,
+    Ampersand = 2,
 
-    Ampersand = 3,
-
-    EqualsEquals = 4,
+    EqualsEquals = 3,
     DashedOps = EqualsEquals, // add, sub
     Range = DashedOps,
     And = Range, // &&
 
-    DottedOps = 5, // mul, div
+    DottedOps = 4, // mul, div
     Percent = DottedOps,
     Or = Percent,
     Comparisons = Or, // < <= >= >
-    SwapOperator = 2,
+
+    OperationShortcuts = 5, // += -= *= /=
+    
+    PipeOperator = 6, // |>
+    Equals = PipeOperator,
 
     FunctionCalls = 7, // . ::
 
-    PipeOperator = 8, // |>
-
-    OperationShortcuts = 9, // += -= *= /=
-    Equals = OperationShortcuts,
-
-    Dot = 10,
+    Casting = 8, // as
 }
