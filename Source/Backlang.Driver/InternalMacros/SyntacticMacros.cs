@@ -25,6 +25,8 @@ public static class SyntacticMacros
 
         ["deref"] = ("Deref", 1),
         ["addrof"] = ("AddressOf", 2),
+
+        ["percent"] = ("Percentage", 1),
     };
 
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
@@ -88,6 +90,18 @@ public static class SyntacticMacros
                 var newTarget = SyntaxTree.Type("op_" + op.OperatorName, LNode.List()).WithRange(fnName.Range);
                 return modChanged.WithArgChanged(1, newTarget);
             }
+        }
+
+        return @operator;
+    }
+
+    [LexicalMacro("12%", "divide by 100 (percent)", "'%", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Percentage(LNode @operator, IMacroContext context)
+    {
+        if (@operator is (_, var inner))
+        {
+            return SyntaxTree.Binary(CodeSymbols.Div, inner,
+                LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal(100))));
         }
 
         return @operator;
