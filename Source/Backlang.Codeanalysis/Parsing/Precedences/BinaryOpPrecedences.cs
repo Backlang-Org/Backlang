@@ -18,11 +18,12 @@ public enum BinaryOpPrecedences
     Comparisons = Or, // < <= >= >
 
     OperationShortcuts = 5, // += -= *= /=
-    
+
     PipeOperator = 6, // |>
     Equals = PipeOperator,
 
-    FunctionCalls = 7, // . ::
+    FunctionCalls = 7,//  ::
+    Dot = FunctionCalls,
 
     Casting = 8, // as
 }
