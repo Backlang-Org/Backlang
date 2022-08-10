@@ -24,6 +24,21 @@ public class AssignmentImplementor : IStatementImplementor
 
                 block.AppendInstruction(Instruction.CreateStore(lt, new ValueTag(va.Parameter.Name.ToString()), value));
             }
+            else if (left is ("'.", var t, var c))
+            {
+                if (scope.TryGet<VariableScopeItem>(t.Name.Name, out var vsi))
+                {
+                    var field = vsi.Type.Fields.FirstOrDefault(_ => _.Name.ToString() == c.Name.Name);
+
+                    if (field != null)
+                    {
+                        var pointer = block.AppendInstruction(Instruction.CreateLoadField(field));
+                        var value = AppendExpression(block, right, field.FieldType, context, scope);
+
+                        block.AppendInstruction(Instruction.CreateStore(field.FieldType, pointer, value));
+                    }
+                }
+            }
             else
             {
                 context.AddError(node, $"Variable '{left.Name.Name}' not found");
