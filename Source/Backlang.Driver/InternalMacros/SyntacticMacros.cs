@@ -100,6 +100,20 @@ public static class SyntacticMacros
     {
         if (@operator is (_, var inner))
         {
+            if (inner.ArgCount == 1 && inner.Args[0] is LiteralNode ln)
+            {
+                dynamic percentValue = ((dynamic)ln.Value) / 100;
+
+                if (percentValue is int pi)
+                {
+                    return LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal(pi)));
+                }
+                else if (percentValue is double di)
+                {
+                    return LNode.Call(Symbols.Float32, LNode.List(LNode.Literal(di)));
+                }
+            }
+
             return SyntaxTree.Binary(CodeSymbols.Div, inner,
                 LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal(100))));
         }
