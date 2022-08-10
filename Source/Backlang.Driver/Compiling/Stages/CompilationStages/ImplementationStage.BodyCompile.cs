@@ -122,6 +122,9 @@ public partial class ImplementationStage
         foreach (var arg in node.Args)
         {
             var type = TypeDeducer.Deduce(arg, scope, context);
+
+            if (type == null) continue;
+
             argTypes.Add(type);
         }
 
