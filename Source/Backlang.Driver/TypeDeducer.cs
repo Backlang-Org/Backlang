@@ -230,7 +230,7 @@ public static class TypeDeducer
             return opMethod.ReturnParameter.Type;
         }
 
-        if (left != right)
+        if (left != right) //ToDo: Add implicit casting check
         {
             if (left.IsPointerType())
             {
