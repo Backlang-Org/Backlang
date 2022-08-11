@@ -125,6 +125,14 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                                            elementType);
     }
 
+    public static bool MatchesParameters(IMethod method, List<IType> argTypes)
+    {
+        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
+
+        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
+    }
+
     private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
     {
         foreach (var m in methods)
@@ -139,13 +147,5 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         }
 
         return null;
-    }
-
-    private static bool MatchesParameters(IMethod method, List<IType> argTypes)
-    {
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
-        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
-
-        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
     }
 }
