@@ -4,7 +4,7 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class CallExpressionEmitter : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.IsCall;
+    public bool CanHandle(LNode node) => node.IsCall && !node.Calls(CodeSymbols.Tuple);
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope)

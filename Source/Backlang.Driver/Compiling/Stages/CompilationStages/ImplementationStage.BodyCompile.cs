@@ -22,6 +22,7 @@ public partial class ImplementationStage
 
     private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
     {
+        new TupleExpressionImplementor(),
         new DefaultExpressionImplementor(),
         new AddressExpressionImplementor(),
         new UnaryExpressionImplementor(),
