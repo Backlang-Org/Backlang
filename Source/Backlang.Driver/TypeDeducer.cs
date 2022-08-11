@@ -52,6 +52,10 @@ public static class TypeDeducer
                 return Deduce(call.Target, scope, context);
             }
         }
+        else if (node.Calls(CodeSymbols.Tuple))
+        {
+            return DeduceTuple(node, scope, context);
+        }
         else if (node.ArgCount == 1 && node.Name.Name.StartsWith("'"))
         {
             return DeduceUnary(node, scope, context);
@@ -95,6 +99,25 @@ public static class TypeDeducer
         }
 
         return deducedType;
+    }
+
+    private static IType DeduceTuple(LNode node, Scope scope, CompilerContext context)
+    {
+        var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + node.ArgCount).Qualify("System")).FirstOrDefault();
+
+        if (tupleType == null)
+        {
+            context.AddError(node, $"A tuple cannot have {node.ArgCount} arguments");
+        }
+
+        var generics = new List<IType>();
+
+        foreach (var arg in node.Args)
+        {
+            generics.Add(Deduce(arg, scope, context));
+        }
+
+        return new GenericType(tupleType) { GenericArguments = generics };
     }
 
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context)
