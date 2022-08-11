@@ -33,7 +33,7 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Identifier);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
-        AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
+        AddExpressionParsePoint<GroupOrTupleExpression>(TokenType.OpenParen);
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
         AddExpressionParsePoint<SizeOfExpression>(TokenType.SizeOf);
