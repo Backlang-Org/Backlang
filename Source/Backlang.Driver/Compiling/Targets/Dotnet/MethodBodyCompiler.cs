@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet.Emitters;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -10,6 +11,10 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
+    private static Dictionary<Type, IEmitter> _emitters = new() {
+        [typeof(CallPrototype)] = new EmitCallEmitter()
+    };
+
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
@@ -66,57 +71,61 @@ public static class MethodBodyCompiler
         {
             var instruction = item.Instruction;
 
-            if (instruction.Prototype is CallPrototype)
+            if (_emitters.ContainsKey(instruction.Prototype.GetType()))
             {
-                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
+                _emitters[instruction.Prototype.GetType()].Emit(clrMethod, assemblyDefinition, ilProcessor, 
+                    instruction, block.Graph, block, item, instruction.Prototype);
             }
-            else if (instruction.Prototype is LoadLocalAPrototype lda)
+            else
             {
-                var definition = variables[lda.Parameter.Name.ToString()];
-                ilProcessor.Emit(OpCodes.Ldloca_S, definition);
-            }
-            else if (instruction.Prototype is LoadIndirectPrototype ldi)
-            {
-                ilProcessor.Emit(OpCodes.Ldind_I4);
-            }
-            else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
-            {
-                EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
-            }
-            else if (instruction.Prototype is LoadPrototype)
-            {
-                var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
-                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
-            }
-            else if (instruction.Prototype is AllocaPrototype allocA)
-            {
-                var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
+                if (instruction.Prototype is LoadLocalAPrototype lda)
+                {
+                    var definition = variables[lda.Parameter.Name.ToString()];
+                    ilProcessor.Emit(OpCodes.Ldloca_S, definition);
+                }
+                else if (instruction.Prototype is LoadIndirectPrototype ldi)
+                {
+                    ilProcessor.Emit(OpCodes.Ldind_I4);
+                }
+                else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
+                {
+                    EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
+                }
+                else if (instruction.Prototype is LoadPrototype)
+                {
+                    var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
+                    EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
+                }
+                else if (instruction.Prototype is AllocaPrototype allocA)
+                {
+                    var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
-                variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
-            }
-            else if (instruction.Prototype is IntrinsicPrototype arith)
-            {
-                EmitArithmetic(ilProcessor, arith);
-            }
-            else if (instruction.Prototype is LoadArgPrototype larg)
-            {
-                EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
-            }
-            else if (instruction.Prototype is LoadLocalPrototype lloc)
-            {
-                EmitLoadLocal(ilProcessor, lloc, variables);
-            }
-            else if (instruction.Prototype is LoadFieldPrototype fp)
-            {
-                EmitLoadField(parentType, ilProcessor, fp);
-            }
-            else if (instruction.Prototype is StorePrototype sp)
-            {
-                EmitStore(parentType, ilProcessor, sp, variables, instruction);
-            }
-            else if (instruction.Prototype is StoreFieldPointerPrototype sfp)
-            {
-                EmitStoreField(parentType, ilProcessor, sfp);
+                    variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
+                }
+                else if (instruction.Prototype is IntrinsicPrototype arith)
+                {
+                    EmitArithmetic(ilProcessor, arith);
+                }
+                else if (instruction.Prototype is LoadArgPrototype larg)
+                {
+                    EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
+                }
+                else if (instruction.Prototype is LoadLocalPrototype lloc)
+                {
+                    EmitLoadLocal(ilProcessor, lloc, variables);
+                }
+                else if (instruction.Prototype is LoadFieldPrototype fp)
+                {
+                    EmitLoadField(parentType, ilProcessor, fp);
+                }
+                else if (instruction.Prototype is StorePrototype sp)
+                {
+                    EmitStore(parentType, ilProcessor, sp, variables, instruction);
+                }
+                else if (instruction.Prototype is StoreFieldPointerPrototype sfp)
+                {
+                    EmitStoreField(parentType, ilProcessor, sfp);
+                }
             }
         }
 
@@ -247,42 +256,11 @@ public static class MethodBodyCompiler
 
     private static void EmitNewObject(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NewObjectPrototype newObjectPrototype)
     {
-        var method = GetMethod(assemblyDefinition, newObjectPrototype.Constructor);
+        var method = EmitCallEmitter.GetMethod(assemblyDefinition, newObjectPrototype.Constructor);
 
         ilProcessor.Emit(OpCodes.Newobj, method);
     }
-
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, FlowGraph implementation, BasicBlock block)
-    {
-        var callPrototype = (CallPrototype)instruction.Prototype;
-
-        if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
-        {
-            IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics), callPrototype.Callee, instruction, block);
-            return;
-        }
-
-        var method = GetMethod(assemblyDefinition, callPrototype.Callee);
-
-        for (var i = 0; i < method.Parameters.Count; i++)
-        {
-            var valueType = implementation.NamedInstructions
-                .Where(_ => instruction.Arguments[i] == _.Tag)
-                .Select(_ => _.ResultType).FirstOrDefault();
-
-            var arg = method.Parameters[i];
-            if (arg.ParameterType.FullName.ToString() == "System.Object")
-            {
-                ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(valueType));
-            }
-        }
-
-        ilProcessor.Emit(OpCodes.Call,
-            assemblyDefinition.MainModule.ImportReference(
-                method
-                )
-            );
-    }
+    
 
     private static void EmitConstant(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, ConstantPrototype consProto)
     {
@@ -362,7 +340,8 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, 
+        AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 
@@ -382,40 +361,4 @@ public static class MethodBodyCompiler
         return variable;
     }
 
-    private static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)
-    {
-        var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
-
-        foreach (var m in parentType.Methods.Where(_ => _.Name == method.Name.ToString()))
-        {
-            var parameters = m.Parameters;
-
-            if (parameters.Count == method.Parameters.Count)
-            {
-                if (MatchesParameters(parameters, method))
-                    return assemblyDefinition.MainModule.ImportReference(m);
-            }
-        }
-
-        return null;
-    }
-
-    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
-    {
-        //ToDo: refactor to improve code
-        var methodParams = string.Join(',', method.Parameters.Select(_ => NormalizeTypename(_.Type.FullName.ToString())));
-        var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
-
-        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
-    }
-
-    private static string NormalizeTypename(string str)
-    {
-        if (str.StartsWith("."))
-        {
-            return str.Substring(1);
-        }
-
-        return str;
-    }
 }
