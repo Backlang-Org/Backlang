@@ -62,6 +62,16 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             }
             resolvedType = fnType;
         }
+        else if(typeNode.Calls(CodeSymbols.Tuple)) {
+            var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + typeNode.ArgCount).Qualify("System")).FirstOrDefault();
+
+            var tupleArgs = new List<IType>();
+            foreach(var arg in typeNode.Args) {
+                tupleArgs.Add(ResolveTypeWithModule(arg, context, modulename));
+            }
+
+            return new GenericType(tupleType) { GenericArguments = tupleArgs };
+        }
         else
         {
             resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
