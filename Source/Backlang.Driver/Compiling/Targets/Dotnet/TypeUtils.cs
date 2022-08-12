@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using PointerType = Mono.Cecil.PointerType;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -24,6 +25,18 @@ public static class TypeUtils
             {
                 return new ByReferenceType(ptrType);
             }
+        }
+        else if (type.Qualifier is GenericName gn)
+        {
+            var innerType = ImportType(_assemblyDefinition, gn.DeclarationName);
+            var genericType = new GenericInstanceType(innerType);
+
+            foreach (var arg in gn.TypeArgumentNames)
+            {
+                genericType.GenericArguments.Add(ImportType(_assemblyDefinition, arg));
+            }
+
+            return genericType;
         }
 
         return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());
