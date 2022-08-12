@@ -117,7 +117,7 @@ public static class TypeDeducer
             generics.Add(Deduce(arg, scope, context));
         }
 
-        return new GenericType(tupleType) { GenericArguments = generics };
+        return tupleType.MakeGenericType(generics);
     }
 
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context)

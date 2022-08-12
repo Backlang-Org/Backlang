@@ -6,19 +6,20 @@ public class TupleExpressionImplementor : IExpressionImplementor
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType, CompilerContext context, Scope scope)
     {
-        if (elementType is GenericType gt)
+        if (elementType.FullName.Qualifier is GenericName gt && elementType is DirectTypeSpecialization dt)
         {
             var valueTags = new List<ValueTag>();
 
+            var gargs = elementType.GetGenericArguments();
             for (var i = 0; i < node.Args.Count; i++)
             {
                 var arg = node.Args[i];
-                var argType = gt.GenericArguments[i];
+                var argType = gargs[i];
 
                 valueTags.Add(ImplementationStage.AppendExpression(block, arg, argType, context, scope));
             }
 
-            var ctor = gt.Type.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == valueTags.Count);
+            var ctor = dt.Declaration.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == valueTags.Count);
 
             if (ctor != null)
             {
