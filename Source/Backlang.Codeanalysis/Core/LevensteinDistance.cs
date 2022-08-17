@@ -1,4 +1,4 @@
-﻿namespace Backlang.Codeanalysis;
+﻿namespace Backlang.Codeanalysis.Core;
 
 public static class LevensteinDistance
 {
@@ -32,7 +32,7 @@ public static class LevensteinDistance
             var previousRow = currentRow ^ 1;
             for (var j = 1; j <= m; j++)
             {
-                var cost = (target[j - 1] == source[i - 1] ? 0 : 1);
+                var cost = target[j - 1] == source[i - 1] ? 0 : 1;
                 distance[currentRow, j] = Math.Min(Math.Min(
                             distance[previousRow, j] + 1,
                             distance[currentRow, j - 1] + 1),
@@ -44,8 +44,8 @@ public static class LevensteinDistance
 
     public static string Suggest(string source, IEnumerable<string> possibilities)
     {
-        int lastDistance = 10;
-        string lastSuggestion = string.Empty;
+        var lastDistance = 10;
+        var lastSuggestion = string.Empty;
 
         foreach (var str in possibilities)
         {
