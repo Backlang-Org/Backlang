@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis;
+﻿using Backlang.Codeanalysis.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestProject1;
