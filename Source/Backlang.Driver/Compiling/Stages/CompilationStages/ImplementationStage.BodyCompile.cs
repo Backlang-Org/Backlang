@@ -1,4 +1,5 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
@@ -98,7 +99,9 @@ public partial class ImplementationStage
                 }
                 else
                 {
-                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'");
+                    var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
+
+                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'. Did you mean '{suggestion}'?");
                 }
             }
         }
@@ -122,7 +125,9 @@ public partial class ImplementationStage
         foreach (var arg in node.Args)
         {
             var type = TypeDeducer.Deduce(arg, scope, context);
-            argTypes.Add(type);
+
+            if (type != null)
+                argTypes.Add(type);
         }
 
         if (methodName == null)
@@ -174,6 +179,8 @@ public partial class ImplementationStage
                 }
                 else
                 {
+                    var suggestion = LevensteinDistance.Suggest(arg.Name.Name, scope.GetAllScopeNames());
+
                     context.AddError(arg, $"{arg.Name.Name} cannot be found");
                 }
             }

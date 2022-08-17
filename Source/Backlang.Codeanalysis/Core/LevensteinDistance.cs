@@ -50,7 +50,7 @@ public static class LevensteinDistance
         foreach (var str in possibilities)
         {
             var distance = Calculate(source, str);
-            if (distance < lastDistance)
+            if (distance <= lastDistance)
             {
                 lastDistance = distance;
                 lastSuggestion = str;

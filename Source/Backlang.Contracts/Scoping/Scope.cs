@@ -39,6 +39,20 @@ public class Scope
         return new Scope(this);
     }
 
+    public IEnumerable<string> GetAllScopeNames()
+    {
+        Scope scope = this;
+        while (scope != null)
+        {
+            foreach (var item in scope._items)
+            {
+                yield return item.Name;
+            }
+
+            scope = scope.Parent;
+        }
+    }
+
     public bool TryGet<T>(string name, out T? item)
         where T : ScopeItem
     {
