@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
@@ -103,7 +104,17 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
 
         var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
 
-        Messages.Add(Message.Error($"Expected {string.Join(", ", parsePoints.Keys)}, got '{Iterator.Current.Text}'", range));
+        var suggestion = LevensteinDistance.Suggest(Iterator.Current.Text, parsePoints.Keys.Select(_ => _.ToString().ToLower()));
+
+        if (string.IsNullOrEmpty(suggestion))
+        {
+            Messages.Add(Message.Error($"Unexpected '{Iterator.Current.Text}'", range));
+        }
+        else
+        {
+            Messages.Add(Message.Error($"Did you mean '{suggestion}'?'", range));
+        }
+
         Iterator.NextToken();
 
         return default;

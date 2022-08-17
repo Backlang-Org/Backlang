@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Loyc;
 using Loyc.Syntax;
@@ -71,7 +72,16 @@ public sealed partial class Parser
         }
         else
         {
-            return Invalid($"Unknown Expression {Iterator.Current.Text}");
+            var suggestion = LevensteinDistance.Suggest(Iterator.Current.Text, parsePoints.Keys.Select(_ => _.ToString().ToLower()));
+
+            if (string.IsNullOrEmpty(suggestion))
+            {
+                return Invalid($"Unexpected Expression '{Iterator.Current.Text}'");
+            }
+            else
+            {
+                return Invalid($"Did you mean '{suggestion}'?'");
+            }
         }
     }
 
