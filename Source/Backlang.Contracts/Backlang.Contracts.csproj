@@ -12,6 +12,7 @@
 	  <PackageIcon>logo.png</PackageIcon>
 	  <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
 	  <PackageTags>backlang</PackageTags>
+	  <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
 	<ItemGroup>

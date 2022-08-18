@@ -12,7 +12,8 @@
     <PackageIcon>logo.png</PackageIcon>    
     <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>    
     <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>    
-    <PackageTags>backlang,dotnet</PackageTags>
+    <PackageTags>backlang,dotnet</PackageTags>    
+    <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,13 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>preview</LangVersion>
 		<EnablePreviewFeatures>True</EnablePreviewFeatures>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Authors>Furesoft, Backlang-Org</Authors>
+		<PackageProjectUrl>https://www.backlang-org/</PackageProjectUrl>
+		<PackageIcon>logo.png</PackageIcon>
+		<RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
+		<PackageTags>backlang</PackageTags>
+		<IncludeSymbols>True</IncludeSymbols>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,6 +39,13 @@
 	  <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
 	  <ProjectReference Include="..\Backlang.Contracts\Backlang.Contracts.csproj" />
 	  <ProjectReference Include="..\Backlang.Core\Backlang.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 
 	<Import Project="$(SolutionDir)\Version.props" />
