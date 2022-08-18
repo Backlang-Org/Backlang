@@ -181,7 +181,7 @@ public partial class ImplementationStage
                 {
                     var suggestion = LevensteinDistance.Suggest(arg.Name.Name, scope.GetAllScopeNames());
 
-                    context.AddError(arg, $"{arg.Name.Name} cannot be found");
+                    context.AddError(arg, $"{arg.Name.Name} cannot be found. Did you mean '{suggestion}'?");
                 }
             }
         }

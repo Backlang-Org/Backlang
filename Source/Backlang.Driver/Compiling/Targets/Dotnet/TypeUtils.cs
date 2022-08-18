@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Rocks;
 using PointerType = Mono.Cecil.PointerType;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;

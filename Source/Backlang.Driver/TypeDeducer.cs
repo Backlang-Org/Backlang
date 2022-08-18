@@ -1,4 +1,6 @@
-﻿namespace Backlang.Driver;
+﻿using Backlang.Codeanalysis.Core;
+
+namespace Backlang.Driver;
 
 public static class TypeDeducer
 {
@@ -72,7 +74,9 @@ public static class TypeDeducer
             }
             else
             {
-                context.AddError(node, $"{node.Name} cannot be resolved");
+                var suggestion = LevensteinDistance.Suggest(node.Name.Name, scope.GetAllScopeNames());
+
+                context.AddError(node, $"{node.Name} cannot be resolved. Did you mean '{suggestion}'?");
             }
         }
 
