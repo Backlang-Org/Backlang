@@ -101,10 +101,9 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
                     fn.IsStatic = true;
 
-                    var thisParameter = new Parameter(targetType, "this");
                     var param = (IList<Parameter>)fn.Parameters;
 
-                    param.Insert(0, thisParameter);
+                    param.Insert(0, Parameter.CreateThisParameter(targetType));
 
                     var extType = Utils.ResolveType(context.Binder, typeof(ExtensionAttribute));
 
