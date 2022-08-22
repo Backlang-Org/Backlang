@@ -35,7 +35,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
             var compilationTarget = _targets[context.Target];
 
             context.CompilationTarget = compilationTarget;
-            context.Environment = compilationTarget.Init(context.Binder);
+            context.Environment = compilationTarget.Init(context);
 
             _targets.Clear();
 

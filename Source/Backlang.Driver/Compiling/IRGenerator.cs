@@ -18,15 +18,15 @@ public static class IRGenerator
 
         var block = graph.EntryPoint;
 
-        var elementType = Utils.ResolveType(context.Binder, typeof(StringBuilder));
+        var sbType = Utils.ResolveType(context.Binder, typeof(StringBuilder));
         var varname = Utils.GenerateIdentifier();
-        var p = block.AppendParameter(new BlockParameter(elementType, varname));
+        var p = block.AppendParameter(new BlockParameter(sbType, varname));
 
-        var ctor = elementType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
-        var appendLineMethod = elementType.Methods.First(_ => _.Name.ToString() == "AppendLine" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == "String");
+        var ctor = sbType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
+        var appendLineMethod = sbType.Methods.First(_ => _.Name.ToString() == "AppendLine" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == "String");
 
         block.AppendInstruction(Instruction.CreateNewObject(ctor, new List<ValueTag>()));
-        block.AppendInstruction(Instruction.CreateAlloca(elementType));
+        block.AppendInstruction(Instruction.CreateAlloca(sbType));
 
         var loadSb = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
 
@@ -39,19 +39,17 @@ public static class IRGenerator
             AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
             var value = AppendLoadField(block, field);
 
-            var callee = elementType.Methods.FirstOrDefault(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
+            var callee = sbType.Methods.FirstOrDefault(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
 
-            if (callee != null)
+            if (callee == null)
             {
-                block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+                callee = sbType.Methods.First(_ => _.Parameters.Count == 1 && _.Parameters[0].Type.FullName.ToString() == "System.Object");
             }
-            else
-            {
-                // call tostring on field
-            }
+
+            block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
         }
 
-        var tsM = elementType.Methods.First(_ => _.Name.ToString() == "ToString");
+        var tsM = sbType.Methods.First(_ => _.Name.ToString() == "ToString");
 
         block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
@@ -73,7 +71,7 @@ public static class IRGenerator
 
         foreach (var field in type.Fields)
         {
-            ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name));
+            ctorMethod.AddParameter(new Parameter(field.FieldType, field.Name.ToString().ToLower()));
         }
 
         var graph = Utils.CreateGraphBuilder();
@@ -93,14 +91,14 @@ public static class IRGenerator
 
         block.Flow = new ReturnFlow();
 
-        ctorMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
 
         type.AddMethod(ctorMethod);
     }
 
     private static void AppendThis(BasicBlockBuilder block, IType type)
     {
-        block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
+        block.AppendInstruction(Instruction.CreateLoadArg(Parameter.CreateThisParameter(type)));
     }
 
     private static NamedInstructionBuilder AppendLoadField(BasicBlockBuilder block, IField field)

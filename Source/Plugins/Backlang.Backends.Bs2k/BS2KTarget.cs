@@ -33,7 +33,7 @@ public class BS2KTarget : ICompilationTarget
         return new Bs2kAssembly(contents);
     }
 
-    public TypeEnvironment Init(TypeResolver binder)
+    public TypeEnvironment Init(CompilerContext context)
     {
         return new Bs2KTypeEnvironment();
     }
