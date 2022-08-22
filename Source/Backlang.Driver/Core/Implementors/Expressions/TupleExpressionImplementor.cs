@@ -6,9 +6,10 @@ public class TupleExpressionImplementor : IExpressionImplementor
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType, CompilerContext context, Scope scope)
     {
-        if (elementType.FullName.Qualifier is GenericName gt && elementType is DirectTypeSpecialization dt)
+        if (elementType.FullName.Qualifier is GenericName gt)
         {
             var valueTags = new List<ValueTag>();
+            var genericTypes = new List<IType>();
 
             var gargs = elementType.GetGenericArguments();
             for (var i = 0; i < node.Args.Count; i++)
@@ -17,13 +18,17 @@ public class TupleExpressionImplementor : IExpressionImplementor
                 var argType = gargs[i];
 
                 valueTags.Add(ImplementationStage.AppendExpression(block, arg, argType, context, scope));
+                genericTypes.Add(argType);
             }
 
-            var ctor = dt.Declaration.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == valueTags.Count);
+            var ctor = elementType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == valueTags.Count);
 
             if (ctor != null)
             {
-                block.AppendInstruction(Instruction.CreateNewObject(ctor, valueTags));
+                var directMethodSpecialization = ctor.MakeGenericMethod(gargs);
+
+                GenericTypeMap.Cache.Add(((QualifiedName, IMember))(elementType.FullName, directMethodSpecialization), elementType);
+                block.AppendInstruction(Instruction.CreateNewObject(directMethodSpecialization, valueTags));
             }
         }
 
