@@ -97,9 +97,22 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     {
         DescribedType type;
 
-        if (!context.Assembly.Types.Any(_ => _.FullName.FullName == $".{Names.ProgramClass}"))
+        if (!context.Assembly.Types.Any(_ =>
+            _.FullName.ToString() == new SimpleName(Names.ProgramClass).Qualify(string.Empty).ToString()))
         {
             type = new DescribedType(new SimpleName(Names.ProgramClass).Qualify(string.Empty), context.Assembly);
+            type.IsStatic = true;
+            type.IsPublic = true;
+
+            context.Assembly.AddType(type);
+
+            goto convertFunction;
+        }
+
+        if (!context.Assembly.Types.Any(_ =>
+            _.FullName.ToString() == new SimpleName(Names.FreeFunctions).Qualify(modulename).ToString()))
+        {
+            type = new DescribedType(new SimpleName(Names.FreeFunctions).Qualify(modulename), context.Assembly);
             type.IsStatic = true;
             type.IsPublic = true;
 
@@ -107,9 +120,10 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
         else
         {
-            type = (DescribedType)context.Assembly.Types.First(_ => _.FullName.FullName == $".{Names.ProgramClass}");
+            type = (DescribedType)context.Assembly.Types.First(_ => _.Name.ToString() == Names.FreeFunctions);
         }
 
+    convertFunction:
         string methodName = ConversionUtils.GetMethodName(node);
         if (methodName == "main") methodName = "Main";
 
