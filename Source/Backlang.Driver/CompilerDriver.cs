@@ -42,6 +42,10 @@ public class CompilerDriver
            });
 
            cfg.When(_ => !hasError(_.Messages), _ => {
+               _.Add<InitEmbeddedResourcesStage>();
+           });
+
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<CompileTargetStage>();
            });
 

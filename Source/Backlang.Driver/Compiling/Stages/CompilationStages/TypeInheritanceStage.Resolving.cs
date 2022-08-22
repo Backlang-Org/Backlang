@@ -35,9 +35,12 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
     {
         bool isPointer;
+        PointerKind pointerKind = PointerKind.Transient;
+
         if (fullName.FullyUnqualifiedName is PointerName pName)
         {
             isPointer = true;
+            pointerKind = pName.Kind;
             fullName = pName.ElementName;
         }
         else
@@ -59,6 +62,18 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             }
             resolvedType = fnType;
         }
+        else if (typeNode.Calls(CodeSymbols.Tuple))
+        {
+            var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + typeNode.ArgCount).Qualify("System")).FirstOrDefault();
+
+            var tupleArgs = new List<IType>();
+            foreach (var arg in typeNode.Args)
+            {
+                tupleArgs.Add(ResolveTypeWithModule(arg, context, modulename));
+            }
+
+            return tupleType.MakeGenericType(tupleArgs);
+        }
         else
         {
             resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
@@ -71,7 +86,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         if (isPointer)
         {
-            resolvedType = resolvedType.MakePointerType(PointerKind.Transient);
+            resolvedType = resolvedType.MakePointerType(pointerKind);
         }
 
         return resolvedType;

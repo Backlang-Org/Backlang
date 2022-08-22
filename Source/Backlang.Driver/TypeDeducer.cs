@@ -1,4 +1,6 @@
-﻿namespace Backlang.Driver;
+﻿using Backlang.Codeanalysis.Core;
+
+namespace Backlang.Driver;
 
 public static class TypeDeducer
 {
@@ -52,6 +54,10 @@ public static class TypeDeducer
                 return Deduce(call.Target, scope, context);
             }
         }
+        else if (node.Calls(CodeSymbols.Tuple))
+        {
+            return DeduceTuple(node, scope, context);
+        }
         else if (node.ArgCount == 1 && node.Name.Name.StartsWith("'"))
         {
             return DeduceUnary(node, scope, context);
@@ -68,7 +74,9 @@ public static class TypeDeducer
             }
             else
             {
-                context.AddError(node, $"{node.Name} cannot be resolved");
+                var suggestion = LevensteinDistance.Suggest(node.Name.Name, scope.GetAllScopeNames());
+
+                context.AddError(node, $"{node.Name} cannot be resolved. Did you mean '{suggestion}'?");
             }
         }
 
@@ -95,6 +103,25 @@ public static class TypeDeducer
         }
 
         return deducedType;
+    }
+
+    private static IType DeduceTuple(LNode node, Scope scope, CompilerContext context)
+    {
+        var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + node.ArgCount).Qualify("System")).FirstOrDefault();
+
+        if (tupleType == null)
+        {
+            context.AddError(node, $"A tuple cannot have {node.ArgCount} arguments");
+        }
+
+        var generics = new List<IType>();
+
+        foreach (var arg in node.Args)
+        {
+            generics.Add(Deduce(arg, scope, context));
+        }
+
+        return tupleType.MakeGenericType(generics);
     }
 
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context)
@@ -193,7 +220,7 @@ public static class TypeDeducer
         {
             return left.MakePointerType(PointerKind.Transient);
         }
-        else if (node.Calls(CodeSymbols.Mul))
+        else if (node.Calls(CodeSymbols._Dereference))
         {
             if (left is PointerType pt)
             {
@@ -230,7 +257,7 @@ public static class TypeDeducer
             return opMethod.ReturnParameter.Type;
         }
 
-        if (left != right)
+        if (left != right) //ToDo: Add implicit casting check
         {
             if (left.IsPointerType())
             {

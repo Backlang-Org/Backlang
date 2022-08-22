@@ -4,7 +4,7 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class CallExpressionEmitter : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.IsCall;
+    public bool CanHandle(LNode node) => node.IsCall && !node.Calls(CodeSymbols.Tuple);
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope)
@@ -16,7 +16,7 @@ public class CallExpressionEmitter : IExpressionImplementor
 
         if (scope.TryGet<FunctionScopeItem>(node.Name.Name, out var fn))
         {
-            return ImplementationStage.AppendCall(context, block, node, fn.Method.ParentType.Methods, scope, node.Name.Name);
+            return ImplementationStage.AppendCall(context, block, node, fn.Overloads, scope, node.Name.Name);
         }
 
         context.AddError(node, $"function {node.Name.Name} not found");

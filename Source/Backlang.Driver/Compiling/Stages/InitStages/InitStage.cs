@@ -11,7 +11,6 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         InitTypeSystem(context);
 
         InitReferences(context);
-        InitEmbeddedResources(context);
 
         return await next.Invoke(context);
     }
@@ -25,24 +24,5 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
     {
         var plugins = PluginContainer.Load();
         context.Plugins = plugins;
-    }
-
-    private static void InitEmbeddedResources(CompilerContext context)
-    {
-        foreach (var resource in context.EmbeddedResource)
-        {
-            Stream strm = File.OpenRead(resource);
-
-            foreach (var preprocessor in context.Plugins.Preprocessors)
-            {
-                if (preprocessor.Extension == Path.GetExtension(resource))
-                {
-                    strm = preprocessor.Preprocess(strm);
-                }
-
-                var attr = new EmbeddedResourceAttribute(Path.GetFileName(resource), strm);
-                context.Assembly.AddAttribute(attr);
-            }
-        }
     }
 }

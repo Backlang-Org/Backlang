@@ -14,7 +14,28 @@ public static class TypeUtils
     {
         if (type.Qualifier is PointerName pn)
         {
-            return new PointerType(ImportType(_assemblyDefinition, pn.ElementName));
+            var ptrType = ImportType(_assemblyDefinition, pn.ElementName);
+
+            if (pn.Kind == PointerKind.Transient)
+            {
+                return new PointerType(ptrType);
+            }
+            else if (pn.Kind == PointerKind.Reference)
+            {
+                return new ByReferenceType(ptrType);
+            }
+        }
+        else if (type.Qualifier is GenericName gn)
+        {
+            var innerType = ImportType(_assemblyDefinition, gn.DeclarationName);
+            var genericType = new GenericInstanceType(innerType);
+
+            foreach (var arg in gn.TypeArgumentNames)
+            {
+                genericType.GenericArguments.Add(ImportType(_assemblyDefinition, arg));
+            }
+
+            return genericType;
         }
 
         return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());

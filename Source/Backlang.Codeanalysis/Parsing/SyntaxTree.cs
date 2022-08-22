@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Loyc;
 using Loyc.Syntax;
 
@@ -161,6 +161,11 @@ public static class SyntaxTree
     public static LNode Pointer(LNode type)
     {
         return Factory.Call(Symbols.PointerType, LNode.List(type));
+    }
+
+    public static LNode RefType(LNode type)
+    {
+        return Factory.Call(Symbols.RefType, LNode.List(type));
     }
 
     public static LNode Signature(LNode name, LNode type, LNodeList args, LNodeList generics)

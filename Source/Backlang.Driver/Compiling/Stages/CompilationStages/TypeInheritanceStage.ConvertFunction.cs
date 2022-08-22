@@ -54,7 +54,12 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             method.IsDestructor = true;
         }
 
-        var functionItem = new FunctionScopeItem { Name = methodName, SubScope = scope, Method = method };
+        var functionItem = new FunctionScopeItem
+        {
+            Name = methodName,
+            SubScope = scope,
+            Overloads = new() { method }
+        };
 
         if (hasBody)
         {
@@ -115,10 +120,10 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
     private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)
     {
-        var ptype = p.Args[0].Args[0].Args[0];
+        var ptype = p.Args[0];
+        var assignment = p.Args[1];
 
         var type = ResolveTypeWithModule(ptype, context, modulename);
-        var assignment = p.Args[1];
 
         var name = assignment.Args[0].Name;
 

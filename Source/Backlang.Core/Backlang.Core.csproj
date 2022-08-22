@@ -1,13 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<Authors>Furesoft, Backlang-Org</Authors>
+	<PackageProjectUrl>https://www.backlang-org/</PackageProjectUrl>
+	<PackageIcon>logo.png</PackageIcon>
+	<RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
+	<PackageTags>backlang</PackageTags>
+	<IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="LeMP" Version="30.1.0" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Update="logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 	
 	<Import Project="$(SolutionDir)\Version.props" />
 </Project>
