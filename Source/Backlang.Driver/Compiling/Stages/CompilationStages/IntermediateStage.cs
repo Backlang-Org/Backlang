@@ -8,11 +8,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
-        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(string.Empty), context.Assembly)
-        {
-            IsStatic = true,
-            IsPublic = true
-        };
 
         foreach (var tree in context.Trees)
         {
@@ -35,7 +30,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             }
         }
 
-        context.Assembly.AddType(context.ExtensionsType);
         context.Binder.AddAssembly(context.Assembly);
 
         return await next.Invoke(context);

@@ -19,8 +19,6 @@ public sealed class CompilerContext
 
     public TypeEnvironment Environment { get; set; }
 
-    public DescribedType ExtensionsType { get; set; }
-
     [Option('i', "input", Required = true, HelpText = "Input files to be compiled.")]
     public IEnumerable<string> InputFiles { get; set; }
 
