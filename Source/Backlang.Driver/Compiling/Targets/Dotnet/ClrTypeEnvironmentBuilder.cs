@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -6,6 +7,8 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class ClrTypeEnvironmentBuilder
 {
+    private static ConcurrentBag<(MethodBase, DescribedMethod)> toAdjustParameters = new();
+
     public static IAssembly CollectTypes(Assembly ass)
     {
         var assembly = new DescribedAssembly(new QualifiedName(ass.GetName().Name));
@@ -66,6 +69,13 @@ public class ClrTypeEnvironmentBuilder
 
             AddMembers(type, t, resolver);
         });
+
+        foreach (var toadjust in toAdjustParameters)
+        {
+            ConvertParameter(toadjust.Item1.GetParameters(), toadjust.Item2, resolver);
+        }
+
+        toAdjustParameters.Clear();
     }
 
     public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
@@ -78,13 +88,18 @@ public class ClrTypeEnvironmentBuilder
 
                 method.IsConstructor = true;
 
-                ConvertParameter(ctor.GetParameters(), method, resolver);
+                toAdjustParameters.Add((ctor, method));
+
+                foreach (DescribedGenericParameter gp in t.GenericParameters)
+                {
+                    method.AddGenericParameter(new DescribedGenericParameter(method, new SimpleName(gp.Name.ToString())));
+                }
 
                 t.AddMethod(method);
             }
             else if (member is MethodInfo m && m.IsPublic)
             {
-                AddMethod(t, resolver, m);
+                AddMethod(t, resolver, m, toAdjustParameters);
             }
             else if (member is FieldInfo field && field.IsPublic)
             {
@@ -103,12 +118,13 @@ public class ClrTypeEnvironmentBuilder
         });
     }
 
-    public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m, string newName = null)
+    public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m,
+        ConcurrentBag<(MethodBase, DescribedMethod)> toAdjustParameters, string newName = null)
     {
         var method = new DescribedMethod(t, new SimpleName(newName ?? m.Name),
             m.IsStatic, Utils.ResolveType(resolver, m.ReturnType));
 
-        ConvertParameter(m.GetParameters(), method, resolver);
+        toAdjustParameters.Add((m, method));
 
         foreach (var attr in m.GetCustomAttributes())
         {
@@ -134,6 +150,8 @@ public class ClrTypeEnvironmentBuilder
                 var pa = new Parameter(type, p.Name);
                 method.AddParameter(pa);
             }
+
+            method.AddParameter(new Parameter());
         }
     }
 }
