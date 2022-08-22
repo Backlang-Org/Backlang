@@ -1,5 +1,7 @@
 ﻿using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace Backlang.Driver.Compiling.Stages.InitStages;
 
@@ -77,13 +79,14 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         }
 
         var methods = type.GetMethods().Where(_ => _.IsStatic);
+        var toAdjustParameters = new ConcurrentBag<(MethodBase, DescribedMethod)>();
 
         foreach (var method in methods)
         {
             var tmpBinder = new TypeResolver(binder.Assemblies.First());
             tmpBinder.AddAssembly(intrinsicAssembly);
 
-            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, tmpBinder, method, method.Name.ToLower());
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, tmpBinder, method, toAdjustParameters, method.Name.ToLower());
         }
 
         intrinsicAssembly.AddType(instrinsicsType);
