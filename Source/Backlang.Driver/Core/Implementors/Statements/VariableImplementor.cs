@@ -1,4 +1,4 @@
-using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Contracts.Scoping.Items;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
@@ -51,7 +51,7 @@ public class VariableImplementor : IStatementImplementor
             context.AddError(decl.Args[0], $"{varname} already declared");
         }
 
-        if (deducedValueType == null) return null;
+        if (deducedValueType == null) return block;
 
         ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope);
 
