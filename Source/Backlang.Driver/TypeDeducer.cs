@@ -58,6 +58,10 @@ public static class TypeDeducer
         {
             return DeduceTuple(node, scope, context);
         }
+        else if (node.Calls(CodeSymbols.Array))
+        {
+            return DeduceArray(node, scope, context);
+        }
         else if (node.ArgCount == 1 && node.Name.Name.StartsWith("'"))
         {
             return DeduceUnary(node, scope, context);
@@ -103,6 +107,34 @@ public static class TypeDeducer
         }
 
         return deducedType;
+    }
+
+    private static IType DeduceArray(LNode node, Scope scope, CompilerContext context)
+    {
+        //ToDo: Make deducing array type better
+        int rank = GetArrayRank(node);
+
+        while (node.ArgCount > 0 && node[0].Calls(CodeSymbols.Array))
+        {
+            node = node[0];
+        }
+
+        return context.Environment.MakeArrayType(Deduce(node.Args[0], scope, context), rank);
+    }
+
+    private static int GetArrayRank(LNode node)
+    {
+        int rank = 0;
+
+        while (node.Calls(CodeSymbols.Array))
+        {
+            rank++;
+
+            if (node.ArgCount > 0)
+                node = node[0];
+        }
+
+        return rank;
     }
 
     private static IType DeduceTuple(LNode node, Scope scope, CompilerContext context)
