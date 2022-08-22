@@ -1,9 +1,4 @@
-﻿using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Loyc.Syntax;
+﻿using Backlang.Contracts.Scoping.Items;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
@@ -15,14 +10,9 @@ public class CallImplementor : IStatementImplementor
     {
         if (node is ("'.", var target, var callee) && target is ("this", _))
         {
-            //AppendThis(block, method.ParentType); // we do that already in AppendCall
-
-            var type = method.ParentType;
-            var call = type.Methods.FirstOrDefault(_ => _.Name.ToString() == callee.Name.Name);
-
-            if (callee != null)
+            if (scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
             {
-                AppendCall(context, block, callee, type.Methods, scope);
+                AppendCall(context, block, callee, fsi.Overloads, scope);
             }
             else
             {

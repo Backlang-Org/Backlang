@@ -1,7 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
+﻿using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -42,35 +39,34 @@ public class DotNetAssembly : ITargetAssembly
 
     public void WriteTo(Stream output)
     {
-        var types = new ConcurrentBag<TypeDefinition>();
+        var typeMap = new ConcurrentDictionary<DescribedType, TypeDefinition>();
 
-        Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
+        foreach (var type in _assembly.Types.Cast<DescribedType>())
+        {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
-                type.Name.ToString(), TypeAttributes.Class);
+               type.Name.ToString(), TypeAttributes.Class);
+            _assemblyDefinition.MainModule.Types.Add(clrType);
 
-            ConvertCustomAttributes(type, clrType);
-            ApplyModifiers(type, clrType);
-            SetBaseType(type, clrType);
-            ConvertFields(type, clrType);
-            ConvertProperties(type, clrType);
-            ConvertMethods(type, clrType);
+            typeMap.AddOrUpdate(type, (_) => clrType, (_, __) => clrType);
+        }
 
-            types.Add(clrType);
+        Parallel.ForEachAsync(typeMap.AsParallel(), (KeyValuePair, ct) => {
+            ConvertCustomAttributes(KeyValuePair.Key, KeyValuePair.Value);
+            ApplyModifiers(KeyValuePair.Key, KeyValuePair.Value);
+            SetBaseType(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertFields(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertProperties(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertMethods(KeyValuePair.Key, KeyValuePair.Value);
 
             return ValueTask.CompletedTask;
         }).Wait();
-
-        foreach (var type in types)
-        {
-            _assemblyDefinition.MainModule.Types.Add(type);
-        }
 
         AdjustBaseTypesAndInterfaces();
 
         CompileBodys();
 
         Parallel.ForEach(_assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>(), (er) => {
-            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, File.OpenRead(er.Filename));
+            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, er.Strm);
 
             _assemblyDefinition.MainModule.Resources.Add(err);
         });
@@ -377,7 +373,6 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (DescribedField field in type.Fields)
         {
-            //ToDo: fix fieldtype emit: (type is not available)
             var fieldType = Resolve(field.FieldType.FullName);
             var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
@@ -536,6 +531,9 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(IType dtype)
     {
+        //ToDo: Only for debugging, remove if typecheck is done
+        if (dtype == null) throw new Exception($"Type not found");
+
         var resolvedType = Resolve(dtype.FullName);
         if (resolvedType.HasGenericParameters)
         {

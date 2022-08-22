@@ -8,6 +8,9 @@ public sealed class PluginContainer
     [ImportMany(typeof(ICompilationTarget))]
     public List<ICompilationTarget> Targets { get; set; }
 
+    [ImportMany(typeof(IResourcePreprocessor))]
+    public List<IResourcePreprocessor> Preprocessors { get; set; }
+
     public static PluginContainer Load()
     {
         var pluginDir = Path.Combine(

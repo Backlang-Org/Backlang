@@ -22,6 +22,12 @@ public sealed class TypeLiteral
 
                 typeNode = SyntaxTree.Pointer(typeNode).WithRange(typeToken, iterator.Prev);
             }
+            if (iterator.IsMatch(TokenType.Ampersand))
+            {
+                iterator.NextToken();
+
+                typeNode = SyntaxTree.RefType(typeNode).WithRange(typeToken, iterator.Prev);
+            }
             else if (iterator.IsMatch(TokenType.OpenSquare))
             {
                 iterator.NextToken();
@@ -68,8 +74,6 @@ public sealed class TypeLiteral
         }
         else if (iterator.IsMatch(TokenType.OpenParen))
         {
-            LNode returnType = LNode.Missing;
-
             iterator.Match(TokenType.OpenParen);
 
             var parameters = Expression.ParseList(parser, TokenType.CloseParen);
@@ -78,15 +82,20 @@ public sealed class TypeLiteral
             {
                 iterator.NextToken();
 
-                returnType = TypeLiteral.Parse(iterator, parser);
+                var returnType = TypeLiteral.Parse(iterator, parser);
+
+                typeNode = SyntaxTree.Factory.Call(CodeSymbols.Fn,
+                    LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters))).WithRange(typeToken, iterator.Prev);
+            }
+            else
+            {
+                typeNode = SyntaxTree.Factory.Tuple(parameters).WithRange(typeToken, iterator.Prev);
             }
 
-            typeNode = LNode.Call(CodeSymbols.Fn,
-                LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters))).WithRange(typeToken, iterator.Prev);
         }
         else
         {
-            parser.AddError("Expected Identifier or Function-Signature as TypeLiteral, but got " + iterator.Current.Type);
+            parser.AddError("Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got " + iterator.Current.Type);
 
             typeNode = LNode.Missing;
             iterator.NextToken();

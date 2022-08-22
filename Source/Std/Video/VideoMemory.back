@@ -1,29 +1,30 @@
 import Color;
 
-const VideoMemory::Width = 480;
-const VideoMemory::Height = VideoMemory::Width / 4 * 3;
-
 struct VideoMemory {
-    FramebufferAddress : i8;
+    let FramebufferAddress : i8;
+    
+    const Width = 480;
+    const Height = Width / 4 * 3;
 }
 
-implement static VideoMemory {
-    func new() {
-        asm {
-            InvFbAddr S;
-            mov &[FramebufferAddress], S;
+implement VideoMemory {
+
+    public constructor() {
+        inline(bs2k) {
+            InvFbAddr(R1);
+            mov(&FramebufferAddress, R1);
         }
     }
 
-    func swap() {
-        asm {
-            Swap;
-            InvFbAddr S;
-            mov &[FramebufferAddress], S;
+    public func swap() {
+        inline(bs2K) {
+            Swap();
+            InvFbAddr(R1);
+            mov(&FramebufferAddress, R1);
         }
     }
 
-    func setPixel(x : u32, y : u32, color : Color) {
+    public func setPixel(x : u32, y : u32, color : Color) {
         let address : u32* = y * VideoMemory::Width + x;
 
         *address = color.value;

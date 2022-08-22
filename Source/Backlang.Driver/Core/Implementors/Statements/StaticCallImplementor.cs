@@ -1,13 +1,4 @@
-﻿using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
-using Backlang.Driver.Compiling.Stages.CompilationStages;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Loyc.Syntax;
-
-namespace Backlang.Driver.Core.Implementors.Statements;
+﻿namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class StaticCallImplementor : IStatementImplementor, IExpressionImplementor
 {

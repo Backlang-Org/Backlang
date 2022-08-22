@@ -1,8 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Contracts;
-using Backlang.Core.CompilerService;
+﻿using Backlang.Core.CompilerService;
 using Flo;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
@@ -68,7 +65,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         var entryPoint = context.Assembly.Types
             .FirstOrDefault(_ => _.FullName.ToString() == $".{Names.ProgramClass}")
-            .Methods.FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+            ?.Methods.FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
 
         if (entryPoint == null)
         {

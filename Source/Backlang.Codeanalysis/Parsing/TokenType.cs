@@ -67,6 +67,7 @@ public enum TokenType
     StarStar,
 
     [BinaryOperatorInfo(BinaryOpPrecedences.Percent)]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
     [Lexeme("%")]
     Percent,
 

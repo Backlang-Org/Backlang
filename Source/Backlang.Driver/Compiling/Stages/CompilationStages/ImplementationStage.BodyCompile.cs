@@ -1,18 +1,10 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Contracts;
-using Backlang.Contracts.Scoping;
+﻿using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Loyc;
-using Loyc.Syntax;
-using System.Collections.Immutable;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
@@ -31,13 +23,16 @@ public partial class ImplementationStage
 
     private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
     {
+        new TupleExpressionImplementor(),
         new DefaultExpressionImplementor(),
         new AddressExpressionImplementor(),
+        new UnaryExpressionImplementor(),
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
         new ConstantExpressionEmitter(),
         new StaticCallImplementor(),
+
         new CallExpressionEmitter(), //should be added as last
     }.ToImmutableList();
 
@@ -51,7 +46,7 @@ public partial class ImplementationStage
 
         return new MethodBody(
             method.ReturnParameter,
-            new Parameter(method.ParentType),
+            method.IsStatic ? new Parameter() : Parameter.CreateThisParameter(method.ParentType),
             EmptyArray<Parameter>.Value,
             graph.ToImmutable());
     }
@@ -62,7 +57,7 @@ public partial class ImplementationStage
         {
             if (!node.IsCall) continue;
 
-            if (node.Calls(Symbols.Block))
+            if (node.Calls(CodeSymbols.Braces))
             {
                 if (node.ArgCount == 0) continue;
 
@@ -72,6 +67,9 @@ public partial class ImplementationStage
             if (_implementations.ContainsKey(node.Name))
             {
                 block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
+
+                if (block == null)
+                    return block;
             }
             else if (node.Calls("print"))
             {
@@ -83,18 +81,27 @@ public partial class ImplementationStage
             }
             else
             {
+                //ToDo: May with Scope?
                 //ToDo: continue implementing static function call in same type
-                var type = method.ParentType;
+                var type = (DescribedType)method.ParentType;
                 var calleeName = node.Target;
-                var callee = type.Methods.FirstOrDefault(_ => _.Name.ToString() == calleeName.Name.Name);
 
-                if (callee != null)
+                if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
                 {
+                    if (type.IsStatic && !callee.IsStatic)
+                    {
+                        context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
+                        return block;
+                    }
+
+                    //ToDo: add overload AppendCall with known callee
                     AppendCall(context, block, node, type.Methods, scope);
                 }
                 else
                 {
-                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'");
+                    var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
+
+                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'. Did you mean '{suggestion}'?");
                 }
             }
         }
@@ -112,6 +119,29 @@ public partial class ImplementationStage
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
         LNode node, IEnumerable<IMethod> methods, Scope scope, string methodName = null)
+    {
+        var argTypes = new List<IType>();
+
+        foreach (var arg in node.Args)
+        {
+            var type = TypeDeducer.Deduce(arg, scope, context);
+
+            if (type != null)
+                argTypes.Add(type);
+        }
+
+        if (methodName == null)
+        {
+            methodName = node.Name.Name;
+        }
+
+        var method = GetMatchingMethod(context, argTypes, methods, methodName);
+
+        return AppendCall(context, block, node, method, scope);
+    }
+
+    public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
+        LNode node, IMethod method, Scope scope)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
@@ -149,17 +179,12 @@ public partial class ImplementationStage
                 }
                 else
                 {
-                    context.AddError(arg, $"{arg.Name.Name} cannot be found");
+                    var suggestion = LevensteinDistance.Suggest(arg.Name.Name, scope.GetAllScopeNames());
+
+                    context.AddError(arg, $"{arg.Name.Name} cannot be found. Did you mean '{suggestion}'?");
                 }
             }
         }
-
-        if (methodName == null)
-        {
-            methodName = node.Name.Name;
-        }
-
-        var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
         if (method == null) return null;
 

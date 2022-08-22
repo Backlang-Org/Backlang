@@ -1,8 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
-using LeMP;
-
-namespace Backlang.Contracts;
+﻿namespace Backlang.Contracts;
 
 public interface ICompilationTarget : ITarget
 {

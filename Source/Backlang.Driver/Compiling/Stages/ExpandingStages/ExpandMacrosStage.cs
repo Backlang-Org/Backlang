@@ -1,12 +1,8 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Contracts;
-using Backlang.Core.Macros;
+﻿using Backlang.Core.Macros;
 using Backlang.Driver.InternalMacros;
 using Flo;
 using LeMP;
-using Loyc;
 using Loyc.Collections;
-using Loyc.Syntax;
 using System.Runtime.Loader;
 
 namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
@@ -41,7 +37,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
 
                 if (assembly == null)
                 {
-                    context.Messages.Add(Message.Error(null, "Could not load " + ml, -1, -1));
+                    context.Messages.Add(Message.Error("Could not load " + ml, SourceRange.Synthetic));
                 }
                 else
                 {
@@ -62,7 +58,9 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
             {
                 foreach (var error in errors.List)
                 {
-                    var msg = Message.Error(tree.Document, error.Formatted, 0, 0);
+                    var range = (SourceRange)error.Location;
+
+                    var msg = Message.Error(error.Formatted, range);
                     msg.Severity = ConvertSeverity(error.Severity);
 
                     context.Messages.Add(msg);

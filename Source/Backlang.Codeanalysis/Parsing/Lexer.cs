@@ -1,5 +1,6 @@
 using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
+using Loyc.Syntax;
 using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -163,7 +164,8 @@ public sealed class Lexer : BaseLexer
 
         if (Current() == '\n' || Current() == '\r')
         {
-            Messages.Add(Message.Error(_document, $"Unterminated CharLiteral", _line, oldColumn));
+            var range = new SourceRange(_document, _column, 1);
+            Messages.Add(Message.Error($"Unterminated CharLiteral", range));
 
             return Token.Invalid;
         }
@@ -214,7 +216,8 @@ public sealed class Lexer : BaseLexer
         {
             if (Current() == '\n' || Current() == '\r')
             {
-                Messages.Add(Message.Error(_document, $"Unterminated String", _line, oldColumn));
+                var range = new SourceRange(_document, _column, 1);
+                Messages.Add(Message.Error($"Unterminated String", range));
             }
 
             Advance();
@@ -273,61 +276,65 @@ public sealed class Lexer : BaseLexer
 
     private void SkipComments()
     {
-        if (IsMatch("//"))
+        while (IsMatch("/*") || IsMatch("//"))
         {
-            Advance();
-            Advance();
-            _column++;
-            _column++;
-
-            while (Current() != '\n' && Current() != '\r' && Current() != '\0')
+            if (IsMatch("//"))
             {
                 Advance();
-                _column++;
-            }
-
-            if (Current() == '\n' || Current() == '\r')
-            {
                 Advance();
                 _column++;
-            }
+                _column++;
 
-            SkipWhitespaces();
-        }
-        else if (IsMatch("/*"))
-        {
-            int oldcol = _column;
-
-            Advance();
-            Advance();
-            _column++;
-            _column++;
-
-            while (!IsMatch("*/"))
-            {
-                if (Current() == '\0')
+                while (Current() != '\n' && Current() != '\r' && Current() != '\0')
                 {
-                    break;
+                    Advance();
+                    _column++;
                 }
-                Advance();
-                _column++;
-            }
 
-            if (IsMatch("*/"))
+                if (Current() == '\n' || Current() == '\r')
+                {
+                    Advance();
+                    _column++;
+                }
+
+                SkipWhitespaces();
+            }
+            else if (IsMatch("/*"))
             {
-                Advance();
-                _column++;
+                int oldcol = _column;
 
                 Advance();
+                Advance();
                 _column++;
-            }
-            else
-            {
-                Messages.Add(Message.Error(_document, "Multiline comment is not closed.", _line, oldcol));
-                return;
-            }
+                _column++;
 
-            SkipWhitespaces();
+                while (!IsMatch("*/"))
+                {
+                    if (Current() == '\0')
+                    {
+                        break;
+                    }
+                    Advance();
+                    _column++;
+                }
+
+                if (IsMatch("*/"))
+                {
+                    Advance();
+                    _column++;
+
+                    Advance();
+                    _column++;
+                }
+                else
+                {
+                    var range = new SourceRange(_document, _column, 1);
+                    Messages.Add(Message.Error("Multiline comment is not closed.", range));
+                    return;
+                }
+
+                SkipWhitespaces();
+            }
         }
     }
 

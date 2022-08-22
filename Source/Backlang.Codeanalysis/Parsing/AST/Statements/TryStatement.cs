@@ -13,7 +13,9 @@ public sealed class TryStatement : IParsePoint<LNode>
 
         if (iterator.Current.Type != TokenType.Catch)
         {
-            parser.Messages.Add(Message.Error(parser.Document, "Expected at least one catch block at try statement", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+            var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
+
+            parser.Messages.Add(Message.Error("Expected at least one catch block at try statement", range));
         }
 
         while (iterator.Current.Type == TokenType.Catch)

@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-
-namespace Backlang.Contracts.Scoping.Items;
+﻿namespace Backlang.Contracts.Scoping.Items;
 
 public class VariableScopeItem : ScopeItem
 {

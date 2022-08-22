@@ -1,0 +1,11 @@
+﻿global using Backlang.Codeanalysis.Parsing;
+global using Backlang.Codeanalysis.Parsing.AST;
+global using Backlang.Contracts.Scoping;
+global using CommandLine;
+global using Furesoft.Core.CodeDom.Compiler.Core;
+global using Furesoft.Core.CodeDom.Compiler.Core.Names;
+global using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+global using Furesoft.Core.CodeDom.Compiler.Pipeline;
+global using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+global using LeMP;
+global using Loyc.Syntax;

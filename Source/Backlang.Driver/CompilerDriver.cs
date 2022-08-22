@@ -1,11 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Contracts;
-using Backlang.Driver.Compiling.Stages;
-using Backlang.Driver.Compiling.Stages.CompilationStages;
-using Backlang.Driver.Compiling.Stages.ExpandingStages;
-using Backlang.Driver.Compiling.Stages.InitStages;
-
-namespace Backlang.Driver;
+﻿namespace Backlang.Driver;
 
 public class CompilerDriver
 {
@@ -46,6 +39,10 @@ public class CompilerDriver
 
            cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<ImplementationStage>();
+           });
+
+           cfg.When(_ => !hasError(_.Messages), _ => {
+               _.Add<InitEmbeddedResourcesStage>();
            });
 
            cfg.When(_ => !hasError(_.Messages), _ => {

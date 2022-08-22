@@ -1,16 +1,10 @@
-public static func main() -> i32 {
-	let n = default(i32);
+public static func main() {
 
-  println(default(i32));
-
-  System.Console::WriteLine(greet("Chris"));
-
-
-  return 0;
+    let myTuple  = (1, 2);
+    let otherTuple = ('c', "world");
+   
 }
 
-public static func greet(name: string) -> string {
-  return "Morning " + name + "! :D";
-}
+public static func printTuple() {
 
-class hh {}
+}

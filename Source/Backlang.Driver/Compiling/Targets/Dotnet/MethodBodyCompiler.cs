@@ -1,7 +1,4 @@
-﻿using Backlang.Contracts;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -385,6 +382,23 @@ public static class MethodBodyCompiler
 
             if (parameters.Count == method.Parameters.Count)
             {
+                if (method.GenericParameters.Any())
+                {
+                    if (method.IsConstructor)
+                    {
+                        var dts = (DirectTypeSpecialization)GenericTypeMap.Cache[(method.FullName, method)];
+                        var args = dts.GetRecursiveGenericArguments().Select(_ => assemblyDefinition.ImportType(_)).ToArray();
+                        var genericType = assemblyDefinition.ImportType(dts);
+                        var gctor = genericType.Resolve().Methods.FirstOrDefault(_ => _.Name == method.Name.ToString());
+
+                        var mm = m.MakeHostInstanceGeneric(args);
+
+                        return assemblyDefinition.MainModule.ImportReference(mm);
+                    }
+
+                    return m;
+                }
+
                 if (MatchesParameters(parameters, method))
                     return assemblyDefinition.MainModule.ImportReference(m);
             }
@@ -396,9 +410,19 @@ public static class MethodBodyCompiler
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
     {
         //ToDo: refactor to improve code
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var methodParams = string.Join(',', method.Parameters.Select(_ => NormalizeTypename(_.Type?.FullName.ToString())));
         var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
         return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
+    }
+
+    private static string NormalizeTypename(string str)
+    {
+        if (!string.IsNullOrEmpty(str) && str.StartsWith("."))
+        {
+            return str.Substring(1);
+        }
+
+        return str;
     }
 }

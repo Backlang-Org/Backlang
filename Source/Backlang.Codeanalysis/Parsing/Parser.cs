@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
@@ -28,14 +29,12 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
         AddDeclarationParsePoint<ImplementationDeclaration>(TokenType.Implement);
         AddDeclarationParsePoint<ImportStatement>(TokenType.Import);
         AddDeclarationParsePoint<StructDeclaration>(TokenType.Struct);
-        AddDeclarationParsePoint<GlobalVariableDeclaration>(TokenType.Global);
-        AddDeclarationParsePoint<ConstVariableDeclaration>(TokenType.Const);
         AddDeclarationParsePoint<ModuleDeclaration>(TokenType.Module);
         AddDeclarationParsePoint<TypeAliasDeclaration>(TokenType.Using);
         AddDeclarationParsePoint<MacroBlockDeclaration>(TokenType.Identifier);
 
         AddExpressionParsePoint<NameExpression>(TokenType.Identifier);
-        AddExpressionParsePoint<GroupExpression>(TokenType.OpenParen);
+        AddExpressionParsePoint<GroupOrTupleExpression>(TokenType.OpenParen);
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
         AddExpressionParsePoint<SizeOfExpression>(TokenType.SizeOf);
@@ -103,7 +102,19 @@ public sealed partial class Parser : Core.BaseParser<Lexer, Parser>
             return parsePoints[type](Iterator, this);
         }
 
-        Messages.Add(Message.Error(Document, $"Expected {string.Join(", ", parsePoints.Keys)}, got '{Iterator.Current.Text}'", Iterator.Current.Line, Iterator.Current.Column));
+        var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
+
+        var suggestion = LevensteinDistance.Suggest(Iterator.Current.Text, parsePoints.Keys.Select(_ => _.ToString().ToLower()));
+
+        if (string.IsNullOrEmpty(suggestion))
+        {
+            Messages.Add(Message.Error($"Unexpected '{Iterator.Current.Text}'", range));
+        }
+        else
+        {
+            Messages.Add(Message.Error($"Did you mean '{suggestion}'?'", range));
+        }
+
         Iterator.NextToken();
 
         return default;

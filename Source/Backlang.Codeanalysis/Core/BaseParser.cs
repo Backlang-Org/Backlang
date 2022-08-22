@@ -26,7 +26,7 @@ public abstract class BaseParser<TLexer, TParser>
 
         if (document.Text == null)
         {
-            return (LNode.List(LNode.Missing), new() { Message.Error(document, "Empty File", 0, 0) });
+            return (LNode.List(LNode.Missing), new() { Message.Error("Empty File", SourceRange.Synthetic) });
         }
 
         var lexer = new TLexer();

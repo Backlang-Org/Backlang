@@ -1,5 +1,4 @@
-﻿using Backlang.Contracts;
-using Flo;
+﻿using Flo;
 
 namespace Backlang.Driver.Compiling.Stages.InitStages;
 
@@ -11,7 +10,6 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
         InitTypeSystem(context);
 
-        InitEmbeddedResources(context);
         InitReferences(context);
 
         return await next.Invoke(context);
@@ -26,14 +24,5 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
     {
         var plugins = PluginContainer.Load();
         context.Plugins = plugins;
-    }
-
-    private static void InitEmbeddedResources(CompilerContext context)
-    {
-        foreach (var resource in context.EmbeddedResource)
-        {
-            var attr = new EmbeddedResourceAttribute(Path.GetFileName(resource), resource);
-            context.Assembly.AddAttribute(attr);
-        }
     }
 }

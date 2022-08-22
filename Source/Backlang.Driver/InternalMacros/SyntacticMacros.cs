@@ -1,13 +1,34 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using LeMP;
-using Loyc;
-using Loyc.Syntax;
+﻿using LeMP;
 
 namespace Backlang.Driver.InternalMacros;
 
 [ContainsMacros]
 public static class SyntacticMacros
 {
+    private static readonly Dictionary<string, (string OperatorName, int ArgumentCount)> OpMap = new()
+    {
+        ["add"] = ("Addition", 2),
+        ["sub"] = ("Subtraction", 2),
+        ["mul"] = ("Multiply", 2),
+        ["div"] = ("Division", 2),
+        ["mod"] = ("Modulus", 2),
+
+        ["logical_not"] = ("LogicalNot", 1),
+
+        ["neg"] = ("UnaryNegation", 1),
+
+        ["bitwise_and"] = ("BitwiseAnd", 2),
+        ["bitwise_or"] = ("BitwiseOr", 2),
+        ["exclusive_or"] = ("ExclusiveOr", 2),
+
+        ["bitwise_not"] = ("OnesComplement", 1),
+
+        ["deref"] = ("Deref", 1),
+        ["addrof"] = ("AddressOf", 2),
+
+        ["percent"] = ("Percentage", 1),
+    };
+
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
@@ -45,22 +66,56 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Div);
     }
 
-    [LexicalMacro("operator", "Convert to public static op_", "#fn", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("operator", "Convert to public static op_", "#fn",
+        Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverride)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
     {
-        var operatorAttribute = LNode.Id((Symbol)"#operator");
+        var operatorAttribute = SyntaxTree.Factory.Id((Symbol)"#operator");
         if (@operator.Attrs.Contains(operatorAttribute))
         {
             var newAttrs = new LNodeList() { LNode.Id(CodeSymbols.Public), LNode.Id(CodeSymbols.Static), LNode.Id(CodeSymbols.Operator) };
             var modChanged = @operator.WithAttrs(newAttrs);
             var fnName = @operator.Args[1];
+            var compContext = (CompilerContext)context.ScopedProperties["Context"];
 
-            var opMap = GetOpMap();
-            if (opMap.ContainsKey(fnName.Name.Name))
+            if (fnName is (_, (_, var name)) && OpMap.ContainsKey(name.Name.Name))
             {
-                var newTarget = LNode.Id("op_" + opMap[fnName.Name.Name]);
+                var op = OpMap[name.Name.Name];
+
+                if (@operator[2].ArgCount != op.ArgumentCount)
+                {
+                    compContext.AddError(@operator, $"Cannot overload operator, parameter count mismatch. {op.ArgumentCount} parameters expected");
+                }
+
+                var newTarget = SyntaxTree.Type("op_" + op.OperatorName, LNode.List()).WithRange(fnName.Range);
                 return modChanged.WithArgChanged(1, newTarget);
             }
+        }
+
+        return @operator;
+    }
+
+    [LexicalMacro("12%", "divide by 100 (percent)", "'%", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Percentage(LNode @operator, IMacroContext context)
+    {
+        if (@operator is (_, var inner))
+        {
+            if (inner.ArgCount == 1 && inner.Args[0] is LiteralNode ln)
+            {
+                dynamic percentValue = ((dynamic)ln.Value) / 100;
+
+                if (percentValue is int pi)
+                {
+                    return LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal(pi)));
+                }
+                else if (percentValue is double di)
+                {
+                    return LNode.Call(Symbols.Float32, LNode.List(LNode.Literal(di)));
+                }
+            }
+
+            return SyntaxTree.Binary(CodeSymbols.Div, inner,
+                LNode.Call(CodeSymbols.Int32, LNode.List(LNode.Literal(100))));
         }
 
         return @operator;
@@ -105,7 +160,7 @@ public static class SyntacticMacros
         return node;
     }
 
-    [LexicalMacro("target(CLR) {}", "Only Compile Code If CompilationTarget Is CLR", "target", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("target(dotnet) {}", "Only Compile Code If CompilationTarget Is Selected", "target", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode TargetMacro(LNode node, IMacroContext context)
     {
         var target = (string)context.ScopedProperties["Target"];
@@ -115,6 +170,8 @@ public static class SyntacticMacros
         {
             return node.Args[1];
         }
+
+        context.DropRemainingNodes = true;
 
         return LNode.Call((Symbol)"'{}");
     }
@@ -168,17 +225,5 @@ public static class SyntacticMacros
         var arg2 = @operator.Args[1];
 
         return F.Call(CodeSymbols.Assign, arg1, F.Call(symbol, arg1, arg2));
-    }
-
-    private static Dictionary<string, string> GetOpMap()
-    {
-        return new()
-        {
-            ["add"] = "Addition",
-            ["sub"] = "Subtraction",
-            ["mul"] = "Multiply",
-            ["div"] = "Division",
-            ["mod"] = "Modulus",
-        };
     }
 }
