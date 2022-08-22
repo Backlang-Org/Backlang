@@ -1,4 +1,4 @@
-﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Contracts.Scoping.Items;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
@@ -30,7 +30,7 @@ public class VariableImplementor : IStatementImplementor
         else
         {
             //ToDo: check for implicit cast
-            if (elementType != deducedValueType)
+            if (deducedValueType != null && elementType != deducedValueType && deducedValueType != context.Environment.Void)
                 context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
         }
 
