@@ -1,5 +1,10 @@
-
 public static func main() {
 
-    let myTuple : (i32, i32) = (1, 2);
+    let myTuple  = (1, 2);
+    let otherTuple = ('c', "world");
+   
+}
+
+public static func printTuple() {
+
 }
