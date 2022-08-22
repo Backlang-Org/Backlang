@@ -48,8 +48,19 @@ public sealed partial class Parser
             TokenType.BinNumber => ParseBinNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
+            TokenType.OpenSquare => ParseArrayLiteral(),
             _ => InvokeExpressionParsePoint(parsePoints),
         };
+    }
+
+    private LNode ParseArrayLiteral()
+    {
+        var startToken = Iterator.Current;
+        Iterator.NextToken();
+
+        var elements = Expression.ParseList(this, TokenType.CloseSquare);
+
+        return SyntaxTree.Factory.Call(CodeSymbols.Array, elements).WithRange(startToken, Iterator.Prev);
     }
 
     private LNode Invalid(string message)
