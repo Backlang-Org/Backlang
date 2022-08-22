@@ -10,6 +10,12 @@ public class CallImplementor : IStatementImplementor
     {
         if (node is ("'.", var target, var callee) && target is ("this", _))
         {
+            if (method.IsStatic)
+            {
+                context.AddError(node, "'this' cannot be used in static methods");
+                return block;
+            }
+
             if (scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
             {
                 AppendCall(context, block, callee, fsi.Overloads, scope);
