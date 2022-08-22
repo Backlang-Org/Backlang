@@ -117,6 +117,14 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             type.IsPublic = true;
 
             context.Assembly.AddType(type);
+            var tr = new TypeResolver();
+
+            foreach (var a in context.Binder.Assemblies)
+            {
+                tr.AddAssembly(a);
+            }
+
+            context.Binder = tr;
         }
         else
         {
