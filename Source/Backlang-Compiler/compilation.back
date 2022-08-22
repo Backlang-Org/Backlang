@@ -2,9 +2,5 @@ public static func main() {
 
     let myTuple  = (1, 2);
     let otherTuple = ('c', "world");
-   
-}
-
-public static func printTuple() {
 
 }
