@@ -233,7 +233,8 @@ public class Emitter
             case NewObjectPrototype newObjectPrototype:
                 break;
 
-            case ConstantPrototype consProto:
+            case LoadPrototype loadPrototype:
+                var consProto = (ConstantPrototype)block.Graph.GetInstruction(instruction.Arguments[0]).Prototype;
                 EmitConstant(consProto, indentlevel);
                 break;
 
