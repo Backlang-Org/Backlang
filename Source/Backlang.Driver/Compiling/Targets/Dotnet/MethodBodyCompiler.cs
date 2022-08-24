@@ -94,6 +94,10 @@ public static class MethodBodyCompiler
 
                 variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
             }
+            else if (instruction.Prototype is AllocaArrayPrototype allocArray)
+            {
+                ilProcessor.Emit(OpCodes.Newarr, assemblyDefinition.ImportType(allocArray.ElementType));
+            }
             else if (instruction.Prototype is IntrinsicPrototype arith)
             {
                 EmitArithmetic(ilProcessor, arith);

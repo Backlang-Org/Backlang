@@ -14,7 +14,7 @@ public record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod,
 
 public class DotNetAssembly : ITargetAssembly
 {
-    private static readonly List<MethodBodyCompilation> _methodBodyCompilations = new();
+    private static readonly ConcurrentBag<MethodBodyCompilation> _methodBodyCompilations = new();
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
     private readonly List<(TypeDefinition definition, QualifiedName name)> _needToAdjust = new();

@@ -74,6 +74,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             return tupleType.MakeGenericType(tupleArgs);
         }
+        else if (typeNode.Calls(CodeSymbols.Array))
+        {
+            resolvedType = ResolveTypeWithModule(typeNode[0], context, modulename);
+            resolvedType = context.Environment.MakeArrayType(resolvedType, (int)typeNode[1].Value);
+        }
         else
         {
             resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();

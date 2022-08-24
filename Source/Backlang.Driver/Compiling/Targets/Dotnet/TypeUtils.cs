@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using PointerType = Mono.Cecil.PointerType;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -27,15 +28,14 @@ public static class TypeUtils
         }
         else if (type.Qualifier is GenericName gn)
         {
-            var innerType = ImportType(_assemblyDefinition, gn.DeclarationName);
-            var genericType = new GenericInstanceType(innerType);
-
-            foreach (var arg in gn.TypeArgumentNames)
+            if (gn.DeclarationName.ToString().StartsWith("array!"))
             {
-                genericType.GenericArguments.Add(ImportType(_assemblyDefinition, arg));
+                return ImportArrayType(_assemblyDefinition, gn);
             }
-
-            return genericType;
+            else
+            {
+                return ImportGenericType(_assemblyDefinition, gn);
+            }
         }
 
         return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());
@@ -58,5 +58,28 @@ public static class TypeUtils
         var trr = new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule).Resolve();
 
         return _assemblyDefinition.MainModule.ImportReference(trr);
+    }
+
+    private static TypeReference ImportArrayType(AssemblyDefinition _assemblyDefinition, GenericName gn)
+    {
+        var declName = gn.DeclarationName.ToString();
+        var rankStr = declName.Substring(declName.IndexOf("!") + 1, declName.IndexOf("`") - (declName.LastIndexOf("!") + 1));
+        var rank = int.Parse(rankStr);
+
+        var elType = _assemblyDefinition.ImportType(gn.TypeArgumentNames[0]);
+        return elType.MakeArrayType(rank);
+    }
+
+    private static TypeReference ImportGenericType(AssemblyDefinition _assemblyDefinition, GenericName gn)
+    {
+        var innerType = ImportType(_assemblyDefinition, gn.DeclarationName);
+        var genericType = new GenericInstanceType(innerType);
+
+        foreach (var arg in gn.TypeArgumentNames)
+        {
+            genericType.GenericArguments.Add(ImportType(_assemblyDefinition, arg));
+        }
+
+        return genericType;
     }
 }

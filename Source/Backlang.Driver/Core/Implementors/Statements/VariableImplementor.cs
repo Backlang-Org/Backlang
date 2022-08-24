@@ -30,7 +30,7 @@ public class VariableImplementor : IStatementImplementor
         else
         {
             //ToDo: check for implicit cast
-            if (elementType != deducedValueType)
+            if (deducedValueType != null && elementType != deducedValueType && deducedValueType != context.Environment.Void)
                 context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
         }
 
@@ -51,7 +51,7 @@ public class VariableImplementor : IStatementImplementor
             context.AddError(decl.Args[0], $"{varname} already declared");
         }
 
-        if (deducedValueType == null) return null;
+        if (deducedValueType == null) return block;
 
         ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope);
 

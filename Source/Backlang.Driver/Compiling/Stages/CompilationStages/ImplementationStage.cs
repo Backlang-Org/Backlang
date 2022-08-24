@@ -85,20 +85,31 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                 }
                 else
                 {
-                    var fn = TypeInheritanceStage.ConvertFunction(context, context.ExtensionsType, node, modulename, typeScope);
+                    var extensionType = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.Extensions).Qualify(modulename)).FirstOrDefault();
+
+                    if (extensionType == null)
+                    {
+                        extensionType = new DescribedType(new SimpleName(Names.Extensions).Qualify(modulename), context.Assembly)
+                        {
+                            IsStatic = true,
+                            IsPublic = true
+                        };
+                        context.Assembly.AddType(extensionType);
+                    }
+
+                    var fn = TypeInheritanceStage.ConvertFunction(context, extensionType, node, modulename, typeScope);
 
                     fn.IsStatic = true;
 
-                    var thisParameter = new Parameter(targetType, "this");
                     var param = (IList<Parameter>)fn.Parameters;
 
-                    param.Insert(0, thisParameter);
+                    param.Insert(0, Parameter.CreateThisParameter(targetType));
 
                     var extType = Utils.ResolveType(context.Binder, typeof(ExtensionAttribute));
 
                     fn.AddAttribute(new DescribedAttribute(extType));
 
-                    context.ExtensionsType.AddMethod(fn);
+                    extensionType.AddMethod(fn);
                 }
             }
         }

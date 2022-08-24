@@ -30,16 +30,16 @@ public class ClrTypeEnvironmentBuilder
         return assembly;
     }
 
-    public static void FillTypes(Assembly ass, TypeResolver resolver)
+    public static void FillTypes(Assembly ass, CompilerContext context)
     {
         Parallel.ForEach(ass.GetTypes(), type => {
             if (!type.IsPublic) return;
 
-            var t = Utils.ResolveType(resolver, type);
+            var t = Utils.ResolveType(context.Binder, type);
 
             if (type.BaseType != null)
             {
-                var bt = Utils.ResolveType(resolver, type.BaseType);
+                var bt = Utils.ResolveType(context.Binder, type.BaseType);
 
                 if (bt != null)
                 {
@@ -55,24 +55,25 @@ public class ClrTypeEnvironmentBuilder
             foreach (var attr in type.GetCustomAttributes())
             {
                 var attrType = attr.GetType();
-                var attribute = new DescribedAttribute(Utils.ResolveType(resolver, attrType));
+                var attribute = new DescribedAttribute(Utils.ResolveType(context.Binder, attrType));
 
                 foreach (var prop in attrType.GetProperties())
                 {
                     var value = prop.GetValue(attr);
 
-                    attribute.ConstructorArguments.Add(new AttributeArgument(Utils.ResolveType(resolver, prop.PropertyType), value));
+                    attribute.ConstructorArguments.Add(
+                        new AttributeArgument(Utils.ResolveType(context.Binder, prop.PropertyType), value));
                 }
 
                 t.AddAttribute(attribute);
             }
 
-            AddMembers(type, t, resolver);
+            AddMembers(type, t, context.Binder);
         });
 
         foreach (var toadjust in toAdjustParameters)
         {
-            ConvertParameter(toadjust.Item1.GetParameters(), toadjust.Item2, resolver);
+            ConvertParameter(toadjust.Item1.GetParameters(), toadjust.Item2, context);
         }
 
         toAdjustParameters.Clear();
@@ -139,19 +140,30 @@ public class ClrTypeEnvironmentBuilder
         t.AddMethod(method);
     }
 
-    private static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, TypeResolver resolver)
+    private static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, CompilerContext context)
     {
         foreach (var p in parameterInfos)
         {
-            var type = Utils.ResolveType(resolver, p.ParameterType);
+            var type = (IType)Utils.ResolveType(context.Binder, p.ParameterType);
+
+            if (p.ParameterType.IsByRef)
+            {
+                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace)?.MakePointerType(PointerKind.Reference);
+            }
+            else if (p.ParameterType.IsArray)
+            {
+                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace);
+
+                if (type != null)
+                    type = context.Environment.MakeArrayType(type, p.ParameterType.GetArrayRank());
+            }
 
             if (type != null)
             {
                 var pa = new Parameter(type, p.Name);
                 method.AddParameter(pa);
+                continue;
             }
-
-            method.AddParameter(new Parameter());
         }
     }
 }

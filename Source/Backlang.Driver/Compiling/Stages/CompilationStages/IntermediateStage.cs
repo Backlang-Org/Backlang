@@ -1,5 +1,6 @@
 ﻿using Backlang.Contracts.Scoping.Items;
 using Flo;
+using System.Globalization;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
@@ -8,11 +9,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
-        context.ExtensionsType = new DescribedType(new SimpleName(Names.Extensions).Qualify(string.Empty), context.Assembly)
-        {
-            IsStatic = true,
-            IsPublic = true
-        };
 
         foreach (var tree in context.Trees)
         {
@@ -35,7 +31,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             }
         }
 
-        context.Assembly.AddType(context.ExtensionsType);
         context.Binder.AddAssembly(context.Assembly);
 
         return await next.Invoke(context);
@@ -115,13 +110,21 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             foreach (var field in type.Args[1].Args)
             {
-                var fieldName = field.Args[1].Args[0].Name;
-                var fieldType = new DescribedField(discType, new SimpleName(fieldName.Name),
+                var fieldName = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
+                    field.Args[1].Args[0].Name.Name);
+                var fieldTypename = ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0]);
+                var fieldActualType = TypeInheritanceStage.ResolveTypeWithModule(
+                                        field.Args[0].Args[0].Args[0], context,
+                                        modulename, fieldTypename
+                                        );
+                if (baseType.Name.ToString() == fieldTypename.ToString())
+                {
+                    fieldActualType = baseType;
+                }
+
+                var fieldType = new DescribedField(discType, new SimpleName(fieldName),
                     false,
-                    TypeInheritanceStage.ResolveTypeWithModule(
-                        field.Args[0].Args[0].Args[0], context,
-                        modulename, ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0])
-                        )
+                    fieldActualType
                     );
 
                 if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))

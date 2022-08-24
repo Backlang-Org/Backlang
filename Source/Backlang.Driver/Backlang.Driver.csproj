@@ -12,6 +12,7 @@
 		<RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
 		<PackageTags>backlang</PackageTags>
 		<IncludeSymbols>True</IncludeSymbols>
+		<Description>The Backlang Compiler Chain</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

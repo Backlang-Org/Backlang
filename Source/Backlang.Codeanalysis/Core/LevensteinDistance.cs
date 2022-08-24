@@ -49,6 +49,8 @@ public static class LevensteinDistance
 
         foreach (var str in possibilities)
         {
+            if (str == "Main") continue;
+
             var distance = Calculate(source, str);
             if (distance <= lastDistance)
             {

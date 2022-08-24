@@ -5,7 +5,7 @@ public interface ICompilationTarget : ITarget
     bool HasIntrinsics { get; }
     Type IntrinsicType { get; }
 
-    TypeEnvironment Init(TypeResolver binder);
+    TypeEnvironment Init(CompilerContext context);
 
     void InitReferences(CompilerContext context);
 

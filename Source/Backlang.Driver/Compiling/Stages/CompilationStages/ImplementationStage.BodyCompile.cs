@@ -24,6 +24,7 @@ public partial class ImplementationStage
     private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
     {
         new TupleExpressionImplementor(),
+        new ArrayExpressionImplementor(),
         new DefaultExpressionImplementor(),
         new AddressExpressionImplementor(),
         new UnaryExpressionImplementor(),
@@ -81,10 +82,20 @@ public partial class ImplementationStage
             }
             else
             {
-                //ToDo: May with Scope?
                 //ToDo: continue implementing static function call in same type
                 var type = (DescribedType)method.ParentType;
                 var calleeName = node.Target;
+                var methods = type.Methods;
+
+                if (!methods.Any(_ => _.Name.ToString() == calleeName.ToString()))
+                {
+                    type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(modulename.Value)).FirstOrDefault();
+
+                    if (type == null)
+                    {
+                        context.AddError(node, $"Cannot find function '{calleeName}'");
+                    }
+                }
 
                 if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
                 {
