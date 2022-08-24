@@ -1,4 +1,5 @@
-﻿using Backlang.Driver.Compiling.Targets.Dotnet;
+﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -41,7 +42,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
             if (compilationTarget.HasIntrinsics)
             {
-                AddIntrinsicType(context.Binder, context.Environment, compilationTarget.IntrinsicType);
+                AddIntrinsicType(context, compilationTarget.IntrinsicType);
             }
         }
         else
@@ -58,7 +59,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
                 && method.ReturnParameter.Type == context.Environment.Void);
     }
 
-    private static void AddIntrinsicType(TypeResolver binder, TypeEnvironment te, Type type)
+    private static void AddIntrinsicType(CompilerContext context, Type type)
     {
         var qualifier = Utils.QualifyNamespace(type.Namespace);
         var intrinsicAssembly = new DescribedAssembly(qualifier);
@@ -70,37 +71,40 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
             IsStatic = true
         };
 
-        binder.AddAssembly(te.Void.Parent.Assembly);
+        context.Binder.AddAssembly(context.Environment.Void.Parent.Assembly);
 
         var fields = type.GetFields().Where(_ => _.IsStatic);
         foreach (var field in fields)
         {
-            AddIntrinsicEnum(field.FieldType, qualifier, intrinsicAssembly);
+            AddIntrinsicEnum(context, field.FieldType, qualifier, intrinsicAssembly);
         }
 
         var methods = type.GetMethods().Where(_ => _.IsStatic);
         var toAdjustParameters = new ConcurrentBag<(MethodBase, DescribedMethod)>();
 
+        intrinsicAssembly.AddType(instrinsicsType);
+        context.Binder.AddAssembly(intrinsicAssembly);
+
         foreach (var method in methods)
         {
-            var tmpBinder = new TypeResolver(binder.Assemblies.First());
-            tmpBinder.AddAssembly(intrinsicAssembly);
-
-            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, tmpBinder, method, toAdjustParameters, method.Name.ToLower());
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, context.Binder, method, toAdjustParameters, method.Name.ToLower());
         }
 
-        intrinsicAssembly.AddType(instrinsicsType);
-
-        binder.AddAssembly(intrinsicAssembly);
+        foreach (var toadjust in toAdjustParameters)
+        {
+            ClrTypeEnvironmentBuilder.ConvertParameter(toadjust.Item1.GetParameters(), toadjust.Item2, context);
+        }
     }
 
-    private static void AddIntrinsicEnum(Type fieldType, QualifiedName qualifier, DescribedAssembly intrinsicAssembly)
+    private static void AddIntrinsicEnum(CompilerContext context, Type fieldType, QualifiedName qualifier, DescribedAssembly intrinsicAssembly)
     {
         if (!fieldType.IsAssignableTo(typeof(Enum))) return;
 
         var type = new DescribedType(new SimpleName(fieldType.Name).Qualify(qualifier), intrinsicAssembly);
 
         type.AddAttribute(new IntrinsicAttribute("#Enum"));
+
+        context.GlobalScope.Add(new TypeScopeItem { Name = "#" + type.Name, TypeInfo = type });
 
         foreach (var field in fieldType.GetFields())
         {
