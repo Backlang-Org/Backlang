@@ -12,6 +12,8 @@ public static class Intrinsics
 
     public static string Copy(char value, string target) => Copy((int)value, target);
 
+    public static string Copy(char value, Register target) => Copy((int)value, target);
+
     public static string Copy(int value, string target) => $"copy {value}, {target}";
 
     public static string Copy(int value, Register target) => $"copy {value}, {target}";
