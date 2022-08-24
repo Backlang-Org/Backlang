@@ -22,9 +22,13 @@ public static class IntrinsicHelper
 
         foreach (var argTag in instruction.Arguments)
         {
-            var argPrototype = (ConstantPrototype)block.Graph.GetInstruction(argTag).Prototype;
+            var loadInstruction = block.Graph.GetInstruction(argTag);
 
-            arguments.Add(GetValue(argPrototype.Value));
+            if (loadInstruction.Prototype is LoadPrototype)
+            {
+                var argPrototype = (ConstantPrototype)block.Graph.GetInstruction(loadInstruction.Arguments[0]).Prototype;
+                arguments.Add(GetValue(argPrototype.Value));
+            }
         }
 
         return method.Invoke(null, arguments.ToArray());
