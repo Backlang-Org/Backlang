@@ -9,13 +9,17 @@ public class TupleTests : ParserTestBase
     public void SimpleTuple_Should_Pass()
     {
         var src = "(1, 2);";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 
     [TestMethod]
     public void TrailingComma_Should_Fail()
     {
         var src = "(1,2,);";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(1, result.errors.Count);
     }
 }

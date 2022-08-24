@@ -9,13 +9,17 @@ public class DefaultExprTests : ParserTestBase
     public void Default_With_Type_Should_Pass()
     {
         var src = "default(i32);";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 
     [TestMethod]
     public void Default_Without_Type_Should_Pass()
     {
         var src = "default;";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 }

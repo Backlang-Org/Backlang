@@ -11,11 +11,14 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Multiple_Parameters_And_Default_Value_Should_Pass()
     {
         var src = "func test(something : i32, hello : bool = true) -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
         var prms = statement.Args[2];
+
+        Assert.AreEqual(0, result.errors.Count);
 
         Assert.AreEqual("i32", retType.Args[0].Args[0].Name.Name);
         Assert.AreEqual("test", name.Args[0].Args[0].Name.Name);
@@ -36,7 +39,10 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Multiple_Parameters_And_Trailing_Comma_Should_Pass()
     {
         var src = "func test(something : i32, hello : bool,) -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
+
+        Assert.AreEqual(0, result.errors.Count);
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
@@ -60,7 +66,10 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Multiple_Parameters_Should_Pass()
     {
         var src = "func test(something : i32, hello : bool) -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
+
+        Assert.AreEqual(0, result.errors.Count);
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
@@ -84,7 +93,10 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Parameter_And_Default_Value_Should_Pass()
     {
         var src = "func test(something : i32 = 42) -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
+
+        Assert.AreEqual(0, result.errors.Count);
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
@@ -104,11 +116,14 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Parameter_Should_Pass()
     {
         var src = "func test(something : i32) -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
         var prms = statement.Args[2];
+
+        Assert.AreEqual(0, result.errors.Count);
 
         Assert.AreEqual("i32", retType.Args[0].Args[0].Name.Name);
         Assert.AreEqual("test", name.Args[0].Args[0].Name.Name);
@@ -123,7 +138,10 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_Without_Parameters_Should_Pass()
     {
         var src = "func test() -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
+
+        Assert.AreEqual(0, result.errors.Count);
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
@@ -139,11 +157,14 @@ public class FunctionTests : ParserTestBase
     public void FunctionDeclaration_With_Modifiers_Should_Pass()
     {
         var src = "public static func test() -> i32 { 123; }";
-        var statement = ParseAndGetNode(src).nodes;
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
         var prms = statement.Args[2];
+
+        Assert.AreEqual(0, result.errors.Count);
 
         var array = statement.Attrs.ToVList().ToArray();
         Assert.IsTrue(array.Any(_ => _.IsId && (_.Name == CodeSymbols.Public)));
@@ -153,5 +174,15 @@ public class FunctionTests : ParserTestBase
         Assert.AreEqual("test", name.Args[0].Args[0].Name.Name);
 
         Assert.IsTrue(prms.Args.IsEmpty);
+    }
+
+    [TestMethod]
+    public void FunctionDeclaration_With_Modifiers_With_Trailling_Comma_Should_Fail()
+    {
+        var src = "public static func test(hello : i32,) -> i32 { 123; }";
+        var result = ParseAndGetNode(src);
+        var statement = result.nodes;
+
+        Assert.AreEqual(1, result.errors.Count);
     }
 }

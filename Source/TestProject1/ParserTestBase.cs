@@ -20,14 +20,14 @@ namespace TestProject1
             return (node, ast.Messages);
         }
 
-        protected static (LNode nodes, List<Message> errros) ParseAndGetNode(string source)
+        protected static (LNode nodes, List<Message> errors) ParseAndGetNode(string source)
         {
             var result = ParseAndGetNodes(source);
 
             return (result.nodes.First(), result.errors);
         }
 
-        protected static (LNodeList nodes, List<Message> errros) ParseAndGetNodesInFunction(string source)
+        protected static (LNodeList nodes, List<Message> errors) ParseAndGetNodesInFunction(string source)
         {
             var tree = ParseAndGetNodes("func main() {" + source + "}");
 
