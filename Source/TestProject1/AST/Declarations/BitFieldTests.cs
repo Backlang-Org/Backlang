@@ -9,7 +9,7 @@ public class BitFieldTests : ParserTestBase
     public void Simple_BitField_Should_Pass()
     {
         var src = "bitfield Flags { DivideByZero = 0, IsNull = 1 }";
-        var node = ParseAndGetNode(src);
+        var node = ParseAndGetNode(src).nodes;
 
         Assert.AreEqual("Flags", node.Args[0].Name.Name);
 

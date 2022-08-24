@@ -13,7 +13,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "let hello : bool = \"true\";";
 
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var statement = ParseAndGetNodesInFunction(src).nodes[0];
             var right = statement.Args[1];
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
@@ -26,7 +26,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "let mut hello : bool = true;";
 
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var statement = ParseAndGetNodesInFunction(src).nodes[0];
 
             var right = statement.Args[1];
 
@@ -41,7 +41,7 @@ namespace TestProject1.AST.Statements
         {
             var src = "let hello = 42;";
 
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var statement = ParseAndGetNodesInFunction(src).nodes[0];
 
             var right = statement.Args[1];
 
@@ -54,7 +54,7 @@ namespace TestProject1.AST.Statements
         public void VariableDeclarationWithHex_Should_Pass()
         {
             var src = "let hello = 0xc0ffee;";
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var statement = ParseAndGetNodesInFunction(src).nodes[0];
 
             var right = statement.Args[1];
 

@@ -1,31 +1,37 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
 using Loyc.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TestProject1
 {
     public class ParserTestBase
     {
-        protected static LNodeList ParseAndGetNodes(string source)
+        protected static (LNodeList nodes, List<Message> errors) ParseAndGetNodes(string source)
         {
             var ast = CompilationUnit.FromText(source);
 
             var node = ast.Body;
 
             Assert.IsNotNull(node);
-            Assert.AreEqual(ast.Messages.Count, 0);
 
-            return node;
+            return (node, ast.Messages);
         }
 
-        protected static LNode ParseAndGetNode(string source) => ParseAndGetNodes(source).First();
+        protected static (LNode nodes, List<Message> errros) ParseAndGetNode(string source)
+        {
+            var result = ParseAndGetNodes(source);
 
-        protected static LNodeList ParseAndGetNodesInFunction(string source)
+            return (result.nodes.First(), result.errors);
+        }
+
+        protected static (LNodeList nodes, List<Message> errros) ParseAndGetNodesInFunction(string source)
         {
             var tree = ParseAndGetNodes("func main() {" + source + "}");
 
-            return tree.First().Args[3].Args;
+            return (tree.Item1.First().Args[3].Args, tree.Item2);
         }
     }
 }
