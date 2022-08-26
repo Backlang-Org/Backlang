@@ -25,7 +25,7 @@ namespace Backlang.Backends.Wasm
 
         public ITargetAssembly Compile(AssemblyContentDescription contents)
         {
-            throw new NotImplementedException();
+            return new WasmAssembly(contents);
         }
 
         public void InitReferences(CompilerContext context)
