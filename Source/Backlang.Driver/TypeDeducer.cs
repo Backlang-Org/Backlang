@@ -1,4 +1,5 @@
 ﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver;
 
@@ -39,6 +40,10 @@ public static class TypeDeducer
         if (TypenameTable.ContainsKey(node.Name.Name))
         {
             return Deduce(LNode.Id(TypenameTable[node.Name.Name]), scope, context);
+        }
+        else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
+        {
+            return new UnitType(Deduce(value, scope, context), unit.Name.ToString());
         }
         else if (node.ArgCount == 1 && node.Calls(CodeSymbols.Default))
         {

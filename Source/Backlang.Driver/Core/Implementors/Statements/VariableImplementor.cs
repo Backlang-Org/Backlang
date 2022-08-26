@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
@@ -31,7 +32,19 @@ public class VariableImplementor : IStatementImplementor
         {
             //ToDo: check for implicit cast
             if (deducedValueType != null && elementType != deducedValueType && deducedValueType != context.Environment.Void)
+            {
+                if (elementType is UnitType ut)
+                {
+                    if (ut != deducedValueType)
+                    {
+                        context.AddError(node, $"Unit Type mismatch {elementType} {deducedValueType}");
+
+                        return block;
+                    }
+                }
+
                 context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
+            }
         }
 
         var varname = decl.Args[0].Name.Name;
