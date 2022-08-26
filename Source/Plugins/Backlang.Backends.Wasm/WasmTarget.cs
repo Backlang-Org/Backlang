@@ -1,5 +1,4 @@
 ﻿using Backlang.Contracts;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 
@@ -13,7 +12,6 @@ namespace Backlang.Backends.Wasm
 
         public void AfterCompiling(CompilerContext context)
         {
-            throw new NotImplementedException();
         }
 
         public void BeforeCompiling(CompilerContext context)
@@ -23,7 +21,6 @@ namespace Backlang.Backends.Wasm
 
         public void BeforeExpandMacros(MacroProcessor processor)
         {
-            throw new NotImplementedException();
         }
 
         public ITargetAssembly Compile(AssemblyContentDescription contents)
@@ -31,14 +28,8 @@ namespace Backlang.Backends.Wasm
             throw new NotImplementedException();
         }
 
-        public TypeEnvironment Init(CompilerContext context)
-        {
-            throw new NotImplementedException();
-        }
-
         public void InitReferences(CompilerContext context)
         {
-            throw new NotImplementedException();
         }
     }
 }
