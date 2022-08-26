@@ -64,7 +64,7 @@ public sealed class TypeLiteral
 
                 iterator.Match(TokenType.GreaterThan);
 
-                typeNode = typeNode.PlusArgs(args);
+                typeNode = SyntaxTree.Type(typename, args).WithRange(typeToken, parser.Iterator.Prev);
             }
         }
         else if (iterator.IsMatch(TokenType.None))
@@ -91,7 +91,6 @@ public sealed class TypeLiteral
             {
                 typeNode = SyntaxTree.Factory.Tuple(parameters).WithRange(typeToken, iterator.Prev);
             }
-
         }
         else
         {
