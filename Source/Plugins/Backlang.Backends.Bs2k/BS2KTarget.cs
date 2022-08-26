@@ -35,7 +35,7 @@ public class BS2KTarget : ICompilationTarget
 
     public TypeEnvironment Init(CompilerContext context)
     {
-        return new Bs2KTypeEnvironment();
+        return new DefaultTypeEnvironment();
     }
 
     public void InitReferences(CompilerContext context)

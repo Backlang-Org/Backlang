@@ -2,7 +2,7 @@
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Backends.Bs2k.TypeSystem;
+namespace Backlang.Contracts.TypeSystem;
 
 public class VoidType : DescribedType
 {
