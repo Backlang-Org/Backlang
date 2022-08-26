@@ -20,7 +20,16 @@ public class ExpressionTests : ParserTestBase
         var src = "arr[0, 1,];";
         var result = ParseAndGetNodesInFunction(src);
 
-        Assert.AreEqual(0, result.errors.Count);
+        Assert.AreEqual(1, result.errors.Count);
+    }
+
+    [TestMethod]
+    public void InitializerList_With_Trailling_Comma_Should_Fail()
+    {
+        var src = "[0, 1,];";
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(1, result.errors.Count);
     }
 
     [TestMethod]
