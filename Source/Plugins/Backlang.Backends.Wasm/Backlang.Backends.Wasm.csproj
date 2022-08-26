@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	<TargetFramework>net7.0</TargetFramework>
@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Wasm" Version="0.1.7" />
+    <PackageReference Include="WebAssembly" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>

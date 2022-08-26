@@ -1,9 +1,11 @@
 ﻿using Backlang.Contracts;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
+using System.ComponentModel.Composition;
 
 namespace Backlang.Backends.Wasm
 {
+    [Export(typeof(ICompilationTarget))]
     public class WasmTarget : ICompilationTarget
     {
         public Type IntrinsicType => null;
