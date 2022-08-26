@@ -194,6 +194,17 @@ public sealed partial class Parser
             result = SyntaxTree.Factory.Call(CodeSymbols.Int32, LNode.List(result)).WithRange(result.Range);
         }
 
+        if (Iterator.IsMatch(TokenType.LessThan))
+        {
+            Iterator.NextToken();
+
+            var unit = Iterator.Match(TokenType.Identifier);
+
+            result = SyntaxTree.Unit(result, unit.Text).WithRange(result.Range.StartIndex, unit.End);
+
+            Iterator.Match(TokenType.GreaterThan);
+        }
+
         return result;
     }
 

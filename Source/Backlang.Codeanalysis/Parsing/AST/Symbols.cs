@@ -1,4 +1,4 @@
-using Loyc;
+﻿using Loyc;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
@@ -28,4 +28,5 @@ public static class Symbols
     public static readonly Symbol Union = GSymbol.Get("#union");
     public static readonly Symbol Where = GSymbol.Get("#where");
     public static readonly Symbol Init = GSymbol.Get("#init");
+    public static readonly Symbol Unit = GSymbol.Get("#unit");
 }
