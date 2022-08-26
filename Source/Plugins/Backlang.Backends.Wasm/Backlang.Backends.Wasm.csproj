@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Wasm" Version="0.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Backlang.Contracts\Backlang.Contracts.csproj" />
+    <ProjectReference Include="..\..\Backlang.Driver\Backlang.Driver.csproj" />
+  </ItemGroup>
+
+</Project>
