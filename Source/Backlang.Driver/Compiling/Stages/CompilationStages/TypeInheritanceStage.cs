@@ -95,7 +95,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         if (member.Args[2] != LNode.Missing)
         {
-            if (member.Args[2].Name == Symbols.init)
+            if (member.Args[2].Name == Symbols.Init)
             {
                 // initonly setter defined
                 var initOnlySetter = new DescribedPropertyMethod(new SimpleName($"init_{property.Name}"), type);
