@@ -222,7 +222,7 @@ public class Emitter
                     }
 
                     var callee = callPrototype.Callee
-                            .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.ProgramClass
+                            .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.FreeFunctions
                            ? callPrototype.Callee.Name.ToString() : callPrototype.Callee.FullName.ToString();
 
                     Emit($"// Calling '{callee}'", null, indentlevel);
