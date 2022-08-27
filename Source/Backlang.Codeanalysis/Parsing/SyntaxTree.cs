@@ -243,4 +243,9 @@ public static class SyntaxTree
     {
         return Factory.Call(Symbols.Unit, LNode.List(result, LNode.Id(unit)));
     }
+
+    public static LNode UnitDeclaration(string unit)
+    {
+        return Factory.Call(Symbols.UnitDecl, LNode.List(LNode.Id(unit)));
+    }
 }
