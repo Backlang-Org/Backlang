@@ -10,10 +10,10 @@ public class ThrowImplementor : IStatementImplementor
     {
         var valueNode = node.Args[0].Args[0];
         var constant = block.AppendInstruction(ConvertConstant(
-            GetLiteralType(valueNode, context, scope), valueNode.Value));
+            GetLiteralType(valueNode, context, scope, modulename.Value), valueNode.Value));
 
         var msg = block.AppendInstruction(
-            Instruction.CreateLoad(GetLiteralType(valueNode, context, scope), constant));
+            Instruction.CreateLoad(GetLiteralType(valueNode, context, scope, modulename.Value), constant));
 
         if (node.Args[0].Name.Name == "#string")
         {

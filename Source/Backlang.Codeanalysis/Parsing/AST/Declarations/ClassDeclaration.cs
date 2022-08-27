@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class ClassDeclaration : IParsePoint<LNode>
+public sealed class ClassDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

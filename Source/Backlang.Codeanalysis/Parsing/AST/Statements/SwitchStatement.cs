@@ -3,7 +3,7 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public sealed class SwitchStatement : IParsePoint<LNode>
+public sealed class SwitchStatement : IParsePoint
 {
     /*
      * switch element {

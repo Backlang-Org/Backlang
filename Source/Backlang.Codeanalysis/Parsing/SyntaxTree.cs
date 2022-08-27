@@ -219,7 +219,7 @@ public static class SyntaxTree
 
     public static LNode Using(LNode expr)
     {
-        if(!expr.Calls(CodeSymbols.As)) // TODO: throw error in intermediate stage when has only one arg
+        if (!expr.Calls(CodeSymbols.As)) // TODO: throw error in intermediate stage when has only one arg
         {
             return Factory.Call(CodeSymbols.UsingStmt, LNode.Missing);
         }
@@ -237,5 +237,15 @@ public static class SyntaxTree
         return Factory.Call(
             CodeSymbols.While,
                 LNode.List(cond, body));
+    }
+
+    public static LNode Unit(LNode result, string unit)
+    {
+        return Factory.Call(Symbols.Unit, LNode.List(result, LNode.Id(unit)));
+    }
+
+    public static LNode UnitDeclaration(string unit)
+    {
+        return Factory.Call(Symbols.UnitDecl, LNode.List(LNode.Id(unit)));
     }
 }

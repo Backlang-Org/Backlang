@@ -29,7 +29,7 @@ public class DefaultExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node) => node.ArgCount == 1 && node is ("'default", _);
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         object value = null;
 

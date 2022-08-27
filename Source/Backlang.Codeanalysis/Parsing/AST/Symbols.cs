@@ -27,5 +27,7 @@ public static class Symbols
     public static readonly Symbol TypeLiteral = GSymbol.Get("#type");
     public static readonly Symbol Union = GSymbol.Get("#union");
     public static readonly Symbol Where = GSymbol.Get("#where");
-    public static readonly Symbol init = GSymbol.Get("init");
+    public static readonly Symbol Init = GSymbol.Get("#init");
+    public static readonly Symbol Unit = GSymbol.Get("#unit");
+    public static readonly Symbol UnitDecl = GSymbol.Get("#unitDecl");
 }

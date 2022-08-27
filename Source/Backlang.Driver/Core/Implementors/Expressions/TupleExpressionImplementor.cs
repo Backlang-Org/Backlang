@@ -4,7 +4,8 @@ public class TupleExpressionImplementor : IExpressionImplementor
 {
     public bool CanHandle(LNode node) => node.Calls(CodeSymbols.Tuple);
 
-    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType, CompilerContext context, Scope scope)
+    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         if (elementType.FullName.Qualifier is GenericName gt)
         {
@@ -17,7 +18,7 @@ public class TupleExpressionImplementor : IExpressionImplementor
                 var arg = node.Args[i];
                 var argType = gargs[i];
 
-                valueTags.Add(ImplementationStage.AppendExpression(block, arg, argType, context, scope));
+                valueTags.Add(ImplementationStage.AppendExpression(block, arg, argType, context, scope, modulename));
                 genericTypes.Add(argType);
             }
 

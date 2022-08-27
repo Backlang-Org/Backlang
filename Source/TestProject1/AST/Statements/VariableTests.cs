@@ -13,8 +13,11 @@ namespace TestProject1.AST.Statements
         {
             var src = "let hello : bool = \"true\";";
 
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var result = ParseAndGetNodesInFunction(src);
+            var statement = result.nodes[0];
             var right = statement.Args[1];
+
+            Assert.AreEqual(0, result.errors.Count);
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
@@ -26,9 +29,11 @@ namespace TestProject1.AST.Statements
         {
             var src = "let mut hello : bool = true;";
 
-            var statement = ParseAndGetNodesInFunction(src)[0];
-
+            var result = ParseAndGetNodesInFunction(src);
+            var statement = result.nodes[0];
             var right = statement.Args[1];
+
+            Assert.AreEqual(0, result.errors.Count);
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
@@ -41,9 +46,12 @@ namespace TestProject1.AST.Statements
         {
             var src = "let hello = 42;";
 
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var result = ParseAndGetNodesInFunction(src);
+            var statement = result.nodes[0];
 
             var right = statement.Args[1];
+
+            Assert.AreEqual(0, result.errors.Count);
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);
@@ -54,9 +62,12 @@ namespace TestProject1.AST.Statements
         public void VariableDeclarationWithHex_Should_Pass()
         {
             var src = "let hello = 0xc0ffee;";
-            var statement = ParseAndGetNodesInFunction(src)[0];
+            var result = ParseAndGetNodesInFunction(src);
+            var statement = result.nodes[0];
 
             var right = statement.Args[1];
+
+            Assert.AreEqual(0, result.errors.Count);
 
             Assert.IsTrue(statement.Calls(CodeSymbols.Var));
             Assert.AreEqual((Symbol)"hello", right.Args[0].Name);

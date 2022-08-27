@@ -117,7 +117,7 @@ public sealed class TypeMemberDeclaration
             {
                 args.Add(Statement.ParseBlock(parser));
             }
-            setter = LNode.Call(Symbols.init, args).WithAttrs(modifier);
+            setter = LNode.Call(Symbols.Init, args).WithAttrs(modifier);
         }
 
         iterator.Match(TokenType.CloseCurly);

@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public sealed class IfStatement : IParsePoint<LNode>
+public sealed class IfStatement : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

@@ -347,4 +347,7 @@ public enum TokenType
 
     [Keyword("throw")]
     Throw,
+
+    [Keyword("unit")]
+    Unit,
 }

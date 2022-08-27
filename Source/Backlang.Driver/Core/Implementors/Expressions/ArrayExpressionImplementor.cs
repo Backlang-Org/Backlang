@@ -6,7 +6,8 @@ public class ArrayExpressionImplementor : IExpressionImplementor
 {
     public bool CanHandle(LNode node) => node.Calls(CodeSymbols.Array);
 
-    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType, CompilerContext context, Scope scope)
+    public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block, IType elementType,
+        CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         var value = block.AppendInstruction(Instruction.CreateConstant(new IntegerConstant(node.ArgCount), context.Environment.Int32));
         var counter = block.AppendInstruction(Instruction.CreateLoad(context.Environment.Int32, value));

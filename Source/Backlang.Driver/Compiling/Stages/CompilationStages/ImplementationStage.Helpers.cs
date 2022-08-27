@@ -34,7 +34,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         True,
     }
 
-    public static IType GetLiteralType(LNode value, CompilerContext context, Scope scope)
+    public static IType GetLiteralType(LNode value, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         if (LiteralTypeMap.ContainsKey(value.Name))
         {
@@ -42,7 +42,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         }
         else if (value.IsId)
         {
-            return TypeDeducer.Deduce(value, scope, context);
+            return TypeDeducer.Deduce(value, scope, context, modulename.Value);
         }
 
         return Utils.ResolveType(context.Binder, typeof(void));
@@ -145,6 +145,8 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                     return m;
             }
         }
+
+        context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
 
         return null;
     }

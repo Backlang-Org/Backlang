@@ -1,14 +1,14 @@
-﻿using Backlang.Backends.Bs2k.TypeSystem;
+﻿using Backlang.Contracts.TypeSystem;
 using Furesoft.Core.CodeDom.Backends.CLR;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Backlang.Backends.Bs2k;
+namespace Backlang.Contracts;
 
-public class Bs2KTypeEnvironment : TypeEnvironment
+public class DefaultTypeEnvironment : TypeEnvironment
 {
-    public Bs2KTypeEnvironment()
+    public DefaultTypeEnvironment()
     {
         Assembly = new DescribedAssembly(new SimpleName("System").Qualify());
 

@@ -63,9 +63,8 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
             return null;
         }
 
-        var entryPoint = context.Assembly.Types
-            .FirstOrDefault(_ => _.Name.ToString() == Names.ProgramClass)
-            ?.Methods.FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+        var entryPoint = context.Assembly.Types.SelectMany(_ => _.Methods)
+            .FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
 
         if (entryPoint == null)
         {

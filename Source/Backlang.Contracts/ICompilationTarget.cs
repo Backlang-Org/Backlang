@@ -2,10 +2,16 @@
 
 public interface ICompilationTarget : ITarget
 {
-    bool HasIntrinsics { get; }
+    bool HasIntrinsics => IntrinsicType != null;
     Type IntrinsicType { get; }
 
-    TypeEnvironment Init(CompilerContext context);
+    TypeEnvironment Init(CompilerContext context)
+    {
+        var te = new DefaultTypeEnvironment();
+        context.Binder.AddAssembly(te.Assembly);
+
+        return te;
+    }
 
     void InitReferences(CompilerContext context);
 

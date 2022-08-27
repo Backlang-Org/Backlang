@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public sealed class WhileStatement : IParsePoint<LNode>
+public sealed class WhileStatement : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

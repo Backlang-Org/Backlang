@@ -13,7 +13,7 @@ public class ReturnImplementor : IStatementImplementor
             var valueNode = node.Args[0];
 
             AppendExpression(block, valueNode,
-                TypeDeducer.Deduce(valueNode, scope, context), context, scope);
+                TypeDeducer.Deduce(valueNode, scope, context, modulename.Value), context, scope, modulename);
 
             block.Flow = new ReturnFlow();
         }

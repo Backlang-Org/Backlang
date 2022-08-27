@@ -32,7 +32,7 @@ public sealed partial class Parser
         Messages.Add(Message.Error(message, new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length)));
     }
 
-    internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
+    internal LNode ParsePrimary(ParsePoints parsePoints = null)
     {
         if (parsePoints == null)
         {
@@ -70,7 +70,7 @@ public sealed partial class Parser
         return LNode.Call(CodeSymbols.Error, LNode.List(LNode.Literal(message)));
     }
 
-    private LNode InvokeExpressionParsePoint(ParsePoints<LNode> parsePoints)
+    private LNode InvokeExpressionParsePoint(ParsePoints parsePoints)
     {
         var token = Iterator.Current;
         var type = token.Type;
@@ -192,6 +192,17 @@ public sealed partial class Parser
         else
         {
             result = SyntaxTree.Factory.Call(CodeSymbols.Int32, LNode.List(result)).WithRange(result.Range);
+        }
+
+        if (Iterator.IsMatch(TokenType.LessThan))
+        {
+            Iterator.NextToken();
+
+            var unit = Iterator.Match(TokenType.Identifier);
+
+            result = SyntaxTree.Unit(result, unit.Text).WithRange(result.Range.StartIndex, unit.End);
+
+            Iterator.Match(TokenType.GreaterThan);
         }
 
         return result;

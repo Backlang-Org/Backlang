@@ -1,3 +1,4 @@
+using Backlang.Contracts.TypeSystem;
 using Flo;
 
 namespace Backlang.Driver.Compiling.Stages;
@@ -52,6 +53,21 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         if (TypenameTable.ContainsKey(fullName.ToString()))
         {
             resolvedType = Utils.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
+
+            if (typeNode is (_, (_, _, (_, var unit))) && unit != LNode.Missing)
+            {
+                if (unit is (_, (_, var u)))
+                {
+                    var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(u, context, modulename);
+
+                    if (!Utils.IsUnitType(context, resolvedUnit))
+                    {
+                        context.AddError(u, $"{resolvedUnit} is not a unit type");
+                    }
+
+                    resolvedType = new UnitType(resolvedType, resolvedUnit);
+                }
+            }
         }
         else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
         {

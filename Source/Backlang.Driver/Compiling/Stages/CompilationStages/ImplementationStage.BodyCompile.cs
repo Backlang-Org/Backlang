@@ -63,6 +63,7 @@ public partial class ImplementationStage
                 if (node.ArgCount == 0) continue;
 
                 block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
+                continue;
             }
 
             if (_implementations.ContainsKey(node.Name))
@@ -74,11 +75,11 @@ public partial class ImplementationStage
             }
             else if (node.Calls("print"))
             {
-                AppendCall(context, block, node, context.writeMethods, scope, "Write");
+                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, "Write");
             }
             else if (node.Calls("println"))
             {
-                AppendCall(context, block, node, context.writeMethods, scope, "WriteLine");
+                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, "WriteLine");
             }
             else
             {
@@ -106,7 +107,7 @@ public partial class ImplementationStage
                     }
 
                     //ToDo: add overload AppendCall with known callee
-                    AppendCall(context, block, node, type.Methods, scope);
+                    AppendCall(context, block, node, type.Methods, scope, modulename.Value);
                 }
                 else
                 {
@@ -121,21 +122,21 @@ public partial class ImplementationStage
     }
 
     public static NamedInstructionBuilder AppendExpression(BasicBlockBuilder block, LNode node,
-        IType elementType, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
-        return fetch == null ? null : fetch.Handle(node, block, elementType, context, scope);
+        return fetch == null ? null : fetch.Handle(node, block, elementType, context, scope, modulename);
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
-        LNode node, IEnumerable<IMethod> methods, Scope scope, string methodName = null)
+        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, string methodName = null)
     {
         var argTypes = new List<IType>();
 
         foreach (var arg in node.Args)
         {
-            var type = TypeDeducer.Deduce(arg, scope, context);
+            var type = TypeDeducer.Deduce(arg, scope, context, modulename.Value);
 
             if (type != null)
                 argTypes.Add(type);
@@ -148,23 +149,23 @@ public partial class ImplementationStage
 
         var method = GetMatchingMethod(context, argTypes, methods, methodName);
 
-        return AppendCall(context, block, node, method, scope);
+        return AppendCall(context, block, node, method, scope, modulename.Value);
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
-        LNode node, IMethod method, Scope scope)
+        LNode node, IMethod method, Scope scope, QualifiedName? modulename)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
         foreach (var arg in node.Args)
         {
-            var type = TypeDeducer.Deduce(arg, scope, context);
+            var type = TypeDeducer.Deduce(arg, scope, context, modulename.Value);
             argTypes.Add(type);
 
             if (!arg.IsId)
             {
-                var val = AppendExpression(block, arg, type, context, scope);
+                var val = AppendExpression(block, arg, type, context, scope, modulename);
 
                 callTags.Add(val);
             }

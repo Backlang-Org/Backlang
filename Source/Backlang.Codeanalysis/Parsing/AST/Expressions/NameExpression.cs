@@ -2,7 +2,7 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public sealed class NameExpression : IParsePoint<LNode>
+public sealed class NameExpression : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public sealed class GroupOrTupleExpression : IParsePoint<LNode>
+public sealed class GroupOrTupleExpression : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

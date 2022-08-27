@@ -18,7 +18,7 @@ public sealed class CompilationUnit
 
     public static CompilationUnit FromText(string text)
     {
-        var document = new SourceDocument("inline.txt", text);
+        var document = new SourceDocument("inline.back", text);
 
         var result = Parser.Parse(document);
 

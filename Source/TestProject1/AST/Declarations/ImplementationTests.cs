@@ -9,27 +9,44 @@ public class ImplementationTests : ParserTestBase
     public void Range_Impl_Should_Pass()
     {
         var src = "implement u8..u32 { func something() {  } }";
-        var node = ParseAndGetNodes(src);
+        var result = ParseAndGetNodes(src);
+
+        Assert.AreEqual(0, result.errors.Count);
+    }
+
+    [TestMethod]
+    public void Range_Half_Impl_Should_Fail()
+    {
+        var src = "implement u8.. { func something() {  } }";
+        var result = ParseAndGetNodes(src);
+
+        Assert.AreEqual(1, result.errors.Count);
     }
 
     [TestMethod]
     public void Simple_Impl_Should_Pass()
     {
         var src = "implement u8 { func something() {  } }";
-        var node = ParseAndGetNodes(src);
+        var result = ParseAndGetNodes(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 
     [TestMethod]
     public void Impl_Function_With_Annotations_Should_Pass()
     {
         var src = "implement u8 { @Log func something() {  } }";
-        var node = ParseAndGetNodes(src);
+        var result = ParseAndGetNodes(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 
     [TestMethod]
     public void Impl_Function_With_Modifiers_Should_Pass()
     {
         var src = "implement u8 { private override func something() {  } }";
-        var node = ParseAndGetNodes(src);
+        var result = ParseAndGetNodes(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 }

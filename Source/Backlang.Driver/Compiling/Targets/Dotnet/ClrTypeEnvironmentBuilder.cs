@@ -140,7 +140,7 @@ public class ClrTypeEnvironmentBuilder
         t.AddMethod(method);
     }
 
-    private static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, CompilerContext context)
+    public static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, CompilerContext context)
     {
         foreach (var p in parameterInfos)
         {

@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
@@ -13,7 +14,7 @@ public class VariableImplementor : IStatementImplementor
 
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
 
-        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context);
+        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context, modulename.Value);
 
         if (elementType == null)
         {
@@ -31,7 +32,18 @@ public class VariableImplementor : IStatementImplementor
         {
             //ToDo: check for implicit cast
             if (deducedValueType != null && elementType != deducedValueType && deducedValueType != context.Environment.Void)
+            {
+                if (elementType is UnitType ut)
+                {
+                    if (ut != deducedValueType)
+                    {
+                        context.AddError(node, $"Unit Type mismatch {elementType} {deducedValueType}");
+                    }
+                    return block;
+                }
+
                 context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
+            }
         }
 
         var varname = decl.Args[0].Name.Name;
@@ -53,7 +65,7 @@ public class VariableImplementor : IStatementImplementor
 
         if (deducedValueType == null) return block;
 
-        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope);
+        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope, modulename);
 
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
 

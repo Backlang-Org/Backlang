@@ -9,20 +9,26 @@ public class ForStatementTests : ParserTestBase
     public void For_With_If_Should_Pass()
     {
         var src = "for x in 1..5 { if !d { 42; } else { 1; } }";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 
     [TestMethod]
     public void For_With_Type_In_Array_With_If_Should_Pass()
     {
         var src = "for x : i32 in arr { if !d { 42; } else { 1; } }";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 
     [TestMethod]
     public void For_With_Type_With_If_Should_Pass()
     {
         var src = "for x : i32 in 1..5 { if !d { 42; } else { 1; } }";
-        var tree = ParseAndGetNodesInFunction(src);
+        var result = ParseAndGetNodesInFunction(src);
+
+        Assert.AreEqual(0, result.errors.Count);
     }
 }

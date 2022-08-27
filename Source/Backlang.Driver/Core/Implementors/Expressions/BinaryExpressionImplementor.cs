@@ -11,13 +11,13 @@ public class BinaryExpressionImplementor : IExpressionImplementor
         && node.Name.Name.StartsWith("'");
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
-        var lhs = AppendExpression(block, node.Args[0], elementType, context, scope);
-        var rhs = AppendExpression(block, node.Args[1], elementType, context, scope);
+        var lhs = AppendExpression(block, node.Args[0], elementType, context, scope, modulename);
+        var rhs = AppendExpression(block, node.Args[1], elementType, context, scope, modulename);
 
-        var leftType = TypeDeducer.Deduce(node.Args[0], scope, context);
-        var rightType = TypeDeducer.Deduce(node.Args[1], scope, context);
+        var leftType = TypeDeducer.Deduce(node.Args[0], scope, context, modulename.Value);
+        var rightType = TypeDeducer.Deduce(node.Args[1], scope, context, modulename.Value);
 
         if (leftType.TryGetOperator(node.Name.Name, out var opMethod, leftType, rightType))
         {
