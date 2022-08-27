@@ -38,9 +38,8 @@ public class VariableImplementor : IStatementImplementor
                     if (ut != deducedValueType)
                     {
                         context.AddError(node, $"Unit Type mismatch {elementType} {deducedValueType}");
-
-                        return block;
                     }
+                    return block;
                 }
 
                 context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
