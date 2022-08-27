@@ -30,8 +30,7 @@ public class VariableImplementor : IStatementImplementor
         }
         else
         {
-            //ToDo: check for implicit cast
-            if (deducedValueType != null && elementType != deducedValueType && deducedValueType != context.Environment.Void)
+            if (deducedValueType != null && !elementType.IsAssignableTo(deducedValueType) && deducedValueType != context.Environment.Void)
             {
                 if (elementType is UnitType ut)
                 {
