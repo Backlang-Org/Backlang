@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class DiscriminatedUnionDeclaration : IParsePoint<LNode>
+public class DiscriminatedUnionDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

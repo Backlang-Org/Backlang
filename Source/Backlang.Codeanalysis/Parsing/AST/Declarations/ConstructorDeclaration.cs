@@ -2,7 +2,8 @@
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
-public class ConstructorDeclaration : IParsePoint<LNode>
+
+public class ConstructorDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

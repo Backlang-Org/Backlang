@@ -16,6 +16,8 @@
     <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
+
+
   <ItemGroup>
     <None Include="..\..\logo.png">
       <Pack>True</Pack>
