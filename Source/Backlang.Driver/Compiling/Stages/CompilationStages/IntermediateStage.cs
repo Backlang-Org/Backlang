@@ -1,5 +1,6 @@
 ﻿using Backlang.Contracts.Scoping.Items;
 using Flo;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Globalization;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
@@ -19,6 +20,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
                 {
                     ConvertTypeOrInterface(context, st, modulename, context.GlobalScope);
+                }
+                else if (st.Calls(Symbols.UnitDecl))
+                {
+                    ConvertUnitDeclaration(context, st, modulename, context.GlobalScope);
                 }
                 else if (st.Calls(CodeSymbols.Enum))
                 {
@@ -88,6 +93,18 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             type.IsAbstract = true;
         }
+    }
+
+    private void ConvertUnitDeclaration(CompilerContext context, LNode st, QualifiedName modulename, Scope globalScope)
+    {
+        var unitType = new DescribedType(new SimpleName(st[0].Name.ToString()).Qualify(modulename), context.Assembly);
+
+        unitType.IsStatic = true;
+        unitType.IsPublic = true;
+
+        unitType.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(Backlang.Core.CompilerService.UnitTypeAttribute))));
+
+        context.Assembly.AddType(unitType);
     }
 
     private void ConvertDiscriminatedUnion(CompilerContext context, LNode discrim, QualifiedName modulename)

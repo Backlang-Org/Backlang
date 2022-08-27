@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Pipeline;
+﻿using Backlang.Core.CompilerService;
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -34,7 +35,9 @@ public class DotNetAssembly : ITargetAssembly
         SetTargetFramework();
 
         var console = typeof(Console).Assembly.GetName();
+        var core = typeof(UnitTypeAttribute).Assembly.GetName();
         _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(console.FullName));
+        _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(core.FullName));
     }
 
     public void WriteTo(Stream output)
