@@ -38,6 +38,8 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
             context.CompilationTarget = compilationTarget;
             context.Environment = compilationTarget.Init(context);
 
+            ImplicitTypeCastTable.InitCastMap(context.Environment);
+
             _targets.Clear();
 
             if (compilationTarget.HasIntrinsics)
