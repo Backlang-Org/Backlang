@@ -42,7 +42,7 @@ public class WasmAssembly : ITargetAssembly
 
                 module.Functions.Add(new Function
                 {
-                    Type = (uint)module.Functions.Count,
+                    Type = (uint)module.Types.Count - 1,
                 });
 
                 var locals = GetLocals(m);
@@ -51,7 +51,7 @@ public class WasmAssembly : ITargetAssembly
 
                 if (m == contents.EntryPoint)
                 {
-                    module.Start = (uint)i;
+                    module.Start = (uint)module.Functions.Count - 1;
                 }
             }
         }
