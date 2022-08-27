@@ -1,4 +1,6 @@
-﻿namespace Backlang.Driver;
+﻿using Backlang.Core.CompilerService;
+
+namespace Backlang.Driver;
 
 public static class Utils
 {
@@ -54,5 +56,13 @@ public static class Utils
         }
 
         return sb.ToString();
+    }
+
+    public static bool IsUnitType(CompilerContext context, IType resolvedUnit)
+    {
+        var attr = resolvedUnit.Attributes.GetAll();
+        var attrType = Utils.ResolveType(context.Binder, typeof(UnitTypeAttribute));
+
+        return attr.Select(_ => _.AttributeType).Contains(attrType);
     }
 }

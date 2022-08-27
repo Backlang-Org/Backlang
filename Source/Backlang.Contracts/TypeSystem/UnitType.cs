@@ -6,14 +6,14 @@ public class UnitType : DescribedType
     {
     }
 
-    public UnitType(IType type, string unit) : this(type.GetDefiningAssemblyOrNull())
+    public UnitType(IType type, IType unit) : this(type.GetDefiningAssemblyOrNull())
     {
         Unit = unit;
 
         AddBaseType(type);
     }
 
-    public string Unit { get; }
+    public IType Unit { get; }
 
     public static bool operator ==(UnitType left, IType right)
     {
@@ -27,6 +27,6 @@ public class UnitType : DescribedType
 
     public override string ToString()
     {
-        return $"{BaseTypes[0]}<{Unit}>";
+        return $"{BaseTypes[0]}<{Unit.Name}>";
     }
 }
