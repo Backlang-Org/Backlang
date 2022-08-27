@@ -29,6 +29,10 @@ public static class ImplicitTypeCastTable
         {
             return castMap[toCast].Contains(type);
         }
+        else if (toCast.FullName.ToString() == "System.Object")
+        {
+            return true;
+        }
 
         return false;
     }
