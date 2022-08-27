@@ -10,13 +10,13 @@ public class WhileImplementor : IStatementImplementor
     {
         if (node is (_, var condition, var body))
         {
-            TypeDeducer.ExpectType(condition, scope, context, context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
 
             var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 
             var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
-            AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope);
+            AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
             while_condition.Flow = new JumpFlow(while_start);
 
             var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
@@ -30,7 +30,7 @@ public class WhileImplementor : IStatementImplementor
             }
             else
             {
-                AppendExpression(block, condition, method.ParentType, context, scope);
+                AppendExpression(block, condition, method.ParentType, context, scope, modulename);
                 while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
             }
 

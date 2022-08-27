@@ -10,7 +10,7 @@ public class IfImplementor : IStatementImplementor
     {
         if (node is (_, (_, var condition, var body, var el)))
         {
-            TypeDeducer.ExpectType(condition, scope, context, context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
 
             var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
             AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
@@ -28,7 +28,7 @@ public class IfImplementor : IStatementImplementor
             }
             else
             {
-                AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope);
+                AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope, modulename);
                 if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
             }
 

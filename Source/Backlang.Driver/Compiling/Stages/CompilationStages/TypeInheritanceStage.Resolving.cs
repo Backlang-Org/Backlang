@@ -58,7 +58,14 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 if (unit is (_, (_, var u)))
                 {
-                    resolvedType = new UnitType(resolvedType, u.Name.ToString());
+                    var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(u, context, modulename);
+
+                    if (!Utils.IsUnitType(context, resolvedUnit))
+                    {
+                        context.AddError(u, $"{resolvedUnit} is not a unit type");
+                    }
+
+                    resolvedType = new UnitType(resolvedType, resolvedUnit);
                 }
             }
         }

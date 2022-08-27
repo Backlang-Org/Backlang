@@ -7,7 +7,7 @@ public class IdentifierExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node) => node.IsId;
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         scope.TryGet<ScopeItem>(node.Name.Name, out var item);
 

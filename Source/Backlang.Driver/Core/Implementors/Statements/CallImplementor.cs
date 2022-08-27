@@ -18,7 +18,7 @@ public class CallImplementor : IStatementImplementor
 
             if (scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
             {
-                AppendCall(context, block, callee, fsi.Overloads, scope);
+                AppendCall(context, block, callee, fsi.Overloads, scope, modulename);
             }
             else
             {

@@ -14,7 +14,7 @@ public class VariableImplementor : IStatementImplementor
 
         var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
 
-        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context);
+        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context, modulename.Value);
 
         if (elementType == null)
         {
@@ -65,7 +65,7 @@ public class VariableImplementor : IStatementImplementor
 
         if (deducedValueType == null) return block;
 
-        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope);
+        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope, modulename);
 
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
 

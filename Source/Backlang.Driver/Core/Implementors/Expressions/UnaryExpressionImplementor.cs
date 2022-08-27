@@ -8,11 +8,11 @@ public class UnaryExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node) => node.ArgCount == 1 && !node.Calls(CodeSymbols.ColonColon) && node.Name.Name.StartsWith("'");
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
-        var lhs = AppendExpression(block, node.Args[0], elementType, context, scope);
+        var lhs = AppendExpression(block, node.Args[0], elementType, context, scope, modulename);
 
-        var leftType = TypeDeducer.Deduce(node.Args[0], scope, context);
+        var leftType = TypeDeducer.Deduce(node.Args[0], scope, context, modulename.Value);
 
         if (leftType.TryGetOperator(node.Name.Name, out var opMethod, leftType))
         {

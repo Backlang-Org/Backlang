@@ -5,7 +5,7 @@ public class AddressExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node) => node is ("'&", _);
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
-        IType elementType, CompilerContext context, Scope scope)
+        IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         if (node is (_, var p))
         {
