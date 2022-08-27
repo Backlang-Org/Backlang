@@ -45,6 +45,11 @@ public class WasmAssembly : ITargetAssembly
                     Type = (uint)module.Types.Count - 1,
                 });
 
+                if (m.IsPublic)
+                {
+                    module.Exports.Add(new Export(m.Name.ToString(), kind: ExternalKind.Function));
+                }
+
                 var locals = GetLocals(m);
 
                 module.Codes.Add(new FunctionBody(CompileBody(m.Body, locals)) { Locals = locals.Values.ToList() });
