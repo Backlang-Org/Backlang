@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Globalization;
@@ -7,6 +8,17 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
+    private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu)
+    {
+        foreach (var node in cu.Body)
+        {
+            if (node.Calls(CodeSymbols.Import))
+            {
+                yield return node;
+            }
+        }
+    }
+
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
@@ -14,6 +26,15 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         foreach (var tree in context.Trees)
         {
             var modulename = ConversionUtils.GetModuleName(tree);
+            var importetNamespaces = GetNamespaceImports(tree);
+            var imports = new NamespaceImports();
+
+            foreach (var importStatement in importetNamespaces)
+            {
+                imports.ImportNamespace(importStatement, context);
+            }
+
+            context.ImportetNamespaces.Add(tree.Document.FileName, imports);
 
             foreach (var st in tree.Body)
             {
