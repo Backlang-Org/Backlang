@@ -103,6 +103,25 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
             }
+
+            if (resolvedType == null)
+            {
+                var namespaceImport = context.ImportetNamespaces[typeNode.Range.Source.FileName];
+
+                foreach (var importedNs in namespaceImport.ImportedNamespaces)
+                {
+                    var tmpName = fullName.Qualify(importedNs);
+
+                    resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
+
+                    if (resolvedType != null) break;
+                }
+
+                if (resolvedType == null)
+                {
+                    context.AddError(typeNode, $"Type {fullName} cannot be found");
+                }
+            }
         }
 
         if (isPointer)
