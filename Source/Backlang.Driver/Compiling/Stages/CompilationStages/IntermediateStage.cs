@@ -8,10 +8,17 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu)
+    private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu, CompilerContext context)
     {
-        foreach (var node in cu.Body)
+        for (var i = 0; i < cu.Body.Count; i++)
         {
+            var node = cu.Body[i];
+
+            if (i > 0 && !cu.Body[i - 1].Calls(CodeSymbols.Import) && node.Calls(CodeSymbols.Import))
+            {
+                context.AddError(node, "Imports are only allowed at the top of the file");
+            }
+
             if (node.Calls(CodeSymbols.Import))
             {
                 yield return node;
@@ -26,7 +33,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         foreach (var tree in context.Trees)
         {
             var modulename = ConversionUtils.GetModuleName(tree);
-            var importetNamespaces = GetNamespaceImports(tree);
+            var importetNamespaces = GetNamespaceImports(tree, context);
             var imports = new NamespaceImports();
 
             foreach (var importStatement in importetNamespaces)
