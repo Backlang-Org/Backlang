@@ -15,6 +15,8 @@ public sealed class CompilerContext
 
     public Scope GlobalScope { get; } = new(null);
 
+    public Dictionary<string, NamespaceImports> ImportetNamespaces { get; set; } = new();
+
     public List<MethodBodyCompilation> BodyCompilations { get; set; } = new();
 
     public TypeEnvironment Environment { get; set; }

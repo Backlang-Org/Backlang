@@ -58,7 +58,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 if (unit is (_, (_, var u)))
                 {
-                    var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(u, context, modulename);
+                    var resolvedUnit = ResolveTypeWithModule(u, context, modulename);
 
                     if (!Utils.IsUnitType(context, resolvedUnit))
                     {
@@ -102,6 +102,25 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             if (resolvedType == null)
             {
                 resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
+            }
+
+            if (resolvedType == null)
+            {
+                var namespaceImport = context.ImportetNamespaces[typeNode.Range.Source.FileName];
+
+                foreach (var importedNs in namespaceImport.ImportedNamespaces)
+                {
+                    var tmpName = fullName.Qualify(importedNs);
+
+                    resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
+
+                    if (resolvedType != null) break;
+                }
+
+                if (resolvedType == null)
+                {
+                    context.AddError(typeNode, $"Type {fullName} cannot be found");
+                }
             }
         }
 
