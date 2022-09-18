@@ -1,6 +1,5 @@
 public static func main() {
-
-    let myTuple  = (1, 2);
-    let otherTuple = ('c', "world");
-
+    while true {
+        print("Hello Loop");
+    }
 }

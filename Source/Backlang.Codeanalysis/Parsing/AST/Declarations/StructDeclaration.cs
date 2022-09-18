@@ -7,7 +7,7 @@ public sealed class StructDeclaration : IParsePoint
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var keywordToken = iterator.Prev;
-        var name = iterator.Match(TokenType.Identifier).Text;
+        var name = iterator.Match(TokenType.Identifier);
         var inheritances = new LNodeList();
         var members = new LNodeList();
 

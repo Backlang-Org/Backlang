@@ -57,11 +57,6 @@ public static class MethodBodyCompiler
 
     private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps, Dictionary<string, VariableDefinition> variables)
     {
-        var nop = Instruction.Create(OpCodes.Nop);
-        ilProcessor.Append(nop);
-
-        labels.Add(block.Tag.Name, nop);
-
         foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
@@ -118,6 +113,13 @@ public static class MethodBodyCompiler
             {
                 EmitStoreField(parentType, ilProcessor, sp);
             }
+
+            if (!ilProcessor.Body.Instructions.Any())
+            {
+                return;
+            }
+
+            labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.First());
         }
 
         if (block.Flow is ReturnFlow rf)
@@ -131,11 +133,21 @@ public static class MethodBodyCompiler
         }
         else if (block.Flow is JumpFlow jf)
         {
-            jumps.Add(nop, (jf.Branch.Target.Name, null));
+            if (!ilProcessor.Body.Instructions.Any())
+            {
+                return;
+            }
+
+            jumps.Add(ilProcessor.Body.Instructions.First(), (jf.Branch.Target.Name, null));
         }
         else if (block.Flow is JumpConditionalFlow jcf)
         {
-            jumps.Add(nop, (jcf.Branch.Target.Name, jcf.ConditionSelector));
+            if (!ilProcessor.Body.Instructions.Any())
+            {
+                return;
+            }
+
+            jumps.Add(ilProcessor.Body.Instructions.First(), (jcf.Branch.Target.Name, jcf.ConditionSelector));
         }
         else if (block.Flow is UnreachableFlow)
         {
