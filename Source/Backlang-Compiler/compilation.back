@@ -1,3 +1,9 @@
+import System;
+
+module hello;
+module hello;
+
+
 public static func main() {
     while true {
         print("Hello Loop");

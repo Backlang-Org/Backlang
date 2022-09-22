@@ -4,7 +4,22 @@ public static class ConversionUtils
 {
     public static QualifiedName GetModuleName(CompilationUnit tree)
     {
-        var moduleDefinition = tree.Body.SingleOrDefault(_ => _.Calls(CodeSymbols.Namespace));
+        var moduleDefinition = tree.Body.FirstOrDefault(_ => _.Calls(CodeSymbols.Namespace));
+
+        if (tree.Body.Count(_ => _.Calls(CodeSymbols.Namespace)) > 0)
+        {
+            tree.Messages.Add(Message.Error("A module definition can only be declared once in a file", moduleDefinition.Range));
+        }
+
+        for (var i = 0; i < tree.Body.Count; i++)
+        {
+            var node = tree.Body[i];
+
+            if (i > 0 && !tree.Body[i - 1].Calls(CodeSymbols.Namespace) && node.Calls(CodeSymbols.Import))
+            {
+                tree.Messages.Add(Message.Warning("Usings should be before module definition", node.Range));
+            }
+        }
 
         if (moduleDefinition != null)
         {
