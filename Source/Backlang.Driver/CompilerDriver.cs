@@ -12,6 +12,7 @@ public class CompilerDriver
         var pipeline = Flo.Pipeline.Build<CompilerContext, CompilerContext>(
        cfg => {
            cfg.Add<ParsingStage>();
+           cfg.Add<SemanticCheckStage>();
 
            cfg.When(_ => !hasError(_.Messages) && _.OutputTree, _ => {
                _.Add<EmitTreeStage>();
