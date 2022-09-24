@@ -10,11 +10,11 @@ public static class SemanticChecker
         new ImportCheck()
     };
 
-    public static void Do(CompilationUnit tree, CompilerContext context)
+    public static void Do(CompilationUnit tree)
     {
         foreach (var check in _semanticChecks)
         {
-            check.Check(tree, context.Messages);
+            check.Check(tree);
         }
     }
 }

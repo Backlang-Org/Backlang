@@ -4,7 +4,7 @@ namespace Backlang.Contracts.Semantic;
 
 internal class ImportCheck : ISemanticCheck
 {
-    public void Check(CompilationUnit tree, List<Message> messages)
+    public void Check(CompilationUnit tree)
     {
         for (var i = 0; i < tree.Body.Count; i++)
         {
@@ -12,7 +12,7 @@ internal class ImportCheck : ISemanticCheck
 
             if (i > 0 && !tree.Body[i - 1].Calls(CodeSymbols.Namespace) && node.Calls(CodeSymbols.Import))
             {
-                messages.Add(Message.Warning("Imports should be before module definition", node.Range));
+                tree.Messages.Add(Message.Warning("Imports should be before module definition", node.Range));
             }
         }
     }

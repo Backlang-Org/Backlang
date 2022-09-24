@@ -2,5 +2,5 @@
 
 public interface ISemanticCheck
 {
-    void Check(CompilationUnit tree, List<Message> messages);
+    void Check(CompilationUnit tree);
 }

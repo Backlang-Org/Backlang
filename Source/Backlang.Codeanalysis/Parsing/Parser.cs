@@ -20,13 +20,18 @@ public sealed partial class Parser
 
     public TokenIterator Iterator { get; set; }
 
-    public static (LNodeList Tree, List<Message> Messages) Parse(SourceDocument src)
+    public static CompilationUnit Parse(SourceDocument src)
     {
         SourceFile<StreamCharSource> document = src;
 
         if (document.Text == null)
         {
-            return (LNode.List(LNode.Missing), new() { Message.Error("Empty File", SourceRange.Synthetic) });
+            return new CompilationUnit
+            {
+                Body = LNode.List(LNode.Missing),
+                Messages = new() { Message.Error("Empty File", SourceRange.Synthetic) },
+                Document = document
+            };
         }
 
         var lexer = new Lexer();
@@ -37,13 +42,13 @@ public sealed partial class Parser
         return parser.Program();
     }
 
-    public (LNodeList, List<Message>) Program()
+    public CompilationUnit Program()
     {
         var node = Start();
 
         Iterator.Match(TokenType.EOF);
 
-        return (node.Body, node.Messages);
+        return node;
     }
 
     private CompilationUnit Start()
