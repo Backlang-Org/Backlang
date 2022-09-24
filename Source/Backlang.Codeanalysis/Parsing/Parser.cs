@@ -59,6 +59,7 @@ public sealed partial class Parser
 
         cu.Messages = Messages.Concat(Iterator.Messages).ToList();
         cu.Body = body;
+        cu.Document = Document;
 
         return cu;
     }
