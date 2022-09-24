@@ -1,12 +1,13 @@
-public struct Point {
-	let x: i32*;
-	let callback: (i32, bool) -> none;
-}
-
 import System;
 
 module hello;
 module hello;
+
+public struct Point {
+	//let a: i32*; // throws error
+    let callback: (i32, bool) -> none;
+    let tuple: (i32, char);
+}
 
 public static func main() {
     while true {
