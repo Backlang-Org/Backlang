@@ -88,7 +88,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                 tupleArgs.Add(ResolveTypeWithModule(arg, context, modulename));
             }
 
-            return tupleType.MakeGenericType(tupleArgs);
+            resolvedType = tupleType.MakeGenericType(tupleArgs);
         }
         else if (typeNode.Calls(CodeSymbols.Array))
         {
