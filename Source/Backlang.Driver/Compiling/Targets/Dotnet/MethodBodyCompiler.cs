@@ -1,7 +1,4 @@
-﻿using Backlang.Contracts;
-using Furesoft.Core.CodeDom.Compiler;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -60,11 +57,6 @@ public static class MethodBodyCompiler
 
     private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps, Dictionary<string, VariableDefinition> variables)
     {
-        var nop = Instruction.Create(OpCodes.Nop);
-        ilProcessor.Append(nop);
-
-        labels.Add(block.Tag.Name, nop);
-
         foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
@@ -89,13 +81,17 @@ public static class MethodBodyCompiler
             else if (instruction.Prototype is LoadPrototype)
             {
                 var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
-                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
+                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
                 var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
                 variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
+            }
+            else if (instruction.Prototype is AllocaArrayPrototype allocArray)
+            {
+                ilProcessor.Emit(OpCodes.Newarr, assemblyDefinition.ImportType(allocArray.ElementType));
             }
             else if (instruction.Prototype is IntrinsicPrototype arith)
             {
@@ -117,24 +113,41 @@ public static class MethodBodyCompiler
             {
                 EmitStoreField(parentType, ilProcessor, sp);
             }
+
+            if (!ilProcessor.Body.Instructions.Any())
+            {
+                return;
+            }
+
+            labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.First());
         }
 
         if (block.Flow is ReturnFlow rf)
         {
             if (rf.HasReturnValue)
             {
-                EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
             }
 
             ilProcessor.Emit(OpCodes.Ret);
         }
         else if (block.Flow is JumpFlow jf)
         {
-            jumps.Add(nop, (jf.Branch.Target.Name, null));
+            if (!ilProcessor.Body.Instructions.Any())
+            {
+                return;
+            }
+
+            jumps.Add(ilProcessor.Body.Instructions.First(), (jf.Branch.Target.Name, null));
         }
         else if (block.Flow is JumpConditionalFlow jcf)
         {
-            jumps.Add(nop, (jcf.Branch.Target.Name, jcf.ConditionSelector));
+            if (!ilProcessor.Body.Instructions.Any())
+            {
+                return;
+            }
+
+            jumps.Add(ilProcessor.Body.Instructions.First(), (jcf.Branch.Target.Name, jcf.ConditionSelector));
         }
         else if (block.Flow is UnreachableFlow)
         {
@@ -176,7 +189,10 @@ public static class MethodBodyCompiler
         if (param != null)
         {
             var index = clrMethod.Parameters.IndexOf(param);
-            ilProcessor.Emit(OpCodes.Ldarg, index + 1);
+
+            if (!clrMethod.IsStatic) index++;
+
+            ilProcessor.Emit(OpCodes.Ldarg, index);
         }
         else
         {
@@ -274,7 +290,7 @@ public static class MethodBodyCompiler
             );
     }
 
-    private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
+    private static void EmitConstant(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, ConstantPrototype consProto)
     {
         dynamic v = consProto.Value;
 
@@ -382,6 +398,23 @@ public static class MethodBodyCompiler
 
             if (parameters.Count == method.Parameters.Count)
             {
+                if (method.GenericParameters.Any())
+                {
+                    if (method.IsConstructor)
+                    {
+                        var dts = (DirectTypeSpecialization)GenericTypeMap.Cache[(method.FullName, method)];
+                        var args = dts.GetRecursiveGenericArguments().Select(_ => assemblyDefinition.ImportType(_)).ToArray();
+                        var genericType = assemblyDefinition.ImportType(dts);
+                        var gctor = genericType.Resolve().Methods.FirstOrDefault(_ => _.Name == method.Name.ToString());
+
+                        var mm = m.MakeHostInstanceGeneric(args);
+
+                        return assemblyDefinition.MainModule.ImportReference(mm);
+                    }
+
+                    return m;
+                }
+
                 if (MatchesParameters(parameters, method))
                     return assemblyDefinition.MainModule.ImportReference(m);
             }
@@ -393,9 +426,19 @@ public static class MethodBodyCompiler
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
     {
         //ToDo: refactor to improve code
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
+        var methodParams = string.Join(',', method.Parameters.Select(_ => NormalizeTypename(_.Type?.FullName.ToString())));
         var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
         return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
+    }
+
+    private static string NormalizeTypename(string str)
+    {
+        if (!string.IsNullOrEmpty(str) && str.StartsWith("."))
+        {
+            return str.Substring(1);
+        }
+
+        return str;
     }
 }

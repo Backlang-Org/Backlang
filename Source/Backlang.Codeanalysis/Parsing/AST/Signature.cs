@@ -13,8 +13,9 @@ public sealed class Signature
         if (!TypeLiteral.TryParse(parser, out name))
         {
             //error
-            parser.Messages.Add(Message.Error(parser.Document,
-                $"Expected Identifier, got {iterator.Current.Text}", iterator.Current.Line, iterator.Current.Column));
+            var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
+            parser.Messages.Add(Message.Error(
+                $"Expected Identifier, got {iterator.Current.Text}", range));
         }
 
         LNode returnType = SyntaxTree.Type("none", LNode.List());

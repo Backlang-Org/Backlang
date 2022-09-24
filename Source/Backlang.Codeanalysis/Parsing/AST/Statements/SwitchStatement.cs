@@ -3,7 +3,7 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public sealed class SwitchStatement : IParsePoint<LNode>
+public sealed class SwitchStatement : IParsePoint
 {
     /*
      * switch element {
@@ -42,7 +42,9 @@ public sealed class SwitchStatement : IParsePoint<LNode>
                 cases.Add(ParseDefault(parser, autoBreak));
             else
             {
-                parser.Messages.Add(Message.Error(parser.Document, "Switch Statement can only have case, if or default, but got " + iterator.Current.Text, iterator.Current.Line, iterator.Current.Column));
+                var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
+
+                parser.Messages.Add(Message.Error("Switch Statement can only have case, if or default, but got " + iterator.Current.Text, range));
                 return LNode.Missing;
             }
         }
@@ -118,7 +120,9 @@ public sealed class SwitchStatement : IParsePoint<LNode>
             // with element function
             if (!parser.Iterator.IsMatch(TokenType.Identifier))
             {
-                parser.Messages.Add(Message.Error(parser.Document, $"Expected {TokenType.Identifier} but got {parser.Iterator.Current.Type}", parser.Iterator.Current.Line, parser.Iterator.Current.Column));
+                var range = new SourceRange(parser.Document, parser.Iterator.Current.Start, parser.Iterator.Current.Text.Length);
+
+                parser.Messages.Add(Message.Error($"Expected {TokenType.Identifier} but got {parser.Iterator.Current.Type}", range));
                 return LNode.Missing;
             }
             var name = LNode.Id(parser.Iterator.Current.Text);

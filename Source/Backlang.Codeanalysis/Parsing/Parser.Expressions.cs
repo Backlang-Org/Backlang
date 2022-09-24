@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Loyc;
 using Loyc.Syntax;
@@ -21,17 +22,17 @@ public sealed partial class Parser
         {"d", Symbols.Float64},
     };
 
-    public void AddError(string message, int line, int column)
+    public void AddError(string message, SourceRange range)
     {
-        Messages.Add(Message.Error(Document, message, line, column));
+        Messages.Add(Message.Error(message, range));
     }
 
     public void AddError(string message)
     {
-        Messages.Add(Message.Error(Document, message, Iterator.Current.Line, Iterator.Current.Column));
+        Messages.Add(Message.Error(message, new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length)));
     }
 
-    internal override LNode ParsePrimary(ParsePoints<LNode> parsePoints = null)
+    internal LNode ParsePrimary(ParsePoints parsePoints = null)
     {
         if (parsePoints == null)
         {
@@ -47,8 +48,19 @@ public sealed partial class Parser
             TokenType.BinNumber => ParseBinNumber(),
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
+            TokenType.OpenSquare => ParseArrayLiteral(),
             _ => InvokeExpressionParsePoint(parsePoints),
         };
+    }
+
+    private LNode ParseArrayLiteral()
+    {
+        var startToken = Iterator.Current;
+        Iterator.NextToken();
+
+        var elements = Expression.ParseList(this, TokenType.CloseSquare);
+
+        return SyntaxTree.Factory.Call(CodeSymbols.Array, elements).WithRange(startToken, Iterator.Prev);
     }
 
     private LNode Invalid(string message)
@@ -58,7 +70,7 @@ public sealed partial class Parser
         return LNode.Call(CodeSymbols.Error, LNode.List(LNode.Literal(message)));
     }
 
-    private LNode InvokeExpressionParsePoint(ParsePoints<LNode> parsePoints)
+    private LNode InvokeExpressionParsePoint(ParsePoints parsePoints)
     {
         var token = Iterator.Current;
         var type = token.Type;
@@ -71,7 +83,16 @@ public sealed partial class Parser
         }
         else
         {
-            return Invalid($"Unknown Expression {Iterator.Current.Text}");
+            var suggestion = LevensteinDistance.Suggest(Iterator.Current.Text, parsePoints.Keys.Select(_ => _.ToString().ToLower()));
+
+            if (string.IsNullOrEmpty(suggestion))
+            {
+                return Invalid($"Unexpected Expression '{Iterator.Current.Text}'");
+            }
+            else
+            {
+                return Invalid($"Did you mean '{suggestion}'?'");
+            }
         }
     }
 
@@ -157,8 +178,7 @@ public sealed partial class Parser
             }
             else
             {
-                Messages.Add(Message.Error(Document, $"Unknown Literal {Iterator.Current.Text}",
-                    Iterator.Current.Line, Iterator.Current.Column));
+                AddError($"Unknown Literal {Iterator.Current.Text}");
 
                 result = LNode.Missing;
             }
@@ -172,6 +192,17 @@ public sealed partial class Parser
         else
         {
             result = SyntaxTree.Factory.Call(CodeSymbols.Int32, LNode.List(result)).WithRange(result.Range);
+        }
+
+        if (Iterator.IsMatch(TokenType.LessThan))
+        {
+            Iterator.NextToken();
+
+            var unit = Iterator.Match(TokenType.Identifier);
+
+            result = SyntaxTree.Unit(result, unit.Text).WithRange(result.Range.StartIndex, unit.End);
+
+            Iterator.Match(TokenType.GreaterThan);
         }
 
         return result;

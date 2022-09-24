@@ -1,15 +1,17 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
-using LeMP;
-
-namespace Backlang.Contracts;
+﻿namespace Backlang.Contracts;
 
 public interface ICompilationTarget : ITarget
 {
-    bool HasIntrinsics { get; }
+    bool HasIntrinsics => IntrinsicType != null;
     Type IntrinsicType { get; }
 
-    TypeEnvironment Init(TypeResolver binder);
+    TypeEnvironment Init(CompilerContext context)
+    {
+        var te = new DefaultTypeEnvironment();
+        context.Binder.AddAssembly(te.Assembly);
+
+        return te;
+    }
 
     void InitReferences(CompilerContext context);
 

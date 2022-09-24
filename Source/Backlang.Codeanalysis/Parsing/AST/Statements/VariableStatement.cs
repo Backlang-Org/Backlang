@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public class VariableStatement : IParsePoint<LNode>
+public class VariableStatement : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
@@ -21,7 +21,7 @@ public class VariableStatement : IParsePoint<LNode>
         }
 
         var nameToken = iterator.Match(TokenType.Identifier);
-        var name = SyntaxTree.Factory.Id(nameToken.Text);
+        var name = SyntaxTree.Factory.Id(nameToken.Text).WithRange(nameToken);
 
         if (iterator.Current.Type == TokenType.Colon)
         {

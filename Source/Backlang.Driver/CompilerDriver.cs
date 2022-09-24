@@ -1,8 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Contracts;
-using Backlang.Driver.Compiling.Stages;
-
-namespace Backlang.Driver;
+﻿namespace Backlang.Driver;
 
 public class CompilerDriver
 {
@@ -16,21 +12,14 @@ public class CompilerDriver
         var pipeline = Flo.Pipeline.Build<CompilerContext, CompilerContext>(
        cfg => {
            cfg.Add<ParsingStage>();
+           cfg.Add<SemanticCheckStage>();
 
            cfg.When(_ => !hasError(_.Messages) && _.OutputTree, _ => {
                _.Add<EmitTreeStage>();
            });
 
-           cfg.When(_ => !hasError(_.Messages) && _.Target != "dotnet", _ => {
-               _.Add<PluginSystemStage>();
-           });
-
            cfg.When(_ => !hasError(_.Messages), _ => {
-               _.Add<InitTypeSystemStage>();
-           });
-
-           cfg.When(_ => _.References.Any(), _ => {
-               _.Add<InitReferencesStage>();
+               _.Add<InitStage>();
            });
 
            cfg.When(_ => !hasError(_.Messages), _ => {
@@ -53,7 +42,7 @@ public class CompilerDriver
                _.Add<ImplementationStage>();
            });
 
-           cfg.When(_ => _.EmbeddedResource.Any() && !hasError(_.Messages), _ => {
+           cfg.When(_ => !hasError(_.Messages), _ => {
                _.Add<InitEmbeddedResourcesStage>();
            });
 

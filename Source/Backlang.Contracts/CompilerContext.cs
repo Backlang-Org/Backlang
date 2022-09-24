@@ -1,11 +1,6 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
-using CommandLine;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Loyc.Syntax;
+﻿namespace Backlang.Contracts;
 
-namespace Backlang.Contracts;
+#nullable disable
 
 public sealed class CompilerContext
 {
@@ -18,11 +13,13 @@ public sealed class CompilerContext
 
     public TypeResolver Binder { get; set; } = new();
 
+    public Scope GlobalScope { get; } = new(null);
+
+    public Dictionary<string, NamespaceImports> ImportetNamespaces { get; set; } = new();
+
     public List<MethodBodyCompilation> BodyCompilations { get; set; } = new();
 
     public TypeEnvironment Environment { get; set; }
-
-    public DescribedType ExtensionsType { get; set; }
 
     [Option('i', "input", Required = true, HelpText = "Input files to be compiled.")]
     public IEnumerable<string> InputFiles { get; set; }
@@ -54,13 +51,13 @@ public sealed class CompilerContext
     public string TempOutputPath { get; set; }
     public List<CompilationUnit> Trees { get; set; } = new();
 
-    [Option('e', longName: "resource", HelpText = "Embedd files into the assembly as resource")]
+    [Option('e', longName: "embedd", HelpText = "Embedd files into the assembly as resource")]
     public IEnumerable<string> EmbeddedResource { get; set; }
 
     public void AddError(LNode node, string msg)
     {
         if (node.Range.Source is not SourceFile<StreamCharSource>) return;
 
-        Messages.Add(Message.Error((SourceFile<StreamCharSource>)node.Range.Source, msg, node.Range.Start.Line, node.Range.Start.Column));
+        Messages.Add(Message.Error(msg, node.Range));
     }
 }

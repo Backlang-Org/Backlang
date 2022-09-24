@@ -2,13 +2,13 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class ClassDeclaration : IParsePoint<LNode>
+public sealed class ClassDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var keywordToken = iterator.Prev;
 
-        var name = iterator.Match(TokenType.Identifier).Text;
+        var nameToken = iterator.Match(TokenType.Identifier);
         var inheritances = new LNodeList();
         var members = new LNodeList();
 
@@ -30,6 +30,6 @@ public sealed class ClassDeclaration : IParsePoint<LNode>
 
         iterator.Match(TokenType.CloseCurly);
 
-        return SyntaxTree.Class(name, inheritances, members).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Class(nameToken, inheritances, members).WithRange(keywordToken, iterator.Prev);
     }
 }

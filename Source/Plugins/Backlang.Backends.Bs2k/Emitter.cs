@@ -75,7 +75,7 @@ public class Emitter
 
     public override string ToString() => _builder.ToString();
 
-    public void Emit(string instruction, string comment = null, int indentlevel = 1)
+    public void Emit(string instruction, string? comment = null, int indentlevel = 1)
     {
         _builder.Append(new string('\t', indentlevel));
 
@@ -222,7 +222,7 @@ public class Emitter
                     }
 
                     var callee = callPrototype.Callee
-                            .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.ProgramClass
+                            .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.FreeFunctions
                            ? callPrototype.Callee.Name.ToString() : callPrototype.Callee.FullName.ToString();
 
                     Emit($"// Calling '{callee}'", null, indentlevel);
@@ -233,7 +233,8 @@ public class Emitter
             case NewObjectPrototype newObjectPrototype:
                 break;
 
-            case ConstantPrototype consProto:
+            case LoadPrototype loadPrototype:
+                var consProto = (ConstantPrototype)block.Graph.GetInstruction(instruction.Arguments[0]).Prototype;
                 EmitConstant(consProto, indentlevel);
                 break;
 

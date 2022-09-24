@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net7.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<LangVersion>preview</LangVersion>
+	<EnablePreviewFeatures>True</EnablePreviewFeatures>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<Description>A backend for backlang for the bs2k emulation system</Description>
+	<PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
+	<PackageIcon>logo.png</PackageIcon>
+	<RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
+	<PackageTags>backlang, plugin, backend, bs2k</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WebAssembly" Version="1.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\..\Backlang.Contracts\Backlang.Contracts.csproj" />
+	<ProjectReference Include="..\..\Backlang.Driver\Backlang.Driver.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Update="logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<Import Project="$(SolutionDir)\Version.props" />
+
+</Project>

@@ -1,8 +1,7 @@
-﻿using Backlang.Contracts;
-using Backlang.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+﻿using Backlang.Core;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -42,25 +41,28 @@ public class DotNetTarget : ICompilationTarget
         return new DotNetAssembly(contents);
     }
 
-    public TypeEnvironment Init(TypeResolver binder)
+    public TypeEnvironment Init(CompilerContext context)
     {
         var corLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(uint).Assembly);
         var runtimeLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(ExtensionAttribute).Assembly);
         var consoleLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Console).Assembly);
-        var collectionsLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(BitVector32).Assembly);
+        var collectionsSpecializedLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(BitVector32).Assembly);
         var coreLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Result<>).Assembly);
+        var collectionsLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(ArrayList).Assembly);
 
-        binder.AddAssembly(corLib);
-        binder.AddAssembly(coreLib);
-        binder.AddAssembly(consoleLib);
-        binder.AddAssembly(collectionsLib);
-        binder.AddAssembly(runtimeLib);
+        context.Binder.AddAssembly(corLib);
+        context.Binder.AddAssembly(coreLib);
+        context.Binder.AddAssembly(consoleLib);
+        context.Binder.AddAssembly(collectionsSpecializedLib);
+        context.Binder.AddAssembly(collectionsLib);
+        context.Binder.AddAssembly(runtimeLib);
 
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(uint).Assembly, binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(Console).Assembly, binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(ExtensionAttribute).Assembly, binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(BitVector32).Assembly, binder);
-        ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, binder);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(uint).Assembly, context);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(Console).Assembly, context);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(ExtensionAttribute).Assembly, context);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(BitVector32).Assembly, context);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, context);
+        ClrTypeEnvironmentBuilder.FillTypes(typeof(ArrayList).Assembly, context);
 
         return new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corLib);
     }
@@ -75,7 +77,7 @@ public class DotNetTarget : ICompilationTarget
 
             context.Binder.AddAssembly(refLib);
 
-            ClrTypeEnvironmentBuilder.FillTypes(assembly, context.Binder);
+            ClrTypeEnvironmentBuilder.FillTypes(assembly, context);
         }
     }
 }

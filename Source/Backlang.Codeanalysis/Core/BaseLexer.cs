@@ -58,7 +58,10 @@ public abstract class BaseLexer
 
     protected void ReportError()
     {
-        Messages.Add(Message.Error(_document, $"Unknown Charackter '{Current()}'", _line, _column++));
+        _column++;
+
+        var range = SourceRange.New(_document, new IndexRange(_position, 1));
+        Messages.Add(Message.Error($"Unknown Charakter '{Current()}'", range));
         Advance();
     }
 }

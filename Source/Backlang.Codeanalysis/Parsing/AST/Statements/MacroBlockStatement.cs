@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
-public sealed class MacroBlockStatement : IParsePoint<LNode>
+public sealed class MacroBlockStatement : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

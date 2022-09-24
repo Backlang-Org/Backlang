@@ -1,10 +1,9 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+﻿using Backlang.Core.CompilerService;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -16,7 +15,7 @@ public record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod,
 
 public class DotNetAssembly : ITargetAssembly
 {
-    private static readonly List<MethodBodyCompilation> _methodBodyCompilations = new();
+    private static readonly ConcurrentBag<MethodBodyCompilation> _methodBodyCompilations = new();
     private readonly IAssembly _assembly;
     private readonly AssemblyContentDescription _description;
     private readonly List<(TypeDefinition definition, QualifiedName name)> _needToAdjust = new();
@@ -36,23 +35,31 @@ public class DotNetAssembly : ITargetAssembly
         SetTargetFramework();
 
         var console = typeof(Console).Assembly.GetName();
+        var core = typeof(UnitTypeAttribute).Assembly.GetName();
         _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(console.FullName));
+        _assemblyDefinition.MainModule.AssemblyReferences.Add(AssemblyNameReference.Parse(core.FullName));
     }
 
     public void WriteTo(Stream output)
     {
-        Parallel.ForEachAsync(_assembly.Types.Cast<DescribedType>(), (DescribedType type, CancellationToken ct) => {
+        var typeMap = new ConcurrentDictionary<DescribedType, TypeDefinition>();
+
+        foreach (var type in _assembly.Types.Cast<DescribedType>())
+        {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
-                type.Name.ToString(), TypeAttributes.Class);
-
-            ConvertCustomAttributes(type, clrType);
-            ApplyModifiers(type, clrType);
-            SetBaseType(type, clrType);
-            ConvertFields(type, clrType);
-            ConvertProperties(type, clrType);
-            ConvertMethods(type, clrType);
-
+               type.Name.ToString(), TypeAttributes.Class);
             _assemblyDefinition.MainModule.Types.Add(clrType);
+
+            typeMap.AddOrUpdate(type, (_) => clrType, (_, __) => clrType);
+        }
+
+        Parallel.ForEachAsync(typeMap.AsParallel(), (KeyValuePair, ct) => {
+            ConvertCustomAttributes(KeyValuePair.Key, KeyValuePair.Value);
+            ApplyModifiers(KeyValuePair.Key, KeyValuePair.Value);
+            SetBaseType(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertFields(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertProperties(KeyValuePair.Key, KeyValuePair.Value);
+            ConvertMethods(KeyValuePair.Key, KeyValuePair.Value);
 
             return ValueTask.CompletedTask;
         }).Wait();
@@ -62,7 +69,7 @@ public class DotNetAssembly : ITargetAssembly
         CompileBodys();
 
         Parallel.ForEach(_assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>(), (er) => {
-            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, File.OpenRead(er.Filename));
+            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, er.Strm);
 
             _assemblyDefinition.MainModule.Resources.Add(err);
         });
@@ -369,7 +376,6 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (DescribedField field in type.Fields)
         {
-            //ToDo: fix fieldtype emit: (type is not available)
             var fieldType = Resolve(field.FieldType.FullName);
             var fieldDefinition = new FieldDefinition(field.Name.ToString(), FieldAttributes.Public, fieldType);
 
@@ -528,6 +534,9 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(IType dtype)
     {
+        //ToDo: Only for debugging, remove if typecheck is done
+        if (dtype == null) throw new Exception($"Type not found");
+
         var resolvedType = Resolve(dtype.FullName);
         if (resolvedType.HasGenericParameters)
         {

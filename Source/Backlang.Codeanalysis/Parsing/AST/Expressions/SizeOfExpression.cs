@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public sealed class SizeOfExpression : IParsePoint<LNode>
+public sealed class SizeOfExpression : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

@@ -3,14 +3,14 @@ struct LinkedListNode<T> {
     Value : T;
 }
 
-struct LinkedList<T> {
-    Root : LinkedListNode<T>;
-    Count : u32;
+public struct LinkedList<T> {
+    public let Root : LinkedListNode<T>;
+    public let Count : u32;
 }
 
 implement LinkedList<T>
 {
-    func add(value : T) {
+    public func add(value : T) {
         if Root == none {
             Root = LinkedListNode<T>::new(value);
         }
@@ -23,7 +23,7 @@ implement LinkedList<T>
         Count += 1;
     }
 
-    func getLastNode() private {
+    func getLastNode() {
         let tmp = Root;
 
         while tmp.Next != none {
@@ -33,7 +33,7 @@ implement LinkedList<T>
         return &tmp;
     }
 
-    func getNodeAtIndex(index : u32) private {
+    func getNodeAtIndex(index : u32) {
         assert(index < Count, "Index is out of bound");
 
         let tmp = Root;
@@ -72,11 +72,11 @@ implement LinkedList<T>
         error("No Value found to delete");
     }
 
-    func index_get(index : u32) operator {
+    operator func index_get(index : u32) {
         return (*getNodeAtIndex(index)).Value;
     }
 
-    func index_set(index : u32, value : T) operator {
+    operator func index_set(index : u32, value : T) {
         let node = *getNodeAtIndex(index);
 
         node.Value = value;

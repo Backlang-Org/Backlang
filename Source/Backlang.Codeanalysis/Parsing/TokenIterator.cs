@@ -71,7 +71,10 @@ public sealed class TokenIterator
         if (Current.Type == kind)
             return NextToken();
 
-        Messages.Add(Message.Error(_document, $"Expected '{GetTokenRepresentation(kind)}' but got '{GetTokenRepresentation(Current.Type)}'", Current.Line, Current.Column));
+        Messages.Add(
+            Message.Error($"Expected '{GetTokenRepresentation(kind)}' but got '{GetTokenRepresentation(Current.Type)}'",
+           new SourceRange(_document, Current.Start, Current.Text.Length)));
+
         NextToken();
 
         return Token.Invalid;

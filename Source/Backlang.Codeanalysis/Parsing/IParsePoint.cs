@@ -1,6 +1,8 @@
-﻿namespace Backlang.Codeanalysis.Parsing;
+﻿using Loyc.Syntax;
 
-public interface IParsePoint<T>
+namespace Backlang.Codeanalysis.Parsing;
+
+public interface IParsePoint
 {
-    static abstract T Parse(TokenIterator iterator, Parser parser);
+    static abstract LNode Parse(TokenIterator iterator, Parser parser);
 }

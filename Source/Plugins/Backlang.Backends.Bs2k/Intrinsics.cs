@@ -8,7 +8,11 @@ public static class Intrinsics
 
     public static Constants constants;
 
+    public static string Label(string label) => $"{label}:\n";
+
     public static string Copy(char value, string target) => Copy((int)value, target);
+
+    public static string Copy(char value, Register target) => Copy((int)value, target);
 
     public static string Copy(int value, string target) => $"copy {value}, {target}";
 
@@ -18,17 +22,29 @@ public static class Intrinsics
 
     public static string Jump(Register register) => $"jump {register}";
 
-    public static string Jump_Eq(Register register, string registerOrLabel) => $"jump_eq {register}, {registerOrLabel}";
+    public static string Jump_Eq(Register register, Register addr) => $"jump_eq {register}, {addr}";
 
-    public static string Jump_Neq(Register register, string registerOrLabel) => $"jump_neq {register}, {registerOrLabel}";
+    public static string Jump_Eq(Register register, string addr) => $"jump_eq {register}, {addr}";
 
-    public static string Jump_Gt(Register register, string registerOrLabel) => $"jump_gt {register}, {registerOrLabel}";
+    public static string Jump_Neq(Register register, string addr) => $"jump_neq {register}, {addr}";
 
-    public static string Jump_Ge(Register register, string registerOrLabel) => $"jump_ge {register}, {registerOrLabel}";
+    public static string Jump_Neq(Register register, Register addr) => $"jump_neq {register}, {addr}";
 
-    public static string Jump_Lt(Register register, string registerOrLabel) => $"jump_lt {register}, {registerOrLabel}";
+    public static string Jump_Gt(Register register, string addr) => $"jump_gt {register}, {addr}";
 
-    public static string Jump_Le(Register register, string registerOrLabel) => $"jump_le {register}, {registerOrLabel}";
+    public static string Jump_Gt(Register register, Register addr) => $"jump_gt {register}, {addr}";
+
+    public static string Jump_Ge(Register register, string addr) => $"jump_ge {register}, {addr}";
+
+    public static string Jump_Ge(Register register, Register addr) => $"jump_ge {register}, {addr}";
+
+    public static string Jump_Lt(Register register, string addr) => $"jump_lt {register}, {addr}";
+
+    public static string Jump_Lt(Register register, Register addr) => $"jump_lt {register}, {addr}";
+
+    public static string Jump_Le(Register register, string addr) => $"jump_le {register}, {addr}";
+
+    public static string Jump_Le(Register register, Register addr) => $"jump_le {register}, {addr}";
 
     public static string Push(Register register) => $"push {register}";
 

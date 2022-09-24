@@ -1,6 +1,3 @@
-using Backlang.Codeanalysis.Parsing;
-using Backlang.Codeanalysis.Parsing.AST;
-using Backlang.Contracts;
 using Flo;
 
 namespace Backlang.Driver.Compiling.Stages;
@@ -9,9 +6,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        var hasError = false;
-        foreach (var filename in context.InputFiles)
-        {
+        Parallel.ForEachAsync(context.InputFiles, (filename, ct) => {
             if (File.Exists(filename))
             {
                 var tree = CompilationUnit.FromFile(filename);
@@ -22,16 +17,12 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
             }
             else
             {
-                hasError = true;
-                context.Messages.Add(Message.Error(null, $"File '{filename}' does not exists", 0, 0));
+                context.Messages.Add(Message.Error($"File '{filename}' does not exists", SourceRange.Synthetic));
             }
-        }
 
-        if (!hasError)
-        {
-            return await next.Invoke(context);
-        }
+            return ValueTask.CompletedTask;
+        }).Wait();
 
-        return context;
+        return await next.Invoke(context);
     }
 }

@@ -2,19 +2,19 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions;
 
-public sealed class DefaultExpression : IParsePoint<LNode>
+public sealed class DefaultExpression : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        //default<i32>
+        //default(i32)
         //default
-        if (iterator.Current.Type == TokenType.LessThan)
+        if (iterator.Current.Type == TokenType.OpenParen)
         {
             iterator.NextToken();
 
             var type = TypeLiteral.Parse(iterator, parser);
 
-            iterator.Match(TokenType.GreaterThan);
+            iterator.Match(TokenType.CloseParen);
 
             return SyntaxTree.Default(type);
         }

@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Core.Attributes;
+﻿using Backlang.Codeanalysis.Core.Attributes;
 using Loyc;
 using Loyc.Syntax;
 using System.Reflection;
@@ -46,13 +45,7 @@ public static class Expression
 
     public static int GetBinaryOperatorPrecedence(TokenType kind) => BinaryOperators.GetValueOrDefault(kind);
 
-    public static LNode Parse<TLexer, TParser>(
-            Core.BaseParser<TLexer, TParser> parser,
-        ParsePoints<LNode> parsePoints = null,
-        int parentPrecedence = 0)
-
-        where TParser : Core.BaseParser<TLexer, TParser>
-        where TLexer : BaseLexer, new()
+    public static LNode Parse(Parser parser, ParsePoints parsePoints = null, int parentPrecedence = 0)
     {
         LNode left;
         var unaryOperatorPrecedence = GetPreUnaryOperatorPrecedence(parser.Iterator.Current.Type);
@@ -63,7 +56,7 @@ public static class Expression
 
             var operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
-            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand).WithRange(operatorToken.Start, operand.Range.EndIndex);
+            left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand).WithRange(operatorToken.Start, operand.Range.EndIndex).WithStyle(NodeStyle.PrefixNotation);
         }
         else
         {
@@ -94,11 +87,9 @@ public static class Expression
         return left;
     }
 
-    public static LNodeList ParseList<TLexer, TParser>(Core.BaseParser<TLexer, TParser> parser, TokenType terminator,
-            ParsePoints<LNode> parsePoints = null)
+    public static LNodeList ParseList(Parser parser, TokenType terminator,
+            ParsePoints parsePoints = null)
 
-        where TParser : Core.BaseParser<TLexer, TParser>
-        where TLexer : BaseLexer, new()
     {
         if (parser.Iterator.IsMatch(terminator))
         {

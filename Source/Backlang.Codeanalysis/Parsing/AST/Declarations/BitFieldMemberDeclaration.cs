@@ -21,6 +21,13 @@ public sealed class BitFieldMemberDeclaration
 
         iterator.Match(TokenType.EqualsToken);
 
-        return SyntaxTree.Factory.Tuple(LNode.Id(name), Expression.Parse(parser));
+        var value = Expression.Parse(parser);
+
+        if (!value[0].HasValue)
+        {
+            iterator.Messages.Add(Message.Error("Bitfield member declaration only allows literals", value.Range));
+        }
+
+        return SyntaxTree.Factory.Tuple(LNode.Id(name), value);
     }
 }

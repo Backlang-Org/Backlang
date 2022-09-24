@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+using Backlang.Codeanalysis.Parsing.AST;
 using Loyc;
 using Loyc.Syntax;
 
@@ -18,14 +18,14 @@ public static class SyntaxTree
         return Factory.Call(Symbols.Constructor, LNode.List(Factory.AltList(parameters), code));
     }
 
-    public static LNode DiscriminatedType(string name, LNodeList parameters)
+    public static LNode DiscriminatedType(Token nameToken, LNodeList parameters)
     {
-        return Factory.Call(Symbols.DiscriminatedType, LNode.List(Factory.Id(name), Factory.AltList(parameters)));
+        return Factory.Call(Symbols.DiscriminatedType, LNode.List(Factory.FromToken(nameToken), Factory.AltList(parameters)));
     }
 
-    public static LNode DiscriminatedUnion(string name, LNodeList types)
+    public static LNode DiscriminatedUnion(Token nameToken, LNodeList types)
     {
-        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(Factory.Id(name), Factory.AltList(types)));
+        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(Factory.FromToken(nameToken), Factory.AltList(types)));
     }
 
     public static LNode Property(LNode type, LNode name, LNode getter, LNode setter, LNode value)
@@ -68,9 +68,9 @@ public static class SyntaxTree
         return Factory.Call(op, LNode.List(left, right)).SetStyle(NodeStyle.Operator);
     }
 
-    public static LNode Bitfield(string name, LNodeList members)
+    public static LNode Bitfield(Token nameToken, LNodeList members)
     {
-        return Factory.Call(Symbols.Bitfield, LNode.List(LNode.Id(name), Factory.AltList(members)));
+        return Factory.Call(Symbols.Bitfield, LNode.List(Factory.FromToken(nameToken), Factory.AltList(members)));
     }
 
     public static LNode Case(LNode condition, LNode body)
@@ -83,11 +83,11 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Catch, LNode.List(exceptionType, exceptionValueName, body));
     }
 
-    public static LNode Class(string name, LNodeList inheritances, LNodeList members)
+    public static LNode Class(Token nameToken, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Class,
             LNode.List(
-                Factory.Id((Symbol)name),
+                Factory.FromToken(nameToken),
                 Factory.Call(Symbols.Inheritance, inheritances),
                 Factory.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
     }
@@ -139,11 +139,11 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Import, LNode.List(expr));
     }
 
-    public static LNode Interface(string name, LNodeList inheritances, LNodeList members)
+    public static LNode Interface(Token nameToken, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Interface,
             LNode.List(
-                Factory.Id((Symbol)name),
+                Factory.FromToken(nameToken),
                 LNode.Call(Symbols.Inheritance, inheritances),
                 LNode.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
     }
@@ -163,6 +163,11 @@ public static class SyntaxTree
         return Factory.Call(Symbols.PointerType, LNode.List(type));
     }
 
+    public static LNode RefType(LNode type)
+    {
+        return Factory.Call(Symbols.RefType, LNode.List(type));
+    }
+
     public static LNode Signature(LNode name, LNode type, LNodeList args, LNodeList generics)
     {
         return Factory.Call(CodeSymbols.Fn, LNode.List(
@@ -175,11 +180,11 @@ public static class SyntaxTree
         return Factory.Call(CodeSymbols.Sizeof, LNode.List(type));
     }
 
-    public static LNode Struct(string name, LNodeList inheritances, LNodeList members)
+    public static LNode Struct(Token nameToken, LNodeList inheritances, LNodeList members)
     {
         return Factory.Call(CodeSymbols.Struct,
             LNode.List(
-                Factory.Id((Symbol)name),
+                Factory.FromToken(nameToken),
                 Factory.Call(Symbols.Inheritance, inheritances),
                 Factory.Call(CodeSymbols.Braces, members).SetStyle(NodeStyle.StatementBlock)));
     }
@@ -212,21 +217,14 @@ public static class SyntaxTree
         return Factory.Call(Symbols.Union, LNode.List(Factory.Id(name)).Add(Factory.AltList(members)));
     }
 
-    public static LNode Using(LNode from, LNode to)
+    public static LNode Using(LNode expr)
     {
-        var args = new LNodeList();
-
-        if (!from.Calls("#error") && from.Name != LNode.Missing.Name)
+        if (!expr.Calls(CodeSymbols.As)) // TODO: throw error in intermediate stage when has only one arg
         {
-            args.Add(from);
+            return Factory.Call(CodeSymbols.UsingStmt, LNode.Missing);
         }
 
-        if (!to.Calls("#error") && to.Name != LNode.Missing.Name)
-        {
-            args.Add(to);
-        }
-
-        return Factory.Call(CodeSymbols.UsingStmt, args);
+        return Factory.Call(CodeSymbols.UsingStmt, LNode.List(expr[0], expr[1]));
     }
 
     public static LNode When(LNode binOp, LNode rightHand, LNode body)
@@ -239,5 +237,15 @@ public static class SyntaxTree
         return Factory.Call(
             CodeSymbols.While,
                 LNode.List(cond, body));
+    }
+
+    public static LNode Unit(LNode result, string unit)
+    {
+        return Factory.Call(Symbols.Unit, LNode.List(result, LNode.Id(unit)));
+    }
+
+    public static LNode UnitDeclaration(Token nameToken)
+    {
+        return Factory.Call(Symbols.UnitDecl, LNode.List(Factory.FromToken(nameToken)));
     }
 }

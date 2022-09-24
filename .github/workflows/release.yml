@@ -45,7 +45,13 @@ jobs:
 
         # Build everything
         dotnet publish Source/Backlang-Compiler/Backlang-Compiler.csproj --runtime "${{ matrix.target }}" -p:PublishSingleFile=true -c Release -o "$release_name"
-      
+
+    - name: Upload Nuget Packages
+      uses: actions/upload-artifact@v3
+      with:
+        name: nuget_packages
+        path: /**/*.nupkg
+
     - name: Publish
       uses: softprops/action-gh-release@v1
       with:

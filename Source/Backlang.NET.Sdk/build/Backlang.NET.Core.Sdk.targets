@@ -169,7 +169,7 @@
 				   EntryPoint="$(StartupObject)"
 				   ReferencePath="@(ReferencePath)"
 				   OutputTree="$(OutputTree)"
-				   Target="$(Target)"
+				   Target="$(CompileTo)"
 				   ResultingOutputPath="$(OutputPath)"
 				   Compile="@(Compile)"
 				   ProjectFile="$(MSBuildProjectFullPath)"

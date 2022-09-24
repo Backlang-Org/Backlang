@@ -1,7 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+﻿using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -9,6 +7,8 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public class ClrTypeEnvironmentBuilder
 {
+    private static ConcurrentBag<(MethodBase, DescribedMethod)> toAdjustParameters = new();
+
     public static IAssembly CollectTypes(Assembly ass)
     {
         var assembly = new DescribedAssembly(new QualifiedName(ass.GetName().Name));
@@ -19,7 +19,7 @@ public class ClrTypeEnvironmentBuilder
         {
             if (!type.IsPublic) continue;
 
-            var ns = QualifyNamespace(type.Namespace);
+            var ns = Utils.QualifyNamespace(type.Namespace);
 
             var dt = new DescribedType(new SimpleName(type.Name).Qualify(ns), assembly);
             dt.IsSealed = type.IsSealed;
@@ -30,16 +30,16 @@ public class ClrTypeEnvironmentBuilder
         return assembly;
     }
 
-    public static void FillTypes(Assembly ass, TypeResolver resolver)
+    public static void FillTypes(Assembly ass, CompilerContext context)
     {
         Parallel.ForEach(ass.GetTypes(), type => {
             if (!type.IsPublic) return;
 
-            var t = ResolveType(resolver, type);
+            var t = Utils.ResolveType(context.Binder, type);
 
             if (type.BaseType != null)
             {
-                var bt = ResolveType(resolver, type.BaseType);
+                var bt = Utils.ResolveType(context.Binder, type.BaseType);
 
                 if (bt != null)
                 {
@@ -55,32 +55,28 @@ public class ClrTypeEnvironmentBuilder
             foreach (var attr in type.GetCustomAttributes())
             {
                 var attrType = attr.GetType();
-                var attribute = new DescribedAttribute(ResolveType(resolver, attrType));
+                var attribute = new DescribedAttribute(Utils.ResolveType(context.Binder, attrType));
 
                 foreach (var prop in attrType.GetProperties())
                 {
                     var value = prop.GetValue(attr);
 
-                    attribute.ConstructorArguments.Add(new AttributeArgument(ResolveType(resolver, prop.PropertyType), value));
+                    attribute.ConstructorArguments.Add(
+                        new AttributeArgument(Utils.ResolveType(context.Binder, prop.PropertyType), value));
                 }
 
                 t.AddAttribute(attribute);
             }
 
-            AddMembers(type, t, resolver);
+            AddMembers(type, t, context.Binder);
         });
-    }
 
-    public static DescribedType ResolveType(TypeResolver resolver, Type type)
-    {
-        var ns = QualifyNamespace(type.Namespace);
+        foreach (var toadjust in toAdjustParameters)
+        {
+            ConvertParameter(toadjust.Item1.GetParameters(), toadjust.Item2, context);
+        }
 
-        return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(ns))?.FirstOrDefault();
-    }
-
-    public static DescribedType ResolveType(TypeResolver resolver, string name, string ns)
-    {
-        return (DescribedType)resolver.ResolveTypes(new SimpleName(name).Qualify(ns))?.FirstOrDefault();
+        toAdjustParameters.Clear();
     }
 
     public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
@@ -89,84 +85,84 @@ public class ClrTypeEnvironmentBuilder
             if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
-                    new SimpleName(ctor.Name), ctor.IsStatic, ResolveType(resolver, typeof(void)));
+                    new SimpleName(ctor.Name), ctor.IsStatic, Utils.ResolveType(resolver, typeof(void)));
 
                 method.IsConstructor = true;
 
-                ConvertParameter(ctor.GetParameters(), method, resolver);
+                toAdjustParameters.Add((ctor, method));
+
+                foreach (DescribedGenericParameter gp in t.GenericParameters)
+                {
+                    method.AddGenericParameter(new DescribedGenericParameter(method, new SimpleName(gp.Name.ToString())));
+                }
 
                 t.AddMethod(method);
             }
             else if (member is MethodInfo m && m.IsPublic)
             {
-                AddMethod(t, resolver, m);
+                AddMethod(t, resolver, m, toAdjustParameters);
             }
             else if (member is FieldInfo field && field.IsPublic)
             {
                 var f = new DescribedField(t, new SimpleName(field.Name),
-                    field.IsStatic, ResolveType(resolver, field.FieldType));
+                    field.IsStatic, Utils.ResolveType(resolver, field.FieldType));
 
                 t.AddField(f);
             }
             else if (member is PropertyInfo prop)
             {
                 var p = new DescribedProperty(new SimpleName(prop.Name),
-                     ResolveType(resolver, prop.PropertyType), t);
+                     Utils.ResolveType(resolver, prop.PropertyType), t);
 
                 t.AddProperty(p);
             }
         });
     }
 
-    public static QualifiedName QualifyNamespace(string @namespace)
+    public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m,
+        ConcurrentBag<(MethodBase, DescribedMethod)> toAdjustParameters, string newName = null)
     {
-        var spl = @namespace.Split('.');
+        var method = new DescribedMethod(t, new SimpleName(newName ?? m.Name),
+            m.IsStatic, Utils.ResolveType(resolver, m.ReturnType));
 
-        QualifiedName? name = null;
-
-        foreach (var path in spl)
-        {
-            if (name == null)
-            {
-                name = new SimpleName(path).Qualify();
-                continue;
-            }
-
-            name = new SimpleName(path).Qualify(name.Value);
-        }
-
-        return name.Value;
-    }
-
-    public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m, string newName = null)
-    {
-        var method = new DescribedMethod(t, new SimpleName(newName ?? m.Name), m.IsStatic, ResolveType(resolver, m.ReturnType));
-
-        ConvertParameter(m.GetParameters(), method, resolver);
+        toAdjustParameters.Add((m, method));
 
         foreach (var attr in m.GetCustomAttributes())
         {
-            method.AddAttribute(new DescribedAttribute(ResolveType(resolver, attr.GetType())));
+            method.AddAttribute(new DescribedAttribute(Utils.ResolveType(resolver, attr.GetType())));
         }
 
         if (m.IsSpecialName)
         {
-            method.AddAttribute(new DescribedAttribute(ResolveType(resolver, typeof(SpecialNameAttribute))));
+            method.AddAttribute(new DescribedAttribute(Utils.ResolveType(resolver, typeof(SpecialNameAttribute))));
         }
 
         t.AddMethod(method);
     }
 
-    private static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, TypeResolver resolver)
+    public static void ConvertParameter(ParameterInfo[] parameterInfos, DescribedMethod method, CompilerContext context)
     {
         foreach (var p in parameterInfos)
         {
-            var type = ClrTypeEnvironmentBuilder.ResolveType(resolver, p.ParameterType);
+            var type = (IType)Utils.ResolveType(context.Binder, p.ParameterType);
+
+            if (p.ParameterType.IsByRef)
+            {
+                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace)?.MakePointerType(PointerKind.Reference);
+            }
+            else if (p.ParameterType.IsArray)
+            {
+                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace);
+
+                if (type != null)
+                    type = context.Environment.MakeArrayType(type, p.ParameterType.GetArrayRank());
+            }
 
             if (type != null)
             {
                 var pa = new Parameter(type, p.Name);
                 method.AddParameter(pa);
+                continue;
             }
         }
     }

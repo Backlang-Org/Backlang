@@ -1,6 +1,6 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Mono.Cecil;
+﻿using Mono.Cecil;
+using Mono.Cecil.Rocks;
+using PointerType = Mono.Cecil.PointerType;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
@@ -15,7 +15,27 @@ public static class TypeUtils
     {
         if (type.Qualifier is PointerName pn)
         {
-            return new PointerType(ImportType(_assemblyDefinition, pn.ElementName));
+            var ptrType = ImportType(_assemblyDefinition, pn.ElementName);
+
+            if (pn.Kind == PointerKind.Transient)
+            {
+                return new PointerType(ptrType);
+            }
+            else if (pn.Kind == PointerKind.Reference)
+            {
+                return new ByReferenceType(ptrType);
+            }
+        }
+        else if (type.Qualifier is GenericName gn)
+        {
+            if (gn.DeclarationName.ToString().StartsWith("array!"))
+            {
+                return ImportArrayType(_assemblyDefinition, gn);
+            }
+            else
+            {
+                return ImportGenericType(_assemblyDefinition, gn);
+            }
         }
 
         return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());
@@ -38,5 +58,28 @@ public static class TypeUtils
         var trr = new TypeReference(ns, type, _assemblyDefinition.MainModule, _assemblyDefinition.MainModule).Resolve();
 
         return _assemblyDefinition.MainModule.ImportReference(trr);
+    }
+
+    private static TypeReference ImportArrayType(AssemblyDefinition _assemblyDefinition, GenericName gn)
+    {
+        var declName = gn.DeclarationName.ToString();
+        var rankStr = declName.Substring(declName.IndexOf("!") + 1, declName.IndexOf("`") - (declName.LastIndexOf("!") + 1));
+        var rank = int.Parse(rankStr);
+
+        var elType = _assemblyDefinition.ImportType(gn.TypeArgumentNames[0]);
+        return elType.MakeArrayType(rank);
+    }
+
+    private static TypeReference ImportGenericType(AssemblyDefinition _assemblyDefinition, GenericName gn)
+    {
+        var innerType = ImportType(_assemblyDefinition, gn.DeclarationName);
+        var genericType = new GenericInstanceType(innerType);
+
+        foreach (var arg in gn.TypeArgumentNames)
+        {
+            genericType.GenericArguments.Add(ImportType(_assemblyDefinition, arg));
+        }
+
+        return genericType;
     }
 }

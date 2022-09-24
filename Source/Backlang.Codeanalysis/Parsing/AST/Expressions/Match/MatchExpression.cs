@@ -2,7 +2,7 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 
-public sealed class MatchExpression : IParsePoint<LNode>
+public sealed class MatchExpression : IParsePoint
 {
     /*
 	 * match a with

@@ -1,6 +1,7 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.Precedences;
 public enum BinaryOpPrecedences
 {
+    Casting = 1, // as
 
     Hat = 2,
 

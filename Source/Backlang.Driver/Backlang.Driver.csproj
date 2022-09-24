@@ -5,6 +5,14 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>preview</LangVersion>
 		<EnablePreviewFeatures>True</EnablePreviewFeatures>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Authors>Furesoft, Backlang-Org</Authors>
+		<PackageProjectUrl>https://www.backlang-org/</PackageProjectUrl>
+		<PackageIcon>logo.png</PackageIcon>
+		<RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
+		<PackageTags>backlang</PackageTags>
+		<IncludeSymbols>True</IncludeSymbols>
+		<Description>The Backlang Compiler Chain</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,8 +26,8 @@
 	<ItemGroup>
 		<PackageReference Include="Flo" Version="0.3.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.40" />
-		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.40" />
+		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.46" />
+		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.46" />
 		<PackageReference Include="LeMP" Version="30.1.0" />
 		<PackageReference Include="Loyc.Syntax" Version="30.1.0" />
 		<PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
@@ -32,6 +40,13 @@
 	  <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
 	  <ProjectReference Include="..\Backlang.Contracts\Backlang.Contracts.csproj" />
 	  <ProjectReference Include="..\Backlang.Core\Backlang.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 
 	<Import Project="$(SolutionDir)\Version.props" />

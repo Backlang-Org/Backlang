@@ -26,7 +26,9 @@ public sealed class TypeMemberDeclaration
         }
         else
         {
-            parser.Messages.Add(Message.Error(parser.Document, $"Expected Function, Property or Field-declaration for Type, but got {iterator.Current}", iterator.Current.Line, iterator.Current.Column));
+            var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
+
+            parser.Messages.Add(Message.Error($"Expected Function, Property or Field-declaration for Type, but got {iterator.Current}", range));
             iterator.NextToken();
         }
 
@@ -102,7 +104,8 @@ public sealed class TypeMemberDeclaration
                 args.Add(Statement.ParseBlock(parser));
             }
             setter = LNode.Call(CodeSymbols.set, args).WithAttrs(modifier);
-        } else if (iterator.IsMatch(TokenType.Init))
+        }
+        else if (iterator.IsMatch(TokenType.Init))
         {
             iterator.NextToken();
             LNodeList args = LNode.List();
@@ -114,7 +117,7 @@ public sealed class TypeMemberDeclaration
             {
                 args.Add(Statement.ParseBlock(parser));
             }
-            setter = LNode.Call(Symbols.init, args).WithAttrs(modifier);
+            setter = LNode.Call(Symbols.Init, args).WithAttrs(modifier);
         }
 
         iterator.Match(TokenType.CloseCurly);

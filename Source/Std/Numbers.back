@@ -1,7 +1,7 @@
 import Math;
 
 implement u8..u32 {
-    func parse(str : string) static -> SELF {
+    public static func parse(str : string) -> SELF {
         let mut result = 0;
         
         for c in str.length..0 {
@@ -19,7 +19,7 @@ implement u8..u32 {
 }
 
 implement bool {
-    func parse(str : string) static {
+    public static func parse(str : string) {
         let condition = str == "true" or str == "false";
 
         if condition {

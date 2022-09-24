@@ -2,7 +2,7 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public class ImplementationDeclaration : IParsePoint<LNode>
+public class ImplementationDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
@@ -11,7 +11,7 @@ public class ImplementationDeclaration : IParsePoint<LNode>
         LNode target = null;
         var targets = new LNodeList();
 
-        while (iterator.Current.Type != TokenType.OpenCurly)
+        while (iterator.Current.Type != TokenType.OpenCurly && !parser.Iterator.IsMatch(TokenType.EOF))
         {
             if (iterator.Peek(1).Type == TokenType.RangeOperator)
             {
@@ -41,7 +41,7 @@ public class ImplementationDeclaration : IParsePoint<LNode>
         iterator.Match(TokenType.OpenCurly);
 
         LNodeList body = new();
-        while (iterator.Current.Type != TokenType.EOF && iterator.Current.Type != TokenType.CloseCurly)
+        while (!parser.Iterator.IsMatch(TokenType.EOF) && iterator.Current.Type != TokenType.CloseCurly)
         {
             Annotation.TryParse(parser, out var annotations);
             Modifier.TryParse(parser, out var modifiers);
