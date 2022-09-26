@@ -96,10 +96,9 @@ public static class Expression
         return left;
     }
 
-    public static LNodeList ParseList(Parser parser, TokenType terminator)
-
+    public static LNodeList ParseList(Parser parser, TokenType terminator, bool consumeTerminator = true)
     {
-        return ParsingHelpers.ParseSeperated<ExpressionParser>(parser, terminator);
+        return ParsingHelpers.ParseSeperated<ExpressionParser>(parser, terminator, consumeTerminator: consumeTerminator);
     }
 
     private static int GetPreUnaryOperatorPrecedence(TokenType kind) => PreUnaryOperators.GetValueOrDefault(kind);

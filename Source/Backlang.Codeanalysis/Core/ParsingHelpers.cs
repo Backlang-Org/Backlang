@@ -8,7 +8,7 @@ internal static class ParsingHelpers
     public static LNodeList ParseSeperated<T>(
         Parser parser,
         TokenType terminator,
-        TokenType seperator = TokenType.Comma)
+        TokenType seperator = TokenType.Comma, bool consumeTerminator = true)
         where T : IParsePoint
     {
         if (parser.Iterator.IsMatch(terminator))
@@ -29,7 +29,9 @@ internal static class ParsingHelpers
             }
         } while (parser.Iterator.ConsumeIfMatch(seperator));
 
-        parser.Iterator.Match(terminator);
+        if (consumeTerminator)
+            parser.Iterator.Match(terminator);
+
         return list;
     }
 
