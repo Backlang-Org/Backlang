@@ -14,6 +14,7 @@ public class DiscriminatedUnionDeclaration : IParsePoint
 
         do
         {
+            //ToDo: Refactor To Helper Method: RepeatUntil
             var from = iterator.Current;
             iterator.Match(TokenType.Pipe);
             types.Add(ParseType(iterator, parser).WithRange(from, iterator.Prev));
