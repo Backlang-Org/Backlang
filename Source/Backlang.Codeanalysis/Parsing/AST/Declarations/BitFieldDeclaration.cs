@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
@@ -11,20 +12,9 @@ public sealed class BitFieldDeclaration : IParsePoint
 
         iterator.Match(TokenType.OpenCurly);
 
-        var members = new LNodeList();
-        while (iterator.Current.Type != TokenType.CloseCurly)
-        {
-            var member = BitFieldMemberDeclaration.Parse(iterator, parser);
-
-            if (iterator.Current.Type != TokenType.CloseCurly)
-            {
-                iterator.Match(TokenType.Comma);
-            }
-
-            members.Add(member);
-        }
-
-        iterator.Match(TokenType.CloseCurly);
+        var members = ParsingHelpers.ParseSeperated(parser, _ => {
+            return BitFieldMemberDeclaration.Parse(iterator, parser);
+        }, TokenType.CloseCurly);
 
         return SyntaxTree.Bitfield(nameToken, members).WithRange(keywordToken, iterator.Prev);
     }
