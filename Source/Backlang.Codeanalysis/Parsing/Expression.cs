@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Core.Attributes;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core.Attributes;
 using Loyc;
 using Loyc.Syntax;
 using System.Reflection;
@@ -91,20 +92,9 @@ public static class Expression
             ParsePoints parsePoints = null)
 
     {
-        if (parser.Iterator.IsMatch(terminator))
-        {
-            parser.Iterator.Match(terminator);
-            return LNodeList.Empty;
-        }
-
-        var list = new LNodeList();
-        do
-        {
-            list.Add(Expression.Parse(parser, parsePoints));
-        } while (parser.Iterator.ConsumeIfMatch(TokenType.Comma));
-
-        parser.Iterator.Match(terminator);
-        return list;
+        return ParsingHelpers.ParseSeperated(parser, _ => {
+            return Parse(parser);
+        }, terminator);
     }
 
     private static int GetPreUnaryOperatorPrecedence(TokenType kind) => PreUnaryOperators.GetValueOrDefault(kind);

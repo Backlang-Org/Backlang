@@ -11,9 +11,7 @@ public class DestructorDeclaration : IParsePoint
 
         iterator.Match(TokenType.OpenParen);
 
-        var parameters = Signature.ParseParameterDeclarations(iterator, parser);
-
-        iterator.Match(TokenType.CloseParen);
+        var parameters = ParameterDeclaration.ParseList(parser);
 
         var code = Statement.ParseBlock(parser);
 
