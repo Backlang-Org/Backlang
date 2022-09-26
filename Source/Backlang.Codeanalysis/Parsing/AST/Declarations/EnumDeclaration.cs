@@ -13,9 +13,9 @@ public sealed class EnumDeclaration : IParsePoint
 
         var members = new LNodeList();
 
-        while (iterator.Current.Type != (TokenType.CloseCurly))
+        while (iterator.Current.Type != TokenType.CloseCurly)
         {
-            var hasAnnotations = Annotation.TryParse(parser, out var annotations);
+            Annotation.TryParse(parser, out var annotations);
 
             var memberNameToken = iterator.Current;
             LNode value = LNode.Missing;
