@@ -31,8 +31,6 @@ public sealed class ParameterDeclaration : IParsePoint
 
     public static LNodeList ParseList(Parser parser)
     {
-        return ParsingHelpers.ParseSeperated(parser, _ => {
-            return Parse(parser.Iterator, parser);
-        }, TokenType.CloseParen);
+        return ParsingHelpers.ParseSeperated<ParameterDeclaration>(parser, TokenType.CloseParen);
     }
 }

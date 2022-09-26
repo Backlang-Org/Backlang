@@ -5,7 +5,11 @@ namespace Backlang.Codeanalysis.Core;
 
 internal static class ParsingHelpers
 {
-    public static LNodeList ParseSeperated(Parser parser, Func<Parser, LNode> callback, TokenType terminator, TokenType seperator = TokenType.Comma)
+    public static LNodeList ParseSeperated<T>(
+        Parser parser,
+        TokenType terminator,
+        TokenType seperator = TokenType.Comma)
+        where T : IParsePoint
     {
         if (parser.Iterator.IsMatch(terminator))
         {
@@ -16,7 +20,7 @@ internal static class ParsingHelpers
         var list = new LNodeList();
         do
         {
-            list.Add(callback(parser));
+            list.Add(T.Parse(parser.Iterator, parser));
 
             if (parser.Iterator.IsMatch(seperator) && parser.Iterator.Peek(1).Type == terminator)
             {
@@ -29,12 +33,13 @@ internal static class ParsingHelpers
         return list;
     }
 
-    public static LNodeList ParseUntil(Parser parser, TokenType terminator, Func<Parser, LNode> callback)
+    public static LNodeList ParseUntil<T>(Parser parser, TokenType terminator)
+        where T : IParsePoint
     {
         var members = new LNodeList();
         while (parser.Iterator.Current.Type != terminator)
         {
-            members.Add(callback(parser));
+            members.Add(T.Parse(parser.Iterator, parser));
         }
 
         parser.Iterator.Match(terminator);

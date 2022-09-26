@@ -12,9 +12,7 @@ public sealed class BitFieldDeclaration : IParsePoint
 
         iterator.Match(TokenType.OpenCurly);
 
-        var members = ParsingHelpers.ParseSeperated(parser, _ => {
-            return BitFieldMemberDeclaration.Parse(iterator, parser);
-        }, TokenType.CloseCurly);
+        var members = ParsingHelpers.ParseSeperated<BitFieldMemberDeclaration>(parser, TokenType.CloseCurly);
 
         return SyntaxTree.Bitfield(nameToken, members).WithRange(keywordToken, iterator.Prev);
     }

@@ -6,6 +6,14 @@ using System.Reflection;
 
 namespace Backlang.Codeanalysis.Parsing;
 
+internal class ExpressionParser : IParsePoint
+{
+    public static LNode Parse(TokenIterator iterator, Parser parser)
+    {
+        return Expression.Parse(parser);
+    }
+}
+
 public static class Expression
 {
     public static readonly Dictionary<TokenType, int> BinaryOperators = new();
@@ -88,13 +96,10 @@ public static class Expression
         return left;
     }
 
-    public static LNodeList ParseList(Parser parser, TokenType terminator,
-            ParsePoints parsePoints = null)
+    public static LNodeList ParseList(Parser parser, TokenType terminator)
 
     {
-        return ParsingHelpers.ParseSeperated(parser, _ => {
-            return Parse(parser);
-        }, terminator);
+        return ParsingHelpers.ParseSeperated<ExpressionParser>(parser, terminator);
     }
 
     private static int GetPreUnaryOperatorPrecedence(TokenType kind) => PreUnaryOperators.GetValueOrDefault(kind);
