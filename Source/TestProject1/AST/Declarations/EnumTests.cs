@@ -53,7 +53,7 @@ public class EnumTests : ParserTestBase
     [TestMethod]
     public void Enum_Without_Values_With_Trailing_Comma_Should_Fail()
     {
-        var src = "enum Colors { White, Red, Green, Blue, Black, }";
+        var src = "enum Colors { White, Black, }";
         var result = ParseAndGetNodes(src);
 
         Assert.AreEqual(1, result.errors.Count);

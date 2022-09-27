@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Declarations;
+using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
@@ -23,9 +23,8 @@ public sealed class Signature
 
         iterator.Match(TokenType.OpenParen);
 
-        var parameters = ParseParameterDeclarations(iterator, parser);
+        var parameters = ParameterDeclaration.ParseList(parser);
 
-        iterator.Match(TokenType.CloseParen);
 
         while (iterator.IsMatch(TokenType.Where))
         {
@@ -50,26 +49,5 @@ public sealed class Signature
         }
 
         return SyntaxTree.Signature(name, returnType, parameters, generics);
-    }
-
-    public static LNodeList ParseParameterDeclarations(TokenIterator iterator, Parser parser)
-    {
-        var parameters = new LNodeList();
-        while (iterator.Current.Type != TokenType.CloseParen)
-        {
-            while (iterator.Current.Type != TokenType.Comma && iterator.Current.Type != TokenType.CloseParen)
-            {
-                var parameter = ParameterDeclaration.Parse(iterator, parser);
-
-                if (iterator.Current.Type == TokenType.Comma)
-                {
-                    iterator.NextToken();
-                }
-
-                parameters.Add(parameter);
-            }
-        }
-
-        return parameters;
     }
 }

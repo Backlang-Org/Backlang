@@ -27,7 +27,14 @@ public sealed class PluginContainer
         var container = new CompositionContainer(catalog);
 
         var plugins = new PluginContainer();
-        container.ComposeParts(plugins);
+
+        try
+        {
+            container.ComposeParts(plugins);
+        }
+        catch
+        {
+        }
 
         return plugins;
     }
