@@ -30,7 +30,9 @@ public class Emitter
 
         if (method == _mainMethod)
         {
+            Emit("add sp, 0, R0", "reserve stack space for local variables");
             Emit("copy sp, R0", "save current stack pointer into R0 (this is the new stack frame base pointer)");
+            Emit("add sp, 0, R0", "reserve stack space for main function");
         }
 
         Emit("");
@@ -136,33 +138,6 @@ public class Emitter
     private void EmitCall(Instruction instruction, FlowGraph implementation, int indentlevel)
     {
         var prototype = (CallPrototype)instruction.Prototype;
-
-        Emit($"copy {NameMangler.Mangle(prototype.Callee)}, R1", "get address of label", indentlevel);
-        Emit("push R1", "push address of label onto stack", indentlevel);
-        Emit("pop R5", "get jump address", indentlevel);
-
-        Emit("copy sp, R6", "store address of return address placeholder", indentlevel);
-        Emit("add sp, 4, sp", "reserve stack space for the return address placeholder", indentlevel);
-
-        Emit("push R0", "store current stack frame base pointer for later", indentlevel);
-        Emit("copy sp, R7", "this will be the new stack frame base pointer", indentlevel);
-
-        Emit("", "evaluate arguments in current stack frame", indentlevel);
-        /*
-        for (const auto&argument : expression.arguments) {
-            argument->accept(*this);
-        }
-        */
-
-        Emit("copy R7, R0", "set the new stack frame base pointer", indentlevel);
-        Emit("");
-
-        Emit("add ip, 24, R1", "calculate return address", indentlevel);
-        Emit("copy R1, *R6", "fill return address placeholder", indentlevel);
-        Emit("jump R5", "call function", indentlevel);
-
-        // after the call the return value is inside R1
-        Emit("push R1", "push return value onto stack", indentlevel);
     }
 
     private void EmitMethodBody(DescribedBodyMethod method, MethodBody body)
