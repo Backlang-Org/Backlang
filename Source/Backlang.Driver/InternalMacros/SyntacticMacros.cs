@@ -231,8 +231,6 @@ public static class SyntacticMacros
                 var interpolateOptions = GetInterpoltedStringOptions(formatString);
                 var formatArgs = new List<LNode>();
 
-                formatArgs.Add(SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
-
                 int counter = 0;
                 foreach (var item in interpolateOptions)
                 {
@@ -241,7 +239,9 @@ public static class SyntacticMacros
                     formatArgs.Add(SyntaxTree.Factory.Id(item.Key).WithRange(item.Value.position, item.Key.Length));
                 }
 
-                return ExtensionUtils.dot("string", LNode.Call((Symbol)"Format").WithArgs(formatArgs));
+                formatArgs.Insert(0, SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
+
+                return ExtensionUtils.coloncolon("string", LNode.Call((Symbol)"Format").WithArgs(formatArgs));
             }
         }
 
