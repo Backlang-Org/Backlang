@@ -1,4 +1,5 @@
 ﻿using LeMP;
+using Loyc.Collections;
 
 namespace Backlang.Driver.InternalMacros;
 
@@ -217,6 +218,71 @@ public static class SyntacticMacros
             LNode.Id((Symbol)"Pow"))).SetStyle(NodeStyle.Operator), LNode.List(left, right));
 
         return powCall.WithRange(node.Range);
+    }
+
+    [LexicalMacro("\"hello $name\"", "Interpolate a string", "#string")]
+    public static LNode InterpolateString(LNode node, IMacroContext context)
+    {
+        if (node is (_, var valueNode))
+        {
+            string formatString = valueNode.Value.ToString();
+            if (formatString.Contains("$") && !formatString.Contains("\\$"))
+            {
+                var interpolateOptions = GetInterpoltedStringOptions(formatString);
+                var formatArgs = new List<LNode>();
+
+                formatArgs.Add(SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
+
+                int counter = 0;
+                foreach (var item in interpolateOptions)
+                {
+                    formatString = formatString.Replace($"${item.Key}", "{" + counter++ + "}");
+                    //Todo: fix range
+                    formatArgs.Add(SyntaxTree.Factory.Id(item.Key).WithRange(item.Value.position, item.Key.Length));
+                }
+
+                return ExtensionUtils.dot("string", LNode.Call((Symbol)"Format").WithArgs(formatArgs));
+            }
+        }
+
+        return node;
+    }
+
+    private static Dictionary<string, (int index, int position)> GetInterpoltedStringOptions(string textValue)
+    {
+        var result = new Dictionary<string, (int, int)>();
+
+        for (int i = 0; i < textValue.Length; i++)
+        {
+            if (textValue[i] == '$')
+            {
+                if (i > 0 && textValue[i - 1] == '\\')
+                {
+                    continue;
+                }
+
+                var name = GetInterpolatedName(textValue, i);
+
+                result.Add(name, (i, name.Length + 1));
+            }
+        }
+
+        return result;
+    }
+
+    private static string GetInterpolatedName(string value, int i)
+    {
+        var sb = new StringBuilder();
+
+        int counter = 1;
+        while (counter + i < value.Length && !string.IsNullOrWhiteSpace(value[i + counter].ToString()))
+        {
+            sb.Append(value[i + counter]);
+
+            counter++;
+        }
+
+        return sb.ToString();
     }
 
     private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)
