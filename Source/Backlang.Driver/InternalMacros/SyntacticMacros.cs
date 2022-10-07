@@ -1,5 +1,6 @@
 ﻿using LeMP;
 using Loyc.Collections;
+using System.Text.RegularExpressions;
 
 namespace Backlang.Driver.InternalMacros;
 
@@ -226,7 +227,7 @@ public static class SyntacticMacros
         if (node is (_, var valueNode))
         {
             string formatString = valueNode.Value.ToString();
-            if (formatString.Contains("$") && !formatString.Contains("\\$"))
+            if (formatString.Contains("$"))
             {
                 var interpolateOptions = GetInterpoltedStringOptions(formatString);
                 var formatArgs = new List<LNode>();
@@ -234,55 +235,32 @@ public static class SyntacticMacros
                 int counter = 0;
                 foreach (var item in interpolateOptions)
                 {
-                    formatString = formatString.Replace($"${item.Key}", "{" + counter++ + "}");
+                    formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
                     //Todo: fix range
-                    formatArgs.Add(SyntaxTree.Factory.Id(item.Key).WithRange(item.Value.position, item.Key.Length));
+                    formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(item.start, item.length));
                 }
 
                 formatArgs.Insert(0, SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
 
-                return ExtensionUtils.coloncolon("string", LNode.Call((Symbol)"Format").WithArgs(formatArgs));
+                node = ExtensionUtils.coloncolon("string", LNode.Call((Symbol)"Format").WithArgs(formatArgs));
             }
         }
 
         return node;
     }
 
-    private static Dictionary<string, (int index, int position)> GetInterpoltedStringOptions(string textValue)
+    private static List<(string name, int start, int length)> GetInterpoltedStringOptions(string value)
     {
-        var result = new Dictionary<string, (int, int)>();
+        var result = new List<(string name, int start, int length)>();
 
-        for (int i = 0; i < textValue.Length; i++)
+        var match = Regex.Matches(value, "\\$[a-zA-Z_][0-9a-zA-Z_]*");
+
+        foreach (Match m in match)
         {
-            if (textValue[i] == '$')
-            {
-                if (i > 0 && textValue[i - 1] == '\\')
-                {
-                    continue;
-                }
-
-                var name = GetInterpolatedName(textValue, i);
-
-                result.Add(name, (i, name.Length + 1));
-            }
+            result.Add((m.Value, m.Index, m.Length));
         }
 
         return result;
-    }
-
-    private static string GetInterpolatedName(string value, int i)
-    {
-        var sb = new StringBuilder();
-
-        int counter = 1;
-        while (counter + i < value.Length && !string.IsNullOrWhiteSpace(value[i + counter].ToString()))
-        {
-            sb.Append(value[i + counter]);
-
-            counter++;
-        }
-
-        return sb.ToString();
     }
 
     private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)
