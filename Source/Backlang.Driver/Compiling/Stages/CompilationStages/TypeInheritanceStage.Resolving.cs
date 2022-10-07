@@ -72,20 +72,23 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
         {
             var fnType = Utils.ResolveType(context.Binder, func, "System");
-            foreach (var garg in typeNode.Args[2])
+
+            var funcArgs = new List<IType>();
+            foreach (var garg in typeNode.Args[2].Args)
             {
-                fnType.AddGenericParameter(new DescribedGenericParameter(fnType, garg.Name.Name.ToString())); //ToDo: replace primitive aliases with real .net typenames
+                funcArgs.Add(ResolveTypeWithModule(garg, context, modulename));
             }
-            resolvedType = fnType;
+
+            resolvedType = fnType.MakeGenericType(funcArgs);
         }
         else if (typeNode.Calls(CodeSymbols.Tuple))
         {
-            var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + typeNode.ArgCount).Qualify("System")).FirstOrDefault();
+            var tupleType = Utils.ResolveType(context.Binder, $"Tuple`{typeNode.ArgCount}", "System");
 
             var tupleArgs = new List<IType>();
-            foreach (var arg in typeNode.Args)
+            foreach (var garg in typeNode.Args)
             {
-                tupleArgs.Add(ResolveTypeWithModule(arg, context, modulename));
+                tupleArgs.Add(ResolveTypeWithModule(garg, context, modulename));
             }
 
             resolvedType = tupleType.MakeGenericType(tupleArgs);
