@@ -9,6 +9,8 @@ public struct Point
 
 public static func main() {
     while true {
-        print("Hello Loop");
+        let name = "some";
+        print("Hello $name");
+        print("Hello $world, $name");
     }
 }
