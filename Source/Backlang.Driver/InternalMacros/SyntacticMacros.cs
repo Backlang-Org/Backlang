@@ -227,7 +227,7 @@ public static class SyntacticMacros
         if (node is (_, var valueNode))
         {
             string formatString = valueNode.Value.ToString();
-            if (formatString.Contains("$"))
+            if (formatString.Contains('$'))
             {
                 var interpolateOptions = GetInterpoltedStringOptions(formatString);
                 var formatArgs = new List<LNode>();
@@ -237,7 +237,9 @@ public static class SyntacticMacros
                 {
                     formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
 
-                    var varRange = new SourceRange(valueNode.Range.Source, item.start + node.Range.StartIndex + 1, item.length);
+                    var varRange = new SourceRange(valueNode.Range.Source,
+                        item.start + node.Range.StartIndex + 1, item.length);
+
                     formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(varRange));
                 }
 
