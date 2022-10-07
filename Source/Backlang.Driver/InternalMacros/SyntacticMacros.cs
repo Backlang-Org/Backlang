@@ -236,8 +236,9 @@ public static class SyntacticMacros
                 foreach (var item in interpolateOptions)
                 {
                     formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
-                    //Todo: fix range
-                    formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(item.start, item.length));
+
+                    var varRange = new SourceRange(valueNode.Range.Source, item.start + node.Range.StartIndex + 1, item.length);
+                    formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(varRange));
                 }
 
                 formatArgs.Insert(0, SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
