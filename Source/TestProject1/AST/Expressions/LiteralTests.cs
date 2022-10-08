@@ -78,6 +78,8 @@ public class LiteralTests
         var document = new SourceDocument("test.txt", src);
         var tokens = lexer.Tokenize(document);
 
-        return TypeLiteral.Parse(new TokenIterator(tokens, document), new Parser(document, tokens, lexer.Messages));
+        var parser = new Parser(document, tokens, lexer.Messages);
+
+        return TypeLiteral.Parse(parser.Iterator, parser);
     }
 }
