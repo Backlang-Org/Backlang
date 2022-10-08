@@ -230,13 +230,7 @@ public static class TypeDeducer
             {
                 foreach (var method in methods)
                 {
-                    var methodPs = string.Join(',',
-                        method.Parameters.Select(_ => _.Type.FullName.ToString()));
-
-                    var deducedPs = string.Join(',',
-                        deducedArgs.Select(_ => _.FullName.ToString()));
-
-                    if (methodPs == deducedPs)
+                    if (ImplementationStage.MatchesParameters(method, deducedArgs))
                     {
                         return method.ReturnParameter.Type;
                     }
