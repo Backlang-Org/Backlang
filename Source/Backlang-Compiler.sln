@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.NET.Sdk", "Backlan
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Core", "Backlang.Core\Backlang.Core.csproj", "{943C4032-AB54-477D-B11D-D2D4B1D80BB4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{126C2418-6071-4DB4-880D-D1EB3B7E8567}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backlang.Contracts", "Backlang.Contracts\Backlang.Contracts.csproj", "{65AA1C8F-2437-4DE4-A376-DFBEE4B49BB9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{8B8E0DCF-F424-4760-93D1-75C76220DE27}"
@@ -61,10 +59,6 @@ Global
 		{943C4032-AB54-477D-B11D-D2D4B1D80BB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{943C4032-AB54-477D-B11D-D2D4B1D80BB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{943C4032-AB54-477D-B11D-D2D4B1D80BB4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{126C2418-6071-4DB4-880D-D1EB3B7E8567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{126C2418-6071-4DB4-880D-D1EB3B7E8567}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{126C2418-6071-4DB4-880D-D1EB3B7E8567}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{126C2418-6071-4DB4-880D-D1EB3B7E8567}.Release|Any CPU.Build.0 = Release|Any CPU
 		{65AA1C8F-2437-4DE4-A376-DFBEE4B49BB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{65AA1C8F-2437-4DE4-A376-DFBEE4B49BB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65AA1C8F-2437-4DE4-A376-DFBEE4B49BB9}.Release|Any CPU.ActiveCfg = Release|Any CPU

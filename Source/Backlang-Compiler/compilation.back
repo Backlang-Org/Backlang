@@ -11,6 +11,6 @@ public static func main() {
     while true {
         let name = "some";
         print("Hello $name");
-        print("Hello $world, $name");
+        print("Hello \$world, $name");
     }
 }

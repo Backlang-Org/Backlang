@@ -235,6 +235,11 @@ public static class SyntacticMacros
                 int counter = 0;
                 foreach (var item in interpolateOptions)
                 {
+                    if (formatString[item.start - 1] == '\\')
+                    {
+                        continue;
+                    }
+
                     formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
 
                     var varRange = new SourceRange(valueNode.Range.Source,
