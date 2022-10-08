@@ -13,6 +13,7 @@ public partial class ImplementationStage
     private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementations = new Dictionary<Symbol, IStatementImplementor>()
     {
         [CodeSymbols.Var] = new VariableImplementor(),
+        [CodeSymbols.Assign] = new AssignmentImplementor(),
         [CodeSymbols.If] = new IfImplementor(),
         [CodeSymbols.While] = new WhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
