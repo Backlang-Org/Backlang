@@ -15,7 +15,7 @@ public enum TokenType
     CharLiteral,
 
     [Lexeme(".")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Dot)]
     Dot,
 
     [Lexeme("::")]

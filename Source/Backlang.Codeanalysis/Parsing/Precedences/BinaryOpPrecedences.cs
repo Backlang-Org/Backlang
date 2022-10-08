@@ -1,28 +1,29 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.Precedences;
+
 public enum BinaryOpPrecedences
 {
-    Casting = 1, // as
+    Hat = 1,
+    SwapOperator = Hat,
 
-    Hat = 2,
+    Ampersand = 2,
 
-    Ampersand = 3,
-
-    EqualsEquals = 4,
+    EqualsEquals = 3,
     DashedOps = EqualsEquals, // add, sub
     Range = DashedOps,
     And = Range, // &&
 
-    DottedOps = 5, // mul, div
+    DottedOps = 4, // mul, div
     Percent = DottedOps,
     Or = Percent,
     Comparisons = Or, // < <= >= >
-    SwapOperator = 2,
-    
-    FunctionCalls = 7, // . ::
 
-    PipeOperator = 8, // |>
+    OperationShortcuts = 5, // += -= *= /=
 
-    OperationShortcuts = 9, // += -= *= /=
-    Equals = OperationShortcuts,
+    PipeOperator = 6, // |>
+    Equals = PipeOperator,
 
+    FunctionCalls = 7,//  ::
+    Dot = FunctionCalls,
+
+    Casting = 8, // as
 }

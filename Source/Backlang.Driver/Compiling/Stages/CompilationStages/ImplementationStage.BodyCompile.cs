@@ -14,6 +14,7 @@ public partial class ImplementationStage
     {
         [CodeSymbols.Var] = new VariableImplementor(),
         [CodeSymbols.If] = new IfImplementor(),
+        [CodeSymbols.Assign] = new AssignmentImplementor(),
         [CodeSymbols.While] = new WhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
         [CodeSymbols.Throw] = new ThrowImplementor(),
