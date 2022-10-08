@@ -114,12 +114,7 @@ public static class MethodBodyCompiler
                 EmitStoreField(parentType, ilProcessor, sp);
             }
 
-            if (!ilProcessor.Body.Instructions.Any())
-            {
-                return;
-            }
-
-            labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.First());
+            //labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.First());
         }
 
         if (block.Flow is ReturnFlow rf)

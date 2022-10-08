@@ -326,14 +326,14 @@ public class DotNetAssembly : ITargetAssembly
             var variables =
                                 MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
-            bodyCompilation.ClrMethod.DebugInformation.Scope =
-                new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
-                    bodyCompilation.ClrMethod.Body.Instructions.Last());
+            /*  bodyCompilation.ClrMethod.DebugInformation.Scope =
+                  new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
+                      bodyCompilation.ClrMethod.Body.Instructions.Last());
 
-            foreach (var variable in variables)
-            {
-                bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
-            }
+              foreach (var variable in variables)
+              {
+                  bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
+              }*/
         });
     }
 
