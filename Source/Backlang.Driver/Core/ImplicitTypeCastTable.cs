@@ -1,4 +1,6 @@
-﻿namespace Backlang.Driver.Core;
+﻿using Backlang.Contracts.TypeSystem;
+
+namespace Backlang.Driver.Core;
 
 public static class ImplicitTypeCastTable
 {
@@ -20,6 +22,10 @@ public static class ImplicitTypeCastTable
         if (type == toCast)
         {
             return true;
+        }
+        else if (toCast is UnitType ut)
+        {
+            return IsAssignableTo(type, ut.BaseTypes[0]);
         }
         else if (HasImplicitCastOperator(type, toCast))
         {
