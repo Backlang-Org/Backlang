@@ -4,6 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using Instruction = Mono.Cecil.Cil.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -18,44 +19,42 @@ public static class MethodBodyCompiler
 
         var variables = new Dictionary<string, VariableDefinition>();
 
-        var labels = new Dictionary<string, Instruction>();
-        var jumps = new Dictionary<Instruction, (string, object)>();
+        var labels = new Dictionary<string, int>();
+        var fixups = new List<(int InstructionIndex, string Target)>();
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
-            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, jumps, variables);
+            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, fixups, variables);
         }
 
-        AdjustJumps(ilProcessor, labels, jumps);
+        AdjustJumps(ilProcessor, labels, fixups);
 
+        clrMethod.Body.Optimize();
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
 
     private static void AdjustJumps(ILProcessor ilProcessor,
-        Dictionary<string, Instruction> labels, Dictionary<Instruction, (string label, object selector)> jumps)
+        Dictionary<string, int> labels, List<(int InstructionIndex, string Target)> jumps)
     {
         foreach (var jump in jumps)
         {
-            OpCode opcode;
-
-            if (jump.Value.selector == null)
+            foreach (var fixup in labels)
             {
-                opcode = OpCodes.Br_S;
+                var targetLabel = fixup.Key;
+                var targetInstructionIndex = labels[targetLabel];
+                var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
+                var instructionToFixup = ilProcessor.Body.Instructions[fixup.Value];
+                instructionToFixup.Operand = targetInstruction;
             }
-            else
-            {
-                //ToDo: implement conditional jumps
-                opcode = OpCodes.Brtrue;
-            }
-
-            var instruction = Instruction.Create(opcode, labels[jump.Value.label]);
-            ilProcessor.Replace(jump.Key, instruction);
         }
     }
 
-    private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps, Dictionary<string, VariableDefinition> variables)
+    private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition,
+        ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType,
+        Dictionary<string, int> labels,
+        List<(int InstructionIndex, string Target)> jumps, Dictionary<string, VariableDefinition> variables)
     {
         foreach (var item in block.NamedInstructions)
         {
@@ -113,9 +112,9 @@ public static class MethodBodyCompiler
             {
                 EmitStoreField(parentType, ilProcessor, sp);
             }
-
-            //labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.First());
         }
+
+        labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.Count);
 
         if (block.Flow is ReturnFlow rf)
         {
@@ -128,21 +127,13 @@ public static class MethodBodyCompiler
         }
         else if (block.Flow is JumpFlow jf)
         {
-            if (!ilProcessor.Body.Instructions.Any())
-            {
-                return;
-            }
-
-            jumps.Add(ilProcessor.Body.Instructions.First(), (jf.Branch.Target.Name, null));
+            jumps.Add((ilProcessor.Body.Instructions.Count, jf.Branch.Target.Name));
+            ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
         else if (block.Flow is JumpConditionalFlow jcf)
         {
-            if (!ilProcessor.Body.Instructions.Any())
-            {
-                return;
-            }
-
-            jumps.Add(ilProcessor.Body.Instructions.First(), (jcf.Branch.Target.Name, jcf.ConditionSelector));
+            jumps.Add((ilProcessor.Body.Instructions.Count, jcf.Branch.Target.Name));
+            ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
         else if (block.Flow is UnreachableFlow)
         {
