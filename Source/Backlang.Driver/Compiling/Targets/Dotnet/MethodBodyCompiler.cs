@@ -4,7 +4,6 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 using Instruction = Mono.Cecil.Cil.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -19,43 +18,36 @@ public static class MethodBodyCompiler
 
         var variables = new Dictionary<string, VariableDefinition>();
 
-        var labels = new Dictionary<string, int>();
-        var fixups = new List<(int InstructionIndex, string Target)>();
+        var labels = new Dictionary<BasicBlockTag, int>();
+        var fixups = new List<(int InstructionIndex, BasicBlockTag Target)>();
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
-            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, fixups, variables);
+            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType,
+                variables, fixups, labels);
         }
 
-        AdjustJumps(ilProcessor, labels, fixups);
+        foreach (var fixup in fixups)
+        {
+            var targetLabel = fixup.Target;
+            var targetInstructionIndex = labels[targetLabel];
+            var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
+            var instructionToFixup = ilProcessor.Body.Instructions[fixup.InstructionIndex];
+            instructionToFixup.Operand = targetInstruction;
+        }
 
-        clrMethod.Body.Optimize();
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
 
-    private static void AdjustJumps(ILProcessor ilProcessor,
-        Dictionary<string, int> labels, List<(int InstructionIndex, string Target)> jumps)
-    {
-        foreach (var jump in jumps)
-        {
-            foreach (var fixup in labels)
-            {
-                var targetLabel = fixup.Key;
-                var targetInstructionIndex = labels[targetLabel];
-                var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
-                var instructionToFixup = ilProcessor.Body.Instructions[fixup.Value];
-                instructionToFixup.Operand = targetInstruction;
-            }
-        }
-    }
-
     private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition,
         ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType,
-        Dictionary<string, int> labels,
-        List<(int InstructionIndex, string Target)> jumps, Dictionary<string, VariableDefinition> variables)
+         Dictionary<string, VariableDefinition> variables,
+         List<(int InstructionIndex, BasicBlockTag Target)> fixups, Dictionary<BasicBlockTag, int> labels)
     {
+        labels.Add(block.Tag, ilProcessor.Body.Instructions.Count);
+
         foreach (var item in block.NamedInstructions)
         {
             var instruction = item.Instruction;
@@ -114,8 +106,6 @@ public static class MethodBodyCompiler
             }
         }
 
-        labels.Add(block.Tag.Name, ilProcessor.Body.Instructions.Count);
-
         if (block.Flow is ReturnFlow rf)
         {
             if (rf.HasReturnValue)
@@ -125,14 +115,14 @@ public static class MethodBodyCompiler
 
             ilProcessor.Emit(OpCodes.Ret);
         }
-        else if (block.Flow is JumpFlow jf)
+        else if (block.Flow is JumpFlow node)
         {
-            jumps.Add((ilProcessor.Body.Instructions.Count, jf.Branch.Target.Name));
+            fixups.Add((ilProcessor.Body.Instructions.Count, node.Branch.Target));
             ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
-        else if (block.Flow is JumpConditionalFlow jcf)
+        else if (block.Flow is JumpConditionalFlow n)
         {
-            jumps.Add((ilProcessor.Body.Instructions.Count, jcf.Branch.Target.Name));
+            fixups.Add((ilProcessor.Body.Instructions.Count, n.Branch.Target));
             ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
         else if (block.Flow is UnreachableFlow)
