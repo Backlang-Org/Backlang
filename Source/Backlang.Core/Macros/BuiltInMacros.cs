@@ -10,6 +10,22 @@ public static partial class BuiltInMacros
 {
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
+    [LexicalMacro("todo", "Add hint to do something", "todo")]
+    public static LNode Todo(LNode node, IMacroContext context)
+    {
+        if (node.ArgCount == 1)
+        {
+            var msg = node.Args[0].Args[0];
+            context.Warn(msg.Value.ToString());
+        }
+        else
+        {
+            context.Error("The ToDo macro needs a message");
+        }
+
+        return LNode.Missing;
+    }
+
     [LexicalMacro(@"nameof(id_or_expr)",
         @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")", "nameof", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode @Nameof(LNode nameof, IMacroContext context)
