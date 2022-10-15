@@ -109,15 +109,18 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             if (resolvedType == null)
             {
-                var namespaceImport = context.ImportetNamespaces[typeNode.Range.Source.FileName];
-
-                foreach (var importedNs in namespaceImport.ImportedNamespaces)
+                if (context.ImportetNamespaces.ContainsKey(typeNode.Range.Source.FileName))
                 {
-                    var tmpName = fullName.Qualify(importedNs);
+                    var namespaceImport = context.ImportetNamespaces[typeNode.Range.Source.FileName];
 
-                    resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
+                    foreach (var importedNs in namespaceImport.ImportedNamespaces)
+                    {
+                        var tmpName = fullName.Qualify(importedNs);
 
-                    if (resolvedType != null) break;
+                        resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
+
+                        if (resolvedType != null) break;
+                    }
                 }
 
                 if (resolvedType == null)
