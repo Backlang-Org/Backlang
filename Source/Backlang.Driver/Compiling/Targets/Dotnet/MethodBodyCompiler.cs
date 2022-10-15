@@ -1,9 +1,10 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 using Instruction = Mono.Cecil.Cil.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -27,6 +28,15 @@ public static class MethodBodyCompiler
                 variables, fixups, labels);
         }
 
+        FixJumps(ilProcessor, labels, fixups);
+
+        clrMethod.Body.MaxStackSize = 7;
+
+        return variables;
+    }
+
+    private static void FixJumps(ILProcessor ilProcessor, Dictionary<BasicBlockTag, int> labels, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
+    {
         foreach (var fixup in fixups)
         {
             var targetLabel = fixup.Target;
@@ -35,10 +45,6 @@ public static class MethodBodyCompiler
             var instructionToFixup = ilProcessor.Body.Instructions[fixup.InstructionIndex];
             instructionToFixup.Operand = targetInstruction;
         }
-
-        clrMethod.Body.MaxStackSize = 7;
-
-        return variables;
     }
 
     private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition,
