@@ -21,7 +21,10 @@ public sealed class ReportErrorStage : IHandler<CompilerContext, CompilerContext
             Console.ResetColor();
         }
 
-        Environment.Exit(1337);
+        if (context.Messages.Any(_ => _.Severity == MessageSeverity.Error))
+        {
+            Environment.Exit(1337);
+        }
 
         return await next.Invoke(context);
     }
