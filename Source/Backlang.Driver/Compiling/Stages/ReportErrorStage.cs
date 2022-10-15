@@ -8,7 +8,17 @@ public sealed class ReportErrorStage : IHandler<CompilerContext, CompilerContext
     {
         foreach (var msg in context.Messages)
         {
+            if (msg.Severity == MessageSeverity.Warning)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
             Console.WriteLine($"[{msg.Severity}]: {msg}");
+            Console.ResetColor();
         }
 
         Environment.Exit(1337);
