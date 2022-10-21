@@ -8,6 +8,15 @@ public sealed class MacroBlockDeclaration : IParsePoint
     {
         var nameExpression = LNode.Id(iterator.Prev.Text).WithRange(iterator.Current);
 
+        var pp = parser.DeclarationParsePoints;
+
+        foreach (var p in parser.StatementParsePoints)
+        {
+            if (pp.ContainsKey(p.Key)) continue;
+
+            pp.Add(p.Key, p.Value);
+        }
+
         if (iterator.Current.Type == TokenType.OpenParen)
         {
             iterator.NextToken();
@@ -18,13 +27,18 @@ public sealed class MacroBlockDeclaration : IParsePoint
             {
                 iterator.NextToken();
                 //custom code block with arguments
-                var body = parser.InvokeDeclarationParsePoints(TokenType.CloseCurly);
+
+                var body = parser.InvokeDeclarationParsePoints(TokenType.CloseCurly, pp);
                 iterator.Match(TokenType.CloseCurly);
 
                 arguments = arguments.Add(LNode.Call(CodeSymbols.Braces, body));
 
                 return SyntaxTree.Factory.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
                     .SetStyle(NodeStyle.Special).WithRange(nameExpression.Range.StartIndex, iterator.Prev.End);
+            }
+            else
+            {
+                parser.Iterator.Match(TokenType.Semicolon);
             }
 
             return LNode.Call(nameExpression, arguments);
@@ -34,7 +48,7 @@ public sealed class MacroBlockDeclaration : IParsePoint
             iterator.NextToken();
 
             //custom code block without arguments
-            var body = parser.InvokeDeclarationParsePoints(TokenType.CloseCurly);
+            var body = parser.InvokeDeclarationParsePoints(TokenType.CloseCurly, pp);
             iterator.Match(TokenType.CloseCurly);
 
             var arguments = LNode.List(LNode.Missing);

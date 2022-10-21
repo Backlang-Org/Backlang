@@ -70,7 +70,10 @@ public static class SyntacticMacros
         {
             return @operator;
         }
-        return SyntaxTree.Signature(SyntaxTree.Type(@operator.Name.Name, new()), SyntaxTree.Type("none", new()), new(), new()).PlusArg(@operator.Args[1]);
+        return SyntaxTree.Signature(
+            SyntaxTree.Type("main", new()),
+            SyntaxTree.Type("none", new()), new(), new())
+            .PlusArg(@operator.Args[1]).PlusAttr(LNode.Id(CodeSymbols.Public)).PlusAttr(LNode.Id(CodeSymbols.Static));
     }
 
     [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]

@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
@@ -73,15 +72,17 @@ public sealed partial class Parser
         StatementParsePoints.Add(type, T.Parse);
     }
 
-    public LNodeList InvokeDeclarationParsePoints(TokenType terminator = TokenType.EOF)
+    public LNodeList InvokeDeclarationParsePoints(TokenType terminator = TokenType.EOF, ParsePoints parsePoints = null)
     {
+        if (parsePoints == null) parsePoints = DeclarationParsePoints;
+
         var body = new LNodeList();
         while (Iterator.Current.Type != terminator)
         {
             Annotation.TryParse(this, out var annotation);
             Modifier.TryParse(this, out var modifiers);
 
-            var item = InvokeParsePoint(DeclarationParsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers);
+            var item = InvokeParsePoint(parsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers);
 
             if (item != null)
             {
@@ -105,16 +106,7 @@ public sealed partial class Parser
 
         var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
 
-        var suggestion = LevensteinDistance.Suggest(Iterator.Current.Text, parsePoints.Keys.Select(_ => _.ToString().ToLower()));
-
-        if (string.IsNullOrEmpty(suggestion))
-        {
-            Messages.Add(Message.Error($"Unexpected '{Iterator.Current.Text}'", range));
-        }
-        else
-        {
-            Messages.Add(Message.Error($"Did you mean '{suggestion}'?'", range));
-        }
+        Messages.Add(Message.Error($"Unexpected '{Iterator.Current.Text}'", range));
 
         Iterator.NextToken();
 
