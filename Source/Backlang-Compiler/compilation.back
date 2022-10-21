@@ -7,11 +7,5 @@ public struct Point
     //let a: i32*; // this make a crashy crashy crash
 }
 
-public static func main() {
-    while true {
-        let name = "some";
-        print("Hello $name");
-        name = "world";
-        print("Hello \$world, $name");
-    }
+Main {
 }

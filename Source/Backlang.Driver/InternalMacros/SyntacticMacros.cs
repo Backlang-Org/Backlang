@@ -62,6 +62,20 @@ public static class SyntacticMacros
         return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
     }
 
+    // this currently doesnt work because macros crash when they have statements in their body
+    [LexicalMacro("main/Main", "Converts main/Main to the main function", "main", "Main", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Main(LNode @operator, IMacroContext context)
+    {
+        if (!@operator.Kind.Equals(LNodeKind.Call))
+        {
+            return @operator;
+        }
+        return SyntaxTree.Signature(
+            SyntaxTree.Type("main", new()),
+            SyntaxTree.Type("none", new()), new(), new())
+            .PlusArg(@operator.Args[1]).PlusAttr(LNode.Id(CodeSymbols.Public)).PlusAttr(LNode.Id(CodeSymbols.Static));
+    }
+
     [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode DivEquals(LNode @operator, IMacroContext context)
     {
