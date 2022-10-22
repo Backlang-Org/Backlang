@@ -64,7 +64,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         }
 
         var entryPoint = context.Assembly.Types.SelectMany(_ => _.Methods)
-            .FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+            .FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod);
 
         if (entryPoint == null)
         {

@@ -1,4 +1,4 @@
-﻿using Backlang.Core.CompilerService;
+using Backlang.Core.CompilerService;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
@@ -73,6 +73,9 @@ public class DotNetAssembly : ITargetAssembly
 
             _assemblyDefinition.MainModule.Resources.Add(err);
         });
+
+        _assemblyDefinition.EntryPoint.IsStatic = true;
+        _assemblyDefinition.EntryPoint.IsPublic = true;
 
         _assemblyDefinition.Write(output);
 
