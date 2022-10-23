@@ -54,6 +54,11 @@ public sealed class CompilerContext
     [Option('e', longName: "embedd", HelpText = "Embedd files into the assembly as resource")]
     public IEnumerable<string> EmbeddedResource { get; set; }
 
+    public string CorLib { get; set; }
+
+    [Option('v', longName: "version", HelpText = "Set the assembly version")]
+    public string Version { get; set; }
+
     public void AddError(LNode node, string msg)
     {
         if (node.Range.Source is not SourceFile<StreamCharSource>) return;

@@ -90,6 +90,8 @@ namespace Backlang.NET.Sdk
                 context.ResultingOutputPath = ResultingOutputPath;
                 context.ProjectFile = ProjectFile;
                 context.EmbeddedResource = Resources;
+                context.CorLib = CorLib;
+                context.Version = Version;
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {

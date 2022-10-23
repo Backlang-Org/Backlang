@@ -25,8 +25,9 @@ public class DotNetAssembly : ITargetAssembly
     {
         _assembly = description.Assembly;
 
+        var va = description.Assembly.Attributes.GetAll().OfType<VersionAttribute>().FirstOrDefault();
         var name = new AssemblyNameDefinition(_assembly.FullName.ToString(),
-            new Version(1, 0));
+            va == null ? new Version(1, 0) : va.Version);
 
         _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
 

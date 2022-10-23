@@ -7,14 +7,16 @@ public static class SemanticChecker
 {
     private static readonly List<ISemanticCheck> _semanticChecks = new() {
         new ModuleDefinitionCheck(),
-        new ImportCheck()
+        new ImportCheck(),
+        new TypenameCheck(),
+        new InterfaceNameCheck()
     };
 
-    public static void Do(CompilationUnit tree)
+    public static void Do(CompilationUnit tree, CompilerContext context)
     {
         foreach (var check in _semanticChecks)
         {
-            check.Check(tree);
+            check.Check(tree, context);
         }
     }
 }

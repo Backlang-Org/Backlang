@@ -1,4 +1,5 @@
 ﻿using Backlang.Core.CompilerService;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -14,6 +15,9 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         if (!context.Messages.Any())
         {
             var description = GetDescription(context);
+
+            if (context.Version != null)
+                context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Version) });
 
             context.CompilationTarget.BeforeCompiling(context);
 

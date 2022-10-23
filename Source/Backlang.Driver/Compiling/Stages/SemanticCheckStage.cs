@@ -7,7 +7,7 @@ public sealed class SemanticCheckStage : IHandler<CompilerContext, CompilerConte
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         Parallel.ForEachAsync(context.Trees, (tree, ct) => {
-            SemanticChecker.Do(tree);
+            SemanticChecker.Do(tree, context);
 
             return ValueTask.CompletedTask;
         }).Wait();

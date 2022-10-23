@@ -20,8 +20,6 @@ public sealed class InterfaceDeclaration : IParsePoint
 
         var members = ParsingHelpers.ParseUntil<TypeMemberDeclaration>(parser, TokenType.CloseCurly);
 
-        iterator.Match(TokenType.CloseCurly);
-
         return SyntaxTree.Interface(nameToken, inheritances, members).WithRange(keywordToken, iterator.Prev);
     }
 }

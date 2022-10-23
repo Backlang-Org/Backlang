@@ -2,5 +2,5 @@
 
 public interface ISemanticCheck
 {
-    void Check(CompilationUnit tree);
+    void Check(CompilationUnit tree, Contracts.CompilerContext context);
 }
