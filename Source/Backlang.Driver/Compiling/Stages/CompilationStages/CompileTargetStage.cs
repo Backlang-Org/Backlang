@@ -12,28 +12,25 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
     {
         context.Trees = null;
 
-        if (!context.Messages.Any())
+        var description = GetDescription(context);
+
+        if (context.Version != null)
+            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Version) });
+
+        context.CompilationTarget.BeforeCompiling(context);
+
+        var assembly = context.CompilationTarget.Compile(description);
+        var resultPath = Path.Combine(context.TempOutputPath,
+                        context.OutputFilename);
+
+        if (File.Exists(resultPath))
         {
-            var description = GetDescription(context);
-
-            if (context.Version != null)
-                context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Version) });
-
-            context.CompilationTarget.BeforeCompiling(context);
-
-            var assembly = context.CompilationTarget.Compile(description);
-            var resultPath = Path.Combine(context.TempOutputPath,
-                            context.OutputFilename);
-
-            if (File.Exists(resultPath))
-            {
-                File.Delete(resultPath);
-            }
-
-            assembly.WriteTo(File.OpenWrite(resultPath));
-
-            context.CompilationTarget.AfterCompiling(context);
+            File.Delete(resultPath);
         }
+
+        assembly.WriteTo(File.OpenWrite(resultPath));
+
+        context.CompilationTarget.AfterCompiling(context);
 
         return await next.Invoke(context);
     }

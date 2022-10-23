@@ -10,9 +10,9 @@ public class VariableImplementor : IStatementImplementor
     {
         var decl = node.Args[1];
 
-        var name = ConversionUtils.GetQualifiedName(node.Args[0]);
+        var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
 
-        var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, name);
+        var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, typename);
 
         var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context, modulename.Value);
 
