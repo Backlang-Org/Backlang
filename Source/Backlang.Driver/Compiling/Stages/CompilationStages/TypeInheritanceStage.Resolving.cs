@@ -123,7 +123,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                     }
                 }
 
-                if (resolvedType == null)
+                if (resolvedType == null && !string.IsNullOrEmpty(fullName.ToString()))
                 {
                     context.AddError(typeNode, $"Type {fullName} cannot be found");
                 }
