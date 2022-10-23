@@ -154,6 +154,18 @@
 			<DefineConstants Include="DEBUG" Condition=" '$(Configuration)' == 'Debug' " />
 		</ItemGroup>
 
+		<ItemGroup>
+			<CoreLibReference Include="@(ReferencePath)" Condition=" '%(Filename)' == 'System.Runtime' OR
+                                                                 '%(Filename)' == 'netstandard' OR
+                                                                 '%(Filename)' == 'System.Diagnostics.Debug' OR
+                                                                 '%(Filename)' == 'mscorlib' " />
+			<StandardReference Include="@(ReferencePath)" Exclude="@(CoreLibReference)" />
+		</ItemGroup>
+
+		<PropertyGroup>
+			<CorLib>@(CoreLibReference)@(StandardReference)</CorLib>
+		</PropertyGroup>
+
 		<Error Condition=" '$(BacklangToolFullPath)'=='' " Text="Path to Backlang.NET.Sdk.dll was not set." />
 
 		<BuildTask Condition=" Exists('$(BacklangToolFullPath)') "
@@ -167,7 +179,7 @@
 				   OutputType="$(OutputType)"
 				   Path="$(MSBuildProjectFullPath)"
 				   EntryPoint="$(StartupObject)"
-				   ReferencePath="@(ReferencePath)"
+				   CorLib="$(CorLib)"
 				   OutputTree="$(OutputTree)"
 				   Target="$(CompileTo)"
 				   ResultingOutputPath="$(OutputPath)"
