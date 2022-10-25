@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Backlang.Driver.Core.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -83,6 +84,10 @@ public static class MethodBodyCompiler
             if (instruction.Prototype is CallPrototype)
             {
                 EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
+            }
+            else if (instruction.Prototype is TypeOfInstructionPrototype toip)
+            {
+                ilProcessor.Emit(OpCodes.Ldtoken, assemblyDefinition.ImportType(toip.Type));
             }
             else if (instruction.Prototype is LoadLocalAPrototype lda)
             {

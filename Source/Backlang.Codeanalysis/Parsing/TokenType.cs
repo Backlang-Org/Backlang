@@ -246,6 +246,9 @@ public enum TokenType
     [Keyword("sizeof")]
     SizeOf,
 
+    [Keyword("typeof")]
+    TypeOf,
+
     [Keyword("none")]
     None,
 

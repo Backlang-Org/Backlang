@@ -27,6 +27,7 @@ public partial class ImplementationStage
         new TupleExpressionImplementor(),
         new ArrayExpressionImplementor(),
         new DefaultExpressionImplementor(),
+        new TypeOfExpressionImplementor(),
         new AddressExpressionImplementor(),
         new UnaryExpressionImplementor(),
         new BinaryExpressionImplementor(),

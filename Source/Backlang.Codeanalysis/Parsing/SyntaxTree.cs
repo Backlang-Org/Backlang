@@ -248,4 +248,9 @@ public static class SyntaxTree
     {
         return Factory.Call(Symbols.UnitDecl, LNode.List(Factory.FromToken(nameToken)));
     }
+
+    internal static LNode TypeOfExpression(LNode type)
+    {
+        return Factory.Call(CodeSymbols.Typeof, LNode.List(type));
+    }
 }

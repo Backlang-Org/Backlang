@@ -38,6 +38,7 @@ public sealed partial class Parser
         AddExpressionParsePoint<MatchExpression>(TokenType.Match);
         AddExpressionParsePoint<DefaultExpression>(TokenType.Default);
         AddExpressionParsePoint<SizeOfExpression>(TokenType.SizeOf);
+        AddExpressionParsePoint<TypeofExpression>(TokenType.TypeOf);
         AddExpressionParsePoint<NoneExpression>(TokenType.None);
         AddExpressionParsePoint<InitializerListExpression>(TokenType.OpenSquare);
 

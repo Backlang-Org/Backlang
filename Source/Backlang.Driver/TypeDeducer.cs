@@ -41,6 +41,10 @@ public static class TypeDeducer
         {
             return Deduce(LNode.Id(TypenameTable[node.Name.Name]), scope, context, modulename);
         }
+        else if (node.Calls(CodeSymbols.Typeof))
+        {
+            return context.Binder.ResolveTypes(new SimpleName("Type").Qualify("System")).First();
+        }
         else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
         {
             var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(unit, context, modulename);
