@@ -326,9 +326,10 @@ public class DotNetAssembly : ITargetAssembly
 
     private void CompileBodys()
     {
-        Parallel.ForEach(_methodBodyCompilations, bodyCompilation => {
+        foreach (var bodyCompilation in _methodBodyCompilations)
+        {
             var variables =
-                                MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
+                                    MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
             bodyCompilation.ClrMethod.DebugInformation.Scope =
                 new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
@@ -338,7 +339,7 @@ public class DotNetAssembly : ITargetAssembly
             {
                 bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
             }
-        });
+        }
     }
 
     private void ConvertCustomAttributes(TypeDefinition clrType, DescribedBodyMethod m, MethodDefinition clrMethod)
