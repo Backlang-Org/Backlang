@@ -12,17 +12,21 @@ public class NameMangler
 
         var ns = method.FullName.Slice(0, method.FullName.PathLength - 1).ToString().Replace(".", "%").ToLower();
 
-        if (ns != "%program")
+        sb.Append("$\"");
+
+        if (ns != "%freefunctions")
         {
             sb.Append(ns);
         }
 
-        sb.Append('$').Append(method.FullName.FullyUnqualifiedName.ToString());
+        sb.Append(method.FullName.FullyUnqualifiedName.ToString());
 
         foreach (var param in method.Parameters)
         {
             sb.Append('$').Append(MangleTypeName(param.Type));
         }
+
+        sb.Append('"');
 
         return sb.ToString();
     }

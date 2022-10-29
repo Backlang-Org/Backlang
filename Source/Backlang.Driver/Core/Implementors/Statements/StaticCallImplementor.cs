@@ -8,11 +8,10 @@ public class StaticCallImplementor : IStatementImplementor, IExpressionImplement
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
         var callee = node.Args[1];
-        var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
 
-        var type = (DescribedType)context.Binder.ResolveTypes(typename).FirstOrDefault();
+        var type = TypeDeducer.Deduce(node.Args[0], scope, context, modulename.Value);
 
-        return ImplementationStage.AppendCall(context, block, callee, type.Methods, scope, modulename, callee.Name.Name);
+        return ImplementationStage.AppendCall(context, block, callee, type.Methods, scope, modulename, methodName: callee.Name.Name);
     }
 
     public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,

@@ -18,4 +18,9 @@ public static class LNodeExtensions
     {
         return WithRange(node, startToken.Start, endtoken.End);
     }
+
+    public static LNode FromToken(this LNodeFactory factory, Token token)
+    {
+        return factory.Id(token.Text).WithRange(token);
+    }
 }

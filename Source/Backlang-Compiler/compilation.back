@@ -1,6 +1,11 @@
-public static func main() {
+import System;
 
-    let myTuple  = (1, 2);
-    let otherTuple = ('c', "world");
+public struct Point
+{
+    let callback: (i32, bool) -> none;
+    let tuple: (i32, char);
+    //let a: i32*; // this make a crashy crashy crash
+}
 
+Main {
 }

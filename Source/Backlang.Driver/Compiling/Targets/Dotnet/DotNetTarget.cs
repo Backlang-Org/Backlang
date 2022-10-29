@@ -71,6 +71,18 @@ public class DotNetTarget : ICompilationTarget
     {
         foreach (var r in context.References)
         {
+            AddFromAssembly(context, r);
+        }
+
+        if (context.CorLib == null) return;
+
+        foreach (var r in context.CorLib.Split(';'))
+        {
+            AddFromAssembly(context, r);
+        }
+
+        static void AddFromAssembly(CompilerContext context, string r)
+        {
             var assembly = Assembly.LoadFrom(r);
 
             var refLib = ClrTypeEnvironmentBuilder.CollectTypes(assembly);

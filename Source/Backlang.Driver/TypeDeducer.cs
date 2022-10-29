@@ -41,6 +41,10 @@ public static class TypeDeducer
         {
             return Deduce(LNode.Id(TypenameTable[node.Name.Name]), scope, context, modulename);
         }
+        else if (node.Calls(CodeSymbols.Typeof))
+        {
+            return context.Binder.ResolveTypes(new SimpleName("Type").Qualify("System")).First();
+        }
         else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
         {
             var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(unit, context, modulename);
@@ -230,13 +234,7 @@ public static class TypeDeducer
             {
                 foreach (var method in methods)
                 {
-                    var methodPs = string.Join(',',
-                        method.Parameters.Select(_ => _.Type.FullName.ToString()));
-
-                    var deducedPs = string.Join(',',
-                        deducedArgs.Select(_ => _.FullName.ToString()));
-
-                    if (methodPs == deducedPs)
+                    if (ImplementationStage.MatchesParameters(method, deducedArgs))
                     {
                         return method.ReturnParameter.Type;
                     }

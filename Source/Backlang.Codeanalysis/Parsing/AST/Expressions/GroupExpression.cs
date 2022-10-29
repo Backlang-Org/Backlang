@@ -6,21 +6,7 @@ public sealed class GroupOrTupleExpression : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        var exprs = new LNodeList();
-
-        while (iterator.Current.Type != TokenType.CloseParen && iterator.Current.Type != TokenType.Comma)
-        {
-            var parameter = Expression.Parse(parser);
-
-            if (iterator.Current.Type == TokenType.Comma && iterator.Peek(1).Type != TokenType.CloseParen)
-            {
-                iterator.Match(TokenType.Comma);
-            }
-
-            exprs.Add(parameter);
-        }
-
-        iterator.Match(TokenType.CloseParen);
+        var exprs = Expression.ParseList(parser, TokenType.CloseParen);
 
         if (exprs.Count == 1)
         {

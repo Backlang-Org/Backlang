@@ -38,6 +38,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 annotation = annotation.Attrs[0];
 
+                if (annotation.Name == LNode.Missing.Name) continue;
+
                 var fullname = ConversionUtils.GetQualifiedName(annotation.Target);
 
                 if (!fullname.FullyUnqualifiedName.ToString().EndsWith("Attribute"))

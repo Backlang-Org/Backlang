@@ -41,7 +41,7 @@ namespace Backlang.NET.Sdk
         public string OutputType { get; set; }
         public string Path { get; set; }
         public string ProjectFile { get; set; }
-        public string[] ReferencePath { get; set; }
+        public string CorLib { get; set; }
         public string[] Resources { get; set; }
         public string ResultingOutputPath { get; set; }
         public string Target { get; set; }
@@ -90,6 +90,8 @@ namespace Backlang.NET.Sdk
                 context.ResultingOutputPath = ResultingOutputPath;
                 context.ProjectFile = ProjectFile;
                 context.EmbeddedResource = Resources;
+                context.CorLib = CorLib;
+                context.Version = Version;
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {

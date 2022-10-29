@@ -1,4 +1,6 @@
 ﻿using LeMP;
+using Loyc.Collections;
+using System.Text.RegularExpressions;
 
 namespace Backlang.Driver.InternalMacros;
 
@@ -57,7 +59,15 @@ public static class SyntacticMacros
     [LexicalMacro("destructor()", "Convert destructor() to .dtor() function", "#destructor", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Destructor(LNode @operator, IMacroContext context)
     {
-        return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+        return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()),
+            SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new())
+            .PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+    }
+
+    [LexicalMacro(".dtor()", "Convert destructor() or .dtor() to Finalize", ".dtor", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode DestructorNormalisation(LNode @operator, IMacroContext context)
+    {
+        return @operator.WithTarget(LNode.Id("Finalize"));
     }
 
     [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
@@ -153,8 +163,10 @@ public static class SyntacticMacros
 
         if (right.Calls("new"))
         {
-            return LNode.Call(CodeSymbols.New,
-                LNode.List(LNode.Call(left, right.Args)));
+            var factory = new LNodeFactory(node.Source);
+
+            return factory.Call(CodeSymbols.New,
+                LNode.List(factory.Call(left, right.Args))).WithRange(node.Range);
         }
 
         return node;
@@ -217,6 +229,56 @@ public static class SyntacticMacros
             LNode.Id((Symbol)"Pow"))).SetStyle(NodeStyle.Operator), LNode.List(left, right));
 
         return powCall.WithRange(node.Range);
+    }
+
+    [LexicalMacro("\"hello $name\"", "Interpolate a string", "#string")]
+    public static LNode InterpolateString(LNode node, IMacroContext context)
+    {
+        if (node is (_, var valueNode))
+        {
+            string formatString = valueNode.Value.ToString();
+            if (formatString.Contains('$'))
+            {
+                var interpolateOptions = GetInterpoltedStringOptions(formatString);
+                var formatArgs = new List<LNode>();
+
+                int counter = 0;
+                foreach (var item in interpolateOptions)
+                {
+                    if (formatString[item.start - 1] == '\\')
+                    {
+                        continue;
+                    }
+
+                    formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
+
+                    var varRange = new SourceRange(valueNode.Range.Source,
+                        item.start + node.Range.StartIndex + 1, item.length);
+
+                    formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(varRange));
+                }
+
+                formatArgs.Insert(0, SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
+
+                node = ExtensionUtils.coloncolon("string", LNode.Call((Symbol)"Format").WithArgs(formatArgs));
+            }
+        }
+
+        return node;
+    }
+
+    private static List<(string name, int start, int length)> GetInterpoltedStringOptions(string value)
+    {
+        var result = new List<(string name, int start, int length)>();
+
+        var match = Regex.Matches(value, "\\$[a-zA-Z_][0-9a-zA-Z_]*");
+
+        foreach (Match m in match)
+        {
+            result.Add((m.Value, m.Index, m.Length));
+        }
+
+        return result;
     }
 
     private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)

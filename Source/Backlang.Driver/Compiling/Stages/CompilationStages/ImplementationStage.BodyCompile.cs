@@ -13,6 +13,7 @@ public partial class ImplementationStage
     private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementations = new Dictionary<Symbol, IStatementImplementor>()
     {
         [CodeSymbols.Var] = new VariableImplementor(),
+        [CodeSymbols.Assign] = new AssignmentImplementor(),
         [CodeSymbols.If] = new IfImplementor(),
         [CodeSymbols.While] = new WhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
@@ -26,7 +27,9 @@ public partial class ImplementationStage
         new TupleExpressionImplementor(),
         new ArrayExpressionImplementor(),
         new DefaultExpressionImplementor(),
+        new TypeOfExpressionImplementor(),
         new AddressExpressionImplementor(),
+        new CtorExpressionImplementor(),
         new UnaryExpressionImplementor(),
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
@@ -75,11 +78,11 @@ public partial class ImplementationStage
             }
             else if (node.Calls("print"))
             {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, "Write");
+                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "Write");
             }
             else if (node.Calls("println"))
             {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, "WriteLine");
+                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "WriteLine");
             }
             else
             {
@@ -118,6 +121,12 @@ public partial class ImplementationStage
             }
         }
 
+        //automatic dtor call
+        foreach (var v in block.Parameters)
+        {
+            AppendDtor(context, block, scope, modulename, v.Tag.Name);
+        }
+
         return block;
     }
 
@@ -130,7 +139,7 @@ public partial class ImplementationStage
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
-        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, string methodName = null)
+        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, bool shouldAppendError = true, string methodName = null)
     {
         var argTypes = new List<IType>();
 
@@ -147,13 +156,41 @@ public partial class ImplementationStage
             methodName = node.Name.Name;
         }
 
-        var method = GetMatchingMethod(context, argTypes, methods, methodName);
+        var method = GetMatchingMethod(context, argTypes, methods, methodName, shouldAppendError);
 
         return AppendCall(context, block, node, method, scope, modulename.Value);
     }
 
+    public static NamedInstructionBuilder AppendDtor(CompilerContext context, BasicBlockBuilder block, Scope scope, QualifiedName? modulename, string varname)
+    {
+        if (scope.TryGet<VariableScopeItem>(varname, out var scopeItem))
+        {
+            block.AppendInstruction(Instruction.CreateLoadLocal(scopeItem.Parameter));
+
+            return AppendCall(context, block, LNode.Missing, scopeItem.Type.Methods, scope, modulename, false, "Finalize");
+        }
+
+        return null;
+    }
+
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
         LNode node, IMethod method, Scope scope, QualifiedName? modulename)
+    {
+        var callTags = AppendCallArguments(context, block, node, scope, modulename);
+
+        if (method == null) return null;
+
+        if (!method.IsStatic)
+        {
+            callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
+        }
+
+        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
+
+        return block.AppendInstruction(call);
+    }
+
+    public static List<ValueTag> AppendCallArguments(CompilerContext context, BasicBlockBuilder block, LNode node, Scope scope, QualifiedName? modulename)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
@@ -198,16 +235,7 @@ public partial class ImplementationStage
             }
         }
 
-        if (method == null) return null;
-
-        if (!method.IsStatic)
-        {
-            callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
-        }
-
-        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
-
-        return block.AppendInstruction(call);
+        return callTags;
     }
 
     private static void ConvertMethodBodies(CompilerContext context)

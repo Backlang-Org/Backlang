@@ -3,7 +3,7 @@ using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class TypeMemberDeclaration
+public sealed class TypeMemberDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {

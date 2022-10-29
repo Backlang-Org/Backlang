@@ -8,10 +8,8 @@ public sealed class DefaultExpression : IParsePoint
     {
         //default(i32)
         //default
-        if (iterator.Current.Type == TokenType.OpenParen)
+        if (iterator.ConsumeIfMatch(TokenType.OpenParen))
         {
-            iterator.NextToken();
-
             var type = TypeLiteral.Parse(iterator, parser);
 
             iterator.Match(TokenType.CloseParen);

@@ -6,13 +6,13 @@ public sealed class SizeOfExpression : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        //sizeof<i32>
+        //sizeof(i32)
 
-        iterator.Match(TokenType.LessThan);
+        iterator.Match(TokenType.OpenParen);
 
         var type = TypeLiteral.Parse(iterator, parser);
 
-        iterator.Match(TokenType.GreaterThan);
+        iterator.Match(TokenType.CloseParen);
 
         return SyntaxTree.SizeOf(type);
     }

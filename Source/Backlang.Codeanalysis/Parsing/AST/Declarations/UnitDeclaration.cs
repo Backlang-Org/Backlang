@@ -7,10 +7,10 @@ public class UnitDeclaration : IParsePoint
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var keywordToken = iterator.Prev;
-        var name = iterator.Match(TokenType.Identifier);
+        var nameToken = iterator.Match(TokenType.Identifier);
 
         iterator.Match(TokenType.Semicolon);
 
-        return SyntaxTree.UnitDeclaration(name.Text).WithRange(keywordToken, name);
+        return SyntaxTree.UnitDeclaration(nameToken).WithRange(keywordToken, nameToken);
     }
 }

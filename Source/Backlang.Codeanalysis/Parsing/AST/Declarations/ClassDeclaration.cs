@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
@@ -8,28 +9,18 @@ public sealed class ClassDeclaration : IParsePoint
     {
         var keywordToken = iterator.Prev;
 
-        var name = iterator.Match(TokenType.Identifier).Text;
+        var nameToken = iterator.Match(TokenType.Identifier);
         var inheritances = new LNodeList();
-        var members = new LNodeList();
 
-        if (iterator.Current.Type == TokenType.Colon)
+        if (iterator.ConsumeIfMatch(TokenType.Colon))
         {
-            do
-            {
-                iterator.NextToken();
-                inheritances.Add(Expression.Parse(parser));
-            } while (iterator.Current.Type == TokenType.Comma);
+            inheritances = Expression.ParseList(parser, TokenType.OpenCurly, false);
         }
 
         iterator.Match(TokenType.OpenCurly);
 
-        while (iterator.Current.Type != TokenType.CloseCurly)
-        {
-            members.Add(TypeMemberDeclaration.Parse(iterator, parser));
-        }
+        var members = ParsingHelpers.ParseUntil<TypeMemberDeclaration>(parser, TokenType.CloseCurly);
 
-        iterator.Match(TokenType.CloseCurly);
-
-        return SyntaxTree.Class(name, inheritances, members).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Class(nameToken, inheritances, members).WithRange(keywordToken, iterator.Prev);
     }
 }

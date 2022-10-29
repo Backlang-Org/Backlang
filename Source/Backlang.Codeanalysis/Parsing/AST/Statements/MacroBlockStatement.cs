@@ -12,10 +12,8 @@ public sealed class MacroBlockStatement : IParsePoint
 
         var nameExpression = LNode.Id(nameToken.Text);
 
-        if (iterator.Current.Type == TokenType.OpenParen)
+        if (iterator.ConsumeIfMatch(TokenType.OpenParen))
         {
-            iterator.NextToken();
-
             var arguments = Expression.ParseList(parser, TokenType.CloseParen);
 
             if (iterator.Current.Type == TokenType.OpenCurly)
@@ -29,9 +27,9 @@ public sealed class MacroBlockStatement : IParsePoint
             }
             else
             {
-                iterator.Position = currPos;
+                iterator.Match(TokenType.Semicolon);
 
-                return ExpressionStatement.Parse(iterator, parser);
+                return SyntaxTree.Factory.Call(nameExpression, arguments).WithRange(nameToken, iterator.Prev);
             }
         }
         else if (iterator.Current.Type == TokenType.OpenCurly)

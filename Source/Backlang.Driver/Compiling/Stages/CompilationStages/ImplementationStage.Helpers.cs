@@ -127,18 +127,27 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
     public static bool MatchesParameters(IMethod method, List<IType> argTypes)
     {
-        var methodParams = string.Join(',', method.Parameters.Select(_ => _.Type.FullName.ToString()));
-        var monocecilParams = string.Join(',', argTypes.Select(_ => _.FullName.ToString()));
+        //ToDo: fix matches parameter (implicit casting is currently not working)
 
-        return methodParams.Equals(monocecilParams, StringComparison.Ordinal);
+        bool matchesAllParameters = method.Parameters.Count == argTypes.Count;
+        for (int i = 0; i < argTypes.Count; i++)
+        {
+            if (i == 0)
+            {
+                matchesAllParameters = ImplicitTypeCastTable.IsAssignableTo(argTypes[i], method.Parameters[i].Type);
+                continue;
+            }
+
+            matchesAllParameters &= ImplicitTypeCastTable.IsAssignableTo(argTypes[i], method.Parameters[i].Type);
+        }
+
+        return matchesAllParameters;
     }
 
-    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
+    public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname, bool shouldAppendError = true)
     {
-        foreach (var m in methods)
+        foreach (var m in methods.Where(_ => _.Name.ToString() == methodname))
         {
-            if (m.Name.ToString() != methodname) continue;
-
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
@@ -146,8 +155,10 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
             }
         }
 
-        context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
-
+        if (shouldAppendError)
+        {
+            context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
+        }
         return null;
     }
 }

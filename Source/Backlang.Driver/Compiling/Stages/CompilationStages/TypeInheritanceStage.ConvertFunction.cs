@@ -16,7 +16,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)), returnType);
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)) || type.Name.ToString() == Names.FreeFunctions, returnType);
 
         ConversionUtils.SetAccessModifier(function, method);
 

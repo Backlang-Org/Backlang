@@ -13,6 +13,7 @@
 		<PackageTags>backlang</PackageTags>
 		<IncludeSymbols>True</IncludeSymbols>
 		<Description>The Backlang Compiler Chain</Description>
+		
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -22,7 +23,7 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="compilation.runtimeconfig.json" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="Flo" Version="0.3.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />

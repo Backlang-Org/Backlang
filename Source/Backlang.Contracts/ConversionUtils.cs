@@ -4,7 +4,7 @@ public static class ConversionUtils
 {
     public static QualifiedName GetModuleName(CompilationUnit tree)
     {
-        var moduleDefinition = tree.Body.SingleOrDefault(_ => _.Calls(CodeSymbols.Namespace));
+        var moduleDefinition = tree.Body.FirstOrDefault(_ => _.Calls(CodeSymbols.Namespace));
 
         if (moduleDefinition != null)
         {

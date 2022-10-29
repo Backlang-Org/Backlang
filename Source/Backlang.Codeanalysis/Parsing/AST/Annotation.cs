@@ -7,17 +7,9 @@ public sealed class Annotation
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var atToken = iterator.Match(TokenType.At);
-        var name = Expression.Parse(parser);
-        var args = LNode.List();
+        var call = Expression.Parse(parser);
 
-        if (iterator.IsMatch(TokenType.OpenParen))
-        {
-            iterator.NextToken();
-
-            args = Expression.ParseList(parser, TokenType.CloseParen);
-        }
-
-        return SyntaxTree.Annotation(SyntaxTree.Factory.Call(name, args)).WithRange(atToken, iterator.Prev);
+        return SyntaxTree.Annotation(call).WithRange(atToken, iterator.Prev);
     }
 
     public static bool TryParse(Parser parser, out LNodeList node)

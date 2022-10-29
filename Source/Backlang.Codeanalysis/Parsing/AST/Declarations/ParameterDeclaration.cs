@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
@@ -26,5 +27,10 @@ public sealed class ParameterDeclaration : IParsePoint
 
         return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations)
             .WithRange(keywordToken, iterator.Prev);
+    }
+
+    public static LNodeList ParseList(Parser parser)
+    {
+        return ParsingHelpers.ParseSeperated<ParameterDeclaration>(parser, TokenType.CloseParen);
     }
 }

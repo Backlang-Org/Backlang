@@ -1,12 +1,36 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+﻿using Backlang.Driver.Core.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 using Instruction = Mono.Cecil.Cil.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
+
+internal class NothingFlow : BlockFlow
+{
+    public override IReadOnlyList<Furesoft.Core.CodeDom.Compiler.Instruction> Instructions => throw new NotImplementedException();
+
+    public override IReadOnlyList<Branch> Branches => throw new NotImplementedException();
+
+    public override InstructionBuilder GetInstructionBuilder(BasicBlockBuilder block, int instructionIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BlockFlow WithBranches(IReadOnlyList<Branch> branches)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override BlockFlow WithInstructions(IReadOnlyList<Furesoft.Core.CodeDom.Compiler.Instruction> instructions)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 public static class MethodBodyCompiler
 {
@@ -18,49 +42,40 @@ public static class MethodBodyCompiler
 
         var variables = new Dictionary<string, VariableDefinition>();
 
-        var labels = new Dictionary<string, Instruction>();
-        var jumps = new Dictionary<Instruction, (string, object)>();
+        var labels = new Dictionary<BasicBlockTag, int>();
+        var fixups = new List<(int InstructionIndex, BasicBlockTag Target)>();
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
-            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType, labels, jumps, variables);
+            CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType,
+                variables, fixups, labels);
         }
 
-        AdjustJumps(ilProcessor, labels, jumps);
+        FixJumps(ilProcessor, labels, fixups);
 
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
     }
 
-    private static void AdjustJumps(ILProcessor ilProcessor,
-        Dictionary<string, Instruction> labels, Dictionary<Instruction, (string label, object selector)> jumps)
+    private static void FixJumps(ILProcessor ilProcessor, Dictionary<BasicBlockTag, int> labels, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
     {
-        foreach (var jump in jumps)
+        foreach (var fixup in fixups)
         {
-            OpCode opcode;
-
-            if (jump.Value.selector == null)
-            {
-                opcode = OpCodes.Br_S;
-            }
-            else
-            {
-                //ToDo: implement conditional jumps
-                opcode = OpCodes.Brtrue;
-            }
-
-            var instruction = Instruction.Create(opcode, labels[jump.Value.label]);
-            ilProcessor.Replace(jump.Key, instruction);
+            var targetLabel = fixup.Target;
+            var targetInstructionIndex = labels[targetLabel];
+            var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
+            var instructionToFixup = ilProcessor.Body.Instructions[fixup.InstructionIndex];
+            instructionToFixup.Operand = targetInstruction;
         }
     }
 
-    private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType, Dictionary<string, Instruction> labels, Dictionary<Instruction, (string, object)> jumps, Dictionary<string, VariableDefinition> variables)
+    private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition,
+        ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType,
+         Dictionary<string, VariableDefinition> variables,
+         List<(int InstructionIndex, BasicBlockTag Target)> fixups, Dictionary<BasicBlockTag, int> labels)
     {
-        var nop = Instruction.Create(OpCodes.Nop);
-        ilProcessor.Append(nop);
-
-        labels.Add(block.Tag.Name, nop);
+        labels.Add(block.Tag, ilProcessor.Body.Instructions.Count);
 
         foreach (var item in block.NamedInstructions)
         {
@@ -69,6 +84,10 @@ public static class MethodBodyCompiler
             if (instruction.Prototype is CallPrototype)
             {
                 EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
+            }
+            else if (instruction.Prototype is TypeOfInstructionPrototype toip)
+            {
+                ilProcessor.Emit(OpCodes.Ldtoken, assemblyDefinition.ImportType(toip.Type));
             }
             else if (instruction.Prototype is LoadLocalAPrototype lda)
             {
@@ -129,13 +148,18 @@ public static class MethodBodyCompiler
 
             ilProcessor.Emit(OpCodes.Ret);
         }
-        else if (block.Flow is JumpFlow jf)
+        else if (block.Flow is JumpFlow node)
         {
-            jumps.Add(nop, (jf.Branch.Target.Name, null));
+            fixups.Add((ilProcessor.Body.Instructions.Count, node.Branch.Target));
+            ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
-        else if (block.Flow is JumpConditionalFlow jcf)
+        else if (block.Flow is JumpConditionalFlow n)
         {
-            jumps.Add(nop, (jcf.Branch.Target.Name, jcf.ConditionSelector));
+            fixups.Add((ilProcessor.Body.Instructions.Count, n.Branch.Target));
+            ilProcessor.Emit(
+                (ConditionalJumpKind)n.ConditionSelector == ConditionalJumpKind.True ?
+                OpCodes.Brtrue : OpCodes.Br, Instruction.Create(OpCodes.Nop)
+            );
         }
         else if (block.Flow is UnreachableFlow)
         {
@@ -356,7 +380,8 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod,
+        AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 

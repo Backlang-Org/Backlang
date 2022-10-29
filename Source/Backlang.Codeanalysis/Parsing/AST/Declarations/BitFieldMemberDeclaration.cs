@@ -2,21 +2,21 @@
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
-public sealed class BitFieldMemberDeclaration
+public sealed class BitFieldMemberDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        string name = null;
+        Token nameToken = null;
 
         if (iterator.Current.Type == TokenType.Identifier)
         {
-            name = iterator.Current.Text;
+            nameToken = iterator.Current;
 
             iterator.NextToken();
         }
         else
         {
-            name = iterator.NextToken().Text;
+            nameToken = iterator.NextToken();
         }
 
         iterator.Match(TokenType.EqualsToken);
@@ -28,6 +28,6 @@ public sealed class BitFieldMemberDeclaration
             iterator.Messages.Add(Message.Error("Bitfield member declaration only allows literals", value.Range));
         }
 
-        return SyntaxTree.Factory.Tuple(LNode.Id(name), value);
+        return SyntaxTree.Factory.Tuple(SyntaxTree.Factory.Id(nameToken.Text).WithRange(nameToken), value);
     }
 }

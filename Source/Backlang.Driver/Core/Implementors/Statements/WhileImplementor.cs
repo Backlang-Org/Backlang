@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Flow;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
@@ -16,13 +17,15 @@ public class WhileImplementor : IStatementImplementor
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 
             var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
-            AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
-            while_condition.Flow = new JumpFlow(while_start);
+            AppendExpression(block, condition, context.Environment.Boolean, context, scope, modulename);
+            //while_condition.Flow = new JumpFlow(while_start);
+            while_condition.Flow = new NothingFlow();
 
             var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
             block.Flow = new JumpFlow(while_condition);
+            //block.Flow = new NothingFlow();
 
-            while_start.Flow = new JumpFlow(while_end);
+            while_start.Flow = new NothingFlow();
 
             if (condition.Calls(CodeSymbols.Bool))
             {
@@ -30,9 +33,11 @@ public class WhileImplementor : IStatementImplementor
             }
             else
             {
-                AppendExpression(block, condition, method.ParentType, context, scope, modulename);
-                while_end.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.Equals);
+                //AppendExpression(block, condition, method.ParentType, context, scope, modulename);
+                while_end.Flow = new NothingFlow();
             }
+
+            // while_end.Flow = new NothingFlow();
 
             return block.Graph.AddBasicBlock();
         }

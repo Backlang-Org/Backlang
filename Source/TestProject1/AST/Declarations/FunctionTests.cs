@@ -36,13 +36,11 @@ public class FunctionTests : ParserTestBase
     }
 
     [TestMethod]
-    public void FunctionDeclaration_With_Multiple_Parameters_And_Trailing_Comma_Should_Pass()
+    public void FunctionDeclaration_With_Multiple_Parameters_And_Trailing_Comma_Should_Fail()
     {
         var src = "func test(something : i32, hello : bool,) -> i32 { 123; }";
         var result = ParseAndGetNode(src);
         var statement = result.nodes;
-
-        Assert.AreEqual(0, result.errors.Count);
 
         var retType = statement.Args[0];
         var name = statement.Args[1];
@@ -60,6 +58,8 @@ public class FunctionTests : ParserTestBase
         prm = prms.Args[1];
         Assert.AreEqual("bool", prm.Args[0].Args[0].Args[0].Name.Name);
         Assert.AreEqual("hello", prm.Args[1].Args[0].Name.Name);
+
+        Assert.AreEqual(1, result.errors.Count);
     }
 
     [TestMethod]

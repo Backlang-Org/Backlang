@@ -1,4 +1,5 @@
 ﻿using Backlang.Core.CompilerService;
+using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -11,25 +12,25 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
     {
         context.Trees = null;
 
-        if (!context.Messages.Any())
+        var description = GetDescription(context);
+
+        if (context.Version != null)
+            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Version) });
+
+        context.CompilationTarget.BeforeCompiling(context);
+
+        var assembly = context.CompilationTarget.Compile(description);
+        var resultPath = Path.Combine(context.TempOutputPath,
+                        context.OutputFilename);
+
+        if (File.Exists(resultPath))
         {
-            var description = GetDescription(context);
-
-            context.CompilationTarget.BeforeCompiling(context);
-
-            var assembly = context.CompilationTarget.Compile(description);
-            var resultPath = Path.Combine(context.TempOutputPath,
-                            context.OutputFilename);
-
-            if (File.Exists(resultPath))
-            {
-                File.Delete(resultPath);
-            }
-
-            assembly.WriteTo(File.OpenWrite(resultPath));
-
-            context.CompilationTarget.AfterCompiling(context);
+            File.Delete(resultPath);
         }
+
+        assembly.WriteTo(File.OpenWrite(resultPath));
+
+        context.CompilationTarget.AfterCompiling(context);
 
         return await next.Invoke(context);
     }
@@ -64,7 +65,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         }
 
         var entryPoint = context.Assembly.Types.SelectMany(_ => _.Methods)
-            .FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod && _.IsStatic);
+            .FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod);
 
         if (entryPoint == null)
         {

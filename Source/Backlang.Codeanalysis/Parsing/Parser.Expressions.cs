@@ -83,16 +83,7 @@ public sealed partial class Parser
         }
         else
         {
-            var suggestion = LevensteinDistance.Suggest(Iterator.Current.Text, parsePoints.Keys.Select(_ => _.ToString().ToLower()));
-
-            if (string.IsNullOrEmpty(suggestion))
-            {
-                return Invalid($"Unexpected Expression '{Iterator.Current.Text}'");
-            }
-            else
-            {
-                return Invalid($"Did you mean '{suggestion}'?'");
-            }
+            return Invalid($"Unexpected Expression '{Iterator.Current.Text}'");
         }
     }
 
