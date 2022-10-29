@@ -59,7 +59,15 @@ public static class SyntacticMacros
     [LexicalMacro("destructor()", "Convert destructor() to .dtor() function", "#destructor", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Destructor(LNode @operator, IMacroContext context)
     {
-        return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+        return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()),
+            SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new())
+            .PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+    }
+
+    [LexicalMacro(".dtor()", "Convert destructor() or .dtor() to Finalize", ".dtor", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode DestructorNormalisation(LNode @operator, IMacroContext context)
+    {
+        return @operator.WithTarget(LNode.Id("Finalize"));
     }
 
     [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
@@ -155,8 +163,10 @@ public static class SyntacticMacros
 
         if (right.Calls("new"))
         {
-            return LNode.Call(CodeSymbols.New,
-                LNode.List(LNode.Call(left, right.Args)));
+            var factory = new LNodeFactory(node.Source);
+
+            return factory.Call(CodeSymbols.New,
+                LNode.List(factory.Call(left, right.Args))).WithRange(node.Range);
         }
 
         return node;
