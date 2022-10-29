@@ -25,7 +25,6 @@ public sealed class Signature
 
         var parameters = ParameterDeclaration.ParseList(parser);
 
-
         while (iterator.IsMatch(TokenType.Where))
         {
             iterator.NextToken();
