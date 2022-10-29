@@ -62,7 +62,7 @@ public static class IRGenerator
 
     public static void GenerateDefaultCtor(CompilerContext context, DescribedType type)
     {
-        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), true, Utils.ResolveType(context.Binder, typeof(void)))
+        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
         {
             IsConstructor = true
         };
