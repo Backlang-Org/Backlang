@@ -44,7 +44,7 @@ jobs:
         release_name="Backc-$tag-${{ matrix.target }}"
 
         # Build everything
-        dotnet publish Source/Backlang-Compiler/Backlang-Compiler.csproj --runtime "${{ matrix.target }}" -p:PublishSingleFile=true -c Release -o "$release_name"
+        dotnet publish Source/Backlang-Compiler.sln --runtime "${{ matrix.target }}" -p:PublishSingleFile=true -c Release -o "$release_name"
 
     - name: Upload Nuget Packages
       uses: actions/upload-artifact@v3
