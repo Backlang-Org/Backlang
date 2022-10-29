@@ -380,7 +380,8 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
+    private static VariableDefinition EmitVariableDeclaration(MethodDefinition clrMethod,
+        AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NamedInstruction item, AllocaPrototype allocA)
     {
         var elementType = assemblyDefinition.ImportType(allocA.ElementType);
 

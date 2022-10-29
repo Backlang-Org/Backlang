@@ -129,7 +129,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
     {
         //ToDo: fix matches parameter (implicit casting is currently not working)
 
-        bool matchesAllParameters = false;
+        bool matchesAllParameters = method.Parameters.Count == argTypes.Count;
         for (int i = 0; i < argTypes.Count; i++)
         {
             if (i == 0)
@@ -144,7 +144,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         return matchesAllParameters;
     }
 
-    private static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
+    public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
     {
         foreach (var m in methods.Where(_ => _.Name.ToString() == methodname))
         {
