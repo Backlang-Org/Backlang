@@ -144,7 +144,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         return matchesAllParameters;
     }
 
-    public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname)
+    public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname, bool shouldAppendError = true)
     {
         foreach (var m in methods.Where(_ => _.Name.ToString() == methodname))
         {
@@ -155,8 +155,10 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
             }
         }
 
-        context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
-
+        if (shouldAppendError)
+        {
+            context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
+        }
         return null;
     }
 }

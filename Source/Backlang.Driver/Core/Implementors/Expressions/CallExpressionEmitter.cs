@@ -16,7 +16,7 @@ public class CallExpressionEmitter : IExpressionImplementor
 
         if (scope.TryGet<FunctionScopeItem>(node.Name.Name, out var fn))
         {
-            return ImplementationStage.AppendCall(context, block, node, fn.Overloads, scope, modulename, node.Name.Name);
+            return ImplementationStage.AppendCall(context, block, node, fn.Overloads, scope, modulename, methodName: node.Name.Name);
         }
 
         context.AddError(node, $"function {node.Name.Name} not found");

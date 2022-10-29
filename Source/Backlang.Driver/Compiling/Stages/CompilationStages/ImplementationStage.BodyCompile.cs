@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
@@ -78,11 +78,11 @@ public partial class ImplementationStage
             }
             else if (node.Calls("print"))
             {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, "Write");
+                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "Write");
             }
             else if (node.Calls("println"))
             {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, "WriteLine");
+                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "WriteLine");
             }
             else
             {
@@ -133,7 +133,7 @@ public partial class ImplementationStage
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
-        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, string methodName = null)
+        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, bool shouldAppendError = true, string methodName = null)
     {
         var argTypes = new List<IType>();
 
@@ -150,7 +150,7 @@ public partial class ImplementationStage
             methodName = node.Name.Name;
         }
 
-        var method = GetMatchingMethod(context, argTypes, methods, methodName);
+        var method = GetMatchingMethod(context, argTypes, methods, methodName, shouldAppendError);
 
         return AppendCall(context, block, node, method, scope, modulename.Value);
     }
