@@ -172,20 +172,20 @@ public static class TypeDeducer
         return tupleType.MakeGenericType(generics);
     }
 
-    private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)
+    private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context, QualifiedName moduleName)
     {
         if (node.Calls(CodeSymbols.Add) || node.Calls(CodeSymbols.Mul)
                 || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) || node.Calls(CodeSymbols.AndBits)
                 || node.Calls(CodeSymbols.OrBits) || node.Calls(CodeSymbols.Xor) || node.Calls(CodeSymbols.Mod))
         {
-            return DeduceBinaryHelper(node, scope, context, modulename);
+            return DeduceBinaryHelper(node, scope, context, moduleName);
         }
         else if (node.Calls(CodeSymbols.LT)
             || node.Calls(CodeSymbols.GT) || node.Calls(CodeSymbols.LE)
             || node.Calls(CodeSymbols.GE))
         {
-            NotExpectType(node[0], scope, context, modulename, context.Environment.Boolean);
-            NotExpectType(node[1], scope, context, modulename, context.Environment.Boolean);
+            NotExpectType(node[0], scope, context, moduleName, context.Environment.Boolean);
+            NotExpectType(node[1], scope, context, moduleName, context.Environment.Boolean);
 
             return context.Environment.Boolean;
         }
@@ -195,58 +195,77 @@ public static class TypeDeducer
         }
         else if (node.Calls(CodeSymbols.As))
         {
-            if (TypenameTable.ContainsKey(node.Args[1].Name.Name))
-            {
-                var typName = LNode.Id(TypenameTable[node.Args[1].Name.Name]);
-                return Deduce(typName, scope, context, modulename);
-            }
-
-            return Deduce(node.Args[1], scope, context, modulename);
+            return DeduceExplicitCast(node, scope, context, moduleName);
         }
         else if (node.Calls(CodeSymbols.Dot))
         {
-            var qualified = ConversionUtils.GetQualifiedName(node);
-            var resolved = context.Binder.ResolveTypes(qualified).FirstOrDefault();
-
-            if (resolved == null)
-            {
-                var left = Deduce(node.Args[0], scope, context, modulename); //Todo: implement deducing for members
-            }
-
-            return resolved;
+            return DeduceMember(node, scope, context, moduleName);
         }
         else if (node.Calls(CodeSymbols.ColonColon))
         {
-            var type = Deduce(node.Args[0], scope, context, modulename);
-            var fnName = node.Args[1].Name;
-
-            var methods = type.Methods.Where(_ => _.Name.ToString() == fnName.ToString());
-            var deducedArgs = new List<IType>();
-
-            foreach (var arg in node.Args[1].Args)
-            {
-                deducedArgs.Add(Deduce(arg, scope, context, modulename));
-            }
-
-            methods = methods.Where(_ => _.Parameters.Count == deducedArgs.Count);
-
-            if (methods.Any())
-            {
-                foreach (var method in methods)
-                {
-                    if (ImplementationStage.MatchesParameters(method, deducedArgs))
-                    {
-                        return method.ReturnParameter.Type;
-                    }
-                }
-            }
-            else
-            {
-                context.AddError(node, $"Mismatching Parameter count: {type.FullName.ToString() + "::" + fnName}()");
-            }
+            return DeduceStatic(node, scope, context, moduleName);
         }
 
         return null;
+    }
+
+    private static IType DeduceStatic(LNode node, Scope scope, CompilerContext context, QualifiedName moduleName)
+    {
+        var type = Deduce(node.Args[0], scope, context, moduleName);
+        var fnName = node.Args[1].Name;
+
+        var methods = type.Methods.Where(_ => _.Name.ToString() == fnName.ToString());
+        var deducedArgs = new List<IType>();
+
+        foreach (var arg in node.Args[1].Args)
+        {
+            deducedArgs.Add(Deduce(arg, scope, context, moduleName));
+        }
+
+        methods = methods.Where(_ => _.Parameters.Count == deducedArgs.Count);
+
+        if (methods.Any())
+        {
+            foreach (var method in methods)
+            {
+                if (!ImplementationStage.MatchesParameters(method, deducedArgs))
+                {
+                    continue;
+                }
+
+                return method.ReturnParameter.Type;
+            }
+        }
+        else
+        {
+            context.AddError(node, $"Mismatching Parameter count: {type.FullName.ToString() + "::" + fnName}()");
+        }
+
+        return null;
+    }
+
+    private static IType DeduceMember(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)
+    {
+        var qualified = ConversionUtils.GetQualifiedName(node);
+        var resolved = context.Binder.ResolveTypes(qualified).FirstOrDefault();
+
+        if (resolved == null)
+        {
+            var left = Deduce(node.Args[0], scope, context, modulename); //Todo: implement deducing for members
+        }
+
+        return resolved;
+    }
+
+    private static IType DeduceExplicitCast(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)
+    {
+        if (TypenameTable.ContainsKey(node.Args[1].Name.Name))
+        {
+            var typName = LNode.Id(TypenameTable[node.Args[1].Name.Name]);
+            return Deduce(typName, scope, context, modulename);
+        }
+
+        return Deduce(node.Args[1], scope, context, modulename);
     }
 
     private static IType DeduceUnary(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)

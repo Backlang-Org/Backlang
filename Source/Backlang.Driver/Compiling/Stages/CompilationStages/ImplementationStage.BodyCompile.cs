@@ -86,38 +86,7 @@ public partial class ImplementationStage
             }
             else
             {
-                //ToDo: continue implementing static function call in same type
-                var type = (DescribedType)method.ParentType;
-                var calleeName = node.Target;
-                var methods = type.Methods;
-
-                if (!methods.Any(_ => _.Name.ToString() == calleeName.ToString()))
-                {
-                    type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(modulename.Value)).FirstOrDefault();
-
-                    if (type == null)
-                    {
-                        context.AddError(node, $"Cannot find function '{calleeName}'");
-                    }
-                }
-
-                if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
-                {
-                    if (type.IsStatic && !callee.IsStatic)
-                    {
-                        context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
-                        return block;
-                    }
-
-                    //ToDo: add overload AppendCall with known callee
-                    AppendCall(context, block, node, type.Methods, scope, modulename.Value);
-                }
-                else
-                {
-                    var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
-
-                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'. Did you mean '{suggestion}'?");
-                }
+                EmitFunctionCall(method, node, block, context, scope, modulename);
             }
         }
 
@@ -236,6 +205,44 @@ public partial class ImplementationStage
         }
 
         return callTags;
+    }
+
+    private static BasicBlockBuilder EmitFunctionCall(IMethod method, LNode node, BasicBlockBuilder block, CompilerContext context, Scope scope, QualifiedName? moduleName)
+    {
+        //ToDo: continue implementing static function call in same type
+        var type = (DescribedType)method.ParentType;
+        var calleeName = node.Target;
+        var methods = type.Methods;
+
+        if (!methods.Any(_ => _.Name.ToString() == calleeName.ToString()))
+        {
+            type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(moduleName.Value)).FirstOrDefault();
+
+            if (type == null)
+            {
+                context.AddError(node, $"Cannot find function '{calleeName}'");
+            }
+        }
+
+        if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
+        {
+            if (type.IsStatic && !callee.IsStatic)
+            {
+                context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
+                return block;
+            }
+
+            //ToDo: add overload AppendCall with known callee
+            AppendCall(context, block, node, type.Methods, scope, moduleName.Value);
+        }
+        else
+        {
+            var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
+
+            context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'. Did you mean '{suggestion}'?");
+        }
+
+        return block;
     }
 
     private static void ConvertMethodBodies(CompilerContext context)

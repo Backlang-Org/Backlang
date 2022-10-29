@@ -83,7 +83,7 @@ public static class MethodBodyCompiler
             else if (instruction.Prototype is LoadPrototype)
             {
                 var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
-                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
+                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
@@ -117,11 +117,16 @@ public static class MethodBodyCompiler
             }
         }
 
+        EmitBlockFlow(block, ilProcessor, clrMethod, fixups);
+    }
+
+    private static void EmitBlockFlow(BasicBlock block, ILProcessor ilProcessor, MethodDefinition clrMethod, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
+    {
         if (block.Flow is ReturnFlow rf)
         {
             if (rf.HasReturnValue)
             {
-                EmitConstant(assemblyDefinition, ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
+                EmitConstant(ilProcessor, (ConstantPrototype)rf.ReturnValue.Prototype);
             }
 
             ilProcessor.Emit(OpCodes.Ret);
@@ -280,7 +285,7 @@ public static class MethodBodyCompiler
             );
     }
 
-    private static void EmitConstant(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, ConstantPrototype consProto)
+    private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
     {
         dynamic v = consProto.Value;
 
@@ -302,59 +307,64 @@ public static class MethodBodyCompiler
         }
         else if (v is IntegerConstant ic)
         {
-            switch (ic.Spec.Size)
-            {
-                case 1:
-                    ilProcessor.Emit(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
-                    break;
+            EmitIntegerConstant(ilProcessor, v, ic);
+        }
+    }
 
-                case 8:
-                    if (ic.Spec.IsSigned)
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt8());
-                    }
-                    else
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt8());
-                    }
-                    break;
+    private static void EmitIntegerConstant(ILProcessor ilProcessor, dynamic v, IntegerConstant ic)
+    {
+        switch (ic.Spec.Size)
+        {
+            case 1:
+                ilProcessor.Emit(!v.IsZero ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+                break;
 
-                case 16:
-                    if (ic.Spec.IsSigned)
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt16());
-                    }
-                    else
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt16());
-                    }
-                    break;
+            case 8:
+                if (ic.Spec.IsSigned)
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt8());
+                }
+                else
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt8());
+                }
+                break;
 
-                case 32:
-                    if (ic.Spec.IsSigned)
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt32());
-                    }
-                    else
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt32());
-                    }
-                    break;
+            case 16:
+                if (ic.Spec.IsSigned)
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt16());
+                }
+                else
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt16());
+                }
+                break;
 
-                case 64:
-                    if (ic.Spec.IsSigned)
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I8, ic.ToInt64());
-                    }
-                    else
-                    {
-                        ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt64());
-                    }
-                    break;
+            case 32:
+                if (ic.Spec.IsSigned)
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToInt32());
+                }
+                else
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt32());
+                }
+                break;
 
-                default:
-                    break;
-            }
+            case 64:
+                if (ic.Spec.IsSigned)
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I8, ic.ToInt64());
+                }
+                else
+                {
+                    ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt64());
+                }
+                break;
+
+            default:
+                break;
         }
     }
 

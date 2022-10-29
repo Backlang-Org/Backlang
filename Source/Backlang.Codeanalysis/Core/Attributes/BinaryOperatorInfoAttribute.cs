@@ -1,5 +1,4 @@
-﻿using Backlang.Codeanalysis.Core.Attributes;
-using Backlang.Codeanalysis.Parsing.Precedences;
+﻿using Backlang.Codeanalysis.Parsing.Precedences;
 
 namespace Backlang.Codeanalysis.Core.Attributes;
 
@@ -13,5 +12,4 @@ public sealed class BinaryOperatorInfoAttribute : OperatorInfoAttribute
     public BinaryOperatorInfoAttribute(BinaryOpPrecedences precedence) : this((int)precedence)
     {
     }
-
 }
