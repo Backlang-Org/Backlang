@@ -1,5 +1,4 @@
 ﻿using Backlang.Contracts.Scoping.Items;
-using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Globalization;
@@ -8,24 +7,6 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu, CompilerContext context)
-    {
-        for (var i = 0; i < cu.Body.Count; i++)
-        {
-            var node = cu.Body[i];
-
-            if (i > 0 && !cu.Body[i - 1].Calls(CodeSymbols.Import) && node.Calls(CodeSymbols.Import))
-            {
-                context.AddError(node, "Imports are only allowed at the top of the file");
-            }
-
-            if (node.Calls(CodeSymbols.Import))
-            {
-                yield return node;
-            }
-        }
-    }
-
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
