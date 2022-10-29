@@ -49,18 +49,19 @@ public class DotNetAssembly : ITargetAssembly
         {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                type.Name.ToString(), TypeAttributes.Class);
+
             _assemblyDefinition.MainModule.Types.Add(clrType);
 
             typeMap.AddOrUpdate(type, (_) => clrType, (_, __) => clrType);
         }
 
-        Parallel.ForEachAsync(typeMap.AsParallel(), (KeyValuePair, ct) => {
-            ConvertCustomAttributes(KeyValuePair.Key, KeyValuePair.Value);
-            ApplyModifiers(KeyValuePair.Key, KeyValuePair.Value);
-            SetBaseType(KeyValuePair.Key, KeyValuePair.Value);
-            ConvertFields(KeyValuePair.Key, KeyValuePair.Value);
-            ConvertProperties(KeyValuePair.Key, KeyValuePair.Value);
-            ConvertMethods(KeyValuePair.Key, KeyValuePair.Value);
+        Parallel.ForEachAsync(typeMap.AsParallel(), (typePair, ct) => {
+            ConvertCustomAttributes(typePair.Key, typePair.Value);
+            ApplyModifiers(typePair.Key, typePair.Value);
+            SetBaseType(typePair.Key, typePair.Value);
+            ConvertFields(typePair.Key, typePair.Value);
+            ConvertProperties(typePair.Key, typePair.Value);
+            ConvertMethods(typePair.Key, typePair.Value);
 
             return ValueTask.CompletedTask;
         }).Wait();
@@ -329,14 +330,14 @@ public class DotNetAssembly : ITargetAssembly
             var variables =
                                 MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
-            /*  bodyCompilation.ClrMethod.DebugInformation.Scope =
-                  new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
-                      bodyCompilation.ClrMethod.Body.Instructions.Last());
+            bodyCompilation.ClrMethod.DebugInformation.Scope =
+                new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
+                    bodyCompilation.ClrMethod.Body.Instructions.Last());
 
-              foreach (var variable in variables)
-              {
-                  bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
-              }*/
+            foreach (var variable in variables)
+            {
+                bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
+            }
         });
     }
 
