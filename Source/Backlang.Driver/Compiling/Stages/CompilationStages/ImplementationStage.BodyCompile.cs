@@ -29,6 +29,7 @@ public partial class ImplementationStage
         new DefaultExpressionImplementor(),
         new TypeOfExpressionImplementor(),
         new AddressExpressionImplementor(),
+        new CtorExpressionImplementor(),
         new UnaryExpressionImplementor(),
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
@@ -157,6 +158,22 @@ public partial class ImplementationStage
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
         LNode node, IMethod method, Scope scope, QualifiedName? modulename)
     {
+        var callTags = AppendCallArguments(context, block, node, scope, modulename);
+
+        if (method == null) return null;
+
+        if (!method.IsStatic)
+        {
+            callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
+        }
+
+        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
+
+        return block.AppendInstruction(call);
+    }
+
+    public static List<ValueTag> AppendCallArguments(CompilerContext context, BasicBlockBuilder block, LNode node, Scope scope, QualifiedName? modulename)
+    {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
 
@@ -200,16 +217,7 @@ public partial class ImplementationStage
             }
         }
 
-        if (method == null) return null;
-
-        if (!method.IsStatic)
-        {
-            callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
-        }
-
-        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
-
-        return block.AppendInstruction(call);
+        return callTags;
     }
 
     private static void ConvertMethodBodies(CompilerContext context)
