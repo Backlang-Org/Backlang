@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Core;
+﻿using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
@@ -121,6 +121,12 @@ public partial class ImplementationStage
             }
         }
 
+        //automatic dtor call
+        foreach (var v in block.Parameters)
+        {
+            AppendDtor(context, block, scope, modulename, v.Tag.Name);
+        }
+
         return block;
     }
 
@@ -153,6 +159,18 @@ public partial class ImplementationStage
         var method = GetMatchingMethod(context, argTypes, methods, methodName, shouldAppendError);
 
         return AppendCall(context, block, node, method, scope, modulename.Value);
+    }
+
+    public static NamedInstructionBuilder AppendDtor(CompilerContext context, BasicBlockBuilder block, Scope scope, QualifiedName? modulename, string varname)
+    {
+        if (scope.TryGet<VariableScopeItem>(varname, out var scopeItem))
+        {
+            block.AppendInstruction(Instruction.CreateLoadLocal(scopeItem.Parameter));
+
+            return AppendCall(context, block, LNode.Missing, scopeItem.Type.Methods, scope, modulename, false, "Finalize");
+        }
+
+        return null;
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
