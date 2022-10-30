@@ -176,7 +176,7 @@ public static class TypeDeducer
     {
         if (node.Calls(CodeSymbols.Add) || node.Calls(CodeSymbols.Mul)
                 || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) || node.Calls(CodeSymbols.AndBits)
-                || node.Calls(CodeSymbols.OrBits) || node.Calls(CodeSymbols.Xor) || node.Calls(CodeSymbols.Mod))
+                || node.Calls(CodeSymbols.OrBits) || node.Calls((Symbol)"'^") || node.Calls(CodeSymbols.Mod))
         {
             return DeduceBinaryHelper(node, scope, context, moduleName);
         }
