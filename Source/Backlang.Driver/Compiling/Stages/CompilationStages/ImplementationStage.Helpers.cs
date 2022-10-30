@@ -159,6 +159,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         {
             context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
         }
+
         return null;
     }
 }
