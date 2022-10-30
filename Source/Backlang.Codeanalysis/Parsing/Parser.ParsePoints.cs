@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
@@ -107,7 +108,7 @@ public sealed partial class Parser
 
         var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
 
-        Messages.Add(Message.Error($"Unexpected '{Iterator.Current.Text}'", range));
+        AddError(new(ErrorID.UnterminatedCharLiteral, Iterator.Current.Text), range);
 
         Iterator.NextToken();
 

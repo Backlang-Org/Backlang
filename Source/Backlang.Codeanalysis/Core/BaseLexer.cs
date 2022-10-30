@@ -61,7 +61,7 @@ public abstract class BaseLexer
         _column++;
 
         var range = SourceRange.New(_document, new IndexRange(_position, 1));
-        Messages.Add(Message.Error($"Unknown Charakter '{Current()}'", range));
+        Messages.Add(Message.Error(new LocalizableString(ErrorID.UnknownCharacter, Current().ToString()), range));
         Advance();
     }
 }

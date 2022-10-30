@@ -98,9 +98,6 @@ public enum TokenType
     [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
     EqualsToken,
 
-    [Lexeme("#")]
-    Hash,
-
     [Lexeme("<=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThanEqual,

@@ -28,7 +28,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
         {
             var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-            parser.Messages.Add(Message.Error($"Expected Function, Property or Field-declaration for Type, but got {iterator.Current}", range));
+            parser.AddError(new(Core.ErrorID.UnexpecedTypeMember, iterator.Current.Text), range);
             iterator.NextToken();
         }
 

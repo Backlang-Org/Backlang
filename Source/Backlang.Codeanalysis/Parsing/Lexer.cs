@@ -165,7 +165,7 @@ public sealed class Lexer : BaseLexer
         if (Current() == '\n' || Current() == '\r')
         {
             var range = new SourceRange(_document, _column, 1);
-            Messages.Add(Message.Error($"Unterminated CharLiteral", range));
+            Messages.Add(Message.Error(ErrorID.UnterminatedLiteral, range));
 
             return Token.Invalid;
         }
@@ -217,7 +217,7 @@ public sealed class Lexer : BaseLexer
             if (Current() == '\n' || Current() == '\r')
             {
                 var range = new SourceRange(_document, _column, 1);
-                Messages.Add(Message.Error($"Unterminated String", range));
+                Messages.Add(Message.Error(ErrorID.UnterminatedLiteral, range));
             }
 
             Advance();
@@ -329,7 +329,8 @@ public sealed class Lexer : BaseLexer
                 else
                 {
                     var range = new SourceRange(_document, _column, 1);
-                    Messages.Add(Message.Error("Multiline comment is not closed.", range));
+                    Messages.Add(Message.Error(ErrorID.NotClosedMultilineComment, range));
+
                     return;
                 }
 

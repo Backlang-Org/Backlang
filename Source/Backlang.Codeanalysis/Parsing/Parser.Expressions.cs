@@ -22,12 +22,12 @@ public sealed partial class Parser
         {"d", Symbols.Float64},
     };
 
-    public void AddError(string message, SourceRange range)
+    public void AddError(LocalizableString message, SourceRange range)
     {
         Messages.Add(Message.Error(message, range));
     }
 
-    public void AddError(string message)
+    public void AddError(LocalizableString message)
     {
         Messages.Add(Message.Error(message, new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length)));
     }
@@ -63,7 +63,7 @@ public sealed partial class Parser
         return SyntaxTree.Factory.Call(CodeSymbols.Array, elements).WithRange(startToken, Iterator.Prev);
     }
 
-    private LNode Invalid(string message)
+    private LNode Invalid(LocalizableString message)
     {
         AddError(message);
 
@@ -83,7 +83,7 @@ public sealed partial class Parser
         }
         else
         {
-            return Invalid($"Unexpected Expression '{Iterator.Current.Text}'");
+            return Invalid(ErrorID.UnknownExpression);
         }
     }
 
@@ -169,7 +169,7 @@ public sealed partial class Parser
             }
             else
             {
-                AddError($"Unknown Literal {Iterator.Current.Text}");
+                AddError(new(ErrorID.UnknownLiteral, Iterator.Current.Text));
 
                 result = LNode.Missing;
             }

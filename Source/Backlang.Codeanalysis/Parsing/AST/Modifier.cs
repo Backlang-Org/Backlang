@@ -1,4 +1,5 @@
-﻿using Loyc;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
@@ -27,7 +28,7 @@ public sealed class Modifier
             var modifier = ParseSingle(parser.Iterator, parser);
             if (modifiers.Contains(modifier))
             {
-                parser.AddError($"Modifier '{modifier.Name.Name}' is already applied");
+                parser.AddError(new(ErrorID.DuplicateModifier, modifier.Name.Name), modifier.Range);
 
                 continue;
             }

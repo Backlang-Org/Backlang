@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST;
 
@@ -48,7 +49,7 @@ public sealed class TypeLiteral
         }
         else
         {
-            parser.AddError("Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got " + iterator.Current.Type);
+            parser.AddError(new(ErrorID.UnexpecedType, TokenIterator.GetTokenRepresentation(iterator.Current.Type))); //ToDo: Add Range
 
             typeNode = LNode.Missing;
             iterator.NextToken();

@@ -72,7 +72,7 @@ public sealed class TokenIterator
             return NextToken();
 
         Messages.Add(
-            Message.Error($"Expected '{GetTokenRepresentation(kind)}' but got '{GetTokenRepresentation(Current.Type)}'",
+            Message.Error(new(Core.ErrorID.Expected, GetTokenRepresentation(kind), GetTokenRepresentation(Current.Type)),
            new SourceRange(_document, Current.Start, Current.Text.Length)));
 
         NextToken();

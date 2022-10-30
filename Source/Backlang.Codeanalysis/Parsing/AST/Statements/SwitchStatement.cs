@@ -44,7 +44,7 @@ public sealed class SwitchStatement : IParsePoint
             {
                 var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-                parser.Messages.Add(Message.Error("Switch Statement can only have case, if or default, but got " + iterator.Current.Text, range));
+                parser.AddError(new(Core.ErrorID.UnknownSwitchOption), range);
                 return LNode.Missing;
             }
         }
@@ -122,7 +122,8 @@ public sealed class SwitchStatement : IParsePoint
             {
                 var range = new SourceRange(parser.Document, parser.Iterator.Current.Start, parser.Iterator.Current.Text.Length);
 
-                parser.Messages.Add(Message.Error($"Expected {TokenType.Identifier} but got {parser.Iterator.Current.Type}", range));
+                parser.AddError(new(Core.ErrorID.ExpectedIdentifier, parser.Iterator.Current.Text), range);
+
                 return LNode.Missing;
             }
             var name = LNode.Id(parser.Iterator.Current.Text);

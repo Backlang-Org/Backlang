@@ -1,4 +1,6 @@
-﻿namespace Backlang.Contracts;
+﻿using Backlang.Codeanalysis.Core;
+
+namespace Backlang.Contracts;
 
 #nullable disable
 
@@ -59,7 +61,7 @@ public sealed class CompilerContext
     [Option('v', longName: "version", HelpText = "Set the assembly version")]
     public string Version { get; set; }
 
-    public void AddError(LNode node, string msg)
+    public void AddError(LNode node, LocalizableString msg)
     {
         if (node.Range.Source is not SourceFile<StreamCharSource>) return;
 

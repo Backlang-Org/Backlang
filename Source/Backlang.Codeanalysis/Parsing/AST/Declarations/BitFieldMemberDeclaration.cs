@@ -25,7 +25,7 @@ public sealed class BitFieldMemberDeclaration : IParsePoint
 
         if (!value[0].HasValue)
         {
-            iterator.Messages.Add(Message.Error("Bitfield member declaration only allows literals", value.Range));
+            parser.AddError(Core.ErrorID.BitfieldNotLiteral, value.Range);
         }
 
         return SyntaxTree.Factory.Tuple(SyntaxTree.Factory.Id(nameToken.Text).WithRange(nameToken), value);
