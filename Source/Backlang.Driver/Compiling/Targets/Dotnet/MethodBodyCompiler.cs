@@ -393,7 +393,8 @@ public static class MethodBodyCompiler
     {
         var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
 
-        foreach (var m in parentType.Methods.Where(_ => _.Name == method.Name.ToString()))
+        foreach (var m in parentType.Methods
+            .Where(_ => _.Name == method.Name.ToString()))
         {
             var parameters = m.Parameters;
 
