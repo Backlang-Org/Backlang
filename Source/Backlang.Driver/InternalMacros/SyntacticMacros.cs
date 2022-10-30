@@ -239,24 +239,30 @@ public static class SyntacticMacros
             string formatString = valueNode.Value.ToString();
             if (formatString.Contains('$'))
             {
-                var interpolateOptions = GetInterpoltedStringOptions(formatString);
                 var formatArgs = new List<LNode>();
 
                 int counter = 0;
-                foreach (var item in interpolateOptions)
-                {
-                    if (formatString[item.start - 1] == '\\')
+
+                formatString = Regex.Replace(formatString, "\\$(?<name>\\w[0-9a-zA-Z_]*)(:(\\{(?<options>[0-9a-zA-Z_]*)\\}))?", _ => {
+                    var sb = new StringBuilder();
+                    sb.Append('{').Append(counter++);
+
+                    var options = _.Groups["options"].Value;
+
+                    if (!string.IsNullOrEmpty(options))
                     {
-                        continue;
+                        sb.Append(':').Append(options);
                     }
 
-                    formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
+                    sb.Append('}');
 
                     var varRange = new SourceRange(valueNode.Range.Source,
-                        item.start + node.Range.StartIndex + 1, item.length);
+                        _.Index + node.Range.StartIndex + 1, _.Length);
 
-                    formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(varRange));
-                }
+                    formatArgs.Add(SyntaxTree.Factory.Id(_.Groups["name"].Value).WithRange(varRange));
+
+                    return sb.ToString();
+                });
 
                 formatArgs.Insert(0, SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
 
@@ -265,20 +271,6 @@ public static class SyntacticMacros
         }
 
         return node;
-    }
-
-    private static List<(string name, int start, int length)> GetInterpoltedStringOptions(string value)
-    {
-        var result = new List<(string name, int start, int length)>();
-
-        var match = Regex.Matches(value, "\\$[a-zA-Z_][0-9a-zA-Z_]*");
-
-        foreach (Match m in match)
-        {
-            result.Add((m.Value, m.Index, m.Length));
-        }
-
-        return result;
     }
 
     private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)
