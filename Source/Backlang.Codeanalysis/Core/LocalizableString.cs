@@ -15,6 +15,7 @@ public readonly struct LocalizableString
     {
         ErrorID = errorID;
         Arguments = arguments;
+        FallbackValue = null;
     }
 
     public LocalizableString(ErrorID errorID) : this()
