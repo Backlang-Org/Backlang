@@ -165,7 +165,7 @@ public sealed class Lexer : BaseLexer
         if (Current() == '\n' || Current() == '\r')
         {
             var range = new SourceRange(_document, _column, 1);
-            Messages.Add(Message.Error(ErrorID.UnterminatedLiteral, range));
+            Messages.Add(Message.Error(ErrorID.UnterminatedCharLiteral, range));
 
             return Token.Invalid;
         }
@@ -217,7 +217,7 @@ public sealed class Lexer : BaseLexer
             if (Current() == '\n' || Current() == '\r')
             {
                 var range = new SourceRange(_document, _column, 1);
-                Messages.Add(Message.Error(ErrorID.UnterminatedLiteral, range));
+                Messages.Add(Message.Error(ErrorID.UnterminatedStringLiteral, range));
             }
 
             Advance();

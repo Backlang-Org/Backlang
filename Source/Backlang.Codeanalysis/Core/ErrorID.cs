@@ -16,7 +16,7 @@ public enum ErrorID : int
     NoCatchBlock = 12,
     EmptyFile = 13,
     ExpectedIdentifier = 14,
-    UnterminatedLiteral = 15,
+    UnterminatedStringLiteral = 15,
     NotClosedMultilineComment = 16,
     Expected = 17,
     DuplicateModifier = 18

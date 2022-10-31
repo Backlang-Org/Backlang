@@ -115,7 +115,7 @@ namespace Backlang.Codeanalysis.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated Char or String Literal ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated String-Literal ähnelt.
         /// </summary>
         internal static string BL15 {
             get {
@@ -160,7 +160,7 @@ namespace Backlang.Codeanalysis.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unknown Charackter &apos;{0}&apos; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unknown Character &apos;{0}&apos; ähnelt.
         /// </summary>
         internal static string BL3 {
             get {
@@ -169,7 +169,7 @@ namespace Backlang.Codeanalysis.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated CharLiteral ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated Char-Literal ähnelt.
         /// </summary>
         internal static string BL4 {
             get {
