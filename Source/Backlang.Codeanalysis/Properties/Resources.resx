@@ -147,6 +147,9 @@
   <data name="BL19" xml:space="preserve">
     <value>Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got {0}</value>
   </data>
+  <data name="BL20" xml:space="preserve">
+    <value>Invalid Modifier Combination</value>
+  </data>
   <data name="BL3" xml:space="preserve">
     <value>Unknown Charackter '{0}'</value>
   </data>

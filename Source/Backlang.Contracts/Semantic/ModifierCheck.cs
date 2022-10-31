@@ -24,7 +24,7 @@ internal class ModifierCheck : ISemanticCheck
 
         if (condition)
         {
-            context.AddError(node, "Invalid Modifier Combination");
+            context.AddError(node, ErrorID.InvalidModifierCombination);
         }
     }
 

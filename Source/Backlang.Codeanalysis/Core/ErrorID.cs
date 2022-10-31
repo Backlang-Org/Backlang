@@ -18,5 +18,6 @@ public enum ErrorID : int
     NotClosedMultilineComment = 16,
     Expected = 17,
     DuplicateModifier = 18,
-    UnexpecedType = 19
+    UnexpecedType = 19,
+    InvalidModifierCombination = 20
 }

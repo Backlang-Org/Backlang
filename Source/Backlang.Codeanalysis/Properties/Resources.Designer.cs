@@ -151,6 +151,15 @@ namespace Backlang.Codeanalysis.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invalid Modifier Combination ähnelt.
+        /// </summary>
+        internal static string BL20 {
+            get {
+                return ResourceManager.GetString("BL20", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unknown Charackter &apos;{0}&apos; ähnelt.
         /// </summary>
         internal static string BL3 {
