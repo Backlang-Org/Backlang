@@ -232,7 +232,6 @@ public partial class ImplementationStage
                 return block;
             }
 
-            //ToDo: add overload AppendCall with known callee
             AppendCall(context, block, node, type.Methods, scope, moduleName.Value);
         }
         else
