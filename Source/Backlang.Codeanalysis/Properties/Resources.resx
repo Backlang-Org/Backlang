@@ -117,58 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BL1" xml:space="preserve">
+  <data name="BL(0001)" xml:space="preserve">
     <value>Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got {0}</value>
   </data>
-  <data name="BL10" xml:space="preserve">
-    <value>Expected Type but got {0}</value>
-  </data>
-  <data name="BL11" xml:space="preserve">
-    <value>Unexpected Switch Option</value>
-  </data>
-  <data name="BL12" xml:space="preserve">
-    <value>Expected at least one catch block</value>
-  </data>
-  <data name="BL13" xml:space="preserve">
-    <value>SourceFile is empty</value>
-  </data>
-  <data name="BL14" xml:space="preserve">
-    <value>Expected Identifier but got {0}</value>
-  </data>
-  <data name="BL15" xml:space="preserve">
-    <value>Unterminated String-Literal</value>
-  </data>
-  <data name="BL16" xml:space="preserve">
-    <value>Multiline comment is not closed</value>
-  </data>
-  <data name="BL17" xml:space="preserve">
-    <value>Expected '{0}' but got '{1}'</value>
-  </data>
-  <data name="BL18" xml:space="preserve">
-    <value>Duplicate Modifier '{0}'</value>
-  </data>
-  <data name="BL2" xml:space="preserve">
+  <data name="BL(0002)" xml:space="preserve">
     <value>Invalid Modifier Combination</value>
   </data>
-  <data name="BL3" xml:space="preserve">
+  <data name="BL(0003)" xml:space="preserve">
     <value>Unknown Character '{0}'</value>
   </data>
-  <data name="BL4" xml:space="preserve">
+  <data name="BL(0004)" xml:space="preserve">
     <value>Unterminated Char-Literal</value>
   </data>
-  <data name="BL5" xml:space="preserve">
+  <data name="BL(0005)" xml:space="preserve">
     <value>Unexpected Expression {0}</value>
   </data>
-  <data name="BL6" xml:space="preserve">
+  <data name="BL(0006)" xml:space="preserve">
     <value>Unknown Literal {0}</value>
   </data>
-  <data name="BL7" xml:space="preserve">
+  <data name="BL(0007)" xml:space="preserve">
     <value>Trailing comma is forbidden</value>
   </data>
-  <data name="BL8" xml:space="preserve">
+  <data name="BL(0008)" xml:space="preserve">
     <value>Bitfield member declaration only allows literals</value>
   </data>
-  <data name="BL9" xml:space="preserve">
+  <data name="BL(0009)" xml:space="preserve">
     <value>Expected Function, Property or Field-declaration for Type, but got {0}</value>
+  </data>
+  <data name="BL(0010)" xml:space="preserve">
+    <value>Expected Type but got {0}</value>
+  </data>
+  <data name="BL(0011)" xml:space="preserve">
+    <value>Unexpected Switch Option</value>
+  </data>
+  <data name="BL(0012)" xml:space="preserve">
+    <value>Expected at least one catch block</value>
+  </data>
+  <data name="BL(0013)" xml:space="preserve">
+    <value>SourceFile is empty</value>
+  </data>
+  <data name="BL(0014)" xml:space="preserve">
+    <value>Expected Identifier but got {0}</value>
+  </data>
+  <data name="BL(0015)" xml:space="preserve">
+    <value>Unterminated String-Literal</value>
+  </data>
+  <data name="BL(0016)" xml:space="preserve">
+    <value>Multiline comment is not closed</value>
+  </data>
+  <data name="BL(0017)" xml:space="preserve">
+    <value>Expected '{0}' but got '{1}'</value>
+  </data>
+  <data name="BL(0018)" xml:space="preserve">
+    <value>Duplicate Modifier '{0}'</value>
   </data>
 </root>

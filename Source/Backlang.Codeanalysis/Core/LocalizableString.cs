@@ -36,7 +36,7 @@ public readonly struct LocalizableString
             return lstr.FallbackValue;
         }
 
-        var resourceID = "BL" + (int)lstr.ErrorID;
+        var resourceID = $"BL({(int)lstr.ErrorID:D4})";
 
         return string.Format(resourceID + ": " + resourceManager.GetString(resourceID), args: lstr.Arguments);
     }

@@ -63,162 +63,162 @@ namespace Backlang.Codeanalysis.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got {0} ähnelt.
         /// </summary>
-        internal static string BL1 {
+        internal static string BL_0001_ {
             get {
-                return ResourceManager.GetString("BL1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Expected Type but got {0} ähnelt.
-        /// </summary>
-        internal static string BL10 {
-            get {
-                return ResourceManager.GetString("BL10", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unexpected Switch Option ähnelt.
-        /// </summary>
-        internal static string BL11 {
-            get {
-                return ResourceManager.GetString("BL11", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Expected at least one catch block ähnelt.
-        /// </summary>
-        internal static string BL12 {
-            get {
-                return ResourceManager.GetString("BL12", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die SourceFile is empty ähnelt.
-        /// </summary>
-        internal static string BL13 {
-            get {
-                return ResourceManager.GetString("BL13", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Expected Identifier but got {0} ähnelt.
-        /// </summary>
-        internal static string BL14 {
-            get {
-                return ResourceManager.GetString("BL14", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated String-Literal ähnelt.
-        /// </summary>
-        internal static string BL15 {
-            get {
-                return ResourceManager.GetString("BL15", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Multiline comment is not closed ähnelt.
-        /// </summary>
-        internal static string BL16 {
-            get {
-                return ResourceManager.GetString("BL16", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Expected &apos;{0}&apos; but got &apos;{1}&apos; ähnelt.
-        /// </summary>
-        internal static string BL17 {
-            get {
-                return ResourceManager.GetString("BL17", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Duplicate Modifier &apos;{0}&apos; ähnelt.
-        /// </summary>
-        internal static string BL18 {
-            get {
-                return ResourceManager.GetString("BL18", resourceCulture);
+                return ResourceManager.GetString("BL(0001)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Invalid Modifier Combination ähnelt.
         /// </summary>
-        internal static string BL2 {
+        internal static string BL_0002_ {
             get {
-                return ResourceManager.GetString("BL2", resourceCulture);
+                return ResourceManager.GetString("BL(0002)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unknown Character &apos;{0}&apos; ähnelt.
         /// </summary>
-        internal static string BL3 {
+        internal static string BL_0003_ {
             get {
-                return ResourceManager.GetString("BL3", resourceCulture);
+                return ResourceManager.GetString("BL(0003)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated Char-Literal ähnelt.
         /// </summary>
-        internal static string BL4 {
+        internal static string BL_0004_ {
             get {
-                return ResourceManager.GetString("BL4", resourceCulture);
+                return ResourceManager.GetString("BL(0004)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unexpected Expression {0} ähnelt.
         /// </summary>
-        internal static string BL5 {
+        internal static string BL_0005_ {
             get {
-                return ResourceManager.GetString("BL5", resourceCulture);
+                return ResourceManager.GetString("BL(0005)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unknown Literal {0} ähnelt.
         /// </summary>
-        internal static string BL6 {
+        internal static string BL_0006_ {
             get {
-                return ResourceManager.GetString("BL6", resourceCulture);
+                return ResourceManager.GetString("BL(0006)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Trailing comma is forbidden ähnelt.
         /// </summary>
-        internal static string BL7 {
+        internal static string BL_0007_ {
             get {
-                return ResourceManager.GetString("BL7", resourceCulture);
+                return ResourceManager.GetString("BL(0007)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitfield member declaration only allows literals ähnelt.
         /// </summary>
-        internal static string BL8 {
+        internal static string BL_0008_ {
             get {
-                return ResourceManager.GetString("BL8", resourceCulture);
+                return ResourceManager.GetString("BL(0008)", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Expected Function, Property or Field-declaration for Type, but got {0} ähnelt.
         /// </summary>
-        internal static string BL9 {
+        internal static string BL_0009_ {
             get {
-                return ResourceManager.GetString("BL9", resourceCulture);
+                return ResourceManager.GetString("BL(0009)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Expected Type but got {0} ähnelt.
+        /// </summary>
+        internal static string BL_0010_ {
+            get {
+                return ResourceManager.GetString("BL(0010)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unexpected Switch Option ähnelt.
+        /// </summary>
+        internal static string BL_0011_ {
+            get {
+                return ResourceManager.GetString("BL(0011)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Expected at least one catch block ähnelt.
+        /// </summary>
+        internal static string BL_0012_ {
+            get {
+                return ResourceManager.GetString("BL(0012)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SourceFile is empty ähnelt.
+        /// </summary>
+        internal static string BL_0013_ {
+            get {
+                return ResourceManager.GetString("BL(0013)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Expected Identifier but got {0} ähnelt.
+        /// </summary>
+        internal static string BL_0014_ {
+            get {
+                return ResourceManager.GetString("BL(0014)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterminated String-Literal ähnelt.
+        /// </summary>
+        internal static string BL_0015_ {
+            get {
+                return ResourceManager.GetString("BL(0015)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Multiline comment is not closed ähnelt.
+        /// </summary>
+        internal static string BL_0016_ {
+            get {
+                return ResourceManager.GetString("BL(0016)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Expected &apos;{0}&apos; but got &apos;{1}&apos; ähnelt.
+        /// </summary>
+        internal static string BL_0017_ {
+            get {
+                return ResourceManager.GetString("BL(0017)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Duplicate Modifier &apos;{0}&apos; ähnelt.
+        /// </summary>
+        internal static string BL_0018_ {
+            get {
+                return ResourceManager.GetString("BL(0018)", resourceCulture);
             }
         }
     }
