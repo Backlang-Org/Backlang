@@ -9,3 +9,7 @@ public struct Point
 
 func main() {
 }
+
+struct Hello {
+	let k: i32;	
+}
