@@ -1,4 +1,5 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
@@ -24,7 +25,7 @@ public class VariableImplementor : IStatementImplementor
             {
                 if (node.Args[0] is (_, (_, var tp))) //ToDo: Implement Helper function To Get Typename
                 {
-                    context.AddError(node, $"{tp.Name} cannot be resolved");
+                    context.AddError(node, new(ErrorID.CannotBeResolved, tp.Name.ToString()));
                 }
             }
         }
@@ -36,12 +37,12 @@ public class VariableImplementor : IStatementImplementor
                 {
                     if (ut != deducedValueType)
                     {
-                        context.AddError(node, $"Unit Type mismatch {elementType} {deducedValueType}");
+                        context.AddError(node, new(ErrorID.UnitTypeMismatch, elementType.ToString(), deducedValueType.ToString()));
                     }
                     return block;
                 }
 
-                context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
+                context.AddError(node, new(ErrorID.TypeMismatch, elementType.ToString(), deducedValueType.ToString()));
             }
         }
 
@@ -59,7 +60,7 @@ public class VariableImplementor : IStatementImplementor
         }
         else
         {
-            context.AddError(decl.Args[0], $"{varname} already declared");
+            context.AddError(decl.Args[0], new(ErrorID.AlreadyDeclared, varname));
         }
 
         if (deducedValueType == null) return block;

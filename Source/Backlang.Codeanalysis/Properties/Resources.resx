@@ -171,4 +171,37 @@
   <data name="BL(0018)" xml:space="preserve">
     <value>Duplicate Modifier '{0}'</value>
   </data>
+  <data name="BL(0019)" xml:space="preserve">
+    <value>Namespace '{0}' already imported</value>
+  </data>
+  <data name="BL(0020)" xml:space="preserve">
+    <value>Got OutputType 'Exe' but couldn't find entry point.</value>
+  </data>
+  <data name="BL(0021)" xml:space="preserve">
+    <value>{0} cannot be found. Did you mean '{1}'?</value>
+  </data>
+  <data name="BL(0022)" xml:space="preserve">
+    <value>Cannot implement '{0}', type not found</value>
+  </data>
+  <data name="BL(0023)" xml:space="preserve">
+    <value>Cannot implement unit type '{0}'</value>
+  </data>
+  <data name="BL(0024)" xml:space="preserve">
+    <value>'{0}' already declared</value>
+  </data>
+  <data name="BL(0025)" xml:space="preserve">
+    <value>Type mismatch {0} {1}</value>
+  </data>
+  <data name="BL(0026)" xml:space="preserve">
+    <value>Unit Type mismatch {0} {1}</value>
+  </data>
+  <data name="BL(0027)" xml:space="preserve">
+    <value>{0} cannot be resolved</value>
+  </data>
+  <data name="BL(0028)" xml:space="preserve">
+    <value>Cannot find function '{0}'</value>
+  </data>
+  <data name="BL(0029)" xml:space="preserve">
+    <value>Target '{0}' cannot be found</value>
+  </data>
 </root>

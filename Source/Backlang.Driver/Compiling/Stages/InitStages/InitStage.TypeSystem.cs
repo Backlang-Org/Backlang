@@ -1,4 +1,5 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using System.Collections.Concurrent;
@@ -49,7 +50,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         }
         else
         {
-            context.Messages.Add(Message.Error($"Target '{context.Target}' cannot be found"));
+            context.Messages.Add(Message.Error(new(ErrorID.TargetNotFound, context.Target.ToString())));
             return;
         }
 

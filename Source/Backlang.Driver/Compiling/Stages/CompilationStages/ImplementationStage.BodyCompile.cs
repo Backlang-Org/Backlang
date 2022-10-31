@@ -199,7 +199,7 @@ public partial class ImplementationStage
                 {
                     var suggestion = LevensteinDistance.Suggest(arg.Name.Name, scope.GetAllScopeNames());
 
-                    context.AddError(arg, $"{arg.Name.Name} cannot be found. Did you mean '{suggestion}'?");
+                    context.AddError(arg, new(ErrorID.CannotBeFoundDidYouMean, arg.Name.Name, suggestion));
                 }
             }
         }
@@ -220,7 +220,7 @@ public partial class ImplementationStage
 
             if (type == null)
             {
-                context.AddError(node, $"Cannot find function '{calleeName}'");
+                context.AddError(node, new(ErrorID.CannotFindFunction, calleeName.ToString()));
             }
         }
 
@@ -238,7 +238,7 @@ public partial class ImplementationStage
         {
             var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
 
-            context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'. Did you mean '{suggestion}'?");
+            context.AddError(node, new(ErrorID.CannotBeFoundDidYouMean, calleeName.Name.Name, suggestion));
         }
 
         return block;

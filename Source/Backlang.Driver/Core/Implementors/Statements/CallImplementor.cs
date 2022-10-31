@@ -22,7 +22,7 @@ public class CallImplementor : IStatementImplementor
             }
             else
             {
-                context.AddError(node, $"Cannot find function '{callee.Name.Name}'");
+                context.AddError(node, new(Codeanalysis.Core.ErrorID.CannotFindFunction, callee.Name.Name));
             }
         }
         else

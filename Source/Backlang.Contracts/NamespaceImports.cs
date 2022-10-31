@@ -1,4 +1,5 @@
 using Backlang.Driver;
+using Backlang.Codeanalysis.Core;
 
 namespace Backlang.Contracts;
 
@@ -14,7 +15,7 @@ public class NamespaceImports
 
             if (ImportedNamespaces.Contains(qualifiedNs))
             {
-                context.AddError(importStatement, $"Namespace '{qualifiedNs}' already imported");
+                context.AddError(importStatement, new(ErrorID.NamespaceAlreadyImported, qualifiedNs.ToString()));
                 return;
             }
 

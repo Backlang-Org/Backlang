@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.Scoping.Items;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -65,13 +66,13 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
             if (targetType == null)
             {
-                context.AddError(typenode, $"Cannot implement '{fullname.FullName}', type not found");
+                context.AddError(typenode, new(ErrorID.CannotImplementTypeNotFound, fullname.FullName));
                 return;
             }
 
             if (Utils.IsUnitType(context, targetType))
             {
-                context.AddError(typenode, $"Cannot implement unit type '{fullname.FullName}'");
+                context.AddError(typenode, new(ErrorID.CannotImplementUnitType, fullname.FullName));
             }
 
             typeScope = context.GlobalScope.CreateChildScope();

@@ -1,4 +1,5 @@
-﻿using Backlang.Core.CompilerService;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Core.CompilerService;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -69,7 +70,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         if (entryPoint == null)
         {
-            context.Messages.Add(Message.Error("Got OutputType 'Exe' but couldn't find entry point."));
+            context.Messages.Add(Message.Error(ErrorID.RunnableTypeButNoEntrypoint));
         }
 
         return entryPoint;

@@ -221,5 +221,104 @@ namespace Backlang.Codeanalysis.Properties {
                 return ResourceManager.GetString("BL(0018)", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Namespace &apos;{0}&apos; already imported ähnelt.
+        /// </summary>
+        internal static string BL_0019_ {
+            get {
+                return ResourceManager.GetString("BL(0019)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Got OutputType &apos;Exe&apos; but couldn&apos;t find entry point. ähnelt.
+        /// </summary>
+        internal static string BL_0020_ {
+            get {
+                return ResourceManager.GetString("BL(0020)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} cannot be found. Did you mean &apos;{1}&apos;? ähnelt.
+        /// </summary>
+        internal static string BL_0021_ {
+            get {
+                return ResourceManager.GetString("BL(0021)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cannot implement &apos;{0}&apos;, type not found ähnelt.
+        /// </summary>
+        internal static string BL_0022_ {
+            get {
+                return ResourceManager.GetString("BL(0022)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cannot implement unit type &apos;{0}&apos; ähnelt.
+        /// </summary>
+        internal static string BL_0023_ {
+            get {
+                return ResourceManager.GetString("BL(0023)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die &apos;{0}&apos; already declared ähnelt.
+        /// </summary>
+        internal static string BL_0024_ {
+            get {
+                return ResourceManager.GetString("BL(0024)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Type mismatch {0} {1} ähnelt.
+        /// </summary>
+        internal static string BL_0025_ {
+            get {
+                return ResourceManager.GetString("BL(0025)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unit Type mismatch {0} {1} ähnelt.
+        /// </summary>
+        internal static string BL_0026_ {
+            get {
+                return ResourceManager.GetString("BL(0026)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} cannot be resolved ähnelt.
+        /// </summary>
+        internal static string BL_0027_ {
+            get {
+                return ResourceManager.GetString("BL(0027)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cannot find function &apos;{0}&apos; ähnelt.
+        /// </summary>
+        internal static string BL_0028_ {
+            get {
+                return ResourceManager.GetString("BL(0028)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Target &apos;{0}&apos; cannot be found ähnelt.
+        /// </summary>
+        internal static string BL_0029_ {
+            get {
+                return ResourceManager.GetString("BL(0029)", resourceCulture);
+            }
+        }
     }
 }

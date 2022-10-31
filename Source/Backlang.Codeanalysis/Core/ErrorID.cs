@@ -19,5 +19,16 @@ public enum ErrorID : int
     UnterminatedStringLiteral   = 0015,
     NotClosedMultilineComment   = 0016,
     Expected                    = 0017,
-    DuplicateModifier           = 0018
+    DuplicateModifier           = 0018,
+    NamespaceAlreadyImported    = 0019,
+    RunnableTypeButNoEntrypoint = 0020,
+    CannotBeFoundDidYouMean     = 0021,
+    CannotImplementTypeNotFound = 0022,
+    CannotImplementUnitType     = 0023,
+    AlreadyDeclared             = 0024,
+    TypeMismatch                = 0025,
+    UnitTypeMismatch            = 0026,
+    CannotBeResolved            = 0027,
+    CannotFindFunction          = 0028,
+    TargetNotFound              = 0029,
 }
