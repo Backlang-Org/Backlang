@@ -9,11 +9,6 @@ public class CallExpressionEmitter : IExpressionImplementor
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
-        if (node.Calls(CodeSymbols.New))
-        {
-            //ToDo: append ctor
-        }
-
         if (scope.TryGet<FunctionScopeItem>(node.Name.Name, out var fn))
         {
             return ImplementationStage.AppendCall(context, block, node, fn.Overloads, scope, modulename, methodName: node.Name.Name);

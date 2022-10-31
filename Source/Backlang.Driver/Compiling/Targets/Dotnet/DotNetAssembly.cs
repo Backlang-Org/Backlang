@@ -539,9 +539,6 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(IType dtype)
     {
-        //ToDo: Only for debugging, remove if typecheck is done
-        if (dtype == null) throw new Exception($"Type not found");
-
         var resolvedType = Resolve(dtype.FullName);
         if (resolvedType.HasGenericParameters)
         {
