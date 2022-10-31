@@ -2,6 +2,8 @@
 
 public enum ErrorID : int
 {
+    UnexpecedType = 1,
+    InvalidModifierCombination = 2,
     UnknownCharacter = 3,
     UnterminatedCharLiteral = 4,
     UnknownExpression = 5,
@@ -17,7 +19,5 @@ public enum ErrorID : int
     UnterminatedLiteral = 15,
     NotClosedMultilineComment = 16,
     Expected = 17,
-    DuplicateModifier = 18,
-    UnexpecedType = 19,
-    InvalidModifierCombination = 20
+    DuplicateModifier = 18
 }

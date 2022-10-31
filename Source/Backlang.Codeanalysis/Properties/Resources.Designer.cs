@@ -61,6 +61,15 @@ namespace Backlang.Codeanalysis.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got {0} ähnelt.
+        /// </summary>
+        internal static string BL1 {
+            get {
+                return ResourceManager.GetString("BL1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Expected Type but got {0} ähnelt.
         /// </summary>
         internal static string BL10 {
@@ -142,20 +151,11 @@ namespace Backlang.Codeanalysis.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Expected Identifier, TupleType or Function-Signature as TypeLiteral, but got {0} ähnelt.
-        /// </summary>
-        internal static string BL19 {
-            get {
-                return ResourceManager.GetString("BL19", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Invalid Modifier Combination ähnelt.
         /// </summary>
-        internal static string BL20 {
+        internal static string BL2 {
             get {
-                return ResourceManager.GetString("BL20", resourceCulture);
+                return ResourceManager.GetString("BL2", resourceCulture);
             }
         }
         
