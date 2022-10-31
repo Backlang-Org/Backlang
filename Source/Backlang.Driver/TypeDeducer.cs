@@ -203,13 +203,13 @@ public static class TypeDeducer
         }
         else if (node.Calls(CodeSymbols.ColonColon))
         {
-            return DeduceStatic(node, scope, context, moduleName);
+            return DeduceStaticMethod(node, scope, context, moduleName);
         }
 
         return null;
     }
 
-    private static IType DeduceStatic(LNode node, Scope scope, CompilerContext context, QualifiedName moduleName)
+    private static IType DeduceStaticMethod(LNode node, Scope scope, CompilerContext context, QualifiedName moduleName)
     {
         var type = Deduce(node.Args[0], scope, context, moduleName);
         var fnName = node.Args[1].Name;
