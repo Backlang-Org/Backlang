@@ -1,6 +1,4 @@
-public static func main() -> i32
+func main()
 {
     print("Hello World");
-    
-    return 0;
 }
