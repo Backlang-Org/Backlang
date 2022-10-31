@@ -151,6 +151,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             funcArgs.Add(ResolveTypeWithModule(garg, context, modulename));
         }
 
+        if(func.StartsWith("Func"))
+        {
+            funcArgs.Add(ResolveTypeWithModule(typeNode.Args[0], context, modulename));
+        }
+
         resolvedType = fnType.MakeGenericType(funcArgs);
         return resolvedType;
     }

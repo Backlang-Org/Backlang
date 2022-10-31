@@ -2,10 +2,10 @@ import System;
 
 public struct Point
 {
-    let callback: (i32, bool) -> none;
+    let callback: (i32, bool) -> i32;
     let tuple: (i32, char);
-    //let a: i32*; // this make a crashy crashy crash
+    let a: i32*;
 }
 
-Main {
+func main() {
 }

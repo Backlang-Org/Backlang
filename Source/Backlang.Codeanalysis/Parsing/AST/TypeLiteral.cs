@@ -40,7 +40,7 @@ public sealed class TypeLiteral
         }
         else if (iterator.IsMatch(TokenType.None))
         {
-            typeNode = SyntaxTree.Type("none", LNode.List()).WithRange(typeToken); // Missing is the normal type for none
+            typeNode = SyntaxTree.Type("none", LNode.List()).WithRange(typeToken);
             iterator.NextToken();
         }
         else if (iterator.IsMatch(TokenType.OpenParen))

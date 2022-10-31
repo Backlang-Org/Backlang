@@ -64,7 +64,7 @@ public static class ConversionUtils
 
         if (lNode.ArgCount == 3 && lNode is ("#fn", var retType, _, var args))
         {
-            string typename = retType == LNode.Missing ? "Action`" + (args.ArgCount) : "Func`" + (args.ArgCount + 1);
+            string typename = retType.IsNoneType() ? "Action`" + (args.ArgCount) : "Func`" + (args.ArgCount + 1);
 
             return new SimpleName(typename).Qualify("System");
         }

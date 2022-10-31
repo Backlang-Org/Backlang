@@ -1,4 +1,5 @@
 ﻿using Loyc.Syntax;
+using Backlang.Codeanalysis.Parsing.AST;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -22,5 +23,10 @@ public static class LNodeExtensions
     public static LNode FromToken(this LNodeFactory factory, Token token)
     {
         return factory.Id(token.Text).WithRange(token);
+    }
+
+    public static bool IsNoneType(this LNode node)
+    {
+        return node.Name == Symbols.TypeLiteral && node.Args[0].Args[0].Name.Name == "none" && node.Args[0].Args[0].IsId;
     }
 }
