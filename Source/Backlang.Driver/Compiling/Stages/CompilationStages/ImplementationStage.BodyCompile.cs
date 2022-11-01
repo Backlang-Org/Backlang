@@ -66,6 +66,7 @@ public partial class ImplementationStage
                 if (node.ArgCount == 0) continue;
 
                 block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
+
                 continue;
             }
 

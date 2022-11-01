@@ -329,7 +329,8 @@ public class DotNetAssembly : ITargetAssembly
         foreach (var bodyCompilation in _methodBodyCompilations)
         {
             var variables =
-                                    MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
+                                    MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod,
+                                    bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
             bodyCompilation.ClrMethod.DebugInformation.Scope =
                 new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
