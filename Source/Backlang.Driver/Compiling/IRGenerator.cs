@@ -8,6 +8,19 @@ namespace Backlang.Driver.Compiling;
 
 public static class IRGenerator
 {
+    public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
+    {
+        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
+        toStringMethod.IsPublic = true;
+        toStringMethod.IsOverride = true;
+
+        var graph = Utils.CreateGraphBuilder();
+
+        var block = graph.EntryPoint;
+
+        var hsType = Utils.ResolveType(context.Binder, typeof(HashCode));
+    }
+
     public static void GenerateToString(CompilerContext context, DescribedType type)
     {
         var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
