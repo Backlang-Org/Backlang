@@ -54,7 +54,6 @@ public sealed partial class Parser
         AddStatementParsePoint<TryStatement>(TokenType.Try);
         AddStatementParsePoint<ForStatement>(TokenType.For);
         AddStatementParsePoint<MacroBlockStatement>(TokenType.Identifier);
-        AddStatementParsePoint<BlockStatement>(TokenType.OpenCurly);
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)

@@ -12,8 +12,7 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod,
-        AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
+    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
@@ -26,10 +25,8 @@ public static class MethodBodyCompiler
 
         foreach (var block in m.Body.Implementation.BasicBlocks)
         {
-            var variableCounter = 0;
-
             CompileBlock(block, assemblyDefinition, ilProcessor, clrMethod, parentType,
-                variables, fixups, labels, variableCounter);
+                variables, fixups, labels);
         }
 
         FixJumps(ilProcessor, labels, fixups);
@@ -41,12 +38,12 @@ public static class MethodBodyCompiler
 
     private static void FixJumps(ILProcessor ilProcessor, Dictionary<BasicBlockTag, int> labels, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
     {
-        foreach (var (InstructionIndex, Target) in fixups)
+        foreach (var fixup in fixups)
         {
-            var targetLabel = Target;
+            var targetLabel = fixup.Target;
             var targetInstructionIndex = labels[targetLabel];
             var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
-            var instructionToFixup = ilProcessor.Body.Instructions[InstructionIndex];
+            var instructionToFixup = ilProcessor.Body.Instructions[fixup.InstructionIndex];
             instructionToFixup.Operand = targetInstruction;
         }
     }
@@ -54,7 +51,7 @@ public static class MethodBodyCompiler
     private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition,
         ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType,
          Dictionary<string, VariableDefinition> variables,
-         List<(int InstructionIndex, BasicBlockTag Target)> fixups, Dictionary<BasicBlockTag, int> labels, int variableCounter)
+         List<(int InstructionIndex, BasicBlockTag Target)> fixups, Dictionary<BasicBlockTag, int> labels)
     {
         labels.Add(block.Tag, ilProcessor.Body.Instructions.Count);
 
@@ -90,15 +87,9 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
-                var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition,
-                    ilProcessor, item, allocA);
+                var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
-                if (variables.ContainsKey(item.Block.Parameters[variableCounter++].Tag.Name))
-                {
-                    return;
-                }
-
-                variables.Add(item.Block.Parameters[variableCounter++].Tag.Name, variable);
+                variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
             }
             else if (instruction.Prototype is AllocaArrayPrototype allocArray)
             {
@@ -447,7 +438,7 @@ public static class MethodBodyCompiler
     {
         if (!string.IsNullOrEmpty(str) && str.StartsWith("."))
         {
-            return str[1..];
+            return str.Substring(1);
         }
 
         return str;

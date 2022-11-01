@@ -26,7 +26,6 @@ public class Scope
         else
         {
             if (Contains(item.Name)) return false;
-            if (Parent != null && Parent.Contains(item.Name)) return false;
 
             _items.Add(item);
             return true;
