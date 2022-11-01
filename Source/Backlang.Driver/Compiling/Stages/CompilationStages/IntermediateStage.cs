@@ -181,6 +181,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 discType.AddField(fieldType);
             }
 
+            IRGenerator.GenerateGetHashCode(context, discType);
             IRGenerator.GenerateDefaultCtor(context, discType);
             IRGenerator.GenerateToString(context, discType);
         }

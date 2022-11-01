@@ -44,6 +44,11 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         {
             IRGenerator.GenerateDefaultCtor(context, type);
         }
+
+        if (!type.Methods.Any(_ => _.Name.ToString() == "GetHashCode" && _.Parameters.Count == 0))
+        {
+            IRGenerator.GenerateGetHashCode(context, type);
+        }
     }
 
     private static void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)

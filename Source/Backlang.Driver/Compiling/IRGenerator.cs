@@ -17,8 +17,6 @@ public static class IRGenerator
         var graph = Utils.CreateGraphBuilder();
 
         var block = graph.EntryPoint;
-
-        var hsType = Utils.ResolveType(context.Binder, typeof(HashCode));
     }
 
     public static void GenerateToString(CompilerContext context, DescribedType type)
