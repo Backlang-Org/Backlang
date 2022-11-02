@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver;
@@ -47,9 +47,9 @@ public static class TypeDeducer
         }
         else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
         {
-            var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(unit, context, modulename);
+            return DeduceUnitType(scope, context, modulename, value, unit);
 
-            if (!Utils.IsUnitType(context, resolvedUnit))
+        else if (node.Calls(CodeSymbols.As) && node is (_, var expr, var castType))
             {
                 context.AddError(unit, $"{resolvedUnit} is not a unit type");
             }
@@ -123,6 +123,18 @@ public static class TypeDeducer
         }
 
         return deducedType;
+    }
+
+    private static IType DeduceUnitType(Scope scope, CompilerContext context, QualifiedName modulename, LNode value, LNode unit)
+    {
+        var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(unit, context, modulename);
+
+        if (!Utils.IsUnitType(context, resolvedUnit))
+        {
+            context.AddError(unit, $"{resolvedUnit} is not a unit type");
+        }
+
+        return new UnitType(Deduce(value, scope, context, modulename), resolvedUnit);
     }
 
     private static IType DeduceArray(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)
