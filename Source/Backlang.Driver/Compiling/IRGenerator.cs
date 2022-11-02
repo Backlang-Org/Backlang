@@ -10,9 +10,9 @@ public static class IRGenerator
 {
     public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
     {
-        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
-        toStringMethod.IsPublic = true;
-        toStringMethod.IsOverride = true;
+        var gethashcodeMethod = new DescribedBodyMethod(type, new SimpleName("GetHashCode"), false, Utils.ResolveType(context.Binder, typeof(string)));
+        gethashcodeMethod.IsPublic = true;
+        gethashcodeMethod.IsOverride = true;
 
         var graph = Utils.CreateGraphBuilder();
 

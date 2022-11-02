@@ -6,7 +6,7 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet.Emitters;
 
 internal class ArithmetikEmitter : IEmitter
 {
-    private readonly Dictionary<string, OpCode> _stringOPMap = new()
+    private readonly ImmutableDictionary<string, OpCode> _stringOPMap = new Dictionary<string, OpCode>()
     {
         ["arith.+"] = OpCodes.Add,
         ["arith.-"] = OpCodes.Sub,
@@ -22,7 +22,7 @@ internal class ArithmetikEmitter : IEmitter
         ["arith.<"] = OpCodes.Clt,
         ["arith.>"] = OpCodes.Cgt,
         ["arith.=="] = OpCodes.Ceq,
-    };
+    }.ToImmutableDictionary();
 
     public void Emit(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, BasicBlock block)
     {
