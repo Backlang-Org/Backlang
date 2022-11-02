@@ -7,6 +7,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 {
     public static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
     {
+        [CodeSymbols.Object] = typeof(object),
         [CodeSymbols.Bool] = typeof(bool),
 
         [CodeSymbols.String] = typeof(string),
