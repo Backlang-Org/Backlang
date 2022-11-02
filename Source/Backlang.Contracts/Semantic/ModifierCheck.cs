@@ -18,9 +18,9 @@ internal class ModifierCheck : ISemanticCheck
     private void CheckForInvalidModifierCombination(LNode node, CompilerContext context)
     {
         var attrs = node.Attrs;
-        var condition = attrs.Contains(LNode.Id(CodeSymbols.Public)) && attrs.Contains(LNode.Id(CodeSymbols.Private))
-             || attrs.Contains(LNode.Id(CodeSymbols.Public)) && attrs.Contains(LNode.Id(CodeSymbols.Internal))
-             || attrs.Contains(LNode.Id(CodeSymbols.Private)) && attrs.Contains(LNode.Id(CodeSymbols.Internal));
+        var condition = (attrs.Contains(LNode.Id(CodeSymbols.Public)) && attrs.Contains(LNode.Id(CodeSymbols.Private)))
+             || (attrs.Contains(LNode.Id(CodeSymbols.Public)) && attrs.Contains(LNode.Id(CodeSymbols.Internal)))
+             || (attrs.Contains(LNode.Id(CodeSymbols.Private)) && attrs.Contains(LNode.Id(CodeSymbols.Internal)));
 
         if (condition)
         {
@@ -30,6 +30,6 @@ internal class ModifierCheck : ISemanticCheck
 
     private bool IsModifiableNode(LNode arg)
     {
-        return arg.Calls(CodeSymbols.Class) || arg.Calls(CodeSymbols.Struct) || arg.Calls(CodeSymbols.Fn);
+        return arg.Calls(CodeSymbols.Class) || arg.Calls(CodeSymbols.Struct) || arg.Calls(CodeSymbols.Fn) || arg.Calls(Symbols.Bitfield);
     }
 }
