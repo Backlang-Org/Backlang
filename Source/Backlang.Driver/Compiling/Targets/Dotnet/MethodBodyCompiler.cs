@@ -5,8 +5,10 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 using Instruction = Mono.Cecil.Cil.Instruction;
+using MethodDefinition = Mono.Cecil.MethodDefinition;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
@@ -115,9 +117,19 @@ public static class MethodBodyCompiler
             {
                 EmitStoreField(parentType, ilProcessor, sp);
             }
+            else if (instruction.Prototype is DynamicCastPrototype dcp)
+            {
+                EmitDynamicCast(assemblyDefinition, ilProcessor, dcp);
+            }
         }
 
         EmitBlockFlow(block, ilProcessor, clrMethod, fixups);
+    }
+
+    private static void EmitDynamicCast(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, DynamicCastPrototype dcp)
+    {
+        var checkType = assemblyDefinition.ImportType(dcp.TargetType.ElementType);
+        ilProcessor.Emit(OpCodes.Isinst, checkType);
     }
 
     private static void EmitBlockFlow(BasicBlock block, ILProcessor ilProcessor, MethodDefinition clrMethod, List<(int InstructionIndex, BasicBlockTag Target)> fixups)

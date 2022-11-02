@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Core;
+﻿using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver;
@@ -48,13 +48,10 @@ public static class TypeDeducer
         else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
         {
             return DeduceUnitType(scope, context, modulename, value, unit);
-
+        }
         else if (node.Calls(CodeSymbols.As) && node is (_, var expr, var castType))
-            {
-                context.AddError(unit, $"{resolvedUnit} is not a unit type");
-            }
-
-            return new UnitType(Deduce(value, scope, context, modulename), resolvedUnit);
+        {
+            return Deduce(castType, scope, context, modulename);
         }
         else if (node.ArgCount == 1 && node.Calls(CodeSymbols.Default))
         {

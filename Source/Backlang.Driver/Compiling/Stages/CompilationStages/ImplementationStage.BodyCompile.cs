@@ -28,6 +28,7 @@ public partial class ImplementationStage
         new ArrayExpressionImplementor(),
         new DefaultExpressionImplementor(),
         new TypeOfExpressionImplementor(),
+        new AsExpressionImplementor(),
         new AddressExpressionImplementor(),
         new CtorExpressionImplementor(),
         new UnaryExpressionImplementor(),
