@@ -1,4 +1,5 @@
-﻿using Backlang.Driver.Core.Instructions;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet.Emitters;
+using Backlang.Driver.Core.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
@@ -14,6 +15,18 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
+    private static readonly Dictionary<Type, IEmitter> emitters = new()
+    {
+        [typeof(CallPrototype)] = new CallEmitter(),
+        [typeof(TypeOfInstructionPrototype)] = new TypeofEmitter(),
+        [typeof(DynamicCastPrototype)] = new DynamicCastEmitter(),
+        [typeof(LoadIndirectPrototype)] = new LoadIndirectEmitter(),
+        [typeof(NewObjectPrototype)] = new NewObjectEmitter(),
+        [typeof(IntrinsicPrototype)] = new ArithmetikEmitter(),
+        [typeof(AllocaArrayPrototype)] = new NewArrayEmitter(),
+        [typeof(LoadPrototype)] = new LoadEmitter(),
+    };
+
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
@@ -36,6 +49,68 @@ public static class MethodBodyCompiler
         clrMethod.Body.MaxStackSize = 7;
 
         return variables;
+    }
+
+    public static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)
+    {
+        var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
+
+        foreach (var m in parentType.Methods
+            .Where(_ => _.Name == method.Name.ToString()))
+        {
+            var parameters = m.Parameters;
+
+            if (parameters.Count == method.Parameters.Count)
+            {
+                if (method.GenericParameters.Any())
+                {
+                    if (method.IsConstructor)
+                    {
+                        var dts = (DirectTypeSpecialization)GenericTypeMap.Cache[(method.FullName, method)];
+                        var args = dts.GetRecursiveGenericArguments().Select(_ => assemblyDefinition.ImportType(_)).ToArray();
+                        var genericType = assemblyDefinition.ImportType(dts);
+                        var gctor = genericType.Resolve().Methods.FirstOrDefault(_ => _.Name == method.Name.ToString());
+
+                        var mm = m.MakeHostInstanceGeneric(args);
+
+                        return assemblyDefinition.MainModule.ImportReference(mm);
+                    }
+
+                    return m;
+                }
+
+                if (MatchesParameters(parameters, method))
+                    return assemblyDefinition.MainModule.ImportReference(m);
+            }
+        }
+
+        return null;
+    }
+
+    public static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
+    {
+        dynamic v = consProto.Value;
+
+        if (v is StringConstant str)
+        {
+            ilProcessor.Emit(OpCodes.Ldstr, str.Value);
+        }
+        else if (v is Float32Constant f32)
+        {
+            ilProcessor.Emit(OpCodes.Ldc_R4, f32.Value);
+        }
+        else if (v is Float64Constant f64)
+        {
+            ilProcessor.Emit(OpCodes.Ldc_R8, f64.Value);
+        }
+        else if (v is NullConstant)
+        {
+            ilProcessor.Emit(OpCodes.Ldnull);
+        }
+        else if (v is IntegerConstant ic)
+        {
+            EmitIntegerConstant(ilProcessor, v, ic);
+        }
     }
 
     private static void FixJumps(ILProcessor ilProcessor, Dictionary<BasicBlockTag, int> labels, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
@@ -61,45 +136,21 @@ public static class MethodBodyCompiler
         {
             var instruction = item.Instruction;
 
-            if (instruction.Prototype is CallPrototype)
+            var prototypeType = instruction.Prototype.GetType();
+            if (emitters.ContainsKey(prototypeType))
             {
-                EmitCall(assemblyDefinition, ilProcessor, instruction, block.Graph, block);
-            }
-            else if (instruction.Prototype is TypeOfInstructionPrototype toip)
-            {
-                ilProcessor.Emit(OpCodes.Ldtoken, assemblyDefinition.ImportType(toip.Type));
+                emitters[prototypeType].Emit(assemblyDefinition, ilProcessor, instruction, block);
             }
             else if (instruction.Prototype is LoadLocalAPrototype lda)
             {
                 var definition = variables[lda.Parameter.Name.ToString()];
                 ilProcessor.Emit(OpCodes.Ldloca_S, definition);
             }
-            else if (instruction.Prototype is LoadIndirectPrototype ldi)
-            {
-                ilProcessor.Emit(OpCodes.Ldind_I4);
-            }
-            else if (instruction.Prototype is NewObjectPrototype newObjectPrototype)
-            {
-                EmitNewObject(assemblyDefinition, ilProcessor, newObjectPrototype);
-            }
-            else if (instruction.Prototype is LoadPrototype)
-            {
-                var valueInstruction = block.Graph.GetInstruction(instruction.Arguments[0]);
-                EmitConstant(ilProcessor, (ConstantPrototype)valueInstruction.Prototype);
-            }
             else if (instruction.Prototype is AllocaPrototype allocA)
             {
                 var variable = EmitVariableDeclaration(clrMethod, assemblyDefinition, ilProcessor, item, allocA);
 
                 variables.Add(item.Block.Parameters[variables.Count].Tag.Name, variable);
-            }
-            else if (instruction.Prototype is AllocaArrayPrototype allocArray)
-            {
-                ilProcessor.Emit(OpCodes.Newarr, assemblyDefinition.ImportType(allocArray.ElementType));
-            }
-            else if (instruction.Prototype is IntrinsicPrototype arith)
-            {
-                EmitArithmetic(ilProcessor, arith);
             }
             else if (instruction.Prototype is LoadArgPrototype larg)
             {
@@ -117,19 +168,9 @@ public static class MethodBodyCompiler
             {
                 EmitStoreField(parentType, ilProcessor, sp);
             }
-            else if (instruction.Prototype is DynamicCastPrototype dcp)
-            {
-                EmitDynamicCast(assemblyDefinition, ilProcessor, dcp);
-            }
         }
 
         EmitBlockFlow(block, ilProcessor, clrMethod, fixups);
-    }
-
-    private static void EmitDynamicCast(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, DynamicCastPrototype dcp)
-    {
-        var checkType = assemblyDefinition.ImportType(dcp.TargetType.ElementType);
-        ilProcessor.Emit(OpCodes.Isinst, checkType);
     }
 
     private static void EmitBlockFlow(BasicBlock block, ILProcessor ilProcessor, MethodDefinition clrMethod, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
@@ -212,117 +253,6 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static void EmitArithmetic(ILProcessor ilProcessor, IntrinsicPrototype arith)
-    {
-        switch (arith.Name)
-        {
-            case "arith.+":
-                ilProcessor.Emit(OpCodes.Add); break;
-            case "arith.-":
-                ilProcessor.Emit(OpCodes.Sub); break;
-            case "arith.*":
-                ilProcessor.Emit(OpCodes.Mul); break;
-            case "arith./":
-                ilProcessor.Emit(OpCodes.Div); break;
-            case "arith.%":
-                ilProcessor.Emit(OpCodes.Rem); break;
-            case "arith.&":
-                ilProcessor.Emit(OpCodes.And); break;
-            case "arith.|":
-                ilProcessor.Emit(OpCodes.Or); break;
-            case "arith.^":
-                ilProcessor.Emit(OpCodes.Xor); break;
-            case "arith.==":
-                ilProcessor.Emit(OpCodes.Ceq); break;
-            case "arith.!=":
-                ilProcessor.Emit(OpCodes.Ceq);
-                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
-                ilProcessor.Emit(OpCodes.Ceq);
-                break;
-
-            case "arith.<":
-                ilProcessor.Emit(OpCodes.Clt); break;
-            case "arith.<=":
-                ilProcessor.Emit(OpCodes.Cgt);
-                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
-                ilProcessor.Emit(OpCodes.Ceq);
-                break;
-
-            case "arith.>":
-                ilProcessor.Emit(OpCodes.Cgt); break;
-            case "arith.>=":
-                ilProcessor.Emit(OpCodes.Clt);
-                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
-                ilProcessor.Emit(OpCodes.Ceq);
-                break;
-        }
-    }
-
-    private static void EmitNewObject(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, NewObjectPrototype newObjectPrototype)
-    {
-        var method = GetMethod(assemblyDefinition, newObjectPrototype.Constructor);
-
-        ilProcessor.Emit(OpCodes.Newobj, method);
-    }
-
-    private static void EmitCall(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, FlowGraph implementation, BasicBlock block)
-    {
-        var callPrototype = (CallPrototype)instruction.Prototype;
-
-        if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
-        {
-            IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics), callPrototype.Callee, instruction, block);
-            return;
-        }
-
-        var method = GetMethod(assemblyDefinition, callPrototype.Callee);
-
-        for (var i = 0; i < method.Parameters.Count; i++)
-        {
-            var valueType = implementation.NamedInstructions
-                .Where(_ => instruction.Arguments[i] == _.Tag)
-                .Select(_ => _.ResultType).FirstOrDefault();
-
-            var arg = method.Parameters[i];
-            if (arg.ParameterType.FullName.ToString() == "System.Object")
-            {
-                ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(valueType));
-            }
-        }
-
-        ilProcessor.Emit(OpCodes.Call,
-            assemblyDefinition.MainModule.ImportReference(
-                method
-                )
-            );
-    }
-
-    private static void EmitConstant(ILProcessor ilProcessor, ConstantPrototype consProto)
-    {
-        dynamic v = consProto.Value;
-
-        if (v is StringConstant str)
-        {
-            ilProcessor.Emit(OpCodes.Ldstr, str.Value);
-        }
-        else if (v is Float32Constant f32)
-        {
-            ilProcessor.Emit(OpCodes.Ldc_R4, f32.Value);
-        }
-        else if (v is Float64Constant f64)
-        {
-            ilProcessor.Emit(OpCodes.Ldc_R8, f64.Value);
-        }
-        else if (v is NullConstant)
-        {
-            ilProcessor.Emit(OpCodes.Ldnull);
-        }
-        else if (v is IntegerConstant ic)
-        {
-            EmitIntegerConstant(ilProcessor, v, ic);
-        }
-    }
-
     private static void EmitIntegerConstant(ILProcessor ilProcessor, dynamic v, IntegerConstant ic)
     {
         switch (ic.Spec.Size)
@@ -399,42 +329,6 @@ public static class MethodBodyCompiler
         }
 
         return variable;
-    }
-
-    private static MethodReference GetMethod(AssemblyDefinition assemblyDefinition, IMethod method)
-    {
-        var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
-
-        foreach (var m in parentType.Methods
-            .Where(_ => _.Name == method.Name.ToString()))
-        {
-            var parameters = m.Parameters;
-
-            if (parameters.Count == method.Parameters.Count)
-            {
-                if (method.GenericParameters.Any())
-                {
-                    if (method.IsConstructor)
-                    {
-                        var dts = (DirectTypeSpecialization)GenericTypeMap.Cache[(method.FullName, method)];
-                        var args = dts.GetRecursiveGenericArguments().Select(_ => assemblyDefinition.ImportType(_)).ToArray();
-                        var genericType = assemblyDefinition.ImportType(dts);
-                        var gctor = genericType.Resolve().Methods.FirstOrDefault(_ => _.Name == method.Name.ToString());
-
-                        var mm = m.MakeHostInstanceGeneric(args);
-
-                        return assemblyDefinition.MainModule.ImportReference(mm);
-                    }
-
-                    return m;
-                }
-
-                if (MatchesParameters(parameters, method))
-                    return assemblyDefinition.MainModule.ImportReference(m);
-            }
-        }
-
-        return null;
     }
 
     private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
