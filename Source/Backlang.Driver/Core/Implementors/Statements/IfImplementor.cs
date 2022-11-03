@@ -37,6 +37,7 @@ public class IfImplementor : IStatementImplementor
             ifBlock.Flow = new JumpConditionalFlow(after, kind);
             AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
 
+            //Todo: fix else
             if (el != LNode.Missing)
             {
                 var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
