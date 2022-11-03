@@ -33,6 +33,10 @@ public class WhileImplementor : IStatementImplementor
                 AppendExpression(while_condition, condition[0], context.Environment.Boolean, context, scope, modulename);
                 AppendExpression(while_condition, condition[1], context.Environment.Boolean, context, scope, modulename);
             }
+            else
+            {
+                AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
+            }
 
             while_condition.Flow = new JumpConditionalFlow(while_start, kind);
 
