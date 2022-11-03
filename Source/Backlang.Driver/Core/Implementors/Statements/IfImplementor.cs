@@ -24,7 +24,7 @@ public class IfImplementor : IStatementImplementor
             }
             else if (condition.Calls(CodeSymbols.NotEq))
             {
-                kind = ConditionalJumpKind.NotEquals;
+                kind = ConditionalJumpKind.Equals;
             }
 
             if (!condition.Calls(CodeSymbols.Bool))
