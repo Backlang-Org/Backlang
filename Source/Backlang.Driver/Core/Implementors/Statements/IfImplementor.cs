@@ -16,20 +16,20 @@ public class IfImplementor : IStatementImplementor
             var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
             var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
 
+            ConditionalJumpKind kind = ConditionalJumpKind.True;
+            if (condition.Calls(CodeSymbols.Eq))
+            {
+                kind = ConditionalJumpKind.NotEquals;
+            }
+            else if (condition.Calls(CodeSymbols.NotEq))
+            {
+                kind = ConditionalJumpKind.NotEquals;
+            }
+
             if (!condition.Calls(CodeSymbols.Bool))
             {
                 AppendExpression(block, condition[0], context.Environment.Boolean, context, scope, modulename);
                 AppendExpression(block, condition[1], context.Environment.Boolean, context, scope, modulename);
-
-                ConditionalJumpKind kind = ConditionalJumpKind.True;
-                if (condition.Calls(CodeSymbols.Eq))
-                {
-                    kind = ConditionalJumpKind.NotEquals;
-                }
-                else if (condition.Calls(CodeSymbols.Eq))
-                {
-                    kind = ConditionalJumpKind.Equals;
-                }
 
                 block.Flow = new JumpConditionalFlow(after, kind);
             }
@@ -40,6 +40,7 @@ public class IfImplementor : IStatementImplementor
             {
                 var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
                 AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
+                block.Flow = new JumpConditionalFlow(elseBlock, kind);
             }
 
             ifBlock.Flow = new NothingFlow();
