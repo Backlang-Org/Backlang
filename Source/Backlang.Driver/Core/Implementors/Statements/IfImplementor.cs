@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Compiler.Flow;
+﻿using Backlang.Driver.Compiling.Targets.Dotnet;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
@@ -13,6 +14,26 @@ public class IfImplementor : IStatementImplementor
             TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
 
             var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
+            var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
+
+            if (!condition.Calls(CodeSymbols.Bool))
+            {
+                AppendExpression(block, condition[0], context.Environment.Boolean, context, scope, modulename);
+                AppendExpression(block, condition[1], context.Environment.Boolean, context, scope, modulename);
+
+                ConditionalJumpKind kind = ConditionalJumpKind.True;
+                if (condition.Calls(CodeSymbols.Eq))
+                {
+                    kind = ConditionalJumpKind.NotEquals;
+                }
+                else if (condition.Calls(CodeSymbols.Eq))
+                {
+                    kind = ConditionalJumpKind.Equals;
+                }
+
+                block.Flow = new JumpConditionalFlow(after, kind);
+            }
+
             AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
 
             if (el != LNode.Missing)
@@ -21,21 +42,7 @@ public class IfImplementor : IStatementImplementor
                 AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
             }
 
-            var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
-            if (condition.Calls(CodeSymbols.Bool))
-            {
-                if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.True);
-            }
-            else
-            {
-                AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope, modulename);
-                if_condition.Flow = new JumpConditionalFlow(ifBlock, ConditionalJumpKind.Equals);
-            }
-
-            block.Flow = new JumpFlow(if_condition);
-
-            var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
-            ifBlock.Flow = new JumpFlow(after);
+            ifBlock.Flow = new NothingFlow();
 
             return after;
         }
