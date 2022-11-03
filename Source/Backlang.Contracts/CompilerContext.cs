@@ -6,8 +6,6 @@ namespace Backlang.Contracts;
 
 public sealed class CompilerContext
 {
-    public IEnumerable<IMethod> writeMethods;
-
     public ICompilationTarget CompilationTarget;
     public PluginContainer Plugins;
 

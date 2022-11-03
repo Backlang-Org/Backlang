@@ -28,7 +28,7 @@ public class WhileImplementor : IStatementImplementor
             }
 
             var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
-            if (!condition.Calls(CodeSymbols.Bool))
+            if (!condition.Calls(CodeSymbols.Bool) && condition.Name.ToString().StartsWith("'") && condition.ArgCount == 2)
             {
                 AppendExpression(while_condition, condition[0], context.Environment.Boolean, context, scope, modulename);
                 AppendExpression(while_condition, condition[1], context.Environment.Boolean, context, scope, modulename);

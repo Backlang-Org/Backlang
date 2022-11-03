@@ -20,6 +20,8 @@ public partial class ImplementationStage
         [CodeSymbols.Throw] = new ThrowImplementor(),
         [CodeSymbols.ColonColon] = new StaticCallImplementor(),
         [CodeSymbols.Dot] = new CallImplementor(),
+        [(Symbol)"print"] = new PrintOrPrintlnImplementor(),
+        [(Symbol)"println"] = new PrintOrPrintlnImplementor(),
     }.ToImmutableDictionary();
 
     private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
@@ -74,14 +76,6 @@ public partial class ImplementationStage
             {
                 block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
             }
-            else if (node.Calls("print"))
-            {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "Write");
-            }
-            else if (node.Calls("println"))
-            {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "WriteLine");
-            }
             else
             {
                 EmitFunctionCall(method, node, block, context, scope, modulename);
@@ -89,10 +83,7 @@ public partial class ImplementationStage
         }
 
         //automatic dtor call
-        foreach (var v in block.Parameters)
-        {
-            AppendDtor(context, block, scope, modulename, v.Tag.Name);
-        }
+        AppendAllDtors(block, context, modulename, scope);
 
         return block;
     }
@@ -203,6 +194,14 @@ public partial class ImplementationStage
         }
 
         return callTags;
+    }
+
+    public static void AppendAllDtors(BasicBlockBuilder block, CompilerContext context, QualifiedName? modulename, Scope scope)
+    {
+        foreach (var v in block.Parameters)
+        {
+            AppendDtor(context, block, scope, modulename, v.Tag.Name);
+        }
     }
 
     private static BasicBlockBuilder EmitFunctionCall(IMethod method, LNode node, BasicBlockBuilder block, CompilerContext context, Scope scope, QualifiedName? moduleName)
