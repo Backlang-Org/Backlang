@@ -34,7 +34,8 @@ public static class IRGenerator
         var p = block.AppendParameter(new BlockParameter(sbType, varname));
 
         var ctor = sbType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
-        var appendLineMethod = sbType.Methods.First(_ => _.Name.ToString() == "AppendLine" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == "String");
+
+        var appendLineMethod = context.Binder.FindFunction("System.Text.StringBuilder::AppendLine(System.String)");
 
         block.AppendInstruction(Instruction.CreateNewObject(ctor, new List<ValueTag>()));
         block.AppendInstruction(Instruction.CreateAlloca(sbType));
@@ -50,17 +51,17 @@ public static class IRGenerator
             AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
             var value = AppendLoadField(block, field);
 
-            var callee = sbType.Methods.FirstOrDefault(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
+            var appendMethod = context.Binder.FindFunction($"System.Text.StringBuilder::Append({field.FieldType.FullName})");
 
-            if (callee == null)
+            if (appendMethod == null)
             {
-                callee = sbType.Methods.First(_ => _.Parameters.Count == 1 && _.Parameters[0].Type.FullName.ToString() == "System.Object");
+                appendMethod = context.Binder.FindFunction("System.Text.StringBuilder::Append(System.Object)");
             }
 
-            block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+            block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
         }
 
-        var tsM = sbType.Methods.First(_ => _.Name.ToString() == "ToString");
+        var tsM = context.Binder.FindFunction($"System.Text.StringBuilder::ToString()");
 
         block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
