@@ -1,15 +1,23 @@
 import System;
 
-public struct Point
-{
-    let callback: (i32, bool) -> i32;
-    let tuple: (i32, char);
-    let a: i32*;
-}
+
 
 func main() {
+	let k = 12;
+	
+
+	if k == 12 {
+		print("it works");
+	}
+	else if k == 13 {
+		print("hello");
+	}
+	else {
+		print("nothing");
+	}
 }
 
 struct Hello {
 	let k: i32;	
 }
+
