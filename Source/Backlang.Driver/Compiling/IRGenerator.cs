@@ -10,13 +10,58 @@ public static class IRGenerator
 {
     public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
     {
-        var gethashcodeMethod = new DescribedBodyMethod(type, new SimpleName("GetHashCode"), false, Utils.ResolveType(context.Binder, typeof(string)));
+        var gethashcodeMethod = new DescribedBodyMethod(type, new SimpleName("GetHashCode"),
+            false, context.Environment.Int32);
         gethashcodeMethod.IsPublic = true;
         gethashcodeMethod.IsOverride = true;
 
         var graph = Utils.CreateGraphBuilder();
 
         var block = graph.EntryPoint;
+
+        block.AppendParameter(new BlockParameter(context.Environment.Int32, "hash"));
+
+        var constant = block.AppendInstruction(
+            Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
+                Instruction.CreateConstant(new IntegerConstant(17), context.Environment.Int32))
+            )
+        );
+
+        block.AppendInstruction(Instruction.CreateAlloca(context.Environment.Int32));
+
+        foreach (var field in type.Fields)
+        {
+            var methods = field.FieldType.Methods.Where(_ => _.Name.ToString() == "GetHashCode");
+            if (methods.Any())
+            {
+                var method = methods.First();
+
+                // hash = hash * 23 + field.GetHashCode();
+                var loadHash = Instruction.CreateLoadLocal(new Parameter(context.Environment.Int32, "hash"));
+                var hash = block.AppendInstruction(loadHash);
+                var c = block.AppendInstruction(
+                    Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
+                        Instruction.CreateConstant(new IntegerConstant(23), context.Environment.Int32))
+                    )
+                );
+
+                var multiplication = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, c));
+
+                block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
+                var ldField = block.AppendInstruction(Instruction.CreateGetFieldPointer(field, null));
+                var call = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual, new List<ValueTag>() { ldField }));
+
+                var addition = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false, context.Environment.Int32, ldField, multiplication));
+
+                block.AppendInstruction(Instruction.CreateStore(context.Environment.Int32, hash, addition));
+            }
+        }
+
+        block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(context.Environment.Int32, "hash")));
+        block.Flow = new ReturnFlow();
+
+        gethashcodeMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        type.AddMethod(gethashcodeMethod);
     }
 
     public static void GenerateToString(CompilerContext context, DescribedType type)
