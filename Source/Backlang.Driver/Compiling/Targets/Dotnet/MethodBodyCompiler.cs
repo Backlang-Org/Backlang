@@ -192,9 +192,25 @@ public static class MethodBodyCompiler
         else if (block.Flow is JumpConditionalFlow n)
         {
             fixups.Add((ilProcessor.Body.Instructions.Count, n.Branch.Target));
+
+            OpCode op = OpCodes.Br;
+
+            var selector = (ConditionalJumpKind)n.ConditionSelector;
+            if (selector == ConditionalJumpKind.True)
+            {
+                op = OpCodes.Brtrue;
+            }
+            else if (selector == ConditionalJumpKind.Equals)
+            {
+                op = OpCodes.Beq;
+            }
+            else if (selector == ConditionalJumpKind.NotEquals)
+            {
+                op = OpCodes.Bne_Un;
+            }
+
             ilProcessor.Emit(
-                (ConditionalJumpKind)n.ConditionSelector == ConditionalJumpKind.True ?
-                OpCodes.Brtrue : OpCodes.Br, Instruction.Create(OpCodes.Nop)
+                op, Instruction.Create(OpCodes.Nop)
             );
         }
         else if (block.Flow is UnreachableFlow)
