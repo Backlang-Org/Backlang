@@ -1,5 +1,4 @@
-﻿using Backlang.Driver.Compiling.Targets.Dotnet;
-using Furesoft.Core.CodeDom.Compiler.Flow;
+﻿using Furesoft.Core.CodeDom.Compiler.Flow;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
@@ -15,6 +14,8 @@ public class IfImplementor : IStatementImplementor
 
             var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
             var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
+
+            after.Flow = new NothingFlow();
 
             ConditionalJumpKind kind = ConditionalJumpKind.True;
             if (condition.Calls(CodeSymbols.Eq))
@@ -33,14 +34,14 @@ public class IfImplementor : IStatementImplementor
 
                 block.Flow = new JumpConditionalFlow(after, kind);
             }
-
+            ifBlock.Flow = new JumpConditionalFlow(after, kind);
             AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
 
             if (el != LNode.Missing)
             {
                 var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
                 AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
-                block.Flow = new JumpConditionalFlow(elseBlock, kind);
+                block.Flow = new JumpConditionalFlow(after, kind);
             }
 
             ifBlock.Flow = new NothingFlow();

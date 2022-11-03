@@ -29,9 +29,6 @@
 	  <None Update="compilation.back">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	  <None Update="test.back">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 		
 	</ItemGroup>
 

@@ -9,15 +9,19 @@ func main() {
 	if k == 12 {
 		print("it works");
 	}
-	else if k == 13 {
+	 if k == 13 {
 		print("hello");
 	}
 	else {
 		print("nothing");
 	}
+
+	print("sss");
+	print(k);
 }
 
 struct Hello {
 	let k: i32;	
+	let v: i32;	
 }
 
