@@ -1,7 +1,11 @@
-﻿namespace Backlang.Driver;
+﻿using System.Collections.Concurrent;
+
+namespace Backlang.Driver;
 
 public static class BinderExtensions
 {
+    private static readonly ConcurrentDictionary<string, IMethod> _functionCache = new();
+
     /// <summary>
     /// Finds a method based on a selector
     /// </summary>
@@ -10,6 +14,11 @@ public static class BinderExtensions
     /// <returns></returns>
     public static IMethod FindFunction(this TypeResolver binder, string selector)
     {
+        if (_functionCache.ContainsKey(selector))
+        {
+            return _functionCache[selector];
+        }
+
         var convertedSelector = GetSelector(selector);
 
         var type = binder.ResolveTypes(convertedSelector.Typename)?.FirstOrDefault();
@@ -23,9 +32,16 @@ public static class BinderExtensions
             {
                 if (method.Parameters[i].Type.FullName.ToString() == convertedSelector.ParameterTypes[i])
                 {
+                    _functionCache.AddOrUpdate(selector, _ => method, (_, __) => __);
                     return method;
                 }
             }
+        }
+
+        var function = methods.FirstOrDefault();
+        if (function != null)
+        {
+            _functionCache.AddOrUpdate(selector, _ => methods.FirstOrDefault(), (_, __) => __);
         }
 
         return methods.FirstOrDefault();
