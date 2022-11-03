@@ -176,10 +176,9 @@ public static class MethodBodyCompiler
 
                 if (prototype is LoadLocalPrototype lcp)
                 {
-                    var variable = variables[lcp.Parameter.Name.ToString()];
-
-                    ilProcessor.Emit(OpCodes.Stloc, variable);
+                    EmitLoadLocal(ilProcessor, lcp, variables);
                 }
+                //Todo: implement more store types: ldfield ldfieldindirect, ...
             }
             else if (instruction.Prototype is StoreFieldPointerPrototype spa)
             {
