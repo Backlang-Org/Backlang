@@ -9,7 +9,7 @@ public class AsExpressionImplementor : IExpressionImplementor
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
-        //ToDo: if type is obj and expr is primitive -> box
+        //ToDo: if type is obj and expr is valuetype -> box and vice versa unbox
         var exprType = TypeDeducer.Deduce(node.Args[0], scope, context, modulename.Value);
 
         AppendExpression(block, node.Args[0], exprType, context, scope, modulename);
