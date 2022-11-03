@@ -9,6 +9,7 @@ using Mono.Cecil.Cil;
 
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 using Instruction = Mono.Cecil.Cil.Instruction;
+using LoadFieldPrototype = Furesoft.Core.CodeDom.Compiler.Instructions.LoadFieldPrototype;
 using MethodDefinition = Mono.Cecil.MethodDefinition;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
@@ -164,9 +165,25 @@ public static class MethodBodyCompiler
             {
                 EmitLoadField(parentType, ilProcessor, fp);
             }
-            else if (instruction.Prototype is StoreFieldPointerPrototype sp)
+            else if (instruction.Prototype is GetFieldPointerPrototype fpa)
             {
-                EmitStoreField(parentType, ilProcessor, sp);
+                EmitLoadFieldA(parentType, ilProcessor, fpa);
+            }
+            else if (instruction.Prototype is StorePrototype sp)
+            {
+                var ptr = sp.GetPointer(instruction);
+                var prototype = block.Graph.GetInstruction(ptr).Prototype;
+
+                if (prototype is LoadLocalPrototype lcp)
+                {
+                    var variable = variables[lcp.Parameter.Name.ToString()];
+
+                    ilProcessor.Emit(OpCodes.Stloc, variable);
+                }
+            }
+            else if (instruction.Prototype is StoreFieldPointerPrototype spa)
+            {
+                EmitStoreField(parentType, ilProcessor, spa);
             }
         }
 
@@ -244,6 +261,13 @@ public static class MethodBodyCompiler
         var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
 
         ilProcessor.Emit(OpCodes.Ldfld, field);
+    }
+
+    private static void EmitLoadFieldA(TypeDefinition parentType, ILProcessor ilProcessor, GetFieldPointerPrototype fp)
+    {
+        var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
+
+        ilProcessor.Emit(OpCodes.Ldflda, field);
     }
 
     private static void EmitLoadArg(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeReference parentType, LoadArgPrototype larg)
