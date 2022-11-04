@@ -155,19 +155,32 @@ public static class MethodBodyCompiler
             }
             else if (instruction.Prototype is LoadArgPrototype larg)
             {
-                EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
+                if (item.NextInstructionOrNull?.Prototype is not StorePrototype)
+                {
+                    EmitLoadArg(clrMethod, ilProcessor, parentType, larg);
+                }
             }
             else if (instruction.Prototype is LoadLocalPrototype lloc)
             {
-                EmitLoadLocal(ilProcessor, lloc, variables);
+                if (item.NextInstructionOrNull?.Prototype is not StorePrototype)
+                {
+                    EmitLoadLocal(ilProcessor, lloc, variables);
+                }
             }
             else if (instruction.Prototype is LoadFieldPrototype fp)
             {
-                EmitLoadField(parentType, ilProcessor, fp);
+                if (item.NextInstructionOrNull?.Prototype is not StorePrototype)
+                {
+                    var type = assemblyDefinition.ImportType(fp.Field.ParentType).Resolve();
+                    EmitLoadField(type, ilProcessor, fp);
+                }
             }
             else if (instruction.Prototype is GetFieldPointerPrototype fpa)
             {
-                EmitLoadFieldA(parentType, ilProcessor, fpa);
+                if (item.NextInstructionOrNull?.Prototype is not StorePrototype)
+                {
+                    EmitLoadFieldA(parentType, ilProcessor, fpa);
+                }
             }
             else if (instruction.Prototype is StorePrototype sp)
             {
@@ -176,7 +189,30 @@ public static class MethodBodyCompiler
 
                 if (prototype is LoadLocalPrototype lcp)
                 {
-                    EmitLoadLocal(ilProcessor, lcp, variables);
+                    var definition = variables[lcp.Parameter.Name.ToString()];
+                    ilProcessor.Emit(OpCodes.Stloc, definition);
+                }
+                else if (prototype is LoadFieldPrototype lfp)
+                {
+                    var fieldType = assemblyDefinition.ImportType(lfp.Field.ParentType).Resolve();
+                    var field = fieldType.Fields.FirstOrDefault(_ => _.Name == lfp.Field.Name.ToString());
+
+                    ilProcessor.Emit(OpCodes.Stfld, field);
+                }
+                else if (prototype is GetFieldPointerPrototype lfap)
+                {
+                    EmitLoadFieldA(parentType, ilProcessor, lfap);
+                }
+                else if (prototype is LoadArgPrototype largp)
+                {
+                    var param = clrMethod.Parameters.FirstOrDefault(_ => _.Name == largp.Parameter.Name.ToString());
+
+                    if (param != null)
+                    {
+                        var index = clrMethod.Parameters.IndexOf(param);
+
+                        ilProcessor.Emit(OpCodes.Starg, index);
+                    }
                 }
                 //Todo: implement more store types: ldfield ldfieldindirect, ...
             }

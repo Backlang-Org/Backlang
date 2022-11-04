@@ -261,6 +261,12 @@ public static class TypeDeducer
         if (resolved == null)
         {
             var left = Deduce(node.Args[0], scope, context, modulename); //Todo: implement deducing for members
+            var field = left.Fields.FirstOrDefault(_ => _.Name.ToString() == qualified.Name.ToString());
+
+            if (field != null)
+            {
+                return field.FieldType;
+            }
         }
 
         return resolved;
