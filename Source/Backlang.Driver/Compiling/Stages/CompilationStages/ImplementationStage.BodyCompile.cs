@@ -34,6 +34,7 @@ public partial class ImplementationStage
         new AddressExpressionImplementor(),
         new CtorExpressionImplementor(),
         new UnaryExpressionImplementor(),
+        new MemberExpressionImplementor(),
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
@@ -123,6 +124,11 @@ public partial class ImplementationStage
     {
         if (scope.TryGet<VariableScopeItem>(varname, out var scopeItem))
         {
+            if (!scopeItem.Type.Methods.Any(_ => _.Name.ToString() == "Finalize"))
+            {
+                return null;
+            }
+
             block.AppendInstruction(Instruction.CreateLoadLocal(scopeItem.Parameter));
 
             return AppendCall(context, block, LNode.Missing, scopeItem.Type.Methods, scope, modulename, false, "Finalize");

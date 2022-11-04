@@ -21,8 +21,9 @@ public class AssignmentImplementor : IStatementImplementor
                 }
 
                 var value = AppendExpression(block, right, rt, context, scope, modulename.Value);
+                var pointer = block.AppendInstruction(Instruction.CreateLoadLocal(va.Parameter));
 
-                block.AppendInstruction(Instruction.CreateStore(lt, new ValueTag(va.Parameter.Name.ToString()), value));
+                block.AppendInstruction(Instruction.CreateStore(lt, pointer, value));
             }
             else if (left is ("'.", var t, var c))
             {
@@ -32,8 +33,10 @@ public class AssignmentImplementor : IStatementImplementor
 
                     if (field != null)
                     {
-                        var pointer = block.AppendInstruction(Instruction.CreateLoadField(field));
+                        block.AppendInstruction(Instruction.CreateLoadLocalAdress(vsi.Parameter));
                         var value = AppendExpression(block, right, field.FieldType, context, scope, modulename.Value);
+
+                        var pointer = block.AppendInstruction(Instruction.CreateLoadField(field));
 
                         block.AppendInstruction(Instruction.CreateStore(field.FieldType, pointer, value));
                     }
