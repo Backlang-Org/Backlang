@@ -23,6 +23,7 @@ public enum BinaryOpPrecedences
 
     PipeOperator = 8, // |>
 
-    OperationShortcuts = 9, // += -= *= /=
+    Dot = 8,
+    OperationShortcuts = 2, // += -= *= /=
     Equals = OperationShortcuts,
 }
