@@ -165,6 +165,6 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
         //ToDo: refactor getting best candidate
         var orderedCandidates = candiates.OrderByDescending(_ => _.Parameters.Select(__ => _.FullName.ToString()).Contains("System.Object"));
-        return orderedCandidates.First();
+        return orderedCandidates.FirstOrDefault();
     }
 }
