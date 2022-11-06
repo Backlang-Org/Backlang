@@ -22,6 +22,11 @@ public class MemberExpressionImplementor : IExpressionImplementor
             block.AppendInstruction(Instruction.CreateLoadLocal(item.Parameter));
             return block.AppendInstruction(Instruction.CreateLoadField(field));
         }
+        var method = type.Methods.FirstOrDefault(_ => _.Name.ToString() == node.Args[1].Name.ToString());
+        if (method != null)
+        {
+            return ImplementationStage.AppendCall(context, block, node[1], type.Methods, scope, modulename);
+        }
 
         return null;
     }
