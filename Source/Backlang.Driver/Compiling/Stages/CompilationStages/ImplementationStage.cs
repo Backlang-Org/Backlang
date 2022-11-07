@@ -45,6 +45,8 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
             IRGenerator.GenerateDefaultCtor(context, type);
         }
 
+        IRGenerator.GenerateEmptyCtor(context, type);
+
         if (!type.Methods.Any(_ => _.Name.ToString() == "GetHashCode" && _.Parameters.Count == 0))
         {
             IRGenerator.GenerateGetHashCode(context, type);

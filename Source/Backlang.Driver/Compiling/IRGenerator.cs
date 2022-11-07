@@ -117,6 +117,26 @@ public static class IRGenerator
         type.AddMethod(toStringMethod);
     }
 
+    public static void GenerateEmptyCtor(CompilerContext context, DescribedType type)
+    {
+        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
+        {
+            IsConstructor = true
+        };
+
+        ctorMethod.IsPublic = true;
+
+        var graph = Utils.CreateGraphBuilder();
+
+        var block = graph.EntryPoint;
+
+        block.Flow = new ReturnFlow();
+
+        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+
+        type.AddMethod(ctorMethod);
+    }
+
     public static void GenerateDefaultCtor(CompilerContext context, DescribedType type)
     {
         var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
