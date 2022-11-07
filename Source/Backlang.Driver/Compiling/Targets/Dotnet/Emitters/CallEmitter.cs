@@ -34,7 +34,14 @@ internal class CallEmitter : IEmitter
             }
         }
 
-        ilProcessor.Emit(OpCodes.Call,
+        OpCode op = OpCodes.Call;
+
+        if (!callPrototype.Callee.IsStatic)
+        {
+            op = OpCodes.Callvirt;
+        }
+
+        ilProcessor.Emit(op,
             assemblyDefinition.MainModule.ImportReference(
                 method
                 )

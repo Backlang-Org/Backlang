@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 
 namespace Backlang.Driver.Core.Implementors.Expressions;
 
@@ -22,10 +23,18 @@ public class MemberExpressionImplementor : IExpressionImplementor
             block.AppendInstruction(Instruction.CreateLoadLocal(item.Parameter));
             return block.AppendInstruction(Instruction.CreateLoadField(field));
         }
+
         var method = type.Methods.FirstOrDefault(_ => _.Name.ToString() == node.Args[1].Name.ToString());
         if (method != null)
         {
-            return ImplementationStage.AppendCall(context, block, node[1], type.Methods, scope, modulename);
+            var instance = ImplementationStage.AppendExpression(block, node[0], type, context, scope, modulename);
+
+            var callTags = ImplementationStage.AppendCallArguments(context, block, node[1], scope, modulename);
+            callTags.Insert(0, instance);
+
+            var call = Instruction.CreateCall(method, MethodLookup.Virtual, callTags);
+
+            return block.AppendInstruction(call);
         }
 
         return null;

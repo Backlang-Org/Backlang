@@ -267,6 +267,11 @@ public static class TypeDeducer
             {
                 return field.FieldType;
             }
+
+            var funcArgs = node[1].Args.Select(_ => Deduce(_, scope, context, modulename));
+            var func = context.Binder.FindFunction(left.ToString() + "::" + qualified.Name + "(" + string.Join(',', funcArgs) + ")");
+
+            return func.ReturnParameter.Type;
         }
 
         return resolved;
