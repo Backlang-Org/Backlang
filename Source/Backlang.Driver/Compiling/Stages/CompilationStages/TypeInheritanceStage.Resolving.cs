@@ -50,7 +50,12 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         IType resolvedType;
-        if (TypenameTable.ContainsKey(fullName.ToString()))
+
+        if (context.GlobalScope.TypeAliases.ContainsKey(fullName.ToString()))
+        {
+            resolvedType = context.GlobalScope.TypeAliases[fullName.ToString()];
+        }
+        else if (TypenameTable.ContainsKey(fullName.ToString()))
         {
             resolvedType = Utils.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
 
@@ -151,7 +156,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             funcArgs.Add(ResolveTypeWithModule(garg, context, modulename));
         }
 
-        if(func.StartsWith("Func"))
+        if (func.StartsWith("Func"))
         {
             funcArgs.Add(ResolveTypeWithModule(typeNode.Args[0], context, modulename));
         }

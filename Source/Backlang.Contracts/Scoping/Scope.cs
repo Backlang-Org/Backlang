@@ -11,8 +11,10 @@ public class Scope
     public Scope(Scope parent)
     {
         Parent = parent;
+        TypeAliases = new();
     }
 
+    public Dictionary<string, IType> TypeAliases { get; set; }
     public Scope Parent { get; set; }
 
     public bool Add(ScopeItem item)

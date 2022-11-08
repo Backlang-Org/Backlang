@@ -26,7 +26,11 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
             foreach (var st in tree.Body)
             {
-                if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
+                if (st.Calls(CodeSymbols.UsingStmt))
+                {
+                    AddTypeAlias(st, context.GlobalScope, context, modulename);
+                }
+                else if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
                 {
                     ConvertTypeOrInterface(context, st, modulename, context.GlobalScope);
                 }
@@ -102,6 +106,15 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             type.IsAbstract = true;
         }
+    }
+
+    private void AddTypeAlias(LNode st, Scope scope, CompilerContext context, QualifiedName modulename)
+    {
+        var name = st[0].Name.Name;
+        var typeName = st[1];
+        var type = TypeInheritanceStage.ResolveTypeWithModule(typeName, context, modulename);
+
+        scope.TypeAliases.Add(name, type);
     }
 
     private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu, CompilerContext context)
