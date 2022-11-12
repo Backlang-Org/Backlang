@@ -1,4 +1,4 @@
-using Backlang.Codeanalysis.Core;
+﻿using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver;
@@ -344,6 +344,15 @@ public static class TypeDeducer
 
         if (left != right) //ToDo: Add implicit casting check
         {
+            if (left is UnitType && right is not UnitType)
+            {
+                return left;
+            }
+            else if (right is UnitType && left is not UnitType)
+            {
+                return right;
+            }
+
             if (left.IsPointerType())
             {
                 ExpectType(node.Args[1], scope, context, modulename, context.Environment.Int32);

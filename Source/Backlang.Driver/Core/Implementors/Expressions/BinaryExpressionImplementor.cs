@@ -35,6 +35,7 @@ public class BinaryExpressionImplementor : IExpressionImplementor
 
             return block.AppendInstruction(call);
         }
+        //ToDo: add check for unittype and no unitype. then unpack unit type
 
         return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
     }

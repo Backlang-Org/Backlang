@@ -108,7 +108,7 @@ public sealed partial class Parser
 
         var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
 
-        AddError(new(ErrorID.UnterminatedCharLiteral, Iterator.Current.Text), range);
+        AddError(new(ErrorID.UnknownExpression, Iterator.Current.Text), range);
 
         Iterator.NextToken();
 

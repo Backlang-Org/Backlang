@@ -216,8 +216,10 @@ public sealed class Lexer : BaseLexer
         {
             if (Current() == '\n' || Current() == '\r')
             {
-                var range = new SourceRange(_document, _column, 1);
+                var range = new SourceRange(_document, _position, 1);
                 Messages.Add(Message.Error(ErrorID.UnterminatedStringLiteral, range));
+
+                return new Token(TokenType.StringLiteral, _document.Text.Slice(oldpos, _position - oldpos - 1).ToString(), oldpos - 1, _position, _line, oldColumn);
             }
 
             Advance();

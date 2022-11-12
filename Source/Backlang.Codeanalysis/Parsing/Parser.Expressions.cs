@@ -81,6 +81,10 @@ public sealed partial class Parser
 
             return parsePoints[type](Iterator, this).WithRange(token, Iterator.Prev);
         }
+        else if (type == Token.Invalid.Type)
+        {
+            return LNode.Missing;
+        }
         else
         {
             return Invalid(ErrorID.UnknownExpression);
