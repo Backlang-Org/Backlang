@@ -1,4 +1,4 @@
-﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver;
@@ -91,6 +91,10 @@ public static class TypeDeducer
             }
             else
             {
+                var type = TypeInheritanceStage.ResolveTypeWithModule(node, context, modulename);
+
+                if (type != null) return type;
+
                 var suggestion = LevensteinDistance.Suggest(node.Name.Name, scope.GetAllScopeNames());
 
                 context.AddError(node, $"{node.Name} cannot be resolved. Did you mean '{suggestion}'?");
