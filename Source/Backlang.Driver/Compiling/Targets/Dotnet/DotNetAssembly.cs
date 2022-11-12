@@ -4,6 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -49,6 +50,15 @@ public class DotNetAssembly : ITargetAssembly
         {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                type.Name.ToString(), TypeAttributes.Class);
+
+            if (type.BaseTypes.Count > 0 && type.BaseTypes[0].FullName.ToString() == "System.ValueType")
+            {
+                clrType.IsSealed = true;
+
+                var readonlyCtor = typeof(ReadOnlyAttribute).GetConstructors()[0];
+
+                clrType.CustomAttributes.Add(new CustomAttribute(_assemblyDefinition.MainModule.Import(readonlyCtor), new byte[] { 1, 0, 0, 0 }));
+            }
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
 
