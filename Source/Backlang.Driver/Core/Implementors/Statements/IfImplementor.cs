@@ -18,19 +18,10 @@ public class IfImplementor : IStatementImplementor
             after.Flow = new NothingFlow();
 
             ConditionalJumpKind kind = ConditionalJumpKind.True;
-            if (condition.Calls(CodeSymbols.Eq))
-            {
-                kind = ConditionalJumpKind.NotEquals;
-            }
-            else if (condition.Calls(CodeSymbols.NotEq))
-            {
-                kind = ConditionalJumpKind.Equals;
-            }
 
             if (!condition.Calls(CodeSymbols.Bool))
             {
-                AppendExpression(block, condition[0], context.Environment.Boolean, context, scope, modulename);
-                AppendExpression(block, condition[1], context.Environment.Boolean, context, scope, modulename);
+                AppendExpression(block, condition, context.Environment.Boolean, context, scope, modulename);
 
                 block.Flow = new JumpConditionalFlow(after, kind);
             }

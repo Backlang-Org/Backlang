@@ -23,6 +23,9 @@ public static class SyntacticMacros
         ["bitwise_or"] = ("BitwiseOr", 2),
         ["exclusive_or"] = ("ExclusiveOr", 2),
 
+        ["equality"] = ("Equality", 2),
+        ["inequality"] = ("Inequality", 2),
+
         ["bitwise_not"] = ("OnesComplement", 1),
 
         ["deref"] = ("Deref", 1),
