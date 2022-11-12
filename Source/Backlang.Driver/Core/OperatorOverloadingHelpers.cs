@@ -13,6 +13,8 @@ public static class OperatorOverloadingHelpers
         ["'&"] = "op_BitwiseAnd",
         ["'|"] = "op_BitwiseOr",
         ["'^"] = "op_ExclusiveOr",
+        ["'=="] = "op_Equality",
+        ["'!="] = "op_Inequality",
     }.ToImmutableDictionary();
 
     private static readonly ImmutableDictionary<string, string> unMap = new Dictionary<string, string>()
