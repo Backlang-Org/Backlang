@@ -16,6 +16,7 @@ public partial class ImplementationStage
         [CodeSymbols.Assign] = new AssignmentImplementor(),
         [CodeSymbols.If] = new IfImplementor(),
         [CodeSymbols.While] = new WhileImplementor(),
+        [CodeSymbols.DoWhile] = new DoWhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
         [CodeSymbols.Throw] = new ThrowImplementor(),
         [CodeSymbols.ColonColon] = new StaticCallImplementor(),

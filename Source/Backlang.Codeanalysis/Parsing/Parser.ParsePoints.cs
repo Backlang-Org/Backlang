@@ -51,6 +51,7 @@ public sealed partial class Parser
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
+        AddStatementParsePoint<DoWhileStatement>(TokenType.Do);
         AddStatementParsePoint<TryStatement>(TokenType.Try);
         AddStatementParsePoint<ForStatement>(TokenType.For);
         AddStatementParsePoint<MacroBlockStatement>(TokenType.Identifier);

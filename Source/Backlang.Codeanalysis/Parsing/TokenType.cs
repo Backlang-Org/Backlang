@@ -288,6 +288,9 @@ public enum TokenType
     [Keyword("while")]
     While,
 
+    [Keyword("do")]
+    Do,
+
     [Keyword("in")]
     In,
 
