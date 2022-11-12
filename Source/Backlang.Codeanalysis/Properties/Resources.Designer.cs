@@ -320,5 +320,14 @@ namespace Backlang.Codeanalysis.Properties {
                 return ResourceManager.GetString("BL(0029)", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Identifier &apos;{0}&apos; is not defined ähnelt.
+        /// </summary>
+        internal static string BL_0030_ {
+            get {
+                return ResourceManager.GetString("BL(0030)", resourceCulture);
+            }
+        }
     }
 }

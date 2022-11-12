@@ -204,4 +204,7 @@
   <data name="BL(0029)" xml:space="preserve">
     <value>Target '{0}' cannot be found</value>
   </data>
+  <data name="BL(0030)" xml:space="preserve">
+    <value>Identifier '{0}' is not defined</value>
+  </data>
 </root>
