@@ -303,7 +303,7 @@ public sealed class Lexer : BaseLexer
             }
             else if (IsMatch("/*"))
             {
-                int oldcol = _column;
+                int oldpos = _position;
 
                 Advance();
                 Advance();
@@ -330,7 +330,7 @@ public sealed class Lexer : BaseLexer
                 }
                 else
                 {
-                    var range = new SourceRange(_document, _column, 1);
+                    var range = new SourceRange(_document, oldpos, _position);
                     Messages.Add(Message.Error(ErrorID.NotClosedMultilineComment, range));
 
                     return;
