@@ -207,4 +207,7 @@
   <data name="BL(0030)" xml:space="preserve">
     <value>Identifier '{0}' is not defined</value>
   </data>
+  <data name="BL(0031)" xml:space="preserve">
+    <value>Cannot set type</value>
+  </data>
 </root>

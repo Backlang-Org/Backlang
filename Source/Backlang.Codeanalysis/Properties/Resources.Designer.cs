@@ -329,5 +329,14 @@ namespace Backlang.Codeanalysis.Properties {
                 return ResourceManager.GetString("BL(0030)", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cannot set type ähnelt.
+        /// </summary>
+        internal static string BL_0031_ {
+            get {
+                return ResourceManager.GetString("BL(0031)", resourceCulture);
+            }
+        }
     }
 }

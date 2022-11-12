@@ -32,4 +32,5 @@ public enum ErrorID : int
     CannotFindFunction = 0028,
     TargetNotFound = 0029,
     NotDefined = 0030,
+    CannotDeduceType = 31,
 }
