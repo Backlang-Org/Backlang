@@ -24,7 +24,7 @@ public class BinaryExpressionImplementor : IExpressionImplementor
             return block.AppendInstruction(
                 Instruction.CreateCall(opMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs }));
         }
-        else if (leftType == context.Environment.String || rightType == context.Environment.String)
+        else if (node.Calls(CodeSymbols.Add) && leftType == context.Environment.String || rightType == context.Environment.String)
         {
             var concatMethods = context.Environment.String.Methods
                 .Where(_ => _.Name.ToString() == "Concat" && _.Parameters.Count == 2);
