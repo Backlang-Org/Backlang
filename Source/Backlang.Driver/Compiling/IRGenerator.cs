@@ -48,7 +48,14 @@ public static class IRGenerator
                 var multiplication = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, c));
 
                 block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
-                var ldField = block.AppendInstruction(Instruction.CreateGetFieldPointer(field, null));
+                var instruction = Instruction.CreateLoadField(field);
+
+                if (field.FieldType.BaseTypes.Count() > 0 && field.FieldType.BaseTypes[0].FullName.ToString() == "System.ValueType")
+                {
+                    instruction = Instruction.CreateGetFieldPointer(field, null);
+                }
+
+                var ldField = block.AppendInstruction(instruction);
                 var call = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual, new List<ValueTag>() { ldField }));
 
                 var addition = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false, context.Environment.Int32, ldField, multiplication));
