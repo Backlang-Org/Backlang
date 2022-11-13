@@ -1,4 +1,5 @@
 using Backlang.Core.CompilerService;
+using Backlang.Driver.Compiling.Targets.Dotnet.RuntimeOptionsModels;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
@@ -34,7 +35,7 @@ public class DotNetAssembly : ITargetAssembly
 
         _description = description;
 
-        SetTargetFramework();
+        SetTargetFramework("net7.0"); //ToDo: get framework moniker from options
 
         var console = typeof(Console).Assembly.GetName();
         var core = typeof(UnitTypeAttribute).Assembly.GetName();
@@ -51,18 +52,7 @@ public class DotNetAssembly : ITargetAssembly
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                type.Name.ToString(), TypeAttributes.Class);
 
-            if (type.BaseTypes.Count > 0 && type.BaseTypes[0].FullName.ToString() == "System.ValueType")
-            {
-                clrType.IsSealed = true;
-
-                var readonlyCtor = typeof(ReadOnlyAttribute).GetConstructors()[0];
-
-                var ca = new CustomAttribute(_assemblyDefinition.MainModule.Import(readonlyCtor));
-
-                ca.ConstructorArguments.Add(new(_assemblyDefinition.MainModule.ImportReference(typeof(bool)), true));
-
-                clrType.CustomAttributes.Add(ca);
-            }
+            MakeStructReadonly(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
 
@@ -171,6 +161,22 @@ public class DotNetAssembly : ITargetAssembly
 
             default:
                 break;
+        }
+    }
+
+    private void MakeStructReadonly(DescribedType type, TypeDefinition clrType)
+    {
+        if (type.BaseTypes.Count > 0 && type.BaseTypes[0].FullName.ToString() == "System.ValueType")
+        {
+            clrType.IsSealed = true;
+
+            var readonlyCtor = typeof(ReadOnlyAttribute).GetConstructors()[0];
+
+            var ca = new CustomAttribute(_assemblyDefinition.MainModule.Import(readonlyCtor));
+
+            ca.ConstructorArguments.Add(new(_assemblyDefinition.MainModule.ImportReference(typeof(bool)), true));
+
+            clrType.CustomAttributes.Add(ca);
         }
     }
 
@@ -583,13 +589,14 @@ public class DotNetAssembly : ITargetAssembly
         return _assemblyDefinition.ImportType(name);
     }
 
-    private void SetTargetFramework()
+    private void SetTargetFramework(string moniker)
     {
         var tf = _assemblyDefinition.MainModule.ImportReference(typeof(TargetFrameworkAttribute).GetConstructors().First());
 
         var item = new CustomAttribute(tf);
         item.ConstructorArguments.Add(
-            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)), ".NETCoreApp,Version=v7.0"));
+            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)),
+            $".NETCoreApp,Version=v{RuntimeConfig.GetVersion(moniker)}"));
 
         _assemblyDefinition.CustomAttributes.Add(item);
     }

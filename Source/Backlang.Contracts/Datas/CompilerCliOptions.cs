@@ -31,4 +31,7 @@ public class CompilerCliOptions
 
     [Option('v', longName: "version", HelpText = "Set the assembly version")]
     public string Version { get; set; }
+
+    [Option('f', longName: "framework", HelpText = "On which framework should the assembly be runned on")]
+    public string TargetFramework { get; set; }
 }

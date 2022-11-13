@@ -1,4 +1,5 @@
 ﻿using Backlang.Core;
+using Backlang.Driver.Compiling.Targets.Dotnet.RuntimeOptionsModels;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 using System.Collections;
@@ -18,14 +19,8 @@ public class DotNetTarget : ICompilationTarget
 
     public void AfterCompiling(CompilerContext context)
     {
-        //ToDo: generate runtimeconfig json dynamicly
-        var runtimeConfigStream = typeof(DotNetTarget).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
-        var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.Options.OutputFilename))}.runtimeconfig.json");
-
-        runtimeConfigStream.CopyTo(jsonStream);
-
-        jsonStream.Close();
-        runtimeConfigStream.Close();
+        RuntimeConfig.Save(context.TempOutputPath,
+            Path.GetFileNameWithoutExtension(context.Options.OutputFilename), context.Options);
     }
 
     public void BeforeCompiling(CompilerContext context)
