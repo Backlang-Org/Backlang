@@ -15,8 +15,8 @@
 		<PackageReference Include="Flo" Version="0.3.0" />
 		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.48" />
 		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.48" />
-		<PackageReference Include="System.Composition" Version="6.0.0" />
-		<PackageReference Include="System.Composition.Hosting" Version="6.0.0" />
+		<PackageReference Include="System.Composition" Version="7.0.0" />
+		<PackageReference Include="System.Composition.Hosting" Version="7.0.0" />
 		<PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2" />
 	</ItemGroup>
 
