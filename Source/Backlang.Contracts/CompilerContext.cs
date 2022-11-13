@@ -11,6 +11,10 @@ public sealed class CompilerContext
 
     public DescribedAssembly Assembly { get; set; }
 
+    public PlaygroundData Playground { get; set; }
+
+    public Stream OutputStream { get; set; }
+
     public TypeResolver Binder { get; set; } = new();
 
     public Scope GlobalScope { get; } = new(null);
