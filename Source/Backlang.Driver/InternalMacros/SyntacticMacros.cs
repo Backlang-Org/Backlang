@@ -1,5 +1,4 @@
 ﻿using LeMP;
-using Loyc.Collections;
 using System.Text.RegularExpressions;
 
 namespace Backlang.Driver.InternalMacros;
@@ -36,35 +35,26 @@ public static class SyntacticMacros
 
     private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
-    [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
-    public static LNode AutoFree(LNode @operator, IMacroContext context)
-    {
-        var body = @operator.Args.Last;
-
-        var handles = @operator.Args.Take(@operator.Args.Count - 1);
-
-        var freeCalls = LNode.List();
-
-        foreach (var handle in handles)
-        {
-            freeCalls.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(handle, LNode.Id((Symbol)"Free"))).SetStyle(NodeStyle.Operator)));
-        }
-
-        return body.WithArgs(LNode.List().AddRange(body.Args).AddRange(freeCalls));
-    }
-
     [LexicalMacro("constructor()", "Convert constructor() to .ctor() function", "#constructor", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode Constructor(LNode @operator, IMacroContext context)
+    public static LNode Constructor(LNode node, IMacroContext context)
     {
-        return SyntaxTree.Signature(SyntaxTree.Type(".ctor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+        var factory = new LNodeFactory(node.Source);
+        SyntaxTree.Factory = factory;
+
+        return SyntaxTree.Signature(SyntaxTree.Type(".ctor", new()),
+            SyntaxTree.Type("none", LNode.List()), node.Args[0].Args,
+            new()).PlusArg(node.Args[1]).WithAttrs(node.Attrs).WithRange(node.Range);
     }
 
     [LexicalMacro("destructor()", "Convert destructor() to .dtor() function", "#destructor", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode Destructor(LNode @operator, IMacroContext context)
+    public static LNode Destructor(LNode node, IMacroContext context)
     {
+        var factory = new LNodeFactory(node.Source);
+        SyntaxTree.Factory = factory;
+
         return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()),
-            SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new())
-            .PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+            SyntaxTree.Type("none", LNode.List()), node.Args[0].Args, new())
+            .PlusArg(node.Args[1]).WithAttrs(node.Attrs).WithRange(node.Range);
     }
 
     [LexicalMacro(".dtor()", "Convert destructor() or .dtor() to Finalize", ".dtor", Mode = MacroMode.MatchIdentifierOrCall)]
@@ -276,11 +266,13 @@ public static class SyntacticMacros
         return node;
     }
 
-    private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)
+    private static LNode ConvertToAssignment(LNode node, Symbol symbol)
     {
-        var arg1 = @operator.Args[0];
-        var arg2 = @operator.Args[1];
+        var arg1 = node.Args[0];
+        var arg2 = node.Args[1];
 
-        return F.Call(CodeSymbols.Assign, arg1, F.Call(symbol, arg1, arg2));
+        var factory = new LNodeFactory(node.Source);
+
+        return factory.Call(CodeSymbols.Assign, arg1, factory.Call(symbol, arg1, arg2));
     }
 }
