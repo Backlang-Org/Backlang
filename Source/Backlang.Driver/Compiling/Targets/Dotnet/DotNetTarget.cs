@@ -18,8 +18,9 @@ public class DotNetTarget : ICompilationTarget
 
     public void AfterCompiling(CompilerContext context)
     {
+        //ToDo: generate runtimeconfig json dynamicly
         var runtimeConfigStream = typeof(DotNetTarget).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
-        var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.OutputFilename))}.runtimeconfig.json");
+        var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.Options.OutputFilename))}.runtimeconfig.json");
 
         runtimeConfigStream.CopyTo(jsonStream);
 
@@ -29,7 +30,7 @@ public class DotNetTarget : ICompilationTarget
 
     public void BeforeCompiling(CompilerContext context)
     {
-        context.OutputFilename += ".dll";
+        context.Options.OutputFilename += ".dll";
     }
 
     public void BeforeExpandMacros(MacroProcessor processor)
@@ -69,7 +70,7 @@ public class DotNetTarget : ICompilationTarget
 
     public void InitReferences(CompilerContext context)
     {
-        foreach (var r in context.References)
+        foreach (var r in context.Options.References)
         {
             AddFromAssembly(context, r);
         }

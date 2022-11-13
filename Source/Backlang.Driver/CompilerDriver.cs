@@ -14,7 +14,7 @@ public class CompilerDriver
            cfg.Add<ParsingStage>();
            cfg.Add<SemanticCheckStage>();
 
-           cfg.When(_ => !hasError(_.Messages) && _.OutputTree, _ => {
+           cfg.When(_ => !hasError(_.Messages) && _.Options.OutputTree, _ => {
                _.Add<EmitTreeStage>();
            });
 

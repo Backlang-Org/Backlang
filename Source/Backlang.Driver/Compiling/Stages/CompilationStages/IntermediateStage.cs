@@ -9,7 +9,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
+        context.Assembly = new DescribedAssembly(new QualifiedName(context.Options.OutputFilename.Replace(".dll", "")));
 
         foreach (var tree in context.Trees)
         {
@@ -22,7 +22,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 imports.ImportNamespace(importStatement, context);
             }
 
-            context.ImportetNamespaces.Add(tree.Document.FileName, imports);
+            context.FileScope.ImportetNamespaces.Add(tree.Document.FileName, imports);
 
             foreach (var st in tree.Body)
             {

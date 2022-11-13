@@ -6,7 +6,7 @@ public sealed class InitEmbeddedResourcesStage : IHandler<CompilerContext, Compi
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        foreach (var resource in context.EmbeddedResource)
+        foreach (var resource in context.Options.EmbeddedResource)
         {
             Stream strm = File.OpenRead(resource);
 

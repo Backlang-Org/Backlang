@@ -46,7 +46,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
             }
         }
 
-        _macroProcessor.DefaultScopedProperties.Add("Target", context.Target);
+        _macroProcessor.DefaultScopedProperties.Add("Target", context.Options.Target);
         _macroProcessor.DefaultScopedProperties.Add("Context", context);
 
         foreach (var tree in context.Trees)

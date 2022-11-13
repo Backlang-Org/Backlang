@@ -22,7 +22,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
 
     private static void ParseSourceFiles(CompilerContext context)
     {
-        Parallel.ForEachAsync(context.InputFiles, (filename, ct) => {
+        Parallel.ForEachAsync(context.Options.InputFiles, (filename, ct) => {
             if (File.Exists(filename))
             {
                 var tree = CompilationUnit.FromFile(filename);

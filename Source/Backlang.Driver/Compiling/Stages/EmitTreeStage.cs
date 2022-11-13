@@ -21,7 +21,7 @@ public sealed class EmitTreeStage : IHandler<CompilerContext, CompilerContext>
                 sb.AppendLine(node.ToString());
             }
 
-            File.WriteAllText(Path.Combine(context.TempOutputPath, context.OutputFilename + ".txt"), sb.ToString());
+            File.WriteAllText(Path.Combine(context.TempOutputPath, context.Options.OutputFilename + ".txt"), sb.ToString());
         }
 
         return await next.Invoke(context);

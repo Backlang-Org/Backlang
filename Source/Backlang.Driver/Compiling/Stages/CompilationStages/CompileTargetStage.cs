@@ -15,8 +15,8 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         var description = GetDescription(context);
 
-        if (context.Version != null)
-            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Version) });
+        if (context.Options.Version != null)
+            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Options.Version) });
 
         context.CompilationTarget.BeforeCompiling(context);
 
@@ -25,7 +25,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         if (!context.Playground.IsPlayground)
         {
             var resultPath = Path.Combine(context.TempOutputPath,
-                            context.OutputFilename);
+                            context.Options.OutputFilename);
 
             if (File.Exists(resultPath))
             {
@@ -46,14 +46,14 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
     {
         var attributes = new AttributeMap();
 
-        if (context.OutputType == "MacroLib")
+        if (context.Options.OutputType == "MacroLib")
         {
             attributes = new AttributeMap(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(MacroLibAttribute))));
         }
 
         var entryPoint = GetEntryPoint(context);
 
-        context.Assembly.IsLibrary = entryPoint == null && context.OutputType == "Library";
+        context.Assembly.IsLibrary = entryPoint == null && context.Options.OutputType == "Library";
 
         return new(context.Assembly.Name.Qualify(),
             attributes, context.Assembly, entryPoint, context.Environment);
@@ -61,12 +61,12 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
     private static IMethod GetEntryPoint(CompilerContext context)
     {
-        if (string.IsNullOrEmpty(context.OutputType))
+        if (string.IsNullOrEmpty(context.Options.OutputType))
         {
-            context.OutputType = "Exe";
+            context.Options.OutputType = "Exe";
         }
 
-        if (context.OutputType != "Exe")
+        if (context.Options.OutputType != "Exe")
         {
             return null;
         }

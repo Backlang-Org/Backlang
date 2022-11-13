@@ -87,7 +87,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             if (resolvedType == null)
             {
-                if (context.ImportetNamespaces.ContainsKey(typeNode.Range.Source.FileName))
+                if (context.FileScope.ImportetNamespaces.ContainsKey(typeNode.Range.Source.FileName))
                 {
                     ResolveImportedType(typeNode, context, ref fullName, ref resolvedType);
                 }
@@ -110,7 +110,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
     private static void ResolveImportedType(LNode typeNode, CompilerContext context, ref QualifiedName fullName, ref IType resolvedType)
     {
-        var namespaceImport = context.ImportetNamespaces[typeNode.Range.Source.FileName];
+        var namespaceImport = context.FileScope.ImportetNamespaces[typeNode.Range.Source.FileName];
 
         foreach (var importedNs in namespaceImport.ImportedNamespaces)
         {
