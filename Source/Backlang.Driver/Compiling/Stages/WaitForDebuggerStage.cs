@@ -9,6 +9,7 @@ public sealed class WaitForDebuggerStage : IHandler<CompilerContext, CompilerCon
     {
         while (!Debugger.IsAttached)
         {
+            Thread.Sleep(1);
         }
 
         return await next.Invoke(context);
