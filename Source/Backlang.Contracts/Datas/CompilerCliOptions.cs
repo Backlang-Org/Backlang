@@ -34,4 +34,7 @@ public class CompilerCliOptions
 
     [Option('f', longName: "framework", HelpText = "On which framework should the assembly be runned on")]
     public string TargetFramework { get; set; }
+
+    [Option("debug", HelpText = "Wait for debugger been attached for debugging plugins")]
+    public bool WaitForDebugger { get; set; }
 }
