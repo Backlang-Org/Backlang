@@ -25,8 +25,13 @@ public struct Sealed<T>
         _value = value;
     }
 
-    public void Unfreeze()
+    public void Freeze()
     {
         IsFreezed = true;
+    }
+    
+    public void Unfreeze()
+    {
+        IsFreezed = false;
     }
 }
