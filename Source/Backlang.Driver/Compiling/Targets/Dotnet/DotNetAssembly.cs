@@ -172,7 +172,7 @@ public class DotNetAssembly : ITargetAssembly
 
             var readonlyCtor = typeof(ReadOnlyAttribute).GetConstructors()[0];
 
-            var ca = new CustomAttribute(_assemblyDefinition.MainModule.Import(readonlyCtor));
+            var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(readonlyCtor));
 
             ca.ConstructorArguments.Add(new(_assemblyDefinition.MainModule.ImportReference(typeof(bool)), true));
 
