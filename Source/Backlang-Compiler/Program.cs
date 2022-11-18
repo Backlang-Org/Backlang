@@ -10,8 +10,10 @@ public static class Program
     {
         Parser.Default.ParseArguments<CompilerCliOptions>(args)
               .WithParsed(options => {
-                  var context = new CompilerContext();
-                  context.Options = options;
+                  var context = new CompilerContext
+                  {
+                      Options = options
+                  };
 
                   CompilerDriver.Compile(context);
               });
