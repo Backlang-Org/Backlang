@@ -69,6 +69,32 @@ public static class SyntacticMacros
         return ConvertToAssignment(@operator, CodeSymbols.Div);
     }
 
+    [LexicalMacro("fn", "Expand notnull postfix for function parameter declaration", "#fn",
+       Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverrideMax)]
+    public static LNode ExpandNotnullAssertionPostfix(LNode node, IMacroContext context)
+    {
+        var newBody = new LNodeList();
+
+        foreach (var parameter in node[2].Args)
+        {
+            if (parameter.Attrs.Contains(LNode.Id(Symbols.AssertNonNull)))
+            {
+                var name = parameter[1][0];
+
+                var throwNode = LNode.Call(CodeSymbols.Throw, LNode.List(LNode.Call(CodeSymbols.String, LNode.List(LNode.Literal($"Parameter '{name.Name}' is none")))));
+                var ifBody = LNode.Call(CodeSymbols.Braces, LNode.List(throwNode));
+
+                newBody = newBody.Add(SyntaxTree.If(LNode.Call(CodeSymbols.Eq, LNode.List(name, SyntaxTree.None())), ifBody, LNode.Missing));
+            }
+        }
+
+        newBody = newBody.AddRange(node[3].Args);
+
+        node = node.WithArgChanged(3, LNode.Call(CodeSymbols.Braces, newBody));
+
+        return node;
+    }
+
     [LexicalMacro("operator", "Convert to public static op_", "#fn",
         Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverride)]
     public static LNode ExpandOperator(LNode @operator, IMacroContext context)
