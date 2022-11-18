@@ -30,4 +30,5 @@ public static class Symbols
     public static readonly Symbol Init = GSymbol.Get("#init");
     public static readonly Symbol Unit = GSymbol.Get("#unit");
     public static readonly Symbol UnitDecl = GSymbol.Get("#unitDecl");
+    public static readonly Symbol AssertNonNull = GSymbol.Get("#notnull");
 }

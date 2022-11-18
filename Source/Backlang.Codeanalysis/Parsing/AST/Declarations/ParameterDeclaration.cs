@@ -12,6 +12,11 @@ public sealed class ParameterDeclaration : IParsePoint
         var keywordToken = iterator.Current;
         var name = iterator.Match(TokenType.Identifier);
 
+        bool assertNotNull = false;
+        if(iterator.ConsumeIfMatch(TokenType.Exclamation)) {
+            assertNotNull = true;
+        }
+
         iterator.Match(TokenType.Colon);
 
         var type = TypeLiteral.Parse(iterator, parser);
@@ -23,6 +28,10 @@ public sealed class ParameterDeclaration : IParsePoint
             iterator.NextToken();
 
             defaultValue = Expression.Parse(parser);
+        }
+
+        if(assertNotNull)  {
+           annotations = annotations.Add(LNode.Id(Symbols.AssertNonNull));
         }
 
         return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations)
