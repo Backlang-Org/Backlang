@@ -26,6 +26,18 @@ public static partial class BuiltInMacros
         return LNode.Missing;
     }
 
+    [LexicalMacro("notimplemented", "Semantic info for functionality that is not implemented", "notimplemented")]
+    public static LNode NotImplemented(LNode node, IMacroContext context)
+    {
+        return LNode.Missing;
+    }
+
+    [LexicalMacro("refactor", "Semantic info for functionality that needs to be refactored", "refactor")]
+    public static LNode Refactor(LNode node, IMacroContext context)
+    {
+        return LNode.Missing;
+    }
+
     [LexicalMacro(@"nameof(id_or_expr)",
         @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")", "nameof", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode @Nameof(LNode nameof, IMacroContext context)
