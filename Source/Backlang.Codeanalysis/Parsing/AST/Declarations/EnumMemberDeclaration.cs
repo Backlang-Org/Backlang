@@ -6,7 +6,7 @@ public class EnumMemberDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Annotation.TryParse(parser, out var annotations);
+        _ = Annotation.TryParse(parser, out var annotations);
 
         var memberNameToken = iterator.Match(TokenType.Identifier);
         LNode value = LNode.Missing;

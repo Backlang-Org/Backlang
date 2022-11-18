@@ -6,8 +6,7 @@ public sealed class BitFieldMemberDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Token nameToken = null;
-
+        Token nameToken;
         if (iterator.Current.Type == TokenType.Identifier)
         {
             nameToken = iterator.Current;

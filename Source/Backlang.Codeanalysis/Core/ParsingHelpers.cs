@@ -30,7 +30,9 @@ internal static class ParsingHelpers
         } while (parser.Iterator.ConsumeIfMatch(seperator));
 
         if (consumeTerminator)
+        {
             parser.Iterator.Match(terminator);
+        }
 
         return list;
     }

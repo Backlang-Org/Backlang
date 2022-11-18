@@ -7,12 +7,12 @@ public sealed class ParameterDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Annotation.TryParse(parser, out var annotations);
+        _ = Annotation.TryParse(parser, out var annotations);
 
         var keywordToken = iterator.Current;
         var name = iterator.Match(TokenType.Identifier);
 
-        bool assertNotNull = false;
+        var assertNotNull = false;
         if(iterator.ConsumeIfMatch(TokenType.Exclamation)) {
             assertNotNull = true;
         }

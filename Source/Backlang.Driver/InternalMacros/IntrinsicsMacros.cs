@@ -1,4 +1,5 @@
 ﻿using LeMP;
+using Loyc.Syntax;
 using System.Reflection;
 
 namespace Backlang.Driver.InternalMacros;
@@ -37,10 +38,7 @@ public static class IntrinsicsMacros
             return LNode.Call((Symbol)"'{}");
         }
 
-        if (intrinsicNames == null)
-        {
-            intrinsicNames = InitAvailableIntrinsicNames(compContext.CompilationTarget.IntrinsicType);
-        }
+        intrinsicNames ??= InitAvailableIntrinsicNames(compContext.CompilationTarget.IntrinsicType);
 
         var availableConstants =
             GetAvailableConstants(compContext.CompilationTarget.IntrinsicType);
@@ -54,7 +52,7 @@ public static class IntrinsicsMacros
                 continue;
             }
 
-            calls = ConvertCall(calls, compContext, availableConstants, compContext.CompilationTarget.IntrinsicType);
+            calls = ConvertCall(calls, compContext, availableConstants);
 
             var newCall = ConvertIntrinsic(calls, compContext.CompilationTarget.IntrinsicType);
             newBodyArgs = newBodyArgs.Add(newCall);
@@ -63,7 +61,7 @@ public static class IntrinsicsMacros
         return LNode.Call((Symbol)"'{}", newBodyArgs).WithStyle(NodeStyle.Operator);
     }
 
-    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants, Type intrinsicType)
+    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants)
     {
         var newArgs = new LNodeList();
 

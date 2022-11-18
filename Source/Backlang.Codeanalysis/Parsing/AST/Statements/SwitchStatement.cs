@@ -28,18 +28,29 @@ public sealed class SwitchStatement : IParsePoint
 
         while (!parser.Iterator.IsMatch(TokenType.CloseCurly))
         {
-            bool autoBreak = iterator.IsMatch(TokenType.Break);
+            var autoBreak = iterator.IsMatch(TokenType.Break);
 
-            if (autoBreak) iterator.Match(TokenType.Break);
+            if (autoBreak)
+            {
+                iterator.Match(TokenType.Break);
+            }
 
             if (iterator.IsMatch(TokenType.Case))
+            {
                 cases.Add(ParseCase(parser, autoBreak));
+            }
             else if (iterator.IsMatch(TokenType.If))
+            {
                 cases.Add(ParseIf(parser, autoBreak));
+            }
             else if (iterator.IsMatch(TokenType.When))
+            {
                 cases.Add(ParseWhen(parser, autoBreak));
+            }
             else if (iterator.IsMatch(TokenType.Default))
+            {
                 cases.Add(ParseDefault(parser, autoBreak));
+            }
             else
             {
                 var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
@@ -65,7 +76,9 @@ public sealed class SwitchStatement : IParsePoint
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
+        {
             body = body.PlusArg(LNode.Call(CodeSymbols.Break));
+        }
 
         return SyntaxTree.Case(condition, body).WithRange(keywordToken, parser.Iterator.Prev);
     }
@@ -79,7 +92,9 @@ public sealed class SwitchStatement : IParsePoint
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
+        {
             body = body.PlusArg(LNode.Call(CodeSymbols.Break));
+        }
 
         return SyntaxTree.Case(LNode.Call(CodeSymbols.Default), body);
     }
@@ -95,7 +110,9 @@ public sealed class SwitchStatement : IParsePoint
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
+        {
             body = body.PlusArg(LNode.Call(CodeSymbols.Break));
+        }
 
         return SyntaxTree.If(condition, body, SyntaxTree.Factory.Braces());
     }
@@ -105,8 +122,7 @@ public sealed class SwitchStatement : IParsePoint
         parser.Iterator.Match(TokenType.When);
 
         LNode binOp = LNode.Missing;
-        LNode right = LNode.Missing;
-
+        LNode right;
         if (Expression.GetBinaryOperatorPrecedence(parser.Iterator.Current.Type) > 0)
         {
             // with binary expression
@@ -139,7 +155,9 @@ public sealed class SwitchStatement : IParsePoint
         var body = Statement.ParseOneOrBlock(parser);
 
         if (autoBreak)
+        {
             body = body.PlusArg(LNode.Call(CodeSymbols.Break));
+        }
 
         return SyntaxTree.When(binOp, right, body);
     }

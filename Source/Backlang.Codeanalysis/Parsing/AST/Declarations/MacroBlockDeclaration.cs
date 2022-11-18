@@ -12,7 +12,10 @@ public sealed class MacroBlockDeclaration : IParsePoint
 
         foreach (var p in parser.StatementParsePoints)
         {
-            if (pp.ContainsKey(p.Key)) continue;
+            if (pp.ContainsKey(p.Key))
+            {
+                continue;
+            }
 
             pp.Add(p.Key, p.Value);
         }

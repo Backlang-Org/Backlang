@@ -5,7 +5,7 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public sealed class SourceDocument
 {
-    private SourceFile<StreamCharSource> _document;
+    private readonly SourceFile<StreamCharSource> _document;
 
     public SourceDocument(string filename)
     {

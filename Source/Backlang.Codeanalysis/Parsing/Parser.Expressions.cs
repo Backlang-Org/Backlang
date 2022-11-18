@@ -8,7 +8,7 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public sealed partial class Parser
 {
-    private Dictionary<string, Symbol> _lits = new() {
+    private readonly Dictionary<string, Symbol> _lits = new() {
         {"ub", CodeSymbols.UInt8},
         {"us", CodeSymbols.UInt16},
         {"u", CodeSymbols.UInt32},
@@ -34,10 +34,7 @@ public sealed partial class Parser
 
     internal LNode ParsePrimary(ParsePoints parsePoints = null)
     {
-        if (parsePoints == null)
-        {
-            parsePoints = ExpressionParsePoints;
-        }
+        parsePoints ??= ExpressionParsePoints;
 
         return Iterator.Current.Type switch
         {
@@ -75,11 +72,11 @@ public sealed partial class Parser
         var token = Iterator.Current;
         var type = token.Type;
 
-        if (parsePoints.ContainsKey(type))
+        if (parsePoints.TryGetValue(type, out var value))
         {
             Iterator.NextToken();
 
-            return parsePoints[type](Iterator, this).WithRange(token, Iterator.Prev);
+            return value(Iterator, this).WithRange(token, Iterator.Prev);
         }
         else if (type == Token.Invalid.Type)
         {
@@ -135,7 +132,7 @@ public sealed partial class Parser
         }
 
         return SyntaxTree.Factory.Call(CodeSymbols.Int32,
-            LNode.List(SyntaxTree.Factory.Literal(int.Parse(valueToken.Text, NumberStyles.HexNumber))))
+            LNode.List(SyntaxTree.Factory.Literal(result)))
             .WithRange(Iterator.Prev);
     }
 
@@ -166,9 +163,9 @@ public sealed partial class Parser
 
         if (Iterator.Current.Type == TokenType.Identifier)
         {
-            if (_lits.ContainsKey(Iterator.Current.Text.ToLower()))
+            if (_lits.TryGetValue(Iterator.Current.Text.ToLower(), out var value))
             {
-                result = SyntaxTree.Factory.Call(_lits[Iterator.Current.Text.ToLower()],
+                result = SyntaxTree.Factory.Call(value,
                     LNode.List(result)).WithRange(Iterator.Prev, Iterator.Current);
             }
             else

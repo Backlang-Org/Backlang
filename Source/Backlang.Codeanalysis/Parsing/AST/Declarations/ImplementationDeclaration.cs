@@ -7,8 +7,6 @@ public class ImplementationDeclaration : IParsePoint
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
         var keywordToken = iterator.Prev;
-
-        LNode target = null;
         var targets = new LNodeList();
 
         while (iterator.Current.Type != TokenType.OpenCurly && !parser.Iterator.IsMatch(TokenType.EOF))
@@ -28,6 +26,8 @@ public class ImplementationDeclaration : IParsePoint
             }
         }
 
+
+        LNode target;
         if (targets.Count == 1)
         {
             target = targets[0];
@@ -43,8 +43,8 @@ public class ImplementationDeclaration : IParsePoint
         LNodeList body = new();
         while (!parser.Iterator.IsMatch(TokenType.EOF) && iterator.Current.Type != TokenType.CloseCurly)
         {
-            Annotation.TryParse(parser, out var annotations);
-            Modifier.TryParse(parser, out var modifiers);
+            _ = Annotation.TryParse(parser, out var annotations);
+            _ = Modifier.TryParse(parser, out var modifiers);
 
             body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints).PlusAttrs(annotations).PlusAttrs(modifiers));
         }

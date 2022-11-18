@@ -9,7 +9,7 @@ public readonly struct LocalizableString
     public readonly string[] Arguments;
     public readonly string FallbackValue;
 
-    private static readonly ResourceManager resourceManager = new ResourceManager("Backlang.Codeanalysis.Properties.Resources", typeof(Resources).Assembly);
+    private static readonly ResourceManager _resourceManager = new("Backlang.Codeanalysis.Properties.Resources", typeof(Resources).Assembly);
 
     public LocalizableString(ErrorID errorID, params string[] arguments)
     {
@@ -38,7 +38,7 @@ public readonly struct LocalizableString
 
         var resourceID = $"BL({(int)lstr.ErrorID:D4})";
 
-        return string.Format(resourceID + ": " + resourceManager.GetString(resourceID), args: lstr.Arguments);
+        return string.Format(resourceID + ": " + _resourceManager.GetString(resourceID), args: lstr.Arguments);
     }
 
     public static implicit operator LocalizableString(ErrorID id)
