@@ -1,15 +1,17 @@
 import System;
 
-
+func doSomething(name!: string) {
+	print(name);
+}
 
 func main() {
 	let k = 12;
 	
-
 	if k == 12 {
 		print("it works");
 	}
-	 if k == 13 {
+
+	if k == 13 {
 		print("hello");
 	}
 	else {
@@ -24,4 +26,3 @@ struct Hello {
 	let k: i32;	
 	let v: i32;	
 }
-
