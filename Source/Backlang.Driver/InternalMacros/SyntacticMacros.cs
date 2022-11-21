@@ -74,10 +74,13 @@ public static class SyntacticMacros
     public static LNode ExpandNotnullAssertionPostfix(LNode node, IMacroContext context)
     {
         var newBody = new LNodeList();
+        var newParameters = new LNodeList();
 
         foreach (var parameter in node[2].Args)
         {
-            if (parameter.Attrs.Contains(LNode.Id(Symbols.AssertNonNull)))
+            var nonNullAttribute = LNode.Id(Symbols.AssertNonNull);
+
+            if (parameter.Attrs.Contains(nonNullAttribute))
             {
                 var name = parameter[1][0];
 
@@ -86,10 +89,13 @@ public static class SyntacticMacros
 
                 newBody = newBody.Add(SyntaxTree.If(LNode.Call(CodeSymbols.Eq, LNode.List(name, SyntaxTree.None())), ifBody, LNode.Missing));
             }
+
+            newParameters.Add(parameter.WithoutAttrNamed(nonNullAttribute.Name));
         }
 
         newBody = newBody.AddRange(node[3].Args);
 
+        node = node.WithArgChanged(2, node[3].WithArgs(newParameters));
         node = node.WithArgChanged(3, LNode.Call(CodeSymbols.Braces, newBody));
 
         return node;
