@@ -319,9 +319,7 @@ public static class MethodBodyCompiler
         }
         else
         {
-            var thisPtr = larg.Parameter.Type.Name.ToString() == parentType.Name.ToString(); //ToDo: fix namespacing
-
-            if (thisPtr)
+            if (larg.Parameter.Name.ToString() == "this")
             {
                 ilProcessor.Emit(OpCodes.Ldarg_0);
             }

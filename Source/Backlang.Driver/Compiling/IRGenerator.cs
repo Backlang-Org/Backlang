@@ -107,6 +107,8 @@ public static class IRGenerator
 
         foreach (var field in type.Fields)
         {
+            //AppendThis(block, p.Type);
+
             var loadSbf = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
 
             AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
@@ -114,10 +116,7 @@ public static class IRGenerator
 
             var appendMethod = context.Binder.FindFunction($"System.Text.StringBuilder::Append({field.FieldType.FullName})");
 
-            if (appendMethod == null)
-            {
-                appendMethod = context.Binder.FindFunction("System.Text.StringBuilder::Append(System.Object)");
-            }
+            appendMethod ??= context.Binder.FindFunction("System.Text.StringBuilder::Append(System.Object)");
 
             block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
         }

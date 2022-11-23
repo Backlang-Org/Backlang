@@ -22,7 +22,7 @@ func main() {
 	print(k);
 }
 
-struct Hello {
+public struct Hello {
 	let k: i32;	
 	let v: i32;	
 }
