@@ -3,11 +3,14 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Numerics;
 
 namespace Backlang.Driver.Compiling;
 
 public static class IRGenerator
 {
+    private static readonly int[] _primes = new[] { 2, 3, 5, 7,  11, 13, 17, 19, 23, 29, 31, 37, 41};
+
     public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
     {
         var gethashcodeMethod = new DescribedBodyMethod(type, new SimpleName("GetHashCode"),
@@ -21,9 +24,10 @@ public static class IRGenerator
 
         block.AppendParameter(new BlockParameter(context.Environment.Int32, "hash"));
 
+        var startPrime = SelectPrime();
         var constant = block.AppendInstruction(
             Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
-                Instruction.CreateConstant(new IntegerConstant(17), context.Environment.Int32))
+                Instruction.CreateConstant(new IntegerConstant(startPrime), context.Environment.Int32))
             )
         );
 
@@ -41,7 +45,7 @@ public static class IRGenerator
                 var hash = block.AppendInstruction(loadHash);
                 var c = block.AppendInstruction(
                     Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
-                        Instruction.CreateConstant(new IntegerConstant(23), context.Environment.Int32))
+                        Instruction.CreateConstant(new IntegerConstant(SelectPrime()), context.Environment.Int32))
                     )
                 );
 
@@ -69,6 +73,11 @@ public static class IRGenerator
 
         gethashcodeMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
         type.AddMethod(gethashcodeMethod);
+    }
+
+    private static int SelectPrime()
+    {
+        return _primes[Random.Shared.Next(0, _primes.Length)];
     }
 
     public static void GenerateToString(CompilerContext context, DescribedType type)
@@ -114,7 +123,6 @@ public static class IRGenerator
         }
 
         var tsM = context.Binder.FindFunction($"System.Text.StringBuilder::ToString()");
-
         block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
         block.Flow = new ReturnFlow();
