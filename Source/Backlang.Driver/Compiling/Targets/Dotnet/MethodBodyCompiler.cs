@@ -16,7 +16,7 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
 public static class MethodBodyCompiler
 {
-    private static readonly Dictionary<Type, IEmitter> emitters = new()
+    private static readonly Dictionary<Type, IEmitter> _emitters = new()
     {
         [typeof(CallPrototype)] = new CallEmitter(),
         [typeof(TypeOfInstructionPrototype)] = new TypeofEmitter(),
@@ -138,9 +138,9 @@ public static class MethodBodyCompiler
             var instruction = item.Instruction;
 
             var prototypeType = instruction.Prototype.GetType();
-            if (emitters.ContainsKey(prototypeType))
+            if (_emitters.ContainsKey(prototypeType))
             {
-                emitters[prototypeType].Emit(assemblyDefinition, ilProcessor, instruction, block);
+                _emitters[prototypeType].Emit(assemblyDefinition, ilProcessor, instruction, block);
             }
             else if (instruction.Prototype is LoadLocalAPrototype lda)
             {
