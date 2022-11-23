@@ -26,6 +26,7 @@ public static class MethodBodyCompiler
         [typeof(IntrinsicPrototype)] = new ArithmetikEmitter(),
         [typeof(AllocaArrayPrototype)] = new NewArrayEmitter(),
         [typeof(LoadPrototype)] = new LoadEmitter(),
+        [typeof(CopyPrototype)] = new CopyEmitter(),
     };
 
     public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
