@@ -214,7 +214,6 @@ public static class MethodBodyCompiler
                         ilProcessor.Emit(OpCodes.Starg, index);
                     }
                 }
-                //Todo: implement more store types: ldfield ldfieldindirect, ...
             }
             else if (instruction.Prototype is StoreFieldPointerPrototype spa)
             {
@@ -245,7 +244,7 @@ public static class MethodBodyCompiler
         {
             fixups.Add((ilProcessor.Body.Instructions.Count, n.Branch.Target));
 
-            OpCode op = OpCodes.Br;
+            var op = OpCodes.Br;
 
             var selector = (ConditionalJumpKind)n.ConditionSelector;
             if (selector == ConditionalJumpKind.True)

@@ -34,7 +34,7 @@ internal class CallEmitter : IEmitter
             }
         }
 
-        OpCode op = OpCodes.Call;
+        var op = OpCodes.Call;
 
         if (!callPrototype.Callee.IsStatic)
         {
