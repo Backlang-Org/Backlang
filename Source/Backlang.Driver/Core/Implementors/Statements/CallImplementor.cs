@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Driver.Core.Instructions;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
@@ -19,6 +20,8 @@ public class CallImplementor : IStatementImplementor
             if (scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
             {
                 AppendCall(context, block, callee, fsi.Overloads, scope, modulename);
+
+                AppendDiscardReturnValue(block, fsi.Overloads[0].ReturnParameter.Type);
             }
             else
             {
@@ -31,5 +34,14 @@ public class CallImplementor : IStatementImplementor
         }
 
         return block;
+    }
+
+    public static void AppendDiscardReturnValue(BasicBlockBuilder block, IType type)
+    {
+        if (type.FullName.ToString() != "System.Void")
+        {
+            //Discard value if its not been stored anywhere
+            block.AppendInstruction(new PopInstructionPrototype().Instantiate(new List<ValueTag>()));
+        }
     }
 }
