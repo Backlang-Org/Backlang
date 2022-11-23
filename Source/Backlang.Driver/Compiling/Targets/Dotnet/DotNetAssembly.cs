@@ -278,17 +278,17 @@ public class DotNetAssembly : ITargetAssembly
 
     private void AdjustBaseTypesAndInterfaces()
     {
-        foreach (var baseType in _needToAdjust)
+        foreach (var (definition, name) in _needToAdjust)
         {
-            var type = Resolve(baseType.name).Resolve();
+            var type = Resolve(name).Resolve();
 
             if (type.IsInterface)
             {
-                baseType.definition.Interfaces.Add(new InterfaceImplementation(type));
+                definition.Interfaces.Add(new InterfaceImplementation(type));
             }
             else
             {
-                baseType.definition.BaseType = type;
+                definition.BaseType = type;
             }
         }
     }
