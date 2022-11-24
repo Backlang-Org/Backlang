@@ -28,31 +28,31 @@ internal class ArithmetikEmitter : IEmitter
     {
         var arithProtype = (IntrinsicPrototype)instruction.Prototype;
 
-        if (_stringOPMap.TryGetValue(arithProtype.Name, out var opCode))
+        if (_stringOPMap.ContainsKey(arithProtype.Name))
         {
-            ilProcessor.Emit(opCode); return;
+            var op = _stringOPMap[arithProtype.Name];
+            ilProcessor.Emit(op); return;
         }
 
         switch (arithProtype.Name)
         {
             case "arith.!=":
-                AppendComparison(ilProcessor, OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
                 break;
 
             case "arith.<=":
-                AppendComparison(ilProcessor, OpCodes.Cgt);
+                ilProcessor.Emit(OpCodes.Cgt);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
                 break;
 
             case "arith.>=":
-                AppendComparison(ilProcessor, OpCodes.Clt);
+                ilProcessor.Emit(OpCodes.Clt);
+                ilProcessor.Emit(OpCodes.Ldc_I4, 0);
+                ilProcessor.Emit(OpCodes.Ceq);
                 break;
         }
-    }
-
-    private static void AppendComparison(ILProcessor ilProcessor, OpCode comparisionOpcode)
-    {
-        ilProcessor.Emit(comparisionOpcode);
-        ilProcessor.Emit(OpCodes.Ldc_I4, 0);
-        ilProcessor.Emit(OpCodes.Ceq);
     }
 }

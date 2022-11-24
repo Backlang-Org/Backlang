@@ -9,7 +9,7 @@ namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
 
 public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContext>
 {
-    private readonly MacroProcessor _macroProcessor;
+    private MacroProcessor _macroProcessor;
 
     public ExpandMacrosStage()
     {
@@ -71,7 +71,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static MessageSeverity ConvertSeverity(Severity severity)
+    private MessageSeverity ConvertSeverity(Severity severity)
     {
         return severity switch
         {

@@ -16,9 +16,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         var description = GetDescription(context);
 
         if (context.Options.Version != null)
-        {
             context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Options.Version) });
-        }
 
         context.CompilationTarget.BeforeCompiling(context);
 
@@ -26,7 +24,8 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         if (!context.Playground.IsPlayground)
         {
-            var resultPath = Path.Combine(context.TempOutputPath, context.Options.OutputFilename);
+            var resultPath = Path.Combine(context.TempOutputPath,
+                            context.Options.OutputFilename);
 
             if (File.Exists(resultPath))
             {
@@ -56,29 +55,30 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         context.Assembly.IsLibrary = entryPoint == null && context.Options.OutputType == "Library";
 
-        return new(context.Assembly.Name.Qualify(), attributes, context.Assembly, entryPoint, context.Environment);
+        return new(context.Assembly.Name.Qualify(),
+            attributes, context.Assembly, entryPoint, context.Environment);
     }
 
     private static IMethod GetEntryPoint(CompilerContext context)
     {
-        if (context.Options.OutputType != "Exe")
-        {
-            return null;
-        }
-
         if (string.IsNullOrEmpty(context.Options.OutputType))
         {
             context.Options.OutputType = "Exe";
         }
 
-        var entryPointMethod = context.Assembly.Types.SelectMany(_ => _.Methods)
+        if (context.Options.OutputType != "Exe")
+        {
+            return null;
+        }
+
+        var entryPoint = context.Assembly.Types.SelectMany(_ => _.Methods)
             .FirstOrDefault(_ => _.Name.ToString() == Names.MainMethod);
 
-        if (entryPointMethod == null)
+        if (entryPoint == null)
         {
             context.Messages.Add(Message.Error(ErrorID.RunnableTypeButNoEntrypoint));
         }
 
-        return entryPointMethod;
+        return entryPoint;
     }
 }

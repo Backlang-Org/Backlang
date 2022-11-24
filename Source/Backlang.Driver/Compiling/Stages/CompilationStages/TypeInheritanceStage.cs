@@ -38,10 +38,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 annotation = annotation.Attrs[0];
 
-                if (annotation.Name == LNode.Missing.Name)
-                {
-                    continue;
-                }
+                if (annotation.Name == LNode.Missing.Name) continue;
 
                 var fullname = ConversionUtils.GetQualifiedName(annotation.Target);
 
@@ -186,10 +183,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                             i = (int)mvalue.Args[0].Value;
                         }
 
-                        var field = new DescribedField(type, new SimpleName(mname.Name.Name), true, mtype)
-                        {
-                            InitialValue = i
-                        };
+                        var field = new DescribedField(type, new SimpleName(mname.Name.Name), true, mtype);
+                        field.InitialValue = i;
 
                         type.AddField(field);
                     }
@@ -220,18 +215,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             field.InitialValue = mvalue.Args[0].Value;
         }
         var isMutable = member.Attrs.Any(_ => _.Name == Symbols.Mutable);
-        if (isMutable)
-        {
-            field.AddAttribute(Attributes.Mutable);
-        }
-
+        if (isMutable) field.AddAttribute(Attributes.Mutable);
         var isStatic = member.Attrs.Any(_ => _.Name == CodeSymbols.Static);
-        if (isStatic)
-        {
-            field.IsStatic = true;
-        }
+        if (isStatic) field.IsStatic = true;
 
-        if (scope.TryAdd(new FieldScopeItem { Name = mname.Name, Field = field }))
+        if (scope.Add(new FieldScopeItem { Name = mname.Name, Field = field }))
         {
             type.AddField(field);
         }
@@ -262,13 +250,13 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         foreach (var inheritance in inheritances.Args)
         {
-            var baseType = (DescribedType)ResolveTypeWithModule(inheritance, context, modulename);
+            var btype = (DescribedType)ResolveTypeWithModule(inheritance, context, modulename);
 
-            if (baseType != null)
+            if (btype != null)
             {
-                if (!baseType.IsSealed)
+                if (!btype.IsSealed)
                 {
-                    type.AddBaseType(baseType);
+                    type.AddBaseType(btype);
                 }
                 else
                 {

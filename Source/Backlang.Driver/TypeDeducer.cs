@@ -37,13 +37,13 @@ public static class TypeDeducer
         {
             return ImplementationStage.GetLiteralType(node, context, scope, modulename);
         }
-        if (TypenameTable.TryGetValue(node.Name.Name, out var typename))
+        if (TypenameTable.ContainsKey(node.Name.Name))
         {
-            return Deduce(LNode.Id(typename), scope, context, modulename);
+            return Deduce(LNode.Id(TypenameTable[node.Name.Name]), scope, context, modulename);
         }
         else if (node.Calls(CodeSymbols.Typeof))
         {
-            return Utils.ResolveType(context.Binder, typeof(Type));
+            return context.Binder.ResolveTypes(new SimpleName("Type").Qualify("System")).First();
         }
         else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
         {
@@ -93,10 +93,7 @@ public static class TypeDeducer
             {
                 var type = TypeInheritanceStage.ResolveTypeWithModule(node, context, modulename);
 
-                if (type != null)
-                {
-                    return type;
-                }
+                if (type != null) return type;
 
                 var suggestion = LevensteinDistance.Suggest(node.Name.Name, scope.GetAllScopeNames());
 

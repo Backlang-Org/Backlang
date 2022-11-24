@@ -11,12 +11,12 @@ public static class BinderExtensions
     /// </summary>
     /// <param name="binder"></param>
     /// <param name="selector">System.StringBuilder::AppendLine(System.String)</param>
-    /// <returns>The found function or null</returns>
+    /// <returns></returns>
     public static IMethod FindFunction(this TypeResolver binder, string selector)
     {
-        if (_functionCache.TryGetValue(selector, out var value))
+        if (_functionCache.ContainsKey(selector))
         {
-            return value;
+            return _functionCache[selector];
         }
 
         var convertedSelector = GetSelector(selector);
@@ -49,21 +49,21 @@ public static class BinderExtensions
 
     private static FunctionSelector GetSelector(string selector)
     {
-        var result = new FunctionSelector();
+        var ms = new FunctionSelector();
 
-        var splittedSelectorString = selector.Split("::");
+        var spl = selector.Split("::");
 
-        result.Typename = Utils.QualifyNamespace(splittedSelectorString[0]);
+        ms.Typename = Utils.QualifyNamespace(spl[0]);
 
-        var methodPart = splittedSelectorString[1];
-        result.FunctionName = methodPart[..methodPart.IndexOf("(")];
+        var methodPart = spl[1];
+        ms.FunctionName = methodPart.Substring(0, methodPart.IndexOf("("));
 
-        var parameterPart = methodPart[result.FunctionName.Length..].Trim('(', ')');
-        result.ParameterTypes = parameterPart
+        var parameterPart = methodPart[ms.FunctionName.Length..].Trim('(', ')');
+        ms.ParameterTypes = parameterPart
             .Split(",", StringSplitOptions.RemoveEmptyEntries)
             .ToArray();
 
-        return result;
+        return ms;
     }
 
     private class FunctionSelector

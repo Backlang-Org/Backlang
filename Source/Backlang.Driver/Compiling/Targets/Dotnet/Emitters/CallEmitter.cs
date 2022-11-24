@@ -17,15 +17,15 @@ internal class CallEmitter : IEmitter
             return;
         }
 
-        var methodReference = MethodBodyCompiler.GetMethod(assemblyDefinition, callPrototype.Callee);
+        var method = MethodBodyCompiler.GetMethod(assemblyDefinition, callPrototype.Callee);
 
-        for (var i = 0; i < methodReference.Parameters.Count; i++)
+        for (var i = 0; i < method.Parameters.Count; i++)
         {
             var valueType = block.Graph.NamedInstructions
                 .Where(_ => instruction.Arguments[i] == _.Tag)
                 .Select(_ => _.ResultType).FirstOrDefault();
 
-            var arg = methodReference.Parameters[i];
+            var arg = method.Parameters[i];
 
             //ToDo: move to IR
             if (arg.ParameterType.FullName.ToString() == "System.Object")
@@ -34,8 +34,17 @@ internal class CallEmitter : IEmitter
             }
         }
 
-        var opCode = callPrototype.Callee.IsStatic ? OpCodes.Call : OpCodes.Callvirt;
+        var op = OpCodes.Call;
 
-        ilProcessor.Emit(opCode, assemblyDefinition.MainModule.ImportReference(methodReference));
+        if (!callPrototype.Callee.IsStatic)
+        {
+            op = OpCodes.Callvirt;
+        }
+
+        ilProcessor.Emit(op,
+            assemblyDefinition.MainModule.ImportReference(
+                method
+                )
+            );
     }
 }

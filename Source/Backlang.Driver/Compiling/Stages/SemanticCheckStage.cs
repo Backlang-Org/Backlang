@@ -6,11 +6,11 @@ public sealed class SemanticCheckStage : IHandler<CompilerContext, CompilerConte
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        await Parallel.ForEachAsync(context.Trees, (tree, ct) => {
+        Parallel.ForEachAsync(context.Trees, (tree, ct) => {
             SemanticChecker.Do(tree, context);
 
             return ValueTask.CompletedTask;
-        });
+        }).Wait();
 
         return await next.Invoke(context);
     }

@@ -17,7 +17,7 @@ public class Scope
     public Dictionary<string, IType> TypeAliases { get; set; }
     public Scope Parent { get; set; }
 
-    public bool TryAdd(ScopeItem item)
+    public bool Add(ScopeItem item)
     {
         if (_items.FirstOrDefault(_ => _.Name == item.Name) is FunctionScopeItem fsi
             && item is FunctionScopeItem isI)
@@ -58,7 +58,7 @@ public class Scope
     public bool TryGet<T>(string name, out T? item)
         where T : ScopeItem
     {
-        item = (T?)_items.FirstOrDefault(i => i is T && i.Name == name);
+        item = (T)_items.FirstOrDefault(i => i is T && i.Name == name);
 
         if (item == null && Parent != null)
         {

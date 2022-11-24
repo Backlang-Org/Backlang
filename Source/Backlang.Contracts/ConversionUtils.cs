@@ -41,8 +41,8 @@ public static class ConversionUtils
 
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
-        var isPointer = false;
-        var pointerKind = PointerKind.Transient;
+        bool isPointer = false;
+        PointerKind pointerKind = PointerKind.Transient;
 
         if (lNode is ("#type*", var arg))
         {

@@ -2,5 +2,5 @@
 
 public static class GenericTypeMap
 {
-    public static readonly Dictionary<(QualifiedName, IMember), object> Cache = new();
+    public static Dictionary<(QualifiedName, IMember), object> Cache = new();
 }

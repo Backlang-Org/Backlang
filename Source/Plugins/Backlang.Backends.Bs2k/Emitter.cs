@@ -15,7 +15,7 @@ public class Emitter
     private readonly IMethod _mainMethod;
     private readonly StringBuilder _builder = new();
 
-    private readonly Dictionary<int, string> _stringConstants = new();
+    private Dictionary<int, string> _stringConstants = new();
 
     public Emitter(IMethod mainMethod)
     {
@@ -77,7 +77,7 @@ public class Emitter
 
     public override string ToString() => _builder.ToString();
 
-    public void Emit(string instruction, string comment = null, int indentlevel = 1)
+    public void Emit(string instruction, string? comment = null, int indentlevel = 1)
     {
         _builder.Append(new string('\t', indentlevel));
 

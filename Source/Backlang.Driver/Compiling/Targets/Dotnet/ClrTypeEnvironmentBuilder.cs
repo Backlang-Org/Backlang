@@ -85,10 +85,9 @@ public class ClrTypeEnvironmentBuilder
             if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
-                    new SimpleName(ctor.Name), ctor.IsStatic, Utils.ResolveType(resolver, typeof(void)))
-                {
-                    IsConstructor = true
-                };
+                    new SimpleName(ctor.Name), ctor.IsStatic, Utils.ResolveType(resolver, typeof(void)));
+
+                method.IsConstructor = true;
 
                 toAdjustParameters.Add((ctor, method));
 
@@ -156,14 +155,13 @@ public class ClrTypeEnvironmentBuilder
                 type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace);
 
                 if (type != null)
-                {
                     type = context.Environment.MakeArrayType(type, p.ParameterType.GetArrayRank());
-                }
             }
 
             if (type != null)
             {
-                method.AddParameter(new Parameter(type, p.Name));
+                var pa = new Parameter(type, p.Name);
+                method.AddParameter(pa);
                 continue;
             }
         }

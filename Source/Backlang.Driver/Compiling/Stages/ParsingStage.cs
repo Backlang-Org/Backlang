@@ -20,9 +20,9 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
         return await next.Invoke(context);
     }
 
-    private static async void ParseSourceFiles(CompilerContext context)
+    private static void ParseSourceFiles(CompilerContext context)
     {
-        await Parallel.ForEachAsync(context.Options.InputFiles, (filename, ct) => {
+        Parallel.ForEachAsync(context.Options.InputFiles, (filename, ct) => {
             if (File.Exists(filename))
             {
                 var tree = CompilationUnit.FromFile(filename);
@@ -35,7 +35,7 @@ public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
             }
 
             return ValueTask.CompletedTask;
-        });
+        }).Wait();
     }
 
     private static void ApplyTree(CompilerContext context, CompilationUnit tree)

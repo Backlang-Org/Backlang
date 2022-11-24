@@ -17,7 +17,12 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var importetNamespaces = GetNamespaceImports(tree, context);
             var imports = new NamespaceImports();
 
-            ImportNamespaces(context, tree, importetNamespaces, imports);
+            foreach (var importStatement in importetNamespaces)
+            {
+                imports.ImportNamespace(importStatement, context);
+            }
+
+            context.FileScope.ImportetNamespaces.Add(tree.Document.FileName, imports);
 
             foreach (var st in tree.Body)
             {
@@ -49,15 +54,6 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         return await next.Invoke(context);
     }
 
-    private static void ImportNamespaces(CompilerContext context, CompilationUnit tree, IEnumerable<LNode> importetNamespaces, NamespaceImports imports)
-    {
-        foreach (var importStatement in importetNamespaces)
-        {
-            imports.ImportNamespace(importStatement, context);
-        }
-        context.FileScope.ImportetNamespaces.Add(tree.Document.FileName, imports);
-    }
-
     private static void ConvertEnum(CompilerContext context, LNode @enum, QualifiedName modulename)
     {
         if (@enum is (_, (_, var nameNode, var typeNode, var membersNode)))
@@ -65,8 +61,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var name = nameNode.Name;
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-            type.AddBaseType(Utils.ResolveType(context.Binder, typeof(Enum)));
-            type.IsPublic = true;
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System"))[0]);
+
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 
             context.Assembly.AddType(type);
@@ -80,7 +76,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
         if (st.Name == CodeSymbols.Struct)
         {
-            type.AddBaseType(Utils.ResolveType(context.Binder, typeof(void))); // make it a struct
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System"))[0]); // make it a struct
         }
         else if (st.Name == CodeSymbols.Interface)
         {
@@ -90,7 +86,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         ConversionUtils.SetAccessModifier(st, type);
         SetOtherModifiers(st, type);
 
-        if (scope.TryAdd(new TypeScopeItem { Name = name.Name, TypeInfo = type, SubScope = scope.CreateChildScope() }))
+        if (scope.Add(new TypeScopeItem { Name = name.Name, TypeInfo = type, SubScope = scope.CreateChildScope() }))
         {
             context.Assembly.AddType(type);
         }
@@ -112,7 +108,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void AddTypeAlias(LNode st, Scope scope, CompilerContext context, QualifiedName modulename)
+    private void AddTypeAlias(LNode st, Scope scope, CompilerContext context, QualifiedName modulename)
     {
         var name = st[0].Name.Name;
         var typeName = st[1];
@@ -121,7 +117,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         scope.TypeAliases.Add(name, type);
     }
 
-    private static IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu, CompilerContext context)
+    private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu, CompilerContext context)
     {
         for (var i = 0; i < cu.Body.Count; i++)
         {
@@ -139,7 +135,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void ConvertUnitDeclaration(CompilerContext context, LNode st, QualifiedName modulename, Scope globalScope)
+    private void ConvertUnitDeclaration(CompilerContext context, LNode st, QualifiedName modulename, Scope globalScope)
     {
         var unitType = new DescribedType(
             new SimpleName(st[0].Name.ToString()).Qualify(modulename), context.Assembly)
@@ -153,7 +149,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         context.Assembly.AddType(unitType);
     }
 
-    private static void ConvertDiscriminatedUnion(CompilerContext context, LNode discrim, QualifiedName modulename)
+    private void ConvertDiscriminatedUnion(CompilerContext context, LNode discrim, QualifiedName modulename)
     {
         var name = discrim.Args[0].Name;
 

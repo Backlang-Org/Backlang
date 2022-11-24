@@ -122,14 +122,15 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                 break;
         }
 
-        return Instruction.CreateConstant(constant, elementType);
+        return Instruction.CreateConstant(constant,
+                                           elementType);
     }
 
     public static bool MatchesParameters(IMethod method, List<IType> argTypes)
     {
         //ToDo: fix matches parameter (implicit casting is currently not working)
 
-        var matchesAllParameters = method.Parameters.Count == argTypes.Count;
+        bool matchesAllParameters = method.Parameters.Count == argTypes.Count;
         for (int i = 0; i < argTypes.Count; i++)
         {
             if (i == 0)
@@ -152,9 +153,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
-                {
                     candiates.Add(m);
-                }
             }
         }
 
