@@ -9,8 +9,8 @@ internal class TypeofEmitter : IEmitter
     public void Emit(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor,
         Furesoft.Core.CodeDom.Compiler.Instruction instruction, BasicBlock block)
     {
-        var toip = (TypeOfInstructionPrototype)instruction.Prototype;
+        var typePrototype = (TypeOfInstructionPrototype)instruction.Prototype;
 
-        ilProcessor.Emit(OpCodes.Ldtoken, assemblyDefinition.ImportType(toip.Type));
+        ilProcessor.Emit(OpCodes.Ldtoken, assemblyDefinition.ImportType(typePrototype.Type));
     }
 }

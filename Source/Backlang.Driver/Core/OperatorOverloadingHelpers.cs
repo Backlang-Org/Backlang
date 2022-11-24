@@ -2,7 +2,7 @@
 
 public static class OperatorOverloadingHelpers
 {
-    private static readonly ImmutableDictionary<string, string> binMap = new Dictionary<string, string>()
+    private static readonly ImmutableDictionary<string, string> _binaryNameMap = new Dictionary<string, string>()
     {
         ["'+"] = "op_Addition",
         ["'/"] = "op_Division",
@@ -17,7 +17,7 @@ public static class OperatorOverloadingHelpers
         ["'!="] = "op_Inequality",
     }.ToImmutableDictionary();
 
-    private static readonly ImmutableDictionary<string, string> unMap = new Dictionary<string, string>()
+    private static readonly ImmutableDictionary<string, string> _unaryNameMap = new Dictionary<string, string>()
     {
         ["'!"] = "op_LogicalNot",
         ["'-"] = "op_UnaryNegation",
@@ -40,11 +40,11 @@ public static class OperatorOverloadingHelpers
         ImmutableDictionary<string, string> nameMap = null;
         if (args.Length == 1)
         {
-            nameMap = unMap;
+            nameMap = _unaryNameMap;
         }
         else if (args.Length == 2)
         {
-            nameMap = binMap;
+            nameMap = _binaryNameMap;
         }
 
         possibleMethods = possibleMethods.Where(_ => nameMap.ContainsValue(_.Name.ToString()) && nameMap[op] == _.Name.ToString());
@@ -56,8 +56,12 @@ public static class OperatorOverloadingHelpers
                 var arg = args[i];
                 var param = method.Parameters[i].Type;
 
-                if (arg != param) goto nextMethod;
+                if (arg != param)
+                {
+                    goto nextMethod;
+                }
             }
+            
             opMethod = method;
             return true;
 

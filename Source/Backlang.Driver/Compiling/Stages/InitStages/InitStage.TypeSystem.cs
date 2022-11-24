@@ -32,10 +32,8 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
             context.Options.OutputType = "Exe";
         }
 
-        if (_targets.ContainsKey(context.Options.Target))
+        if (_targets.TryGetValue(context.Options.Target, out var compilationTarget))
         {
-            var compilationTarget = _targets[context.Options.Target];
-
             context.CompilationTarget = compilationTarget;
             context.Environment = compilationTarget.Init(context);
 
@@ -94,13 +92,16 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
     private static void AddIntrinsicEnum(CompilerContext context, Type fieldType, QualifiedName qualifier, DescribedAssembly intrinsicAssembly)
     {
-        if (!fieldType.IsAssignableTo(typeof(Enum))) return;
+        if (!fieldType.IsAssignableTo(typeof(Enum)))
+        {
+            return;
+        }
 
         var type = new DescribedType(new SimpleName(fieldType.Name).Qualify(qualifier), intrinsicAssembly);
 
         type.AddAttribute(new IntrinsicAttribute("#Enum"));
 
-        context.GlobalScope.Add(new TypeScopeItem { Name = "#" + type.Name, TypeInfo = type });
+        context.GlobalScope.TryAdd(new TypeScopeItem { Name = "#" + type.Name, TypeInfo = type });
 
         foreach (var field in fieldType.GetFields())
         {
@@ -114,7 +115,10 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
     private void InitPluginTargets(PluginContainer plugins)
     {
-        if (plugins == null) return;
+        if (plugins == null)
+        {
+            return;
+        }
 
         foreach (var target in plugins?.Targets)
         {

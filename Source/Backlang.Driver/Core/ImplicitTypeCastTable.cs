@@ -31,9 +31,9 @@ public static class ImplicitTypeCastTable
         {
             return true;
         }
-        else if (castMap.ContainsKey(toCast))
+        else if (castMap.TryGetValue(toCast, out var value))
         {
-            return castMap[toCast].Contains(type);
+            return value.Contains(type);
         }
         else if (toCast.FullName.ToString() == "System.Object")
         {

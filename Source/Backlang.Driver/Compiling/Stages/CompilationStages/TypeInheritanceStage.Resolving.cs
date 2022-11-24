@@ -36,7 +36,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
     {
         bool isPointer;
-        PointerKind pointerKind = PointerKind.Transient;
+        var pointerKind = PointerKind.Transient;
 
         if (fullName.FullyUnqualifiedName is PointerName pName)
         {
@@ -80,10 +80,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         {
             resolvedType = context.Binder.ResolveTypes(fullName).FirstOrDefault();
 
-            if (resolvedType == null)
-            {
-                resolvedType = context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
-            }
+            resolvedType ??= context.Binder.ResolveTypes(fullName.Qualify(modulename)).FirstOrDefault();
 
             if (resolvedType == null)
             {
@@ -118,16 +115,18 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
 
-            if (resolvedType != null) break;
+            if (resolvedType != null)
+            {
+                break;
+            }
         }
     }
 
     private static IType ResolveArrayType(LNode typeNode, CompilerContext context, QualifiedName modulename)
     {
-        IType resolvedType;
         var arrType = ResolveTypeWithModule(typeNode[0], context, modulename);
-        resolvedType = context.Environment.MakeArrayType(arrType, (int)typeNode[1].Value);
-        return resolvedType;
+
+        return context.Environment.MakeArrayType(arrType, (int)typeNode[1].Value);
     }
 
     private static IType ResolveTupleType(LNode typeNode, CompilerContext context, QualifiedName modulename)
@@ -142,6 +141,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         resolvedType = tupleType.MakeGenericType(tupleArgs);
+
         return resolvedType;
     }
 
@@ -162,6 +162,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         resolvedType = fnType.MakeGenericType(funcArgs);
+        
         return resolvedType;
     }
 

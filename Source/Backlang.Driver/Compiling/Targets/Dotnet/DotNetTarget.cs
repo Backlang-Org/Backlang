@@ -39,14 +39,14 @@ public class DotNetTarget : ICompilationTarget
 
     public TypeEnvironment Init(CompilerContext context)
     {
-        var corLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(uint).Assembly);
+        var mscoreLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(uint).Assembly);
         var runtimeLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(ExtensionAttribute).Assembly);
         var consoleLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Console).Assembly);
         var collectionsSpecializedLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(BitVector32).Assembly);
         var coreLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(Result<>).Assembly);
         var collectionsLib = ClrTypeEnvironmentBuilder.CollectTypes(typeof(ArrayList).Assembly);
 
-        context.Binder.AddAssembly(corLib);
+        context.Binder.AddAssembly(mscoreLib);
         context.Binder.AddAssembly(coreLib);
         context.Binder.AddAssembly(consoleLib);
         context.Binder.AddAssembly(collectionsSpecializedLib);
@@ -60,7 +60,7 @@ public class DotNetTarget : ICompilationTarget
         ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, context);
         ClrTypeEnvironmentBuilder.FillTypes(typeof(ArrayList).Assembly, context);
 
-        return new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corLib);
+        return new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(mscoreLib);
     }
 
     public void InitReferences(CompilerContext context)
@@ -70,7 +70,10 @@ public class DotNetTarget : ICompilationTarget
             AddFromAssembly(context, r);
         }
 
-        if (context.CorLib == null) return;
+        if (context.CorLib == null)
+        {
+            return;
+        }
 
         foreach (var r in context.CorLib.Split(';'))
         {

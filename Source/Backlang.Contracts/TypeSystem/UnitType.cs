@@ -29,4 +29,19 @@ public class UnitType : DescribedType
     {
         return $"{BaseTypes[0]}<{Unit.Name}>";
     }
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        if (obj is null)
+        {
+            return false;
+        }
+
+        throw new NotImplementedException();
+    }
 }

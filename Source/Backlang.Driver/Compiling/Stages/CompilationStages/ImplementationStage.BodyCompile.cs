@@ -10,7 +10,7 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public partial class ImplementationStage
 {
-    private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementations = new Dictionary<Symbol, IStatementImplementor>()
+    private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementors = new Dictionary<Symbol, IStatementImplementor>()
     {
         [CodeSymbols.Var] = new VariableImplementor(),
         [CodeSymbols.Assign] = new AssignmentImplementor(),
@@ -49,9 +49,8 @@ public partial class ImplementationStage
                     QualifiedName? modulename, Scope scope)
     {
         var graph = Utils.CreateGraphBuilder();
-        var block = graph.EntryPoint;
 
-        AppendBlock(function.Args[3], block, context, method, modulename, scope);
+        AppendBlock(function.Args[3], graph.EntryPoint, context, method, modulename, scope);
 
         return new MethodBody(
             method.ReturnParameter,
@@ -64,19 +63,25 @@ public partial class ImplementationStage
     {
         foreach (var node in blkNode.Args)
         {
-            if (!node.IsCall) continue;
+            if (!node.IsCall)
+            {
+                continue;
+            }
 
             if (node.Calls(CodeSymbols.Braces))
             {
-                if (node.ArgCount == 0) continue;
+                if (node.ArgCount == 0)
+                {
+                    continue;
+                }
 
                 block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
                 continue;
             }
 
-            if (_implementations.ContainsKey(node.Name))
+            if (_implementors.TryGetValue(node.Name, out var implementor))
             {
-                block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
+                block = implementor.Implement(context, method, block, node, modulename, scope);
             }
             else
             {
@@ -95,7 +100,7 @@ public partial class ImplementationStage
     {
         var fetch = _expressions.FirstOrDefault(_ => _.CanHandle(node));
 
-        return fetch == null ? null : fetch.Handle(node, block, elementType, context, scope, modulename);
+        return fetch?.Handle(node, block, elementType, context, scope, modulename);
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
@@ -108,13 +113,12 @@ public partial class ImplementationStage
             var type = TypeDeducer.Deduce(arg, scope, context, modulename.Value);
 
             if (type != null)
+            {
                 argTypes.Add(type);
+            }
         }
 
-        if (methodName == null)
-        {
-            methodName = node.Name.Name;
-        }
+        methodName ??= node.Name.Name;
 
         var method = GetMatchingMethod(context, argTypes, methods, methodName, shouldAppendError);
 
@@ -141,16 +145,19 @@ public partial class ImplementationStage
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
         LNode node, IMethod method, Scope scope, QualifiedName? modulename)
     {
-        var callTags = AppendCallArguments(context, block, node, scope, modulename);
+        var callArgumentTags = AppendCallArguments(context, block, node, scope, modulename);
 
-        if (method == null) return null;
+        if (method == null)
+        {
+            return null;
+        }
 
         if (!method.IsStatic)
         {
-            callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
+            callArgumentTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(Parameter.CreateThisParameter(method.ParentType))));
         }
 
-        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
+        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callArgumentTags);
 
         return block.AppendInstruction(call);
     }
@@ -162,12 +169,12 @@ public partial class ImplementationStage
 
         foreach (var arg in node.Args)
         {
-            var type = TypeDeducer.Deduce(arg, scope, context, modulename.Value);
-            argTypes.Add(type);
+            var deducedType = TypeDeducer.Deduce(arg, scope, context, modulename.Value);
+            argTypes.Add(deducedType);
 
             if (!arg.IsId)
             {
-                var val = AppendExpression(block, arg, type, context, scope, modulename);
+                var val = AppendExpression(block, arg, deducedType, context, scope, modulename);
 
                 callTags.Add(val);
             }

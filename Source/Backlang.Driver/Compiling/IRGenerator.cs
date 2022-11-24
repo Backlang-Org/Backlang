@@ -9,14 +9,16 @@ namespace Backlang.Driver.Compiling;
 
 public static class IRGenerator
 {
-    private static readonly int[] _primes = new[] { 2, 3, 5, 7,  11, 13, 17, 19, 23, 29, 31, 37, 41};
+    private static readonly int[] _primes = new[] { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41 };
 
     public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
     {
         var gethashcodeMethod = new DescribedBodyMethod(type, new SimpleName("GetHashCode"),
-            false, context.Environment.Int32);
-        gethashcodeMethod.IsPublic = true;
-        gethashcodeMethod.IsOverride = true;
+            false, context.Environment.Int32)
+        {
+            IsPublic = true,
+            IsOverride = true
+        };
 
         var graph = Utils.CreateGraphBuilder();
 
@@ -25,7 +27,7 @@ public static class IRGenerator
         block.AppendParameter(new BlockParameter(context.Environment.Int32, "hash"));
 
         var startPrime = SelectPrime();
-        var constant = block.AppendInstruction(
+        var loadConstantInstruction = block.AppendInstruction(
             Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
                 Instruction.CreateConstant(new IntegerConstant(startPrime), context.Environment.Int32))
             )
@@ -43,28 +45,28 @@ public static class IRGenerator
                 // hash = hash * 23 + field.GetHashCode();
                 var loadHash = Instruction.CreateLoadLocal(new Parameter(context.Environment.Int32, "hash"));
                 var hash = block.AppendInstruction(loadHash);
-                var c = block.AppendInstruction(
+                var loadPrimeConstantInstruction = block.AppendInstruction(
                     Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
                         Instruction.CreateConstant(new IntegerConstant(SelectPrime()), context.Environment.Int32))
                     )
                 );
 
-                var multiplication = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, c));
+                var multiplication = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, loadPrimeConstantInstruction));
 
                 block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
                 var instruction = Instruction.CreateLoadField(field);
 
-                if (field.FieldType.BaseTypes.Count() > 0 && field.FieldType.BaseTypes[0].FullName.ToString() == "System.ValueType")
+                if (field.FieldType.BaseTypes.Count > 0 && field.FieldType.BaseTypes[0].FullName.ToString() == "System.ValueType")
                 {
                     instruction = Instruction.CreateGetFieldPointer(field, null);
                 }
 
-                var ldField = block.AppendInstruction(instruction);
-                var call = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual, new List<ValueTag>() { ldField }));
+                var ldFieldInstruction = block.AppendInstruction(instruction);
+                var callInstruction = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual, new List<ValueTag>() { ldFieldInstruction }));
 
-                var addition = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false, context.Environment.Int32, ldField, multiplication));
+                var additionInstruction = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false, context.Environment.Int32, ldFieldInstruction, multiplication));
 
-                block.AppendInstruction(Instruction.CreateStore(context.Environment.Int32, hash, addition));
+                block.AppendInstruction(Instruction.CreateStore(context.Environment.Int32, hash, additionInstruction));
             }
         }
 
@@ -82,47 +84,51 @@ public static class IRGenerator
 
     public static void GenerateToString(CompilerContext context, DescribedType type)
     {
-        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
-        toStringMethod.IsPublic = true;
-        toStringMethod.IsOverride = true;
+        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, context.Environment.String)
+        {
+            IsPublic = true,
+            IsOverride = true
+        };
 
         var graph = Utils.CreateGraphBuilder();
 
         var block = graph.EntryPoint;
 
-        var sbType = Utils.ResolveType(context.Binder, typeof(StringBuilder));
-        var varname = Utils.GenerateIdentifier();
-        var p = block.AppendParameter(new BlockParameter(sbType, varname));
+        var stringBuilderType = Utils.ResolveType(context.Binder, typeof(StringBuilder));
+        var localName = Utils.GenerateIdentifier();
+        var local = block.AppendParameter(new BlockParameter(stringBuilderType, localName));
 
-        var ctor = sbType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
+        var ctor = stringBuilderType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
 
         var appendLineMethod = context.Binder.FindFunction("System.Text.StringBuilder::AppendLine(System.String)");
 
         block.AppendInstruction(Instruction.CreateNewObject(ctor, new List<ValueTag>()));
-        block.AppendInstruction(Instruction.CreateAlloca(sbType));
+        block.AppendInstruction(Instruction.CreateAlloca(stringBuilderType));
 
-        var loadSb = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
+        var loadSb = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(local.Type, local.Tag.Name)));
 
         AppendLine(context, block, appendLineMethod, loadSb, $"{type.FullName}:");
 
+        var loadStringBuilderLocalInstruction = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(local.Type, local.Tag.Name))); //load StringBuilder only once because Append returns the StringBuilder
         foreach (var field in type.Fields)
         {
-            //AppendThis(block, p.Type);
-
-            var loadSbf = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
-
-            AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
+            AppendLine(context, block, appendLineMethod, loadStringBuilderLocalInstruction, field.Name + " = ");
             var value = AppendLoadField(block, field);
 
             var appendMethod = context.Binder.FindFunction($"System.Text.StringBuilder::Append({field.FieldType.FullName})");
 
+            if (appendMethod == null)
+            {
+                block.AppendInstruction(Instruction.CreateBox(field.FieldType, null)); //ToDo: maybe append tostring instead
+            }
+
             appendMethod ??= context.Binder.FindFunction("System.Text.StringBuilder::Append(System.Object)");
 
-            block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+            block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual, new List<ValueTag> { loadStringBuilderLocalInstruction, value }));
         }
 
-        var tsM = context.Binder.FindFunction($"System.Text.StringBuilder::ToString()");
-        block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
+        var stringBuilderToStringMethod = context.Binder.FindFunction($"System.Text.StringBuilder::ToString()");
+        block.AppendInstruction(Instruction.CreateCall(stringBuilderToStringMethod, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
         block.Flow = new ReturnFlow();
 
@@ -135,10 +141,9 @@ public static class IRGenerator
     {
         var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
         {
-            IsConstructor = true
+            IsConstructor = true,
+            IsPublic = true
         };
-
-        ctorMethod.IsPublic = true;
 
         var graph = Utils.CreateGraphBuilder();
 
@@ -155,10 +160,9 @@ public static class IRGenerator
     {
         var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
         {
-            IsConstructor = true
+            IsConstructor = true,
+            IsPublic = true
         };
-
-        ctorMethod.IsPublic = true;
 
         foreach (var field in type.Fields)
         {
@@ -171,13 +175,13 @@ public static class IRGenerator
 
         for (var i = 0; i < ctorMethod.Parameters.Count; i++)
         {
-            var p = ctorMethod.Parameters[i];
-            var f = type.Fields[i];
+            var parameter = ctorMethod.Parameters[i];
+            var field = type.Fields[i];
 
-            block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type))); //this ptr
+            AppendThis(block, type);
 
-            block.AppendInstruction(Instruction.CreateLoadArg(p));
-            block.AppendInstruction(Instruction.CreateStoreFieldPointer(f));
+            block.AppendInstruction(Instruction.CreateLoadArg(parameter));
+            block.AppendInstruction(Instruction.CreateStoreFieldPointer(field));
         }
 
         block.Flow = new ReturnFlow();

@@ -10,7 +10,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
         LNode function, QualifiedName modulename, Scope parentScope, string methodName = null, bool hasBody = true)
     {
-        if (methodName == null) methodName = ConversionUtils.GetMethodName(function);
+        methodName ??= ConversionUtils.GetMethodName(function);
 
         var returnType = Utils.ResolveType(context.Binder, typeof(void));
 
@@ -66,7 +66,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             context.BodyCompilations.Add(new(function, context, method, modulename, scope));
         }
 
-        if (parentScope.Add(functionItem))
+        if (parentScope.TryAdd(functionItem))
         {
             return method;
         }
@@ -82,13 +82,13 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         foreach (var p in param.Args)
         {
             var pa = ConvertParameter(p, context, modulename);
-            if (scope.Add(new ParameterScopeItem { Name = pa.FullName.ToString(), Parameter = pa }))
+            if (scope.TryAdd(new ParameterScopeItem { Name = pa.FullName.ToString(), Parameter = pa }))
             {
                 method.AddParameter(pa);
             }
             else
             {
-                context.AddError(param, $"Function Parameter {pa.FullName.ToString()} was already defined.");
+                context.AddError(param, $"Function Parameter {pa.FullName} was already defined.");
             }
         }
     }
@@ -100,9 +100,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         if (!context.Assembly.Types.Any(_ =>
             _.FullName.ToString() == new SimpleName(Names.FreeFunctions).Qualify(modulename).ToString()))
         {
-            type = new DescribedType(new SimpleName(Names.FreeFunctions).Qualify(modulename), context.Assembly);
-            type.IsStatic = true;
-            type.IsPublic = true;
+            type = new DescribedType(new SimpleName(Names.FreeFunctions).Qualify(modulename), context.Assembly)
+            {
+                IsStatic = true,
+                IsPublic = true
+            };
 
             context.Assembly.AddType(type);
             var tr = new TypeResolver();
@@ -119,12 +121,18 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             type = (DescribedType)context.Assembly.Types.First(_ => _.Name.ToString() == Names.FreeFunctions);
         }
 
-        string methodName = ConversionUtils.GetMethodName(node);
-        if (methodName == "main") methodName = "Main";
+        var methodName = ConversionUtils.GetMethodName(node);
+        if (methodName == "main")
+        {
+            methodName = "Main";
+        }
 
         var method = ConvertFunction(context, type, node, modulename, scope, methodName: methodName);
 
-        if (method != null) type.AddMethod(method);
+        if (method != null)
+        {
+            type.AddMethod(method);
+        }
     }
 
     private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)
@@ -149,10 +157,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
     private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
     {
-        var retType = function.Args[0];
+        var retTypeArg = function.Args[0];
 
-        var rtype = ResolveTypeWithModule(retType, context, modulename);
-
-        method.ReturnParameter = new Parameter(rtype);
+        method.ReturnParameter = new Parameter(ResolveTypeWithModule(retTypeArg, context, modulename));
     }
 }

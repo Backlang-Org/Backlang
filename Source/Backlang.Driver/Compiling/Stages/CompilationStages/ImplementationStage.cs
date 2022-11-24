@@ -28,8 +28,12 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
     private static void ImplementDefaultsForStructs(CompilerContext context, LNode st, QualifiedName modulename)
     {
-        if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
+        if (!(st.IsCall && st.Name == CodeSymbols.Struct))
+        {
+            return;
+        }
 
+        //ToDo: Move Generating struct functions to IR
         var name = st.Args[0].Name;
         var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
 
@@ -55,13 +59,17 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
     private static void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)
     {
-        if (!(st.IsCall && st.Name == Symbols.Implementation)) return;
+        if (!(st.IsCall && st.Name == Symbols.Implementation))
+        {
+            return;
+        }
 
         var typenode = st.Args[0].Args[0].Args[0].Args[0];
         var fullname = ConversionUtils.GetQualifiedName(typenode);
 
-        DescribedType targetType = null;
-        Scope typeScope = null;
+        DescribedType targetType;
+        Scope typeScope;
+        
         if (context.GlobalScope.TryGet<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
         {
             targetType = (DescribedType)typeItem.Type;
@@ -91,40 +99,42 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         {
             if (node.Name == CodeSymbols.Fn)
             {
+                var function = TypeInheritanceStage.ConvertFunction(context, targetType, node, modulename, typeScope);
+                
                 if (targetType.Parent.Assembly == context.Assembly)
                 {
-                    var fn = TypeInheritanceStage.ConvertFunction(context, targetType, node, modulename, typeScope);
-                    targetType.AddMethod(fn);
+                    targetType.AddMethod(function);
                 }
                 else
                 {
                     var extensionType = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.Extensions).Qualify(modulename)).FirstOrDefault();
 
-                    if (extensionType == null)
-                    {
-                        extensionType = new DescribedType(new SimpleName(Names.Extensions).Qualify(modulename), context.Assembly)
-                        {
-                            IsStatic = true,
-                            IsPublic = true
-                        };
-                        context.Assembly.AddType(extensionType);
-                    }
+                    extensionType ??= GenerateExtensionType(context, modulename);
+                    
+                    function.IsStatic = true;
 
-                    var fn = TypeInheritanceStage.ConvertFunction(context, extensionType, node, modulename, typeScope);
-
-                    fn.IsStatic = true;
-
-                    var param = (IList<Parameter>)fn.Parameters;
+                    var param = (IList<Parameter>)function.Parameters;
 
                     param.Insert(0, Parameter.CreateThisParameter(targetType));
 
-                    var extType = Utils.ResolveType(context.Binder, typeof(ExtensionAttribute));
+                    var extensionAttributeType = Utils.ResolveType(context.Binder, typeof(ExtensionAttribute));
+                    function.AddAttribute(new DescribedAttribute(extensionAttributeType));
 
-                    fn.AddAttribute(new DescribedAttribute(extType));
-
-                    extensionType.AddMethod(fn);
+                    extensionType.AddMethod(function);
                 }
             }
         }
+    }
+
+    private static DescribedType GenerateExtensionType(CompilerContext context, QualifiedName modulename)
+    {
+        var extensionType = new DescribedType(new SimpleName(Names.Extensions).Qualify(modulename), context.Assembly)
+        {
+            IsStatic = true,
+            IsPublic = true
+        };
+        context.Assembly.AddType(extensionType);
+        
+        return extensionType;
     }
 }

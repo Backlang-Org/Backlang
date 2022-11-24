@@ -49,7 +49,7 @@ public class VariableImplementor : IStatementImplementor
         var varname = decl.Args[0].Name.Name;
         var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
 
-        if (scope.Add(new VariableScopeItem
+        if (scope.TryAdd(new VariableScopeItem
         {
             Name = varname,
             IsMutable = isMutable,
