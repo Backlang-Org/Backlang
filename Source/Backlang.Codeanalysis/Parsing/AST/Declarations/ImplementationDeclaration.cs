@@ -26,7 +26,6 @@ public class ImplementationDeclaration : IParsePoint
             }
         }
 
-
         LNode target;
         if (targets.Count == 1)
         {

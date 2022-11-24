@@ -5,10 +5,13 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class BinaryExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.ArgCount == 2
-        && !node.Calls(CodeSymbols.ColonColon)
-        && !node.Calls(CodeSymbols.Tuple)
-        && node.Name.Name.StartsWith("'");
+    public bool CanHandle(LNode node)
+    {
+        return node.ArgCount == 2
+            && !node.Calls(CodeSymbols.ColonColon)
+            && !node.Calls(CodeSymbols.Tuple)
+            && node.Name.Name.StartsWith("'");
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
@@ -21,10 +24,9 @@ public class BinaryExpressionImplementor : IExpressionImplementor
 
         if (leftType.TryGetOperator(node.Name.Name, out var opMethod, leftType, rightType))
         {
-            return block.AppendInstruction(
-                Instruction.CreateCall(opMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs }));
+            return block.AppendInstruction(Instruction.CreateCall(opMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs }));
         }
-        else if (node.Calls(CodeSymbols.Add) && leftType == context.Environment.String || rightType == context.Environment.String)
+        else if (node.Calls(CodeSymbols.Add) && (leftType == context.Environment.String || rightType == context.Environment.String))
         {
             var concatMethods = context.Environment.String.Methods
                 .Where(_ => _.Name.ToString() == "Concat" && _.Parameters.Count == 2);
