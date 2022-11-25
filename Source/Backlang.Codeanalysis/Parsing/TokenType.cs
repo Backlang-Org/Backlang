@@ -148,7 +148,7 @@ public enum TokenType
     Dollar,
 
     [Lexeme("?")]
-    [PostUnaryOperatorInfo(UnaryOpPrecedences.Ampersand)]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
     Questionmark,
 
     [Lexeme("==")]
