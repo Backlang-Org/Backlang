@@ -104,6 +104,20 @@ public static class TypeDeducer
         return null;
     }
 
+    public static IType DeduceFunctionReturnType(LNode funcDefinition, CompilerContext context, Scope scope, QualifiedName modulename) {
+        var returnNodes = funcDefinition.Descendants().Where(_ => _.Calls(CodeSymbols.Return)).ToArray();
+
+        if(!returnNodes.Any()) {
+            return Utils.ResolveType(context.Binder, typeof(void));
+        }
+
+        if(returnNodes.Length == 1) {
+            return Deduce(returnNodes[0][0], scope, context, modulename);
+        }
+
+        return null;
+    }
+
     public static void ExpectType(LNode node, Scope scope, CompilerContext context, QualifiedName modulename, IType expectedType)
     {
         var deducedType = Deduce(node, scope, context, modulename);

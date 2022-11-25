@@ -43,7 +43,6 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         var scope = parentScope.CreateChildScope();
 
         AddParameters(method, function, context, modulename, scope);
-        SetReturnType(method, function, context, modulename);
 
         if (methodName == ".ctor")
         {
@@ -145,14 +144,5 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         return param;
-    }
-
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename)
-    {
-        var retType = function.Args[0];
-
-        var rtype = ResolveTypeWithModule(retType, context, modulename);
-
-        method.ReturnParameter = new Parameter(rtype);
     }
 }

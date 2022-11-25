@@ -5,6 +5,7 @@ using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
@@ -45,6 +46,22 @@ public partial class ImplementationStage
         new CallExpressionEmitter(), //should be added as last
     }.ToImmutableList();
 
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, Scope scope, QualifiedName modulename)
+    {
+        var retType = function.Args[0];
+
+        if (retType.Name != LNode.Missing.Name)
+        {
+            var rtype = TypeInheritanceStage.ResolveTypeWithModule(retType, context, modulename);
+
+            method.ReturnParameter = new Parameter(rtype);
+        }
+        else
+        {
+            var deducedReturnType = TypeDeducer.DeduceFunctionReturnType(function, context, scope, modulename);
+            method.ReturnParameter = new Parameter(deducedReturnType);
+        }
+    }
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
                     QualifiedName? modulename, Scope scope)
     {
@@ -52,6 +69,8 @@ public partial class ImplementationStage
         var block = graph.EntryPoint;
 
         AppendBlock(function.Args[3], block, context, method, modulename, scope);
+
+        SetReturnType((DescribedBodyMethod)method, function, context, scope, modulename.Value);
 
         return new MethodBody(
             method.ReturnParameter,

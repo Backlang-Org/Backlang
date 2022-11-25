@@ -16,7 +16,7 @@ public sealed class Signature
             parser.AddError(new(Core.ErrorID.ExpectedTypeLiteral, iterator.Current.Text), range);
         }
 
-        var returnType = SyntaxTree.Type("none", LNode.List());
+        LNode returnType = LNode.Missing;
         iterator.Match(TokenType.OpenParen);
 
         var parameters = ParameterDeclaration.ParseList(parser);
