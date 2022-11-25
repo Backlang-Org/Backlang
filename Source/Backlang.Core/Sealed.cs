@@ -1,4 +1,6 @@
-﻿namespace Backlang.Core;
+﻿using System.Runtime.CompilerServices;
+
+namespace Backlang.Core;
 
 public struct Sealed<T>
 {
@@ -29,9 +31,16 @@ public struct Sealed<T>
     {
         IsFreezed = true;
     }
-    
+
     public void Unfreeze()
     {
         IsFreezed = false;
+    }
+
+    //Unpacking operator
+    [SpecialName]
+    public static T op_Unpacking(Sealed<T> value)
+    {
+        return value._value;
     }
 }

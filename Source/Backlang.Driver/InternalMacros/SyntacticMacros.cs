@@ -26,6 +26,7 @@ public static class SyntacticMacros
         ["inequality"] = ("Inequality", 2),
 
         ["bitwise_not"] = ("OnesComplement", 1),
+        ["unpacking"] = ("Unpacking", 1),
 
         ["deref"] = ("Deref", 1),
         ["addrof"] = ("AddressOf", 2),
