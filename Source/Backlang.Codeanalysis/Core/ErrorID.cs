@@ -33,4 +33,5 @@ public enum ErrorID : int
     TargetNotFound = 0029,
     NotDefined = 0030,
     CannotDeduceType = 31,
+    DeducingTypeNotPossible = 32,
 }

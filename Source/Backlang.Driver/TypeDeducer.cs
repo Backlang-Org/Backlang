@@ -104,16 +104,69 @@ public static class TypeDeducer
         return null;
     }
 
-    public static IType DeduceFunctionReturnType(LNode funcDefinition, CompilerContext context, Scope scope, QualifiedName modulename) {
+    public static IType DeduceFunctionReturnType(LNode funcDefinition, CompilerContext context, Scope scope, QualifiedName modulename)
+    {
         var returnNodes = funcDefinition.Descendants().Where(_ => _.Calls(CodeSymbols.Return)).ToArray();
 
-        if(!returnNodes.Any()) {
+        if (!returnNodes.Any())
+        {
             return Utils.ResolveType(context.Binder, typeof(void));
         }
 
-        if(returnNodes.Length == 1) {
+        if (returnNodes.Length == 1)
+        {
             return Deduce(returnNodes[0][0], scope, context, modulename);
         }
+
+        var types = returnNodes.Select(_ => Deduce(_[0], scope, context, modulename));
+        var aggregatedCommonType = types.Aggregate(FindCommonType);
+
+        if (aggregatedCommonType != null)
+        {
+            return aggregatedCommonType;
+        }
+
+        context.AddError(funcDefinition, ErrorID.DeducingTypeNotPossible);
+        return context.Environment.Void;
+    }
+
+    private static IType FindCommonType(IType first, IType second)
+    {
+        if (first == second)
+        {
+            return first;
+        }
+
+        if (first.BaseTypes.Count > 0 && second.BaseTypes.Count > 0)
+        {
+            if (first.BaseTypes[0].FullName.ToString() == "System.ValueType")
+            {
+                return null;
+            }
+            if (second.BaseTypes[0].FullName.ToString() == "System.ValueType")
+            {
+                return null;
+            }
+
+            if (first.BaseTypes[0] == second.BaseTypes[0])
+            {
+                return first.BaseTypes[0];
+            }
+
+            return FindCommonType(first.BaseTypes[0], second.BaseTypes[0]);
+        }
+
+        if (first.BaseTypes.Count > 0 && first.BaseTypes[0] == second)
+        {
+            return second;
+        }
+
+        if (second.BaseTypes.Count > 0 && second.BaseTypes[0] == first)
+        {
+            return first;
+        }
+
+
 
         return null;
     }

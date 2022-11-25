@@ -210,4 +210,7 @@
   <data name="BL(0031)" xml:space="preserve">
     <value>Cannot set type</value>
   </data>
+  <data name="BL(0032)" xml:space="preserve">
+    <value>Cannot deduce Type. Declare it manually!</value>
+  </data>
 </root>
