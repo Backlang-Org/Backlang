@@ -33,7 +33,7 @@ public static class SyntacticMacros
         ["percent"] = ("Percentage", 1),
     };
 
-    private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
+    private static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro("constructor()", "Convert constructor() to .ctor() function", "#constructor", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Constructor(LNode node, IMacroContext context)
@@ -63,18 +63,29 @@ public static class SyntacticMacros
         return @operator.WithTarget(LNode.Id("Finalize"));
     }
 
-    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("'/=", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode DivEquals(LNode @operator, IMacroContext context)
     {
         return ConvertToAssignment(@operator, CodeSymbols.Div);
     }
 
-    [LexicalMacro("fn", "Expand notnull postfix for function parameter declaration", "#fn",
-       Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverrideMax)]
-    public static LNode ExpandNotnullAssertionPostfix(LNode node, IMacroContext context)
+    [LexicalMacro("#fn", "Transform function", "#fn",
+       Mode = MacroMode.MatchIdentifierOrCall | MacroMode.ProcessChildrenBefore)]
+    public static LNode TransformFunction(LNode node, IMacroContext context)
+    {
+        node = ExpandOperator(node, context);
+
+        node = ExpandNotnullAssertionPostfix(node, context);
+
+        return node;
+    }
+
+    private static LNode ExpandNotnullAssertionPostfix(LNode node, IMacroContext context)
     {
         var newBody = new LNodeList();
         var newParameters = new LNodeList();
+
+        if(node.ArgCount == 0) return node;
 
         foreach (var parameter in node[2].Args)
         {
@@ -101,9 +112,7 @@ public static class SyntacticMacros
         return node;
     }
 
-    [LexicalMacro("operator", "Convert to public static op_", "#fn",
-        Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverride)]
-    public static LNode ExpandOperator(LNode @operator, IMacroContext context)
+    private static LNode ExpandOperator(LNode @operator, IMacroContext context)
     {
         var operatorAttribute = SyntaxTree.Factory.Id((Symbol)"#operator");
         if (@operator.Attrs.Contains(operatorAttribute))
@@ -175,7 +184,7 @@ public static class SyntacticMacros
             LNode.List(@operator.Args[0]));
     }
 
-    [LexicalMacro("Point::new()", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("'::'", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Instantiation(LNode node, IMacroContext context)
     {
         if (node.Args.IsEmpty)
@@ -217,6 +226,17 @@ public static class SyntacticMacros
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
         return ConvertToAssignment(@operator, CodeSymbols.Sub);
+    }
+
+
+    //ToDo: move to other stage to enable typecheck. only allowed if a type is nullable
+    [LexicalMacro("left !!= right;", "None check shotcut operator", "'!!=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode NoneCheckShortcut(LNode node, IMacroContext context)
+    {
+        var condition = LNode.Call(CodeSymbols.NotEq, LNode.List(node[0], SyntaxTree.None()));
+        var body = LNode.List(LNode.Call(CodeSymbols.Assign, LNode.List(node[0], node[1])));
+
+        return SyntaxTree.If(condition, LNode.Call(CodeSymbols.Braces, body), LNode.Missing);
     }
 
     [LexicalMacro("left *= right;", "Convert to left = left * something", "'*=", Mode = MacroMode.MatchIdentifierOrCall)]

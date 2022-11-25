@@ -91,6 +91,7 @@ public enum TokenType
     [Lexeme("-=")]
     [Lexeme("|=")]
     [Lexeme("&=")]
+    [Lexeme("!!=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     EqualsShortcutToken,
 
