@@ -147,6 +147,9 @@ public enum TokenType
     [PreUnaryOperatorInfo(UnaryOpPrecedences.Dollar)]
     Dollar,
 
+    [Lexeme("?")]
+    Questionmark,
+
     [Lexeme("==")]
     [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
     EqualsEquals,

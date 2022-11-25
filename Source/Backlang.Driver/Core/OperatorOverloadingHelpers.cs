@@ -27,6 +27,9 @@ public static class OperatorOverloadingHelpers
         ["'&"] = "op_AddressOf",
 
         ["'%"] = "op_Percentage",
+
+        ["implicit"] = "op_Implicit",
+        ["explicit"] = "op_Explicit",
     }.ToImmutableDictionary();
 
     public static bool TryGetOperator(this IType type, string op, out IMethod opMethod, params IType[] args)

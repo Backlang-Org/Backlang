@@ -168,6 +168,11 @@ public static class SyntaxTree
         return Factory.Call(Symbols.RefType, LNode.List(type));
     }
 
+    public static LNode NullableType(LNode type)
+    {
+        return Factory.Call(Symbols.NullableType, LNode.List(type));
+    }
+
     public static LNode Signature(LNode name, LNode type, LNodeList args, LNodeList generics)
     {
         return Factory.Call(CodeSymbols.Fn, LNode.List(
@@ -258,4 +263,6 @@ public static class SyntaxTree
     {
         return Factory.Call(CodeSymbols.DoWhile, LNode.List(body, cond));
     }
+
+    
 }

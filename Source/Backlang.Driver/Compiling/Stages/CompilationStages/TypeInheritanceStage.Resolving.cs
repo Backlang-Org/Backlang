@@ -64,6 +64,10 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                 ResolveUnitType(context, modulename, ref resolvedType, unit);
             }
         }
+        else if (typeNode is ("#type?", var nullableArg))
+        {
+            resolvedType = ResolveNullableType(nullableArg, context, modulename);
+        }
         else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
         {
             resolvedType = ResolveFunctionType(typeNode, context, modulename, func);
@@ -106,6 +110,15 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         return resolvedType;
+    }
+
+    private static IType ResolveNullableType(LNode nullableArg, CompilerContext context, QualifiedName modulename)
+    {
+        var tupleType = Utils.ResolveType(context.Binder, $"Nullable`1", "System");
+
+        var innerType = ResolveTypeWithModule(nullableArg, context, modulename);
+        
+        return tupleType.MakeGenericType(new List<IType>() { innerType });
     }
 
     private static void ResolveImportedType(LNode typeNode, CompilerContext context, ref QualifiedName fullName, ref IType resolvedType)

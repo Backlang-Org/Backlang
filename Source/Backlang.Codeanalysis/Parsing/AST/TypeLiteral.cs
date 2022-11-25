@@ -29,6 +29,11 @@ public sealed class TypeLiteral
 
                 typeNode = SyntaxTree.RefType(typeNode).WithRange(typeToken, iterator.Prev);
             }
+            else if(iterator.IsMatch(TokenType.Questionmark)) {
+                iterator.NextToken();
+
+                typeNode = SyntaxTree.NullableType(typeNode).WithRange(typeToken, iterator.Prev);
+            }
             else if (iterator.IsMatch(TokenType.OpenSquare))
             {
                 typeNode = ParseArrayType(iterator, typeNode, typeToken);
