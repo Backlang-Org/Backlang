@@ -139,11 +139,12 @@ public static class TypeDeducer
 
         if (first.BaseTypes.Count > 0 && second.BaseTypes.Count > 0)
         {
-            if (first.BaseTypes[0].FullName.ToString() == "System.ValueType")
+            if (first.BaseTypes[0].FullName.ToString() == "System.ValueType" || second.BaseTypes[0].FullName.ToString() == "System.ValueType")
             {
                 return null;
             }
-            if (second.BaseTypes[0].FullName.ToString() == "System.ValueType")
+
+            if (first.BaseTypes[0].FullName.ToString() == "System.Object" || second.BaseTypes[0].FullName.ToString() == "System.Object")
             {
                 return null;
             }
@@ -156,17 +157,15 @@ public static class TypeDeducer
             return FindCommonType(first.BaseTypes[0], second.BaseTypes[0]);
         }
 
-        if (first.BaseTypes.Count > 0 && first.BaseTypes[0] == second)
-        {
-            return second;
-        }
-
         if (second.BaseTypes.Count > 0 && second.BaseTypes[0] == first)
         {
             return first;
         }
 
-
+        if (first.BaseTypes.Count > 0 && first.BaseTypes[0] == second)
+        {
+            return second;
+        }
 
         return null;
     }
