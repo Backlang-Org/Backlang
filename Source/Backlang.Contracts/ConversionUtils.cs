@@ -44,6 +44,13 @@ public static class ConversionUtils
         bool isPointer = false;
         PointerKind pointerKind = PointerKind.Transient;
 
+
+        if (lNode is ("'suf.*", var ns))
+        {
+            var qualifiedNs = GetQualifiedName(ns);
+
+            return new SimpleName("*").Qualify(qualifiedNs);
+        }
         if (lNode is ("#type*", var arg))
         {
             isPointer = true;

@@ -62,6 +62,10 @@ public enum TokenType
     [Lexeme("*")]
     Star,
 
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
+    [Lexeme(".*")]
+    DotAsterisk, // for namespace imports
+
     [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
     [Lexeme("**")]
     StarStar,
