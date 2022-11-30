@@ -140,6 +140,25 @@ public static class TypeDeducer
             return first;
         }
 
+        if (ImplicitTypeCastTable.IsAssignableTo(first, second))
+        {
+            return first;
+        }
+        if (ImplicitTypeCastTable.IsAssignableTo(second, first))
+        {
+            return second;
+        }
+
+        if (second.BaseTypes.Count > 0 && second.BaseTypes[0] == first)
+        {
+            return first;
+        }
+
+        if (first.BaseTypes.Count > 0 && first.BaseTypes[0] == second)
+        {
+            return second;
+        }
+
         if (first.BaseTypes.Count > 0 && second.BaseTypes.Count > 0)
         {
             if (first.BaseTypes[0].FullName.ToString() == "System.ValueType" || second.BaseTypes[0].FullName.ToString() == "System.ValueType")
@@ -158,16 +177,6 @@ public static class TypeDeducer
             }
 
             return FindCommonType(first.BaseTypes[0], second.BaseTypes[0]);
-        }
-
-        if (second.BaseTypes.Count > 0 && second.BaseTypes[0] == first)
-        {
-            return first;
-        }
-
-        if (first.BaseTypes.Count > 0 && first.BaseTypes[0] == second)
-        {
-            return second;
         }
 
         return null;

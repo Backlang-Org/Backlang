@@ -1,7 +1,8 @@
 import System;
 
 func doSomething() {
-
+	return 1;
+	return 41.0;
 }
 
 func main() {

@@ -12,9 +12,9 @@ public static class ImplicitTypeCastTable
         castMap.Add(environment.UInt16, new[] { environment.UInt32, environment.UInt64 });
         castMap.Add(environment.UInt32, new[] { environment.UInt64 });
 
-        castMap.Add(environment.Int8, new[] { environment.Int16, environment.Int32, environment.Int64 });
-        castMap.Add(environment.Int16, new[] { environment.Int32, environment.Int64 });
-        castMap.Add(environment.Int32, new[] { environment.Int64 });
+        castMap.Add(environment.Int8, new[] { environment.Int16, environment.Int32, environment.Int64, environment.Float32 });
+        castMap.Add(environment.Int16, new[] { environment.Int32, environment.Int64, environment.Float32, environment.Float64 });
+        castMap.Add(environment.Int32, new[] { environment.Int64, environment.Float64 });
     }
 
     public static bool IsAssignableTo(this IType type, IType toCast)
