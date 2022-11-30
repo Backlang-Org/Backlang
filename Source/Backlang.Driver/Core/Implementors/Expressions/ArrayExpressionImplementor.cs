@@ -19,9 +19,9 @@ public class ArrayExpressionImplementor : IExpressionImplementor
             elementType = context.Binder.ResolveTypes(gn.TypeArgumentNames[0]).FirstOrDefault();
         }
 
-        var arrayValuesType = GetOrAddArrayValueType(context.Environment.MakeArrayType(elementType, 1), context, out DescribedField field); //Todo: replace rank
+        var arrayValuesType = GetOrAddArrayValueType(context.Environment.MakeArrayType(elementType, 1), context, out var field); //Todo: replace rank
 
-        field.InitialValue = new[] { 1,2,3 };
+        field.InitialValue = new byte[] { 1,2,3 };
 
         //Todo: only emit this if values are primitive values otherwise emit storeelementref
         var args = new List<ValueTag> {
@@ -34,7 +34,7 @@ public class ArrayExpressionImplementor : IExpressionImplementor
         return block.AppendInstruction(Instruction.CreateCall(initArrayMethod, MethodLookup.Static, args));
     }
 
-    private static DescribedType GetOrAddArrayValueType(IType elementType, CompilerContext context, out IField field)
+    private static DescribedType GetOrAddArrayValueType(IType elementType, CompilerContext context, out DescribedField field)
     {
         var arrayValuesType = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.ArrayValues).Qualify("")).FirstOrDefault();
 
