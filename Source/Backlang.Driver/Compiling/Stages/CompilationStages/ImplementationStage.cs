@@ -107,6 +107,9 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                             IsStatic = true,
                             IsPublic = true
                         };
+
+                        Utils.AddCompilerGeneratedAttribute(context.Binder, extensionType);
+
                         context.Assembly.AddType(extensionType);
                     }
 

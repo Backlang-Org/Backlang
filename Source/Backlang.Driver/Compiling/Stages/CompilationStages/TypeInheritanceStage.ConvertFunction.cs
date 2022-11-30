@@ -99,9 +99,13 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         if (!context.Assembly.Types.Any(_ =>
             _.FullName.ToString() == new SimpleName(Names.FreeFunctions).Qualify(modulename).ToString()))
         {
-            type = new DescribedType(new SimpleName(Names.FreeFunctions).Qualify(modulename), context.Assembly);
-            type.IsStatic = true;
-            type.IsPublic = true;
+            type = new DescribedType(new SimpleName(Names.FreeFunctions).Qualify(modulename), context.Assembly)
+            {
+                IsStatic = true,
+                IsPublic = true
+            };
+            
+            Utils.AddCompilerGeneratedAttribute(context.Binder, type);
 
             context.Assembly.AddType(type);
             var tr = new TypeResolver();
