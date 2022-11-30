@@ -1,12 +1,7 @@
 import System;
 
 func doSomething() {
-	let n = Hello::new(12, 42);
-	//let ptr : i32? = 42;
 
-	//print(name);
-
-	return n;
 }
 
 func main() {
