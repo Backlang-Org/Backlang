@@ -19,7 +19,7 @@ public class ClrTypeEnvironmentBuilder
         {
             if (!type.IsPublic) continue;
 
-            var ns = Utils.QualifyNamespace(type.Namespace);
+            var ns = ConversionUtils.QualifyNamespace(type.Namespace);
 
             var dt = new DescribedType(new SimpleName(type.Name).Qualify(ns), assembly);
             dt.IsSealed = type.IsSealed;

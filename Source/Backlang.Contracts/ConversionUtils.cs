@@ -39,6 +39,26 @@ public static class ConversionUtils
         }
     }
 
+    public static QualifiedName QualifyNamespace(string @namespace)
+    {
+        var spl = @namespace.Split('.');
+
+        QualifiedName? name = null;
+
+        foreach (var path in spl)
+        {
+            if (name == null)
+            {
+                name = new SimpleName(path).Qualify();
+                continue;
+            }
+
+            name = new SimpleName(path).Qualify(name.Value);
+        }
+
+        return name.Value;
+    }
+
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
         bool isPointer = false;

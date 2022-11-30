@@ -94,8 +94,6 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 if (context.FileScope.ImportetNamespaces.TryGetValue(typeNode.Range.Source.FileName, out var importedNamespaces))
                 {
-                    ExpandNamespaceImports(importedNamespaces, context);
-
                     ResolveImportedType(typeNode, context, ref fullName, ref resolvedType);
                 }
 
@@ -113,36 +111,6 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         return resolvedType;
-    }
-
-    private static void ExpandNamespaceImports(NamespaceImports ns, CompilerContext context)
-    {
-        for (var i = 0; i < ns.ImportedNamespaces.Count; i++)
-        {
-            var import = ns.ImportedNamespaces[i];
-            var imp = import.ToString();
-
-            if (!imp.EndsWith(".*"))
-            {
-                continue;
-            }
-
-            var withoutWildcard = imp[..^2];
-
-            context.Binder.TryResolveNamespace(Utils.QualifyNamespace(withoutWildcard), out var foundNamespaces);
-
-            if (foundNamespaces == null)
-            {
-                //ToDo: add error that namespace has no subnamespace(s)
-                return;
-            }
-
-            ns.ImportedNamespaces.Remove(import);
-            foreach (var foundNs in foundNamespaces.Namespaces)
-            {
-                ns.ImportedNamespaces.Add(foundNs.Key.Qualify(withoutWildcard));
-            }
-        }
     }
 
     private static IType ResolveNullableType(LNode nullableArg, CompilerContext context, QualifiedName modulename)

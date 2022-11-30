@@ -58,7 +58,7 @@ public static class BinderExtensions
 
         var spl = selector.Split("::");
 
-        ms.Typename = Utils.QualifyNamespace(spl[0]);
+        ms.Typename = ConversionUtils.QualifyNamespace(spl[0]);
 
         var methodPart = spl[1];
         ms.FunctionName = methodPart.Substring(0, methodPart.IndexOf("("));

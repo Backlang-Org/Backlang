@@ -57,7 +57,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
     private static void AddIntrinsicType(CompilerContext context, Type type)
     {
-        var qualifier = Utils.QualifyNamespace(type.Namespace);
+        var qualifier = ConversionUtils.QualifyNamespace(type.Namespace);
         var intrinsicAssembly = new DescribedAssembly(qualifier);
 
         var instrinsicsType = new DescribedType(

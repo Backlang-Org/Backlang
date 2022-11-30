@@ -14,29 +14,9 @@ public static class Utils
         return graph;
     }
 
-    public static QualifiedName QualifyNamespace(string @namespace)
-    {
-        var spl = @namespace.Split('.');
-
-        QualifiedName? name = null;
-
-        foreach (var path in spl)
-        {
-            if (name == null)
-            {
-                name = new SimpleName(path).Qualify();
-                continue;
-            }
-
-            name = new SimpleName(path).Qualify(name.Value);
-        }
-
-        return name.Value;
-    }
-
     public static DescribedType ResolveType(TypeResolver resolver, Type type)
     {
-        var ns = QualifyNamespace(type.Namespace);
+        var ns = ConversionUtils.QualifyNamespace(type.Namespace);
 
         return (DescribedType)resolver.ResolveTypes(new SimpleName(type.Name).Qualify(ns))?.FirstOrDefault();
     }
