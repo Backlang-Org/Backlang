@@ -1,7 +1,10 @@
 using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
+using Loyc.Collections.Impl;
 using Loyc.Syntax;
 using System.Reflection;
+using System.Text;
+using System.Transactions;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -32,6 +35,11 @@ public sealed class Lexer : BaseLexer
 
     protected override Token NextToken()
     {
+        if (IsMatch("///"))
+        {
+            return LexDocComment();
+        }
+
         SkipWhitespaces();
         SkipComments();
 
@@ -85,6 +93,36 @@ public sealed class Lexer : BaseLexer
         }
 
         return Token.Invalid;
+    }
+
+    private Token LexDocComment()
+    {
+        var oldPos = _position;
+        var contentBuilder = new StringBuilder();
+
+        do
+        {
+            contentBuilder.AppendLine(ReadLine().TrimStart('/').Trim());
+        } while (IsMatch("///"));
+
+        return new Token(TokenType.DocComment, contentBuilder.ToString(), oldPos, _position, _line, _column);
+    }
+
+
+    private string ReadLine()
+    {
+        var sb = new StringBuilder();
+
+        while (Current() != '\n')
+        {
+            Advance();
+            _column++;
+        }
+        Advance();
+        _column = 0;
+        _line++;
+
+        return sb.ToString();
     }
 
     private static bool IsBinaryDigit(char c)

@@ -1,5 +1,6 @@
-import System;
-
+/// <summary>
+/// Hello World, function to test the compiler
+/// </summary>
 func doSomething() {
 	let hello = [1, 2, 3];
 

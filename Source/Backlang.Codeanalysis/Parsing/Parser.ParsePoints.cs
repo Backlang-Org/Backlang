@@ -82,10 +82,11 @@ public sealed partial class Parser
         var body = new LNodeList();
         while (Iterator.Current.Type != terminator)
         {
+            DocComment.TryParse(this, out var docComment);
             Annotation.TryParse(this, out var annotation);
             Modifier.TryParse(this, out var modifiers);
 
-            var item = InvokeParsePoint(parsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers);
+            var item = InvokeParsePoint(parsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers).PlusAttr(docComment);
 
             if (item != null)
             {

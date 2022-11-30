@@ -358,4 +358,5 @@ public enum TokenType
 
     [Keyword("unit")]
     Unit,
+    DocComment,
 }
