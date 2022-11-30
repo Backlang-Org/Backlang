@@ -1,5 +1,6 @@
 using Backlang.Driver;
 using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 
 namespace Backlang.Contracts;
 
@@ -21,15 +22,15 @@ public class NamespaceImports
 
             ImportedNamespaces.Add(qualifiedNs);
 
-            ExpandNamespaceImports(this, context);
+            ExpandNamespaceImports(context);
         }
     }
 
-    private static void ExpandNamespaceImports(NamespaceImports ns, CompilerContext context)
+    private void ExpandNamespaceImports(CompilerContext context)
     {
-        for (var i = 0; i < ns.ImportedNamespaces.Count; i++)
+        for (var i = 0; i < ImportedNamespaces.Count; i++)
         {
-            var import = ns.ImportedNamespaces[i];
+            var import = ImportedNamespaces[i];
             var imp = import.ToString();
 
             if (!imp.EndsWith(".*"))

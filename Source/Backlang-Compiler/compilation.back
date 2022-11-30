@@ -14,8 +14,7 @@ implement i32 {
 
 func main() {
 	let mut k = 12;
-	
-	k += 5;
+
 	k !!= 5;
 
 	if k == 12 {
