@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Driver.Core.Implementors;
 
-public struct StatementParameters
+public class StatementParameters
 {
     public CompilerContext context;
     public IMethod method;
@@ -8,6 +8,7 @@ public struct StatementParameters
     public LNode node;
     public QualifiedName? modulename;
     public Scope scope;
+    public BranchLabels branchLabels;
 
     public StatementParameters(CompilerContext context, IMethod method, BasicBlockBuilder block,
         LNode node, QualifiedName? modulename, Scope scope)
@@ -18,5 +19,6 @@ public struct StatementParameters
         this.node = node;
         this.modulename = modulename;
         this.scope = scope;
+        branchLabels = new();
     }
 }

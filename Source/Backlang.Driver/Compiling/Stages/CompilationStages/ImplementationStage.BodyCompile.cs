@@ -20,6 +20,8 @@ public partial class ImplementationStage
         [CodeSymbols.While] = new WhileImplementor(),
         [CodeSymbols.DoWhile] = new DoWhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
+        [CodeSymbols.Continue] = new ContinueStatementImplementor(),
+        [CodeSymbols.Break] = new BreakStatementImplementor(),
         [CodeSymbols.Throw] = new ThrowImplementor(),
         [CodeSymbols.ColonColon] = new StaticCallImplementor(),
         [CodeSymbols.Dot] = new CallImplementor(),

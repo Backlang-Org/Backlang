@@ -4,15 +4,13 @@ namespace Backlang.Driver.Core.Flows;
 
 public class BreakFlow : BlockFlow
 {
-    public BreakFlow(Branch branch)
+    public BreakFlow(BasicBlockTag branch)
     {
         Branch = branch;
     }
 
-
     public BreakFlow()
     {
-
     }
 
     /// <summary>
@@ -20,13 +18,13 @@ public class BreakFlow : BlockFlow
     /// this flow.
     /// </summary>
     /// <returns>The jump branch.</returns>
-    public Branch Branch { get; private set; }
+    public BasicBlockTag Branch { get; private set; }
 
     /// <inheritdoc/>
     public override IReadOnlyList<Instruction> Instructions => EmptyArray<Instruction>.Value;
 
     /// <inheritdoc/>
-    public override IReadOnlyList<Branch> Branches => new Branch[] { Branch };
+    public override IReadOnlyList<Branch> Branches => new Branch[] { };
 
     /// <inheritdoc/>
     public override BlockFlow WithInstructions(IReadOnlyList<Instruction> instructions)
@@ -46,7 +44,7 @@ public class BreakFlow : BlockFlow
         }
         else
         {
-            return new BreakFlow(newBranch);
+            return new BreakFlow(newBranch.Target);
         }
     }
 

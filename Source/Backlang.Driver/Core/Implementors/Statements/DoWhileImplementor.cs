@@ -19,6 +19,9 @@ public class DoWhileImplementor : IStatementImplementor
             do_after.Flow = new NothingFlow();
             do_body.Flow = new NothingFlow();
 
+            parameters.branchLabels.breakBranch = do_after;
+            parameters.branchLabels.continueBranch = do_body;
+
             AppendBlock(body, do_body, parameters.context, parameters.method,
                 parameters.modulename, parameters.scope.CreateChildScope());
 

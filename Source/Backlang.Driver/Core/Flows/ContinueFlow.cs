@@ -4,14 +4,13 @@ namespace Backlang.Driver.Core.Flows;
 
 public class ContinueFlow : BlockFlow
 {
-    public ContinueFlow(Branch branch)
+    public ContinueFlow(BasicBlockTag branch)
     {
         Branch = branch;
     }
 
     public ContinueFlow()
     {
-
     }
 
     /// <summary>
@@ -19,13 +18,13 @@ public class ContinueFlow : BlockFlow
     /// this flow.
     /// </summary>
     /// <returns>The jump branch.</returns>
-    public Branch Branch { get; private set; }
+    public BasicBlockTag Branch { get; private set; }
 
     /// <inheritdoc/>
     public override IReadOnlyList<Instruction> Instructions => EmptyArray<Instruction>.Value;
 
     /// <inheritdoc/>
-    public override IReadOnlyList<Branch> Branches => new Branch[] { Branch };
+    public override IReadOnlyList<Branch> Branches => new Branch[] { };
 
     /// <inheritdoc/>
     public override BlockFlow WithInstructions(IReadOnlyList<Instruction> instructions)
@@ -45,7 +44,7 @@ public class ContinueFlow : BlockFlow
         }
         else
         {
-            return new BreakFlow(newBranch);
+            return new BreakFlow(newBranch.Target);
         }
     }
 

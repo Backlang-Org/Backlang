@@ -18,6 +18,9 @@ public class WhileImplementor : IStatementImplementor
             var while_after = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_after"));
             while_after.Flow = new NothingFlow();
 
+            parameters.branchLabels.breakBranch = while_after;
+            parameters.branchLabels.continueBranch = while_condition;
+
             AppendBlock(body, while_start, parameters.context, parameters.method, parameters.modulename,
                 parameters.scope.CreateChildScope());
 
