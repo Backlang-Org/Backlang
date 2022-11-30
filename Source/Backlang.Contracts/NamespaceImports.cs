@@ -48,10 +48,10 @@ public class NamespaceImports
                 return;
             }
 
-            ns.ImportedNamespaces.Remove(import);
+            ImportedNamespaces.Remove(import);
             foreach (var foundNs in foundNamespaces.Namespaces)
             {
-                ns.ImportedNamespaces.Add(foundNs.Key.Qualify(withoutWildcard));
+                ImportedNamespaces.Add(foundNs.Key.Qualify(withoutWildcard));
             }
         }
     }
