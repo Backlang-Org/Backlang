@@ -22,6 +22,11 @@ public static class BinderExtensions
         var convertedSelector = GetSelector(selector);
 
         var type = binder.ResolveTypes(convertedSelector.Typename)?.FirstOrDefault();
+        
+        if(type == null) {
+            throw new Exception($"Type '{type.FullName}' not found");
+        }
+        
         var methods = type.Methods
             .Where(_ => _.Name.ToString() == convertedSelector.FunctionName)
             .Where(_ => _.Parameters.Count == convertedSelector.ParameterTypes.Length);
