@@ -1,38 +1,13 @@
-import System.*;
 
-func doSomething() {
-	let hello = [1, 2, 3];
-
-	return 1;
-}
-
-implement i32 {
-	public func doSomething() {
-		return false;
-	}
-}
-
-func main() {
+func main()  {
 	let mut k = 12;
 
-	k !!= 5;
-
-	if k == 12 {
-		print("it works");
-	}
-
-	if k == 13 {
+	while(true) {
 		print("hello");
-	}
-	else {
-		print("nothing");
 	}
 
 	print("sss");
 	print(k);
-}
 
-public struct Hello {
-	let k: i32;	
-	let v: i32;	
+	return;
 }

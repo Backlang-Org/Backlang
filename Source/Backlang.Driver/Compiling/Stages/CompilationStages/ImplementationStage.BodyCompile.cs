@@ -4,6 +4,7 @@ using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
@@ -59,7 +60,8 @@ public partial class ImplementationStage
         else
         {
             var deducedReturnType = TypeDeducer.DeduceFunctionReturnType(function, context, scope, modulename);
-            method.ReturnParameter = new Parameter(deducedReturnType);
+
+            method.ReturnParameter = deducedReturnType != null ? new Parameter(deducedReturnType) : new Parameter(Utils.ResolveType(context.Binder, typeof(void)));
         }
     }
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
@@ -68,7 +70,12 @@ public partial class ImplementationStage
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
 
-        AppendBlock(function.Args[3], block, context, method, modulename, scope);
+        var afterBlock  = AppendBlock(function.Args[3], block, context, method, modulename, scope);
+
+        if(afterBlock.Flow is NothingFlow)
+        {
+            afterBlock.Flow = new ReturnFlow();
+        }
 
         SetReturnType((DescribedBodyMethod)method, function, context, scope, modulename.Value);
 
@@ -81,6 +88,8 @@ public partial class ImplementationStage
 
     public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
     {
+        block.Flow = new NothingFlow();
+
         foreach (var node in blkNode.Args)
         {
             if (!node.IsCall) continue;

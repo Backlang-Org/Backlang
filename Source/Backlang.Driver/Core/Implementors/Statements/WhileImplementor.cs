@@ -13,13 +13,16 @@ public class WhileImplementor : IStatementImplementor
             TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
 
             var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
+            var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
+            var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
+            var while_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_after"));
+            while_after.Flow = new NothingFlow();
+
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
 
-            var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
+            var kind = ConditionalJumpKind.True;
 
-            ConditionalJumpKind kind = ConditionalJumpKind.True;
 
-            var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
             if (!condition.Calls(CodeSymbols.Bool) && condition.Name.ToString().StartsWith("'") && condition.ArgCount == 2)
             {
                 AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
@@ -33,10 +36,9 @@ public class WhileImplementor : IStatementImplementor
 
             block.Flow = new JumpFlow(while_condition);
 
-            while_start.Flow = new NothingFlow();
             while_end.Flow = new NothingFlow();
 
-            return block.Graph.AddBasicBlock();
+            return while_after;
         }
 
         return null;

@@ -17,7 +17,7 @@ public class IfImplementor : IStatementImplementor
 
             after.Flow = new NothingFlow();
 
-            ConditionalJumpKind kind = ConditionalJumpKind.True;
+            var kind = ConditionalJumpKind.True;
 
             if (!condition.Calls(CodeSymbols.Bool))
             {
@@ -35,8 +35,6 @@ public class IfImplementor : IStatementImplementor
                 AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
                 block.Flow = new JumpConditionalFlow(after, kind);
             }
-
-            ifBlock.Flow = new NothingFlow();
 
             return after;
         }

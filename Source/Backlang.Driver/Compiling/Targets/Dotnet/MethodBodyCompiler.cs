@@ -267,14 +267,7 @@ public static class MethodBodyCompiler
         }
         else if (block.Flow is UnreachableFlow)
         {
-            if (clrMethod.ReturnType.Name == "Void")
-            {
-                ilProcessor.Emit(OpCodes.Ret);
-            }
-            else
-            {
-                ilProcessor.Emit(OpCodes.Throw);
-            }
+            ilProcessor.Emit(OpCodes.Throw);
         }
     }
 

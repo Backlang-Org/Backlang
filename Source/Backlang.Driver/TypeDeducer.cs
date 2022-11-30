@@ -1,5 +1,6 @@
 ﻿using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.TypeSystem;
+using System.Linq.Expressions;
 
 namespace Backlang.Driver;
 
@@ -116,12 +117,18 @@ public static class TypeDeducer
             return Utils.ResolveType(context.Binder, typeof(void));
         }
 
-        if (returnNodes.Length == 1)
+        if (returnNodes.Length == 1 && returnNodes[0].ArgCount == 1)
         {
             return Deduce(returnNodes[0][0], scope, context, modulename);
         }
 
-        var types = returnNodes.Select(_ => Deduce(_[0], scope, context, modulename));
+        var types = returnNodes.Where(_ => _.ArgCount > 0).Select(_ => Deduce(_[0], scope, context, modulename));
+
+        if (!types.Any())
+        {
+            return null;
+        }
+
         var aggregatedCommonType = types.Aggregate(FindCommonType);
 
         if (aggregatedCommonType != null)
