@@ -5,33 +5,36 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class WhileImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
-        LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(StatementParameters parameters)
     {
-        if (node is (_, var condition, var body))
+        if (parameters.node is (_, var condition, var body))
         {
-            TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, parameters.scope, parameters.context, parameters.modulename.Value,
+                parameters.context.Environment.Boolean);
 
-            var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
-            var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
-            var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
-            var while_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_after"));
+            var while_start = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
+            var while_condition = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
+            var while_end = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
+            var while_after = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_after"));
             while_after.Flow = new NothingFlow();
 
-            AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope());
+            AppendBlock(body, while_start, parameters.context, parameters.method, parameters.modulename,
+                parameters.scope.CreateChildScope());
 
             if (!condition.Calls(CodeSymbols.Bool) && condition.Name.ToString().StartsWith("'") && condition.ArgCount == 2)
             {
-                AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
+                AppendExpression(while_condition, condition, parameters.context.Environment.Boolean,
+                    parameters.context, parameters.scope, parameters.modulename);
             }
             else
             {
-                AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
+                AppendExpression(while_condition, condition, parameters.context.Environment.Boolean,
+                    parameters.context, parameters.scope, parameters.modulename);
             }
 
             while_condition.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
 
-            block.Flow = new JumpFlow(while_condition);
+            parameters.block.Flow = new JumpFlow(while_condition);
 
             while_end.Flow = new NothingFlow();
 

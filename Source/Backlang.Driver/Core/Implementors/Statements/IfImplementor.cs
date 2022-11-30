@@ -5,15 +5,15 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class IfImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
-        LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(StatementParameters parameters)
     {
-        if (node is (_, (_, var condition, var body, var el)))
+        if (parameters.node is (_, (_, var condition, var body, var el)))
         {
-            TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, parameters.scope, parameters.context, parameters.modulename.Value,
+                parameters.context.Environment.Boolean);
 
-            var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
-            var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
+            var ifBlock = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
+            var after = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
 
             after.Flow = new NothingFlow();
 
@@ -21,19 +21,22 @@ public class IfImplementor : IStatementImplementor
 
             if (!condition.Calls(CodeSymbols.Bool))
             {
-                AppendExpression(block, condition, context.Environment.Boolean, context, scope, modulename);
+                AppendExpression(parameters.block, condition, parameters.context.Environment.Boolean,
+                    parameters.context, parameters.scope, parameters.modulename);
 
-                block.Flow = new JumpConditionalFlow(after, kind);
+                parameters.block.Flow = new JumpConditionalFlow(after, kind);
             }
             ifBlock.Flow = new JumpConditionalFlow(after, kind);
-            AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope());
+            AppendBlock(body, ifBlock, parameters.context, parameters.method, parameters.modulename,
+                parameters.scope.CreateChildScope());
 
             //Todo: fix else
             if (el != LNode.Missing)
             {
-                var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
-                AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope());
-                block.Flow = new JumpConditionalFlow(after, kind);
+                var elseBlock = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
+                AppendBlock(el, elseBlock, parameters.context, parameters.method, parameters.modulename,
+                    parameters.scope.CreateChildScope());
+                parameters.block.Flow = new JumpConditionalFlow(after, kind);
             }
 
             return after;

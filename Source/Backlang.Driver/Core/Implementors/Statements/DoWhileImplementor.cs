@@ -5,28 +5,31 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class DoWhileImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(StatementParameters parameters)
     {
-        if (node is (_, var body, var condition))
+        if (parameters.node is (_, var body, var condition))
         {
-            TypeDeducer.ExpectType(condition, scope, context, modulename.Value, context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, parameters.scope, parameters.context,
+                parameters.modulename.Value, parameters.context.Environment.Boolean);
 
-            var do_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_start"));
-            var do_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_body"));
-            var do_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_after"));
+            var do_body = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_start"));
+            var do_condition = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_body"));
+            var do_after = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_after"));
 
             do_after.Flow = new NothingFlow();
             do_body.Flow = new NothingFlow();
 
-            AppendBlock(body, do_body, context, method, modulename, scope.CreateChildScope());
+            AppendBlock(body, do_body, parameters.context, parameters.method,
+                parameters.modulename, parameters.scope.CreateChildScope());
 
-            AppendExpression(do_condition, condition, context.Environment.Boolean, context, scope.CreateChildScope(), modulename);
+            AppendExpression(do_condition, condition, parameters.context.Environment.Boolean,
+                parameters.context, parameters.scope.CreateChildScope(), parameters.modulename);
 
             do_condition.Flow = new JumpConditionalFlow(do_body, ConditionalJumpKind.True);
-           
+
             return do_after;
         }
 
-        return block;
+        return parameters.block;
     }
 }

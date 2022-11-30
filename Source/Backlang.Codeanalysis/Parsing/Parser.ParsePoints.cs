@@ -4,6 +4,7 @@ using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST.Statements.Loops;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;

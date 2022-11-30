@@ -2,15 +2,17 @@
 
 public class PrintOrPrintlnImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(StatementParameters parameters)
     {
-        var deducedArg = TypeDeducer.Deduce(node.Args[0], scope, context, modulename.Value);
-        var functionName = node.Calls("println") ? "WriteLine" : "Write";
+        var deducedArg = TypeDeducer.Deduce(parameters.node.Args[0], parameters.scope,
+            parameters.context, parameters.modulename.Value);
+        var functionName = parameters.node.Calls("println") ? "WriteLine" : "Write";
 
-        var m = context.Binder.FindFunction($"System.Console::{functionName}({deducedArg})");
+        var printFunction = parameters.context.Binder.FindFunction($"System.Console::{functionName}({deducedArg})");
 
-        ImplementationStage.AppendCall(context, block, node, m, scope, modulename.Value);
+        ImplementationStage.AppendCall(parameters.context, parameters.block, parameters.node,
+            printFunction, parameters.scope, parameters.modulename.Value);
 
-        return block;
+        return parameters.block;
     }
 }

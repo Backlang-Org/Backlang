@@ -47,32 +47,15 @@ public partial class ImplementationStage
         new CallExpressionEmitter(), //should be added as last
     }.ToImmutableList();
 
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, Scope scope, QualifiedName modulename)
-    {
-        var retType = function.Args[0];
-
-        if (retType.Name != LNode.Missing.Name)
-        {
-            var rtype = TypeInheritanceStage.ResolveTypeWithModule(retType, context, modulename);
-
-            method.ReturnParameter = new Parameter(rtype);
-        }
-        else
-        {
-            var deducedReturnType = TypeDeducer.DeduceFunctionReturnType(function, context, scope, modulename);
-
-            method.ReturnParameter = deducedReturnType != null ? new Parameter(deducedReturnType) : new Parameter(Utils.ResolveType(context.Binder, typeof(void)));
-        }
-    }
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
                     QualifiedName? modulename, Scope scope)
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
 
-        var afterBlock  = AppendBlock(function.Args[3], block, context, method, modulename, scope);
+        var afterBlock = AppendBlock(function.Args[3], block, context, method, modulename, scope);
 
-        if(afterBlock.Flow is NothingFlow)
+        if (afterBlock.Flow is NothingFlow)
         {
             afterBlock.Flow = new ReturnFlow();
         }
@@ -104,7 +87,8 @@ public partial class ImplementationStage
 
             if (_implementations.ContainsKey(node.Name))
             {
-                block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
+                block = _implementations[node.Name].Implement(new(context, method, block, node,
+                    modulename, scope));
             }
             else
             {
@@ -236,6 +220,24 @@ public partial class ImplementationStage
         foreach (var v in block.Parameters)
         {
             AppendDtor(context, block, scope, modulename, v.Tag.Name);
+        }
+    }
+
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, Scope scope, QualifiedName modulename)
+    {
+        var retType = function.Args[0];
+
+        if (retType.Name != LNode.Missing.Name)
+        {
+            var rtype = TypeInheritanceStage.ResolveTypeWithModule(retType, context, modulename);
+
+            method.ReturnParameter = new Parameter(rtype);
+        }
+        else
+        {
+            var deducedReturnType = TypeDeducer.DeduceFunctionReturnType(function, context, scope, modulename);
+
+            method.ReturnParameter = deducedReturnType != null ? new Parameter(deducedReturnType) : new Parameter(Utils.ResolveType(context.Binder, typeof(void)));
         }
     }
 

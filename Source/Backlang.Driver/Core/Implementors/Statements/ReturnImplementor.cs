@@ -5,22 +5,23 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class ReturnImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
-        LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(StatementParameters parameters)
     {
-        if (node.ArgCount == 1)
+        if (parameters.node.ArgCount == 1)
         {
-            var valueNode = node.Args[0];
+            var valueNode = parameters.node.Args[0];
 
-            AppendExpression(block, valueNode,
-                TypeDeducer.Deduce(valueNode, scope, context, modulename.Value), context, scope, modulename);
+            AppendExpression(parameters.block, valueNode,
+                TypeDeducer.Deduce(valueNode, parameters.scope, parameters.context, parameters.modulename.Value),
+                parameters.context, parameters.scope, parameters.modulename);
 
-            block.Flow = new ReturnFlow();
+            parameters.block.Flow = new ReturnFlow();
         }
         else
         {
-            block.Flow = new ReturnFlow();
+            parameters.block.Flow = new ReturnFlow();
         }
-        return block;
+
+        return parameters.block;
     }
 }

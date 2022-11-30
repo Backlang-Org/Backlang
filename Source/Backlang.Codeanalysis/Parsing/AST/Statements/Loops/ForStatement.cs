@@ -1,6 +1,6 @@
 ﻿using Loyc.Syntax;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+namespace Backlang.Codeanalysis.Parsing.AST.Statements.Loops;
 
 public sealed class ForStatement : IParsePoint
 {

@@ -1,12 +1,11 @@
 ﻿using Loyc.Syntax;
 
-namespace Backlang.Codeanalysis.Parsing.AST.Statements;
+namespace Backlang.Codeanalysis.Parsing.AST.Statements.Loops;
 
 public sealed class WhileStatement : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        // while true { 42; }
         var keywordToken = iterator.Prev;
 
         var cond = Expression.Parse(parser);
