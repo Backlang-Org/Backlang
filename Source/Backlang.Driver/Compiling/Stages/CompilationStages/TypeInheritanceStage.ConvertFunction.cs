@@ -104,8 +104,6 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                 IsStatic = true,
                 IsPublic = true
             };
-            
-            Utils.AddCompilerGeneratedAttribute(context.Binder, type);
 
             context.Assembly.AddType(type);
             var tr = new TypeResolver();
