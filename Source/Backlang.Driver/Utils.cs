@@ -1,4 +1,6 @@
 ﻿using Backlang.Core.CompilerService;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver;
 
@@ -64,5 +66,11 @@ public static class Utils
         var attrType = Utils.ResolveType(context.Binder, typeof(UnitTypeAttribute));
 
         return attr.Select(_ => _.AttributeType).Contains(attrType);
+    }
+
+    public static void AddCompilerGeneratedAttribute(TypeResolver binder, DescribedType type) {
+        var attributeType = ResolveType(binder, typeof(CompilerGeneratedAttribute));
+
+        type.AddAttribute(new DescribedAttribute(attributeType));
     }
 }
