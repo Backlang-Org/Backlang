@@ -6,27 +6,27 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class VariableImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        var decl = parameters.node.Args[1];
+        var decl = node.Args[1];
 
-        var typename = ConversionUtils.GetQualifiedName(parameters.node.Args[0]);
+        var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
 
-        var elementType = TypeInheritanceStage.ResolveTypeWithModule(parameters.node.Args[0],
-            parameters.context, parameters.modulename.Value, typename);
+        var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0],
+            context, modulename.Value, typename);
 
-        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], parameters.scope,
-            parameters.context, parameters.modulename.Value);
+        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope,
+            context, modulename.Value);
 
         if (elementType == null)
         {
             elementType = deducedValueType;
 
-            if (elementType == parameters.context.Environment.Void && !parameters.scope.TryGet<TypeScopeItem>(parameters.node.Args[0].Name.Name, out var _))
+            if (elementType == context.Environment.Void && !scope.TryGet<TypeScopeItem>(node.Args[0].Name.Name, out var _))
             {
-                if (parameters.node.Args[0] is (_, (_, var tp))) //ToDo: Implement Helper function To Get Typename
+                if (node.Args[0] is (_, (_, var tp))) //ToDo: Implement Helper function To Get Typename
                 {
-                    parameters.context.AddError(parameters.node,
+                    context.AddError(node,
                         new(ErrorID.CannotBeResolved, tp.Name.ToString()));
                 }
             }
@@ -34,47 +34,47 @@ public class VariableImplementor : IStatementImplementor
         else
         {
             if (deducedValueType != null && !elementType.IsAssignableTo(deducedValueType) &&
-                deducedValueType != parameters.context.Environment.Void)
+                deducedValueType != context.Environment.Void)
             {
                 if (elementType is UnitType ut)
                 {
                     if (ut != deducedValueType)
                     {
-                        parameters.context.AddError(parameters.node,
+                        context.AddError(node,
                             new(ErrorID.UnitTypeMismatch, elementType.ToString(), deducedValueType.ToString()));
                     }
-                    return parameters.block;
+                    return block;
                 }
 
-                parameters.context.AddError(parameters.node,
+                context.AddError(node,
                     new(ErrorID.TypeMismatch, elementType.ToString(), deducedValueType.ToString()));
             }
         }
 
         var varname = decl.Args[0].Name.Name;
-        var isMutable = parameters.node.Attrs.Contains(LNode.Id(Symbols.Mutable));
+        var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
 
-        if (parameters.scope.Add(new VariableScopeItem
+        if (scope.Add(new VariableScopeItem
         {
             Name = varname,
             IsMutable = isMutable,
             Parameter = new Parameter(elementType, varname)
         }))
         {
-            parameters.block.AppendParameter(new BlockParameter(elementType, varname, !isMutable));
+            block.AppendParameter(new BlockParameter(elementType, varname, !isMutable));
         }
         else
         {
-            parameters.context.AddError(decl.Args[0], new(ErrorID.AlreadyDeclared, varname));
+            context.AddError(decl.Args[0], new(ErrorID.AlreadyDeclared, varname));
         }
 
-        if (deducedValueType == null) return parameters.block;
+        if (deducedValueType == null) return block;
 
-        ImplementationStage.AppendExpression(parameters.block, decl.Args[1], elementType, parameters.context,
-            parameters.scope, parameters.modulename);
+        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context,
+            scope, modulename);
 
-        parameters.block.AppendInstruction(Instruction.CreateAlloca(elementType));
+        block.AppendInstruction(Instruction.CreateAlloca(elementType));
 
-        return parameters.block;
+        return block;
     }
 }

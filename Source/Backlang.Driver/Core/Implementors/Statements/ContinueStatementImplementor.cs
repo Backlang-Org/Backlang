@@ -4,10 +4,10 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class ContinueStatementImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        parameters.block.Flow = new JumpFlow(parameters.branchLabels.continueBranch);
+        block.Flow = new JumpFlow(branchLabels.continueBranch);
 
-        return parameters.block;
+        return block;
     }
 }

@@ -15,26 +15,26 @@ public class CallImplementor : IStatementImplementor
         }
     }
 
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        if (parameters.node is ("'.", var target, var callee) && target is ("this", _))
+        if (node is ("'.", var target, var callee) && target is ("this", _))
         {
-            if (parameters.method.IsStatic)
+            if (method.IsStatic)
             {
-                parameters.context.AddError(parameters.node, "'this' cannot be used in static methods");
-                return parameters.block;
+                context.AddError(node, "'this' cannot be used in static methods");
+                return block;
             }
 
-            if (parameters.scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
+            if (scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
             {
-                AppendCall(parameters.context, parameters.block, callee, fsi.Overloads,
-                    parameters.scope, parameters.modulename);
+                AppendCall(context, block, callee, fsi.Overloads,
+                    scope, modulename);
 
-                AppendDiscardReturnValue(parameters.block, fsi.Overloads[0].ReturnParameter.Type);
+                AppendDiscardReturnValue(block, fsi.Overloads[0].ReturnParameter.Type);
             }
             else
             {
-                parameters.context.AddError(parameters.node, new(Codeanalysis.Core.ErrorID.CannotFindFunction, callee.Name.Name));
+                context.AddError(node, new(Codeanalysis.Core.ErrorID.CannotFindFunction, callee.Name.Name));
             }
         }
         else
@@ -42,6 +42,6 @@ public class CallImplementor : IStatementImplementor
             // ToDo: other things and so on...
         }
 
-        return parameters.block;
+        return block;
     }
 }

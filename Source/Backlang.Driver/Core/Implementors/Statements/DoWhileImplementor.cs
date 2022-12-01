@@ -5,34 +5,33 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class DoWhileImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        if (parameters.node is (_, var body, var condition))
+        if (node is (_, var body, var condition))
         {
-            TypeDeducer.ExpectType(condition, parameters.scope, parameters.context,
-                parameters.modulename.Value, parameters.context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, scope, context,
+                modulename.Value, context.Environment.Boolean);
 
-            var do_body = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_start"));
-            var do_condition = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_body"));
-            var do_after = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_after"));
+            var do_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_start"));
+            var do_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_body"));
+            var do_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("do_after"));
 
             do_after.Flow = new NothingFlow();
             do_body.Flow = new NothingFlow();
 
-            parameters.branchLabels.breakBranch = do_after;
-            parameters.branchLabels.continueBranch = do_body;
+            branchLabels.breakBranch = do_after;
+            branchLabels.continueBranch = do_body;
 
-            AppendBlock(body, do_body, parameters.context, parameters.method,
-                parameters.modulename, parameters.scope.CreateChildScope());
+            AppendBlock(body, do_body, context, method, modulename, scope.CreateChildScope(), branchLabels);
 
-            AppendExpression(do_condition, condition, parameters.context.Environment.Boolean,
-                parameters.context, parameters.scope.CreateChildScope(), parameters.modulename);
+            AppendExpression(do_condition, condition, context.Environment.Boolean,
+                context, scope.CreateChildScope(), modulename);
 
             do_condition.Flow = new JumpConditionalFlow(do_body, ConditionalJumpKind.True);
 
             return do_after;
         }
 
-        return parameters.block;
+        return block;
     }
 }

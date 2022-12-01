@@ -5,27 +5,27 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class ThrowImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        var valueNode = parameters.node.Args[0].Args[0];
-        var constant = parameters.block.AppendInstruction(ConvertConstant(
-            GetLiteralType(valueNode, parameters.context, parameters.scope,
-            parameters.modulename.Value), valueNode.Value));
+        var valueNode = node.Args[0].Args[0];
+        var constant = block.AppendInstruction(ConvertConstant(
+            GetLiteralType(valueNode, context, scope,
+            modulename.Value), valueNode.Value));
 
-        var msg = parameters.block.AppendInstruction(
-            Instruction.CreateLoad(GetLiteralType(valueNode, parameters.context,
-            parameters.scope, parameters.modulename.Value), constant));
+        var msg = block.AppendInstruction(
+            Instruction.CreateLoad(GetLiteralType(valueNode, context,
+            scope, modulename.Value), constant));
 
-        if (parameters.node.Args[0].Name.Name == "#string")
+        if (node.Args[0].Name.Name == "#string")
         {
-            var exceptionType = Utils.ResolveType(parameters.context.Binder, typeof(Exception));
+            var exceptionType = Utils.ResolveType(context.Binder, typeof(Exception));
             var exceptionCtor = exceptionType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == 1);
 
-            parameters.block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
+            block.AppendInstruction(Instruction.CreateNewObject(exceptionCtor, new List<ValueTag> { msg }));
         }
 
-        parameters.block.Flow = UnreachableFlow.Instance;
+        block.Flow = UnreachableFlow.Instance;
 
-        return parameters.block;
+        return block;
     }
 }

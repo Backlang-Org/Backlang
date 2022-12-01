@@ -5,39 +5,41 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class WhileImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels)
     {
-        if (parameters.node is (_, var condition, var body))
+        if (node is (_, var condition, var body))
         {
-            TypeDeducer.ExpectType(condition, parameters.scope, parameters.context, parameters.modulename.Value,
-                parameters.context.Environment.Boolean);
+            TypeDeducer.ExpectType(condition, scope, context, modulename.Value,
+                context.Environment.Boolean);
 
-            var while_start = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
-            var while_condition = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
-            var while_end = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
-            var while_after = parameters.block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_after"));
+            var while_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_start"));
+            var while_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_condition"));
+            var while_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_end"));
+            var while_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("while_after"));
             while_after.Flow = new NothingFlow();
 
-            parameters.branchLabels.breakBranch = while_after;
-            parameters.branchLabels.continueBranch = while_condition;
+            branchLabels = new()
+            {
+                breakBranch = while_after,
+                continueBranch = while_condition
+            };
 
-            AppendBlock(body, while_start, parameters.context, parameters.method, parameters.modulename,
-                parameters.scope.CreateChildScope());
+            AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope(), branchLabels);
 
             if (!condition.Calls(CodeSymbols.Bool) && condition.Name.ToString().StartsWith("'") && condition.ArgCount == 2)
             {
-                AppendExpression(while_condition, condition, parameters.context.Environment.Boolean,
-                    parameters.context, parameters.scope, parameters.modulename);
+                AppendExpression(while_condition, condition, context.Environment.Boolean,
+                    context, scope, modulename);
             }
             else
             {
-                AppendExpression(while_condition, condition, parameters.context.Environment.Boolean,
-                    parameters.context, parameters.scope, parameters.modulename);
+                AppendExpression(while_condition, condition, context.Environment.Boolean,
+                    context, scope, modulename);
             }
 
             while_condition.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
 
-            parameters.block.Flow = new JumpFlow(while_condition);
+            block.Flow = new JumpFlow(while_condition);
 
             while_end.Flow = new NothingFlow();
 

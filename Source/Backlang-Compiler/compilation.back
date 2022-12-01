@@ -3,9 +3,9 @@ func main()  {
 	let mut k = 12;
 
 	while(true) {
+		print("before continue");
 		continue;
-		print("hello");
-		
+		print("never executes");
 	}
 
 	print("sss");

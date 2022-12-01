@@ -14,12 +14,12 @@ public class StaticCallImplementor : IStatementImplementor, IExpressionImplement
         return ImplementationStage.AppendCall(context, block, callee, type.Methods, scope, modulename, methodName: callee.Name.Name);
     }
 
-    public BasicBlockBuilder Implement(StatementParameters parameters)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        Handle(parameters.node, parameters.block,
-            TypeDeducer.Deduce(parameters.node, parameters.scope, parameters.context, parameters.modulename.Value),
-            parameters.context, parameters.scope, parameters.modulename);
+        Handle(node, block,
+            TypeDeducer.Deduce(node, scope, context, modulename.Value),
+            context, scope, modulename);
 
-        return parameters.block;
+        return block;
     }
 }

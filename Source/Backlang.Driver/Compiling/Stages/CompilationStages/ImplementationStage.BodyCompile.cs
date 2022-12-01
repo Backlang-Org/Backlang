@@ -54,8 +54,9 @@ public partial class ImplementationStage
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
+        var branchLabels = new BranchLabels();
 
-        var afterBlock = AppendBlock(function.Args[3], block, context, method, modulename, scope);
+        var afterBlock = AppendBlock(function.Args[3], block, context, method, modulename, scope, branchLabels);
 
         if (afterBlock.Flow is NothingFlow)
         {
@@ -71,7 +72,7 @@ public partial class ImplementationStage
             graph.ToImmutable());
     }
 
-    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
+    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels)
     {
         block.Flow = new NothingFlow();
 
@@ -83,14 +84,13 @@ public partial class ImplementationStage
             {
                 if (node.ArgCount == 0) continue;
 
-                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
+                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope(), branchLabels);
                 continue;
             }
 
             if (_implementations.ContainsKey(node.Name))
             {
-                block = _implementations[node.Name].Implement(new(context, method, block, node,
-                    modulename, scope));
+                block = _implementations[node.Name].Implement(node, block, context, method, modulename, scope, branchLabels);
             }
             else
             {
