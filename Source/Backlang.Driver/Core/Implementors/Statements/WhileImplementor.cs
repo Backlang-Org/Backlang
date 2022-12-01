@@ -26,17 +26,8 @@ public class WhileImplementor : IStatementImplementor
 
             AppendBlock(body, while_start, context, method, modulename, scope.CreateChildScope(), branchLabels);
 
-            if (!condition.Calls(CodeSymbols.Bool) && condition.Name.ToString().StartsWith("'") && condition.ArgCount == 2)
-            {
-                AppendExpression(while_condition, condition, context.Environment.Boolean,
-                    context, scope, modulename);
-            }
-            else
-            {
-                AppendExpression(while_condition, condition, context.Environment.Boolean,
-                    context, scope, modulename);
-            }
-
+            AppendExpression(while_condition, condition, context.Environment.Boolean, context, scope, modulename);
+            
             while_condition.Flow = new JumpConditionalFlow(while_start, ConditionalJumpKind.True);
 
             block.Flow = new JumpFlow(while_condition);
