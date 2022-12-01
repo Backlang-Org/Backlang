@@ -252,6 +252,10 @@ public static class MethodBodyCompiler
             {
                 op = OpCodes.Brtrue;
             }
+            else if (selector == ConditionalJumpKind.False)
+            {
+                op = OpCodes.Brfalse;
+            }
             else if (selector == ConditionalJumpKind.Equals)
             {
                 op = OpCodes.Beq;

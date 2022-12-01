@@ -1,15 +1,11 @@
 
 func main()  {
-	let mut k = 12;
-
-	while(true) {
-		print("before continue");
-		continue;
-		print("never executes");
+	if true {
+		return;
+	}
+	else {
+		print("else");
 	}
 
-	print("sss");
-	print(k);
-
-	return;
+	print("after");
 }

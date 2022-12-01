@@ -12,34 +12,63 @@ public class IfImplementor : IStatementImplementor
             TypeDeducer.ExpectType(condition, scope, context, modulename.Value,
                 context.Environment.Boolean);
 
-            var ifBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if"));
-            var after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("after"));
-
-            after.Flow = new NothingFlow();
-
-            var kind = ConditionalJumpKind.True;
-
-            if (!condition.Calls(CodeSymbols.Bool))
+            if (el.Name != LNode.Missing.Name)
             {
-                AppendExpression(block, condition, context.Environment.Boolean,
-                    context, scope, modulename);
-
-                block.Flow = new JumpConditionalFlow(after, kind);
+                ImplementIfElse(block, context, method, modulename, scope, branchLabels, condition, body, el);
             }
-            ifBlock.Flow = new JumpConditionalFlow(after, kind);
-            AppendBlock(body, ifBlock, context, method, modulename, scope.CreateChildScope(), new());
-
-            //Todo: fix else
-            if (el != LNode.Missing)
+            else
             {
-                var elseBlock = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else"));
-                AppendBlock(el, elseBlock, context, method, modulename, scope.CreateChildScope(), new());
-                block.Flow = new JumpConditionalFlow(after, kind);
+                ImplementIf(block, context, method, modulename, scope, branchLabels, condition, body);
             }
 
-            return after;
+            var if_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_after"));
+            if_after.Flow = new NothingFlow();
+
+            return if_after;
         }
 
         return null;
+    }
+
+    private static void ImplementIf(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
+     Scope scope, BranchLabels branchLabels, LNode condition, LNode body)
+    {
+        var if_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_start"));
+        var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
+        var if_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_end"));
+
+        AppendBlock(body, if_start, context, method, modulename, scope.CreateChildScope(), branchLabels);
+
+        AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope, modulename);
+
+        if_condition.Flow = new JumpConditionalFlow(if_start, ConditionalJumpKind.True);
+
+        block.Flow = new JumpFlow(if_condition);
+
+        if_end.Flow = new NothingFlow();
+    }
+
+    private static BasicBlockBuilder ImplementIfElse(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
+                                                    Scope scope, BranchLabels branchLabels, LNode condition, LNode body, LNode elseBody)
+    {
+        var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
+        var if_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_start"));
+        var else_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else_start"));
+        var else_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else_end"));
+
+        else_end.Flow = new NothingFlow();
+
+        AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope, modulename);
+        if_condition.Flow = new JumpConditionalFlow(else_body, ConditionalJumpKind.False);
+
+        AppendBlock(body, if_body, context, method, modulename, scope.CreateChildScope(), branchLabels);
+        AppendBlock(elseBody, else_body, context, method, modulename, scope.CreateChildScope(), branchLabels);
+
+        if (if_body.Flow is NothingFlow)
+        {
+            if_body.Flow = new JumpFlow(else_end);
+        }
+        
+        return else_end;
     }
 }

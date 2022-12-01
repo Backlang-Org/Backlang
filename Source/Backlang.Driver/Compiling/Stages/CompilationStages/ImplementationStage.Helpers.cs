@@ -33,6 +33,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         NotEquals,
         Equals,
         True,
+        False,
     }
 
     public static IType GetLiteralType(LNode value, CompilerContext context, Scope scope, QualifiedName? modulename)
