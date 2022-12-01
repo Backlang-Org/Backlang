@@ -2,9 +2,11 @@
 func main()  {
 	let mut k = 12;
 
-	do {
+	while(true) {
+		continue;
 		print("hello");
-	} while(true);
+		
+	}
 
 	print("sss");
 	print(k);
