@@ -7,22 +7,17 @@ public class IfImplementor : IStatementImplementor
 {
     public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        if (node is (_, (_, var condition, var body, var el)))
+        if (node is (_, (_, var condition, var body, var elseBody)))
         {
             TypeDeducer.ExpectType(condition, scope, context, modulename.Value,
                 context.Environment.Boolean);
 
-            if (el.Name != LNode.Missing.Name)
-            {
-                ImplementIfElse(block, context, method, modulename, scope, branchLabels, condition, body, el);
-            }
-            else
-            {
-                ImplementIf(block, context, method, modulename, scope, branchLabels, condition, body);
-            }
+            var if_after = ImplementIf(block, context, method, modulename, scope, branchLabels, condition, body);
 
-            var if_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_after"));
-            if_after.Flow = new NothingFlow();
+            if (elseBody.Name != LNode.Missing.Name)
+            {
+                if_after = ImplementIf(if_after, context, method, modulename, scope, branchLabels, condition, elseBody, true);
+            }
 
             return if_after;
         }
@@ -30,8 +25,8 @@ public class IfImplementor : IStatementImplementor
         return null;
     }
 
-    private static void ImplementIf(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
-     Scope scope, BranchLabels branchLabels, LNode condition, LNode body)
+    private static BasicBlockBuilder ImplementIf(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
+     Scope scope, BranchLabels branchLabels, LNode condition, LNode body, bool negate = false)
     {
         var if_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_start"));
         var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
@@ -41,11 +36,16 @@ public class IfImplementor : IStatementImplementor
 
         AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope, modulename);
 
-        if_condition.Flow = new JumpConditionalFlow(if_start, ConditionalJumpKind.True);
+        if_condition.Flow = new JumpConditionalFlow(if_start, negate ? ConditionalJumpKind.False : ConditionalJumpKind.True);
 
         block.Flow = new JumpFlow(if_condition);
 
         if_end.Flow = new NothingFlow();
+
+        var if_after = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_after"));
+        if_after.Flow = new NothingFlow();
+
+        return if_after;
     }
 
     private static BasicBlockBuilder ImplementIfElse(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
@@ -53,8 +53,8 @@ public class IfImplementor : IStatementImplementor
     {
         var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
         var if_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_start"));
-        var else_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else_start"));
         var else_end = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else_end"));
+        var else_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("else_start"));
 
         else_end.Flow = new NothingFlow();
 
@@ -68,7 +68,11 @@ public class IfImplementor : IStatementImplementor
         {
             if_body.Flow = new JumpFlow(else_end);
         }
-        
+        if (else_body.Flow is NothingFlow)
+        {
+            else_body.Flow = new JumpFlow(else_end);
+        }
+
         return else_end;
     }
 }
