@@ -1,4 +1,5 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using System.Collections.Concurrent;
@@ -21,19 +22,19 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
         InitPluginTargets(context.Plugins);
 
-        if (string.IsNullOrEmpty(context.Target))
+        if (string.IsNullOrEmpty(context.Options.Target))
         {
-            context.Target = "dotnet";
+            context.Options.Target = "dotnet";
         }
 
-        if (context.OutputType == "dotnet")
+        if (context.Options.OutputType == "dotnet")
         {
-            context.OutputType = "Exe";
+            context.Options.OutputType = "Exe";
         }
 
-        if (_targets.ContainsKey(context.Target))
+        if (_targets.ContainsKey(context.Options.Target))
         {
-            var compilationTarget = _targets[context.Target];
+            var compilationTarget = _targets[context.Options.Target];
 
             context.CompilationTarget = compilationTarget;
             context.Environment = compilationTarget.Init(context);
@@ -49,21 +50,14 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         }
         else
         {
-            context.Messages.Add(Message.Error($"Target '{context.Target}' cannot be found"));
+            context.Messages.Add(Message.Error(new(ErrorID.TargetNotFound, context.Options.Target)));
             return;
         }
-
-        var consoleType = context.Binder.ResolveTypes(new SimpleName("Console").Qualify("System")).FirstOrDefault();
-
-        context.writeMethods = consoleType?.Methods.Where(
-            method => (method.Name.ToString() == "Write" || method.Name.ToString() == "WriteLine")
-                && method.IsStatic
-                && method.ReturnParameter.Type == context.Environment.Void);
     }
 
     private static void AddIntrinsicType(CompilerContext context, Type type)
     {
-        var qualifier = Utils.QualifyNamespace(type.Namespace);
+        var qualifier = ConversionUtils.QualifyNamespace(type.Namespace);
         var intrinsicAssembly = new DescribedAssembly(qualifier);
 
         var instrinsicsType = new DescribedType(

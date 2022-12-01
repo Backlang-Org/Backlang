@@ -6,23 +6,27 @@ public static class LevensteinDistance
     {
         if (string.IsNullOrEmpty(source))
         {
-            if (string.IsNullOrEmpty(target)) return 0;
-            return target.Length;
+            return string.IsNullOrEmpty(target) ? 0 : target.Length;
         }
-        if (string.IsNullOrEmpty(target)) return source.Length;
+
+        if (string.IsNullOrEmpty(target))
+        {
+            return source.Length;
+        }
 
         if (source.Length > target.Length)
         {
-            var temp = target;
-            target = source;
-            source = temp;
+            (source, target) = (target, source);
         }
 
         var m = target.Length;
         var n = source.Length;
         var distance = new int[2, m + 1];
         // Initialize the distance matrix
-        for (var j = 1; j <= m; j++) distance[0, j] = j;
+        for (var j = 1; j <= m; j++)
+        {
+            distance[0, j] = j;
+        }
 
         var currentRow = 0;
         for (var i = 1; i <= n; ++i)
@@ -49,7 +53,10 @@ public static class LevensteinDistance
 
         foreach (var str in possibilities)
         {
-            if (str == "Main") continue;
+            if (str == "Main")
+            {
+                continue;
+            }
 
             var distance = Calculate(source, str);
             if (distance <= lastDistance)

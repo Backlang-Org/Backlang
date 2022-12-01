@@ -22,6 +22,7 @@ public static class Symbols
     public static readonly Symbol Mutable = GSymbol.Get("#mutable");
     public static readonly Symbol PointerType = GSymbol.Get("#type*");
     public static readonly Symbol RefType = GSymbol.Get("#type&");
+    public static readonly Symbol NullableType = GSymbol.Get("#type?");
     public static readonly Symbol Range = GSymbol.Get("'..");
     public static readonly Symbol ToExpand = GSymbol.Get("'to_expand'");
     public static readonly Symbol TypeLiteral = GSymbol.Get("#type");
@@ -30,4 +31,5 @@ public static class Symbols
     public static readonly Symbol Init = GSymbol.Get("#init");
     public static readonly Symbol Unit = GSymbol.Get("#unit");
     public static readonly Symbol UnitDecl = GSymbol.Get("#unitDecl");
+    public static readonly Symbol AssertNonNull = GSymbol.Get("#notnull");
 }

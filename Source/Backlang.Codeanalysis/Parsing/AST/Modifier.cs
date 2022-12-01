@@ -1,4 +1,5 @@
-﻿using Loyc;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc;
 using Loyc.Syntax;
 using System.Collections.Immutable;
 
@@ -6,7 +7,7 @@ namespace Backlang.Codeanalysis.Parsing.AST;
 
 public sealed class Modifier
 {
-    private static ImmutableDictionary<TokenType, Symbol> possibleModifiers = new Dictionary<TokenType, Symbol>() {
+    private static readonly ImmutableDictionary<TokenType, Symbol> _possibleModifiers = new Dictionary<TokenType, Symbol>() {
         { TokenType.Static, CodeSymbols.Static },
         { TokenType.Public, CodeSymbols.Public },
         { TokenType.Protected, CodeSymbols.Protected },
@@ -22,12 +23,12 @@ public sealed class Modifier
     {
         var modifiers = new LNodeList();
 
-        while (possibleModifiers.ContainsKey(parser.Iterator.Current.Type))
+        while (_possibleModifiers.ContainsKey(parser.Iterator.Current.Type))
         {
-            var modifier = ParseSingle(parser.Iterator, parser);
+            var modifier = ParseSingle(parser.Iterator);
             if (modifiers.Contains(modifier))
             {
-                parser.AddError($"Modifier '{modifier.Name.Name}' is already applied");
+                parser.AddError(new(ErrorID.DuplicateModifier, modifier.Name.Name), modifier.Range);
 
                 continue;
             }
@@ -38,10 +39,10 @@ public sealed class Modifier
         return modifiers.Count > 0;
     }
 
-    private static LNode ParseSingle(TokenIterator iterator, Parser parser)
+    private static LNode ParseSingle(TokenIterator iterator)
     {
         var currentToken = iterator.Current;
-        var mod = SyntaxTree.Factory.Id(possibleModifiers[currentToken.Type]);
+        var mod = SyntaxTree.Factory.Id(_possibleModifiers[currentToken.Type]);
         iterator.NextToken();
 
         return mod.WithRange(currentToken);

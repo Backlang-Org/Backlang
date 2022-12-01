@@ -1,4 +1,5 @@
-﻿using Backlang.Core.CompilerService;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Core.CompilerService;
 using Backlang.Driver.Compiling.Targets.Dotnet;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
@@ -14,21 +15,27 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         var description = GetDescription(context);
 
-        if (context.Version != null)
-            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Version) });
+        if (context.Options.Version != null)
+            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Options.Version) });
 
         context.CompilationTarget.BeforeCompiling(context);
 
         var assembly = context.CompilationTarget.Compile(description);
-        var resultPath = Path.Combine(context.TempOutputPath,
-                        context.OutputFilename);
 
-        if (File.Exists(resultPath))
+        if (!context.Playground.IsPlayground)
         {
-            File.Delete(resultPath);
+            var resultPath = Path.Combine(context.TempOutputPath,
+                            context.Options.OutputFilename);
+
+            if (File.Exists(resultPath))
+            {
+                File.Delete(resultPath);
+            }
+
+            context.OutputStream = File.OpenWrite(resultPath);
         }
 
-        assembly.WriteTo(File.OpenWrite(resultPath));
+        assembly.WriteTo(context.OutputStream);
 
         context.CompilationTarget.AfterCompiling(context);
 
@@ -39,14 +46,14 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
     {
         var attributes = new AttributeMap();
 
-        if (context.OutputType == "MacroLib")
+        if (context.Options.OutputType == "MacroLib")
         {
             attributes = new AttributeMap(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(MacroLibAttribute))));
         }
 
         var entryPoint = GetEntryPoint(context);
 
-        context.Assembly.IsLibrary = entryPoint == null && context.OutputType == "Library";
+        context.Assembly.IsLibrary = entryPoint == null && context.Options.OutputType == "Library";
 
         return new(context.Assembly.Name.Qualify(),
             attributes, context.Assembly, entryPoint, context.Environment);
@@ -54,12 +61,12 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
     private static IMethod GetEntryPoint(CompilerContext context)
     {
-        if (string.IsNullOrEmpty(context.OutputType))
+        if (string.IsNullOrEmpty(context.Options.OutputType))
         {
-            context.OutputType = "Exe";
+            context.Options.OutputType = "Exe";
         }
 
-        if (context.OutputType != "Exe")
+        if (context.Options.OutputType != "Exe")
         {
             return null;
         }
@@ -69,7 +76,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         if (entryPoint == null)
         {
-            context.Messages.Add(Message.Error("Got OutputType 'Exe' but couldn't find entry point."));
+            context.Messages.Add(Message.Error(ErrorID.RunnableTypeButNoEntrypoint));
         }
 
         return entryPoint;

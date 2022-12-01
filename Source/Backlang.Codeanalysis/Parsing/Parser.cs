@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Loyc.Syntax;
 
@@ -29,7 +30,7 @@ public sealed partial class Parser
             return new CompilationUnit
             {
                 Body = LNode.List(LNode.Missing),
-                Messages = new() { Message.Error("Empty File", SourceRange.Synthetic) },
+                Messages = new() { Message.Error(ErrorID.EmptyFile, SourceRange.Synthetic) },
                 Document = document
             };
         }

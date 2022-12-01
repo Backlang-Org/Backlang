@@ -1,7 +1,10 @@
 using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
+using Loyc.Collections.Impl;
 using Loyc.Syntax;
 using System.Reflection;
+using System.Text;
+using System.Transactions;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -32,6 +35,11 @@ public sealed class Lexer : BaseLexer
 
     protected override Token NextToken()
     {
+        if (IsMatch("///"))
+        {
+            return LexDocComment();
+        }
+
         SkipWhitespaces();
         SkipComments();
 
@@ -87,6 +95,36 @@ public sealed class Lexer : BaseLexer
         return Token.Invalid;
     }
 
+    private Token LexDocComment()
+    {
+        var oldPos = _position;
+        var contentBuilder = new StringBuilder();
+
+        do
+        {
+            contentBuilder.AppendLine(ReadLine().TrimStart('/').Trim());
+        } while (IsMatch("///"));
+
+        return new Token(TokenType.DocComment, contentBuilder.ToString(), oldPos, _position, _line, _column);
+    }
+
+
+    private string ReadLine()
+    {
+        var sb = new StringBuilder();
+
+        while (Current() != '\n')
+        {
+            Advance();
+            _column++;
+        }
+        Advance();
+        _column = 0;
+        _line++;
+
+        return sb.ToString();
+    }
+
     private static bool IsBinaryDigit(char c)
     {
         return c == '0' || c == '1';
@@ -94,7 +132,7 @@ public sealed class Lexer : BaseLexer
 
     private static bool IsHex(char c)
     {
-        return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F';
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
     }
 
     private TokenType GetOperatorKind(Token identifier)
@@ -165,7 +203,7 @@ public sealed class Lexer : BaseLexer
         if (Current() == '\n' || Current() == '\r')
         {
             var range = new SourceRange(_document, _column, 1);
-            Messages.Add(Message.Error($"Unterminated CharLiteral", range));
+            Messages.Add(Message.Error(ErrorID.UnterminatedCharLiteral, range));
 
             return Token.Invalid;
         }
@@ -216,8 +254,10 @@ public sealed class Lexer : BaseLexer
         {
             if (Current() == '\n' || Current() == '\r')
             {
-                var range = new SourceRange(_document, _column, 1);
-                Messages.Add(Message.Error($"Unterminated String", range));
+                var range = new SourceRange(_document, _position, 1);
+                Messages.Add(Message.Error(ErrorID.UnterminatedStringLiteral, range));
+
+                return new Token(TokenType.StringLiteral, _document.Text.Slice(oldpos, _position - oldpos - 1).ToString(), oldpos - 1, _position, _line, oldColumn);
             }
 
             Advance();
@@ -301,7 +341,7 @@ public sealed class Lexer : BaseLexer
             }
             else if (IsMatch("/*"))
             {
-                int oldcol = _column;
+                int oldpos = _position;
 
                 Advance();
                 Advance();
@@ -328,8 +368,9 @@ public sealed class Lexer : BaseLexer
                 }
                 else
                 {
-                    var range = new SourceRange(_document, _column, 1);
-                    Messages.Add(Message.Error("Multiline comment is not closed.", range));
+                    var range = new SourceRange(_document, oldpos, _position);
+                    Messages.Add(Message.Error(ErrorID.NotClosedMultilineComment, range));
+
                     return;
                 }
 

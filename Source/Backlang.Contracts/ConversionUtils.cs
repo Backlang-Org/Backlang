@@ -39,11 +39,38 @@ public static class ConversionUtils
         }
     }
 
+    public static QualifiedName QualifyNamespace(string @namespace)
+    {
+        var spl = @namespace.Split('.');
+
+        QualifiedName? name = null;
+
+        foreach (var path in spl)
+        {
+            if (name == null)
+            {
+                name = new SimpleName(path).Qualify();
+                continue;
+            }
+
+            name = new SimpleName(path).Qualify(name.Value);
+        }
+
+        return name.Value;
+    }
+
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
         bool isPointer = false;
         PointerKind pointerKind = PointerKind.Transient;
 
+
+        if (lNode is ("'suf.*", var ns))
+        {
+            var qualifiedNs = GetQualifiedName(ns);
+
+            return new SimpleName("*").Qualify(qualifiedNs);
+        }
         if (lNode is ("#type*", var arg))
         {
             isPointer = true;
@@ -64,7 +91,7 @@ public static class ConversionUtils
 
         if (lNode.ArgCount == 3 && lNode is ("#fn", var retType, _, var args))
         {
-            string typename = retType == LNode.Missing ? "Action`" + (args.ArgCount) : "Func`" + (args.ArgCount + 1);
+            string typename = retType.IsNoneType() ? "Action`" + (args.ArgCount) : "Func`" + (args.ArgCount + 1);
 
             return new SimpleName(typename).Qualify("System");
         }

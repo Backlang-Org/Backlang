@@ -81,21 +81,23 @@ namespace Backlang.NET.Sdk
                 }
 
                 var context = new CompilerContext();
-                context.InputFiles = Compile;
-                context.OutputFilename = OutputName;
-                context.OutputType = OutputType;
+                context.Options.InputFiles = Compile;
+                context.Options.OutputFilename = OutputName;
+                context.Options.OutputType = OutputType;
+                context.Options.Version = Version;
+                context.Options.EmbeddedResource = Resources;
+                context.Options.TargetFramework = TargetFramework;
+
                 context.TempOutputPath = TempOutputPath;
                 context.OutputPath = OutputPath;
                 context.MacroReferences = MacroReferences;
                 context.ResultingOutputPath = ResultingOutputPath;
                 context.ProjectFile = ProjectFile;
-                context.EmbeddedResource = Resources;
                 context.CorLib = CorLib;
-                context.Version = Version;
 
                 if (!string.IsNullOrEmpty(OutputTree))
                 {
-                    context.OutputTree = bool.Parse(OutputTree);
+                    context.Options.OutputTree = bool.Parse(OutputTree);
                 }
 
                 CompilerDriver.Compile(context);

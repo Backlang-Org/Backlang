@@ -2,12 +2,12 @@ name: Tests
 
 on:
   push:
-    branches:    
+    branches:
       - '*'         # matches every branch that doesn't contain a '/'
       - '*/*'       # matches every branch containing a single '/'
       - '**'        # matches every branch
   pull_request:
-    branches:    
+    branches:
       - '*'         # matches every branch that doesn't contain a '/'
       - '*/*'       # matches every branch containing a single '/'
       - '**'        # matches every branch
@@ -19,7 +19,7 @@ jobs:
     env:
       Solution_Name: Source/Backlang-Compiler.sln                             # Replace with your solution name, i.e. MyWpfApp.sln.
       Test_Project_Path: Source/TestProject1/TestProject1.csproj              # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -31,7 +31,10 @@ jobs:
       with:
         dotnet-version: 7.0.x
         include-prerelease: true
-    
+
+    - name: Install WASM
+      run: dotnet workload install wasm-tools
+
     - name: Build
       run: dotnet build $Solution_Name --configuration Release
 

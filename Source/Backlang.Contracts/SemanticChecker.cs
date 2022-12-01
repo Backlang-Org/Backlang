@@ -9,6 +9,8 @@ public static class SemanticChecker
         new ModuleDefinitionCheck(),
         new ImportCheck(),
         new TypenameCheck(),
+        new VariableTypeCheck(),
+        new ModifierCheck(),
         new InterfaceNameCheck()
     };
 

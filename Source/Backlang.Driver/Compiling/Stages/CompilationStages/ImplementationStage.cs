@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.Scoping.Items;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
@@ -43,6 +44,13 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         {
             IRGenerator.GenerateDefaultCtor(context, type);
         }
+
+        IRGenerator.GenerateEmptyCtor(context, type);
+
+        if (!type.Methods.Any(_ => _.Name.ToString() == "GetHashCode" && _.Parameters.Count == 0))
+        {
+            IRGenerator.GenerateGetHashCode(context, type);
+        }
     }
 
     private static void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)
@@ -65,13 +73,13 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
             if (targetType == null)
             {
-                context.AddError(typenode, $"Cannot implement '{fullname.FullName}', type not found");
+                context.AddError(typenode, new(ErrorID.CannotImplementTypeNotFound, fullname.FullName));
                 return;
             }
 
             if (Utils.IsUnitType(context, targetType))
             {
-                context.AddError(typenode, $"Cannot implement unit type '{fullname.FullName}'");
+                context.AddError(typenode, new(ErrorID.CannotImplementUnitType, fullname.FullName));
             }
 
             typeScope = context.GlobalScope.CreateChildScope();
@@ -99,6 +107,9 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                             IsStatic = true,
                             IsPublic = true
                         };
+
+                        Utils.AddCompilerGeneratedAttribute(context.Binder, extensionType);
+
                         context.Assembly.AddType(extensionType);
                     }
 

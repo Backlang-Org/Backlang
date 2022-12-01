@@ -1,4 +1,6 @@
 using Backlang.Driver;
+using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 
 namespace Backlang.Contracts;
 
@@ -14,13 +16,43 @@ public class NamespaceImports
 
             if (ImportedNamespaces.Contains(qualifiedNs))
             {
-                context.AddError(importStatement, $"Namespace '{qualifiedNs}' already imported");
+                context.AddError(importStatement, new(ErrorID.NamespaceAlreadyImported, qualifiedNs.ToString()));
                 return;
             }
 
             ImportedNamespaces.Add(qualifiedNs);
+
+            ExpandNamespaceImports(context);
         }
     }
 
+    private void ExpandNamespaceImports(CompilerContext context)
+    {
+        for (var i = 0; i < ImportedNamespaces.Count; i++)
+        {
+            var import = ImportedNamespaces[i];
+            var imp = import.ToString();
 
+            if (!imp.EndsWith(".*"))
+            {
+                continue;
+            }
+
+            var withoutWildcard = imp[..^2];
+
+            context.Binder.TryResolveNamespace(ConversionUtils.QualifyNamespace(withoutWildcard), out var foundNamespaces);
+
+            if (foundNamespaces == null)
+            {
+                //ToDo: add error that namespace has no subnamespace(s)
+                return;
+            }
+
+            ImportedNamespaces.Remove(import);
+            foreach (var foundNs in foundNamespaces.Namespaces)
+            {
+                ImportedNamespaces.Add(foundNs.Key.Qualify(withoutWildcard));
+            }
+        }
+    }
 }

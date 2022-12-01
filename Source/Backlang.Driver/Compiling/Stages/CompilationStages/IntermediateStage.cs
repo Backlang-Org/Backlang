@@ -9,7 +9,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 {
     public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
     {
-        context.Assembly = new DescribedAssembly(new QualifiedName(context.OutputFilename.Replace(".dll", "")));
+        context.Assembly = new DescribedAssembly(new QualifiedName(context.Options.OutputFilename.Replace(".dll", "")));
 
         foreach (var tree in context.Trees)
         {
@@ -22,11 +22,15 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 imports.ImportNamespace(importStatement, context);
             }
 
-            context.ImportetNamespaces.Add(tree.Document.FileName, imports);
+            context.FileScope.ImportetNamespaces.Add(tree.Document.FileName, imports);
 
             foreach (var st in tree.Body)
             {
-                if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
+                if (st.Calls(CodeSymbols.UsingStmt))
+                {
+                    AddTypeAlias(st, context.GlobalScope, context, modulename);
+                }
+                else if (st.Calls(CodeSymbols.Struct) || st.Calls(CodeSymbols.Class) || st.Calls(CodeSymbols.Interface))
                 {
                     ConvertTypeOrInterface(context, st, modulename, context.GlobalScope);
                 }
@@ -57,7 +61,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
             var name = nameNode.Name;
 
             var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System")).First());
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("Enum").Qualify("System"))[0]);
 
             type.AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public));
 
@@ -72,7 +76,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
         if (st.Name == CodeSymbols.Struct)
         {
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System")).First()); // make it a struct
+            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System"))[0]); // make it a struct
         }
         else if (st.Name == CodeSymbols.Interface)
         {
@@ -104,6 +108,15 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
+    private void AddTypeAlias(LNode st, Scope scope, CompilerContext context, QualifiedName modulename)
+    {
+        var name = st[0].Name.Name;
+        var typeName = st[1];
+        var type = TypeInheritanceStage.ResolveTypeWithModule(typeName, context, modulename);
+
+        scope.TypeAliases.Add(name, type);
+    }
+
     private IEnumerable<LNode> GetNamespaceImports(CompilationUnit cu, CompilerContext context)
     {
         for (var i = 0; i < cu.Body.Count; i++)
@@ -124,10 +137,12 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private void ConvertUnitDeclaration(CompilerContext context, LNode st, QualifiedName modulename, Scope globalScope)
     {
-        var unitType = new DescribedType(new SimpleName(st[0].Name.ToString()).Qualify(modulename), context.Assembly);
-
-        unitType.IsStatic = true;
-        unitType.IsPublic = true;
+        var unitType = new DescribedType(
+            new SimpleName(st[0].Name.ToString()).Qualify(modulename), context.Assembly)
+        {
+            IsStatic = true,
+            IsPublic = true
+        };
 
         unitType.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(Backlang.Core.CompilerService.UnitTypeAttribute))));
 
@@ -179,7 +194,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 discType.AddField(fieldType);
             }
 
+            IRGenerator.GenerateGetHashCode(context, discType);
             IRGenerator.GenerateDefaultCtor(context, discType);
+            IRGenerator.GenerateEmptyCtor(context, discType);
             IRGenerator.GenerateToString(context, discType);
         }
     }

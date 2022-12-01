@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Backlang.WasmBridge": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:57539;http://localhost:57540"
+    }
+  }
+}

@@ -3,11 +3,83 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using System.Numerics;
 
 namespace Backlang.Driver.Compiling;
 
 public static class IRGenerator
 {
+    private static readonly int[] _primes = new[] { 2, 3, 5, 7,  11, 13, 17, 19, 23, 29, 31, 37, 41};
+
+    public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
+    {
+        var gethashcodeMethod = new DescribedBodyMethod(type, new SimpleName("GetHashCode"),
+            false, context.Environment.Int32);
+        gethashcodeMethod.IsPublic = true;
+        gethashcodeMethod.IsOverride = true;
+
+        var graph = Utils.CreateGraphBuilder();
+
+        var block = graph.EntryPoint;
+
+        block.AppendParameter(new BlockParameter(context.Environment.Int32, "hash"));
+
+        var startPrime = SelectPrime();
+        var constant = block.AppendInstruction(
+            Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
+                Instruction.CreateConstant(new IntegerConstant(startPrime), context.Environment.Int32))
+            )
+        );
+
+        block.AppendInstruction(Instruction.CreateAlloca(context.Environment.Int32));
+
+        foreach (var field in type.Fields)
+        {
+            var methods = field.FieldType.Methods.Where(_ => _.Name.ToString() == "GetHashCode");
+            if (methods.Any())
+            {
+                var method = methods.First();
+
+                // hash = hash * 23 + field.GetHashCode();
+                var loadHash = Instruction.CreateLoadLocal(new Parameter(context.Environment.Int32, "hash"));
+                var hash = block.AppendInstruction(loadHash);
+                var c = block.AppendInstruction(
+                    Instruction.CreateLoad(context.Environment.Int32, block.AppendInstruction(
+                        Instruction.CreateConstant(new IntegerConstant(SelectPrime()), context.Environment.Int32))
+                    )
+                );
+
+                var multiplication = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, c));
+
+                block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
+                var instruction = Instruction.CreateLoadField(field);
+
+                if (field.FieldType.BaseTypes.Count() > 0 && field.FieldType.BaseTypes[0].FullName.ToString() == "System.ValueType")
+                {
+                    instruction = Instruction.CreateGetFieldPointer(field, null);
+                }
+
+                var ldField = block.AppendInstruction(instruction);
+                var call = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual, new List<ValueTag>() { ldField }));
+
+                var addition = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false, context.Environment.Int32, ldField, multiplication));
+
+                block.AppendInstruction(Instruction.CreateStore(context.Environment.Int32, hash, addition));
+            }
+        }
+
+        block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(context.Environment.Int32, "hash")));
+        block.Flow = new ReturnFlow();
+
+        gethashcodeMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        type.AddMethod(gethashcodeMethod);
+    }
+
+    private static int SelectPrime()
+    {
+        return _primes[Random.Shared.Next(0, _primes.Length)];
+    }
+
     public static void GenerateToString(CompilerContext context, DescribedType type)
     {
         var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
@@ -23,7 +95,8 @@ public static class IRGenerator
         var p = block.AppendParameter(new BlockParameter(sbType, varname));
 
         var ctor = sbType.Methods.First(_ => _.IsConstructor && _.Parameters.Count == 0);
-        var appendLineMethod = sbType.Methods.First(_ => _.Name.ToString() == "AppendLine" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == "String");
+
+        var appendLineMethod = context.Binder.FindFunction("System.Text.StringBuilder::AppendLine(System.String)");
 
         block.AppendInstruction(Instruction.CreateNewObject(ctor, new List<ValueTag>()));
         block.AppendInstruction(Instruction.CreateAlloca(sbType));
@@ -34,23 +107,21 @@ public static class IRGenerator
 
         foreach (var field in type.Fields)
         {
+            //AppendThis(block, p.Type);
+
             var loadSbf = block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(p.Type, p.Tag.Name)));
 
             AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
             var value = AppendLoadField(block, field);
 
-            var callee = sbType.Methods.FirstOrDefault(_ => _.Name.ToString() == "Append" && _.Parameters.Count == 1 && _.Parameters[0].Type.Name.ToString() == field.FieldType.Name.ToString());
+            var appendMethod = context.Binder.FindFunction($"System.Text.StringBuilder::Append({field.FieldType.FullName})");
 
-            if (callee == null)
-            {
-                callee = sbType.Methods.First(_ => _.Parameters.Count == 1 && _.Parameters[0].Type.FullName.ToString() == "System.Object");
-            }
+            appendMethod ??= context.Binder.FindFunction("System.Text.StringBuilder::Append(System.Object)");
 
-            block.AppendInstruction(Instruction.CreateCall(callee, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+            block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
         }
 
-        var tsM = sbType.Methods.First(_ => _.Name.ToString() == "ToString");
-
+        var tsM = context.Binder.FindFunction($"System.Text.StringBuilder::ToString()");
         block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
         block.Flow = new ReturnFlow();
@@ -58,6 +129,26 @@ public static class IRGenerator
         toStringMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
 
         type.AddMethod(toStringMethod);
+    }
+
+    public static void GenerateEmptyCtor(CompilerContext context, DescribedType type)
+    {
+        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
+        {
+            IsConstructor = true
+        };
+
+        ctorMethod.IsPublic = true;
+
+        var graph = Utils.CreateGraphBuilder();
+
+        var block = graph.EntryPoint;
+
+        block.Flow = new ReturnFlow();
+
+        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+
+        type.AddMethod(ctorMethod);
     }
 
     public static void GenerateDefaultCtor(CompilerContext context, DescribedType type)

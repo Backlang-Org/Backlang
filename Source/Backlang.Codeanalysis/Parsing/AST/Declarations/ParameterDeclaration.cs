@@ -7,10 +7,15 @@ public sealed class ParameterDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Annotation.TryParse(parser, out var annotations);
+        _ = Annotation.TryParse(parser, out var annotations);
 
         var keywordToken = iterator.Current;
         var name = iterator.Match(TokenType.Identifier);
+
+        var assertNotNull = false;
+        if(iterator.ConsumeIfMatch(TokenType.Exclamation)) {
+            assertNotNull = true;
+        }
 
         iterator.Match(TokenType.Colon);
 
@@ -23,6 +28,10 @@ public sealed class ParameterDeclaration : IParsePoint
             iterator.NextToken();
 
             defaultValue = Expression.Parse(parser);
+        }
+
+        if(assertNotNull)  {
+           annotations = annotations.Add(LNode.Id(Symbols.AssertNonNull));
         }
 
         return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations)

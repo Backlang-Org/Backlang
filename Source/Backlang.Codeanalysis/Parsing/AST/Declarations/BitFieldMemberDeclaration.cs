@@ -6,8 +6,7 @@ public sealed class BitFieldMemberDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Token nameToken = null;
-
+        Token nameToken;
         if (iterator.Current.Type == TokenType.Identifier)
         {
             nameToken = iterator.Current;
@@ -25,7 +24,7 @@ public sealed class BitFieldMemberDeclaration : IParsePoint
 
         if (!value[0].HasValue)
         {
-            iterator.Messages.Add(Message.Error("Bitfield member declaration only allows literals", value.Range));
+            parser.AddError(Core.ErrorID.BitfieldNotLiteral, value.Range);
         }
 
         return SyntaxTree.Factory.Tuple(SyntaxTree.Factory.Id(nameToken.Text).WithRange(nameToken), value);

@@ -5,7 +5,7 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class AssignmentImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
         if (node is (_, var left, var right))
         {
@@ -20,9 +20,11 @@ public class AssignmentImplementor : IStatementImplementor
                     context.AddError(node, $"Cannot assing immutable variable '{va.Name}'");
                 }
 
-                var value = AppendExpression(block, right, rt, context, scope, modulename.Value);
+                var value = AppendExpression(block, right, rt, context,
+                    scope, modulename.Value);
+                var pointer = block.AppendInstruction(Instruction.CreateLoadLocal(va.Parameter));
 
-                block.AppendInstruction(Instruction.CreateStore(lt, new ValueTag(va.Parameter.Name.ToString()), value));
+                block.AppendInstruction(Instruction.CreateStore(lt, pointer, value));
             }
             else if (left is ("'.", var t, var c))
             {
@@ -32,8 +34,11 @@ public class AssignmentImplementor : IStatementImplementor
 
                     if (field != null)
                     {
+                        block.AppendInstruction(Instruction.CreateLoadLocalAdress(vsi.Parameter));
+                        var value = AppendExpression(block, right, field.FieldType,
+                            context, scope, modulename.Value);
+
                         var pointer = block.AppendInstruction(Instruction.CreateLoadField(field));
-                        var value = AppendExpression(block, right, field.FieldType, context, scope, modulename.Value);
 
                         block.AppendInstruction(Instruction.CreateStore(field.FieldType, pointer, value));
                     }

@@ -15,7 +15,7 @@ public enum TokenType
     CharLiteral,
 
     [Lexeme(".")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Dot)]
     Dot,
 
     [Lexeme("::")]
@@ -62,6 +62,10 @@ public enum TokenType
     [Lexeme("*")]
     Star,
 
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
+    [Lexeme(".*")]
+    DotAsterisk, // for namespace imports
+
     [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
     [Lexeme("**")]
     StarStar,
@@ -91,15 +95,13 @@ public enum TokenType
     [Lexeme("-=")]
     [Lexeme("|=")]
     [Lexeme("&=")]
+    [Lexeme("!!=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     EqualsShortcutToken,
 
     [Lexeme("=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
     EqualsToken,
-
-    [Lexeme("#")]
-    Hash,
 
     [Lexeme("<=")]
     [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
@@ -148,6 +150,10 @@ public enum TokenType
     [Lexeme("$")]
     [PreUnaryOperatorInfo(UnaryOpPrecedences.Dollar)]
     Dollar,
+
+    [Lexeme("?")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
+    Questionmark,
 
     [Lexeme("==")]
     [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
@@ -291,6 +297,9 @@ public enum TokenType
     [Keyword("while")]
     While,
 
+    [Keyword("do")]
+    Do,
+
     [Keyword("in")]
     In,
 
@@ -353,4 +362,5 @@ public enum TokenType
 
     [Keyword("unit")]
     Unit,
+    DocComment,
 }

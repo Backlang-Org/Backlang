@@ -1,4 +1,5 @@
 ﻿using Backlang.Core;
+using Backlang.Driver.Compiling.Targets.Dotnet.RuntimeOptionsModels;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 using System.Collections;
@@ -18,18 +19,13 @@ public class DotNetTarget : ICompilationTarget
 
     public void AfterCompiling(CompilerContext context)
     {
-        var runtimeConfigStream = typeof(DotNetTarget).Assembly.GetManifestResourceStream("Backlang.Driver.compilation.runtimeconfig.json");
-        var jsonStream = File.OpenWrite($"{Path.Combine(context.TempOutputPath, Path.GetFileNameWithoutExtension(context.OutputFilename))}.runtimeconfig.json");
-
-        runtimeConfigStream.CopyTo(jsonStream);
-
-        jsonStream.Close();
-        runtimeConfigStream.Close();
+        RuntimeConfig.Save(context.TempOutputPath,
+            Path.GetFileNameWithoutExtension(context.Options.OutputFilename), context.Options);
     }
 
     public void BeforeCompiling(CompilerContext context)
     {
-        context.OutputFilename += ".dll";
+        context.Options.OutputFilename += ".dll";
     }
 
     public void BeforeExpandMacros(MacroProcessor processor)
@@ -69,7 +65,7 @@ public class DotNetTarget : ICompilationTarget
 
     public void InitReferences(CompilerContext context)
     {
-        foreach (var r in context.References)
+        foreach (var r in context.Options.References)
         {
             AddFromAssembly(context, r);
         }

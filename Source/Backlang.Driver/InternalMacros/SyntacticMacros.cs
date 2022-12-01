@@ -1,5 +1,4 @@
 ﻿using LeMP;
-using Loyc.Collections;
 using System.Text.RegularExpressions;
 
 namespace Backlang.Driver.InternalMacros;
@@ -23,7 +22,11 @@ public static class SyntacticMacros
         ["bitwise_or"] = ("BitwiseOr", 2),
         ["exclusive_or"] = ("ExclusiveOr", 2),
 
+        ["equality"] = ("Equality", 2),
+        ["inequality"] = ("Inequality", 2),
+
         ["bitwise_not"] = ("OnesComplement", 1),
+        ["unpacking"] = ("Unpacking", 1),
 
         ["deref"] = ("Deref", 1),
         ["addrof"] = ("AddressOf", 2),
@@ -31,37 +34,28 @@ public static class SyntacticMacros
         ["percent"] = ("Percentage", 1),
     };
 
-    private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
-
-    [LexicalMacro("#autofree(hat) {}", "Frees the handles after using them in the body", "autofree")]
-    public static LNode AutoFree(LNode @operator, IMacroContext context)
-    {
-        var body = @operator.Args.Last;
-
-        var handles = @operator.Args.Take(@operator.Args.Count - 1);
-
-        var freeCalls = LNode.List();
-
-        foreach (var handle in handles)
-        {
-            freeCalls.Add(LNode.Call(LNode.Call(CodeSymbols.Dot, LNode.List(handle, LNode.Id((Symbol)"Free"))).SetStyle(NodeStyle.Operator)));
-        }
-
-        return body.WithArgs(LNode.List().AddRange(body.Args).AddRange(freeCalls));
-    }
+    private static readonly LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
 
     [LexicalMacro("constructor()", "Convert constructor() to .ctor() function", "#constructor", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode Constructor(LNode @operator, IMacroContext context)
+    public static LNode Constructor(LNode node, IMacroContext context)
     {
-        return SyntaxTree.Signature(SyntaxTree.Type(".ctor", new()), SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new()).PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+        var factory = new LNodeFactory(node.Source);
+        SyntaxTree.Factory = factory;
+
+        return SyntaxTree.Signature(SyntaxTree.Type(".ctor", new()),
+            SyntaxTree.Type("none", LNode.List()), node.Args[0].Args,
+            new()).PlusArg(node.Args[1]).WithAttrs(node.Attrs).WithRange(node.Range);
     }
 
     [LexicalMacro("destructor()", "Convert destructor() to .dtor() function", "#destructor", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode Destructor(LNode @operator, IMacroContext context)
+    public static LNode Destructor(LNode node, IMacroContext context)
     {
+        var factory = new LNodeFactory(node.Source);
+        SyntaxTree.Factory = factory;
+
         return SyntaxTree.Signature(SyntaxTree.Type(".dtor", new()),
-            SyntaxTree.Type("none", LNode.List()), @operator.Args[0].Args, new())
-            .PlusArg(@operator.Args[1]).WithAttrs(@operator.Attrs);
+            SyntaxTree.Type("none", LNode.List()), node.Args[0].Args, new())
+            .PlusArg(node.Args[1]).WithAttrs(node.Attrs).WithRange(node.Range);
     }
 
     [LexicalMacro(".dtor()", "Convert destructor() or .dtor() to Finalize", ".dtor", Mode = MacroMode.MatchIdentifierOrCall)]
@@ -70,15 +64,56 @@ public static class SyntacticMacros
         return @operator.WithTarget(LNode.Id("Finalize"));
     }
 
-    [LexicalMacro("left /= right;", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("'/=", "Convert to left = left / something", "'/=", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode DivEquals(LNode @operator, IMacroContext context)
     {
         return ConvertToAssignment(@operator, CodeSymbols.Div);
     }
 
-    [LexicalMacro("operator", "Convert to public static op_", "#fn",
-        Mode = MacroMode.MatchIdentifierOrCall | MacroMode.PriorityOverride)]
-    public static LNode ExpandOperator(LNode @operator, IMacroContext context)
+    [LexicalMacro("#fn", "Transform function", "#fn",
+       Mode = MacroMode.MatchIdentifierOrCall | MacroMode.ProcessChildrenBefore)]
+    public static LNode TransformFunction(LNode node, IMacroContext context)
+    {
+        node = ExpandOperator(node, context);
+
+        node = ExpandNotnullAssertionPostfix(node, context);
+
+        return node;
+    }
+
+    private static LNode ExpandNotnullAssertionPostfix(LNode node, IMacroContext context)
+    {
+        var newBody = new LNodeList();
+        var newParameters = new LNodeList();
+
+        if(node.ArgCount == 0) return node;
+
+        foreach (var parameter in node[2].Args)
+        {
+            var nonNullAttribute = LNode.Id(Symbols.AssertNonNull);
+
+            if (parameter.Attrs.Contains(nonNullAttribute))
+            {
+                var name = parameter[1][0];
+
+                var throwNode = LNode.Call(CodeSymbols.Throw, LNode.List(LNode.Call(CodeSymbols.String, LNode.List(LNode.Literal($"Parameter '{name.Name}' is none")))));
+                var ifBody = LNode.Call(CodeSymbols.Braces, LNode.List(throwNode));
+
+                newBody = newBody.Add(SyntaxTree.If(LNode.Call(CodeSymbols.Eq, LNode.List(name, SyntaxTree.None())), ifBody, LNode.Missing));
+            }
+
+            newParameters.Add(parameter.WithoutAttrNamed(nonNullAttribute.Name));
+        }
+
+        newBody = newBody.AddRange(node[3].Args);
+
+        node = node.WithArgChanged(2, node[3].WithArgs(newParameters));
+        node = node.WithArgChanged(3, LNode.Call(CodeSymbols.Braces, newBody));
+
+        return node;
+    }
+
+    private static LNode ExpandOperator(LNode @operator, IMacroContext context)
     {
         var operatorAttribute = SyntaxTree.Factory.Id((Symbol)"#operator");
         if (@operator.Attrs.Contains(operatorAttribute))
@@ -150,7 +185,7 @@ public static class SyntacticMacros
             LNode.List(@operator.Args[0]));
     }
 
-    [LexicalMacro("Point::new()", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("'::'", "Convert ::New To CodeSymbols.New", "'::", Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Instantiation(LNode node, IMacroContext context)
     {
         if (node.Args.IsEmpty)
@@ -192,6 +227,17 @@ public static class SyntacticMacros
     public static LNode MinusEquals(LNode @operator, IMacroContext context)
     {
         return ConvertToAssignment(@operator, CodeSymbols.Sub);
+    }
+
+
+    //ToDo: move to other stage to enable typecheck. only allowed if a type is nullable
+    [LexicalMacro("left !!= right;", "None check shotcut operator", "'!!=", Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode NoneCheckShortcut(LNode node, IMacroContext context)
+    {
+        var condition = LNode.Call(CodeSymbols.NotEq, LNode.List(node[0], SyntaxTree.None()));
+        var body = LNode.List(LNode.Call(CodeSymbols.Assign, LNode.List(node[0], node[1])));
+
+        return SyntaxTree.If(condition, LNode.Call(CodeSymbols.Braces, body), LNode.Missing);
     }
 
     [LexicalMacro("left *= right;", "Convert to left = left * something", "'*=", Mode = MacroMode.MatchIdentifierOrCall)]
@@ -239,24 +285,30 @@ public static class SyntacticMacros
             string formatString = valueNode.Value.ToString();
             if (formatString.Contains('$'))
             {
-                var interpolateOptions = GetInterpoltedStringOptions(formatString);
                 var formatArgs = new List<LNode>();
 
                 int counter = 0;
-                foreach (var item in interpolateOptions)
-                {
-                    if (formatString[item.start - 1] == '\\')
+
+                formatString = Regex.Replace(formatString, "\\$(?<name>\\w[0-9a-zA-Z_]*)(:(\\{(?<options>[0-9a-zA-Z_]*)\\}))?", _ => {
+                    var sb = new StringBuilder();
+                    sb.Append('{').Append(counter++);
+
+                    var options = _.Groups["options"].Value;
+
+                    if (!string.IsNullOrEmpty(options))
                     {
-                        continue;
+                        sb.Append(':').Append(options);
                     }
 
-                    formatString = formatString.Replace($"{item.name}", "{" + counter++ + "}");
+                    sb.Append('}');
 
                     var varRange = new SourceRange(valueNode.Range.Source,
-                        item.start + node.Range.StartIndex + 1, item.length);
+                        _.Index + node.Range.StartIndex + 1, _.Length);
 
-                    formatArgs.Add(SyntaxTree.Factory.Id(item.name[1..]).WithRange(varRange));
-                }
+                    formatArgs.Add(SyntaxTree.Factory.Id(_.Groups["name"].Value).WithRange(varRange));
+
+                    return sb.ToString();
+                });
 
                 formatArgs.Insert(0, SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(formatString))));
 
@@ -267,25 +319,13 @@ public static class SyntacticMacros
         return node;
     }
 
-    private static List<(string name, int start, int length)> GetInterpoltedStringOptions(string value)
+    private static LNode ConvertToAssignment(LNode node, Symbol symbol)
     {
-        var result = new List<(string name, int start, int length)>();
+        var arg1 = node.Args[0];
+        var arg2 = node.Args[1];
 
-        var match = Regex.Matches(value, "\\$[a-zA-Z_][0-9a-zA-Z_]*");
+        var factory = new LNodeFactory(node.Source);
 
-        foreach (Match m in match)
-        {
-            result.Add((m.Value, m.Index, m.Length));
-        }
-
-        return result;
-    }
-
-    private static LNode ConvertToAssignment(LNode @operator, Symbol symbol)
-    {
-        var arg1 = @operator.Args[0];
-        var arg2 = @operator.Args[1];
-
-        return F.Call(CodeSymbols.Assign, arg1, F.Call(symbol, arg1, arg2));
+        return factory.Call(CodeSymbols.Assign, arg1, factory.Call(symbol, arg1, arg2));
     }
 }

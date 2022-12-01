@@ -1,11 +1,11 @@
-import System;
 
-public struct Point
-{
-    let callback: (i32, bool) -> none;
-    let tuple: (i32, char);
-    //let a: i32*; // this make a crashy crashy crash
-}
+func main()  {
+	if true {
+		return 1;
+	}
+	else {
+		return 2;
+	}
 
-Main {
+	print("after");
 }

@@ -13,6 +13,8 @@ public static class OperatorOverloadingHelpers
         ["'&"] = "op_BitwiseAnd",
         ["'|"] = "op_BitwiseOr",
         ["'^"] = "op_ExclusiveOr",
+        ["'=="] = "op_Equality",
+        ["'!="] = "op_Inequality",
     }.ToImmutableDictionary();
 
     private static readonly ImmutableDictionary<string, string> unMap = new Dictionary<string, string>()
@@ -25,6 +27,10 @@ public static class OperatorOverloadingHelpers
         ["'&"] = "op_AddressOf",
 
         ["'%"] = "op_Percentage",
+        ["'suf?"] = "op_Unpacking",
+
+        ["implicit"] = "op_Implicit",
+        ["explicit"] = "op_Explicit",
     }.ToImmutableDictionary();
 
     public static bool TryGetOperator(this IType type, string op, out IMethod opMethod, params IType[] args)

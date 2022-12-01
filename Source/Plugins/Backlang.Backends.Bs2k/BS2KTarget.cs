@@ -18,7 +18,7 @@ public class BS2KTarget : ICompilationTarget
 
     public void BeforeCompiling(CompilerContext context)
     {
-        context.OutputFilename += ".bsm";
+        context.Options.OutputFilename += ".bsm";
     }
 
     public void BeforeExpandMacros(MacroProcessor processor)

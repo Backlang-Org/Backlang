@@ -1,20 +1,22 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Contracts.TypeSystem;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class VariableImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
-        LNode node, QualifiedName? modulename, Scope scope)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
         var decl = node.Args[1];
 
         var typename = ConversionUtils.GetQualifiedName(node.Args[0]);
 
-        var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0], context, modulename.Value, typename);
+        var elementType = TypeInheritanceStage.ResolveTypeWithModule(node.Args[0],
+            context, modulename.Value, typename);
 
-        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope, context, modulename.Value);
+        var deducedValueType = TypeDeducer.Deduce(decl.Args[1], scope,
+            context, modulename.Value);
 
         if (elementType == null)
         {
@@ -24,24 +26,28 @@ public class VariableImplementor : IStatementImplementor
             {
                 if (node.Args[0] is (_, (_, var tp))) //ToDo: Implement Helper function To Get Typename
                 {
-                    context.AddError(node, $"{tp.Name} cannot be resolved");
+                    context.AddError(node,
+                        new(ErrorID.CannotBeResolved, tp.Name.ToString()));
                 }
             }
         }
         else
         {
-            if (deducedValueType != null && !elementType.IsAssignableTo(deducedValueType) && deducedValueType != context.Environment.Void)
+            if (deducedValueType != null && !elementType.IsAssignableTo(deducedValueType) &&
+                deducedValueType != context.Environment.Void)
             {
                 if (elementType is UnitType ut)
                 {
                     if (ut != deducedValueType)
                     {
-                        context.AddError(node, $"Unit Type mismatch {elementType} {deducedValueType}");
+                        context.AddError(node,
+                            new(ErrorID.UnitTypeMismatch, elementType.ToString(), deducedValueType.ToString()));
                     }
                     return block;
                 }
 
-                context.AddError(node, $"Type mismatch {elementType} {deducedValueType}");
+                context.AddError(node,
+                    new(ErrorID.TypeMismatch, elementType.ToString(), deducedValueType.ToString()));
             }
         }
 
@@ -59,12 +65,13 @@ public class VariableImplementor : IStatementImplementor
         }
         else
         {
-            context.AddError(decl.Args[0], $"{varname} already declared");
+            context.AddError(decl.Args[0], new(ErrorID.AlreadyDeclared, varname));
         }
 
         if (deducedValueType == null) return block;
 
-        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context, scope, modulename);
+        ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context,
+            scope, modulename);
 
         block.AppendInstruction(Instruction.CreateAlloca(elementType));
 

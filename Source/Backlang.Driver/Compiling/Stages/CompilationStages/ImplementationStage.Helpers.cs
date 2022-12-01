@@ -7,6 +7,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 {
     public static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
     {
+        [CodeSymbols.Object] = typeof(object),
         [CodeSymbols.Bool] = typeof(bool),
 
         [CodeSymbols.String] = typeof(string),
@@ -32,6 +33,7 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         NotEquals,
         Equals,
         True,
+        False,
     }
 
     public static IType GetLiteralType(LNode value, CompilerContext context, Scope scope, QualifiedName? modulename)
@@ -146,19 +148,24 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
     public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname, bool shouldAppendError = true)
     {
+        var candiates = new List<IMethod>();
         foreach (var m in methods.Where(_ => _.Name.ToString() == methodname))
         {
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
-                    return m;
+                    candiates.Add(m);
             }
         }
 
-        if (shouldAppendError)
+        if (shouldAppendError && candiates.Count == 0)
         {
             context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
+            return null;
         }
-        return null;
+
+        //ToDo: refactor getting best candidate
+        var orderedCandidates = candiates.OrderByDescending(_ => _.Parameters.Select(__ => _.FullName.ToString()).Contains("System.Object"));
+        return orderedCandidates.FirstOrDefault();
     }
 }

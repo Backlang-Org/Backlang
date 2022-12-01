@@ -168,6 +168,11 @@ public static class SyntaxTree
         return Factory.Call(Symbols.RefType, LNode.List(type));
     }
 
+    public static LNode NullableType(LNode type)
+    {
+        return Factory.Call(Symbols.NullableType, LNode.List(type));
+    }
+
     public static LNode Signature(LNode name, LNode type, LNodeList args, LNodeList generics)
     {
         return Factory.Call(CodeSymbols.Fn, LNode.List(
@@ -249,8 +254,15 @@ public static class SyntaxTree
         return Factory.Call(Symbols.UnitDecl, LNode.List(Factory.FromToken(nameToken)));
     }
 
-    internal static LNode TypeOfExpression(LNode type)
+    public static LNode TypeOfExpression(LNode type)
     {
         return Factory.Call(CodeSymbols.Typeof, LNode.List(type));
     }
+
+    public static LNode DoWhile(LNode body, LNode cond)
+    {
+        return Factory.Call(CodeSymbols.DoWhile, LNode.List(body, cond));
+    }
+
+    
 }

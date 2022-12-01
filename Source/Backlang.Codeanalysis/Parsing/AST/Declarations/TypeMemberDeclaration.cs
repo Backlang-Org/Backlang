@@ -7,8 +7,8 @@ public sealed class TypeMemberDeclaration : IParsePoint
 {
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
-        Annotation.TryParse(parser, out var annotations);
-        Modifier.TryParse(parser, out var modifiers);
+        _ = Annotation.TryParse(parser, out var annotations);
+        _ = Modifier.TryParse(parser, out var modifiers);
 
         LNode declaration = LNode.Missing;
 
@@ -28,7 +28,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
         {
             var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-            parser.Messages.Add(Message.Error($"Expected Function, Property or Field-declaration for Type, but got {iterator.Current}", range));
+            parser.AddError(new(Core.ErrorID.UnexpecedTypeMember, iterator.Current.Text), range);
             iterator.NextToken();
         }
 
@@ -71,13 +71,12 @@ public sealed class TypeMemberDeclaration : IParsePoint
         LNode setter = LNode.Missing;
 
         var needModifier = false;
-        LNodeList modifier;
 
-        Modifier.TryParse(parser, out modifier);
+        _ = Modifier.TryParse(parser, out var modifier);
         if (iterator.IsMatch(TokenType.Get))
         {
             iterator.NextToken();
-            LNodeList args = LNode.List();
+            var args = LNode.List();
             if (iterator.IsMatch(TokenType.Semicolon))
             {
                 iterator.NextToken();
@@ -90,11 +89,15 @@ public sealed class TypeMemberDeclaration : IParsePoint
             needModifier = true;
         }
 
-        if (needModifier) Modifier.TryParse(parser, out modifier);
+        if (needModifier)
+        {
+            _ = Modifier.TryParse(parser, out modifier);
+        }
+
         if (iterator.IsMatch(TokenType.Set))
         {
             iterator.NextToken();
-            LNodeList args = LNode.List();
+            var args = LNode.List();
             if (iterator.IsMatch(TokenType.Semicolon))
             {
                 iterator.NextToken();
@@ -108,7 +111,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
         else if (iterator.IsMatch(TokenType.Init))
         {
             iterator.NextToken();
-            LNodeList args = LNode.List();
+            var args = LNode.List();
             if (iterator.IsMatch(TokenType.Semicolon))
             {
                 iterator.NextToken();

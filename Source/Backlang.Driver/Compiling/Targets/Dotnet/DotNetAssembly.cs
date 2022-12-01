@@ -1,9 +1,11 @@
 using Backlang.Core.CompilerService;
+using Backlang.Driver.Compiling.Targets.Dotnet.RuntimeOptionsModels;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -33,7 +35,7 @@ public class DotNetAssembly : ITargetAssembly
 
         _description = description;
 
-        SetTargetFramework();
+        SetTargetFramework("net7.0"); //ToDo: get framework moniker from options
 
         var console = typeof(Console).Assembly.GetName();
         var core = typeof(UnitTypeAttribute).Assembly.GetName();
@@ -49,6 +51,8 @@ public class DotNetAssembly : ITargetAssembly
         {
             var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
                type.Name.ToString(), TypeAttributes.Class);
+
+            MakeStructReadonly(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
 
@@ -160,6 +164,22 @@ public class DotNetAssembly : ITargetAssembly
         }
     }
 
+    private void MakeStructReadonly(DescribedType type, TypeDefinition clrType)
+    {
+        if (type.BaseTypes.Count > 0 && type.BaseTypes[0].FullName.ToString() == "System.ValueType")
+        {
+            clrType.IsSealed = true;
+
+            var readonlyCtor = typeof(ReadOnlyAttribute).GetConstructors()[0];
+
+            var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(readonlyCtor));
+
+            ca.ConstructorArguments.Add(new(_assemblyDefinition.MainModule.ImportReference(typeof(bool)), true));
+
+            clrType.CustomAttributes.Add(ca);
+        }
+    }
+
     private FieldDefinition GeneratePropertyField(DescribedProperty property)
     {
         var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
@@ -258,17 +278,17 @@ public class DotNetAssembly : ITargetAssembly
 
     private void AdjustBaseTypesAndInterfaces()
     {
-        foreach (var baseType in _needToAdjust)
+        foreach (var (definition, name) in _needToAdjust)
         {
-            var type = Resolve(baseType.name).Resolve();
+            var type = Resolve(name).Resolve();
 
             if (type.IsInterface)
             {
-                baseType.definition.Interfaces.Add(new InterfaceImplementation(type));
+                definition.Interfaces.Add(new InterfaceImplementation(type));
             }
             else
             {
-                baseType.definition.BaseType = type;
+                definition.BaseType = type;
             }
         }
     }
@@ -328,8 +348,7 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (var bodyCompilation in _methodBodyCompilations)
         {
-            var variables =
-                                    MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
+            var variables = MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
 
             bodyCompilation.ClrMethod.DebugInformation.Scope =
                 new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
@@ -539,9 +558,6 @@ public class DotNetAssembly : ITargetAssembly
 
     private TypeReference Resolve(IType dtype)
     {
-        //ToDo: Only for debugging, remove if typecheck is done
-        if (dtype == null) throw new Exception($"Type not found");
-
         var resolvedType = Resolve(dtype.FullName);
         if (resolvedType.HasGenericParameters)
         {
@@ -572,13 +588,14 @@ public class DotNetAssembly : ITargetAssembly
         return _assemblyDefinition.ImportType(name);
     }
 
-    private void SetTargetFramework()
+    private void SetTargetFramework(string moniker)
     {
         var tf = _assemblyDefinition.MainModule.ImportReference(typeof(TargetFrameworkAttribute).GetConstructors().First());
 
         var item = new CustomAttribute(tf);
         item.ConstructorArguments.Add(
-            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)), ".NETCoreApp,Version=v7.0"));
+            new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)),
+            $".NETCoreApp,Version=v{RuntimeConfig.GetVersion(moniker)}"));
 
         _assemblyDefinition.CustomAttributes.Add(item);
     }

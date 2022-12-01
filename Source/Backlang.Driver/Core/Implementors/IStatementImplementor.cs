@@ -2,6 +2,5 @@
 
 public interface IStatementImplementor
 {
-    BasicBlockBuilder Implement(CompilerContext context, IMethod method,
-        BasicBlockBuilder block, LNode node, QualifiedName? modulename, Scope scope);
+    BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null);
 }

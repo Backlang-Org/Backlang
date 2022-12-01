@@ -1,12 +1,21 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Driver.Core.Instructions;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
 namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class CallImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(CompilerContext context, IMethod method, BasicBlockBuilder block,
-        LNode node, QualifiedName? modulename, Scope scope)
+    public static void AppendDiscardReturnValue(BasicBlockBuilder block, IType type)
+    {
+        if (type.FullName.ToString() != "System.Void")
+        {
+            //Discard value if its not been stored anywhere
+            block.AppendInstruction(new PopInstructionPrototype().Instantiate(new List<ValueTag>()));
+        }
+    }
+
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
         if (node is ("'.", var target, var callee) && target is ("this", _))
         {
@@ -18,11 +27,14 @@ public class CallImplementor : IStatementImplementor
 
             if (scope.TryGet<FunctionScopeItem>(callee.Name.Name, out var fsi))
             {
-                AppendCall(context, block, callee, fsi.Overloads, scope, modulename);
+                AppendCall(context, block, callee, fsi.Overloads,
+                    scope, modulename);
+
+                AppendDiscardReturnValue(block, fsi.Overloads[0].ReturnParameter.Type);
             }
             else
             {
-                context.AddError(node, $"Cannot find function '{callee.Name.Name}'");
+                context.AddError(node, new(Codeanalysis.Core.ErrorID.CannotFindFunction, callee.Name.Name));
             }
         }
         else

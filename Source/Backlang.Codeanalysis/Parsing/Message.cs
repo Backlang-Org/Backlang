@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -28,14 +29,14 @@ public sealed class Message
     public MessageSeverity Severity { get; set; }
     public string Text { get; set; }
 
-    public static Message Error(string message, SourceRange range)
+    public static Message Error(LocalizableString message, SourceRange range)
     {
         return new Message(MessageSeverity.Error, message, range);
     }
 
-    public static Message Error(string message)
+    public static Message Error(LocalizableString message)
     {
-        return Error(message, SourceRange.Synthetic);
+        return new Message(MessageSeverity.Error, message, SourceRange.Synthetic);
     }
 
     public static Message Info(string message, SourceRange range)

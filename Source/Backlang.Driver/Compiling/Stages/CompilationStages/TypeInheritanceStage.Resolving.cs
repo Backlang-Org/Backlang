@@ -1,5 +1,6 @@
 using Backlang.Contracts.TypeSystem;
 using Flo;
+using Loyc.Geometry;
 
 namespace Backlang.Driver.Compiling.Stages;
 
@@ -50,53 +51,35 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         IType resolvedType;
-        if (TypenameTable.ContainsKey(fullName.ToString()))
+
+        if (context.GlobalScope.TypeAliases.ContainsKey(fullName.ToString()))
+        {
+            resolvedType = context.GlobalScope.TypeAliases[fullName.ToString()];
+        }
+        else if (TypenameTable.ContainsKey(fullName.ToString()))
         {
             resolvedType = Utils.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
 
             if (typeNode is (_, (_, _, (_, var unit))) && unit != LNode.Missing)
             {
-                if (unit is (_, (_, var u)))
-                {
-                    var resolvedUnit = ResolveTypeWithModule(u, context, modulename);
-
-                    if (!Utils.IsUnitType(context, resolvedUnit))
-                    {
-                        context.AddError(u, $"{resolvedUnit} is not a unit type");
-                    }
-
-                    resolvedType = new UnitType(resolvedType, resolvedUnit);
-                }
+                ResolveUnitType(context, modulename, ref resolvedType, unit);
             }
+        }
+        else if (typeNode is ("#type?", var nullableArg))
+        {
+            resolvedType = ResolveNullableType(nullableArg, context, modulename);
         }
         else if (fullName is ("System", var func) && (func.StartsWith("Action") || func.StartsWith("Func")))
         {
-            var fnType = Utils.ResolveType(context.Binder, func, "System");
-
-            var funcArgs = new List<IType>();
-            foreach (var garg in typeNode.Args[2].Args)
-            {
-                funcArgs.Add(ResolveTypeWithModule(garg, context, modulename));
-            }
-
-            resolvedType = fnType.MakeGenericType(funcArgs);
+            resolvedType = ResolveFunctionType(typeNode, context, modulename, func);
         }
         else if (typeNode.Calls(CodeSymbols.Tuple))
         {
-            var tupleType = Utils.ResolveType(context.Binder, $"Tuple`{typeNode.ArgCount}", "System");
-
-            var tupleArgs = new List<IType>();
-            foreach (var garg in typeNode.Args)
-            {
-                tupleArgs.Add(ResolveTypeWithModule(garg, context, modulename));
-            }
-
-            resolvedType = tupleType.MakeGenericType(tupleArgs);
+            resolvedType = ResolveTupleType(typeNode, context, modulename);
         }
         else if (typeNode.Calls(CodeSymbols.Array))
         {
-            resolvedType = ResolveTypeWithModule(typeNode[0], context, modulename);
-            resolvedType = context.Environment.MakeArrayType(resolvedType, (int)typeNode[1].Value);
+            resolvedType = ResolveArrayType(typeNode, context, modulename);
         }
         else
         {
@@ -109,23 +92,15 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             if (resolvedType == null)
             {
-                if (context.ImportetNamespaces.ContainsKey(typeNode.Range.Source.FileName))
+                if (context.FileScope.ImportetNamespaces.TryGetValue(typeNode.Range.Source.FileName, out var importedNamespaces))
                 {
-                    var namespaceImport = context.ImportetNamespaces[typeNode.Range.Source.FileName];
-
-                    foreach (var importedNs in namespaceImport.ImportedNamespaces)
-                    {
-                        var tmpName = fullName.Qualify(importedNs);
-
-                        resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
-
-                        if (resolvedType != null) break;
-                    }
+                    ResolveImportedType(typeNode, context, ref fullName, ref resolvedType);
                 }
 
                 if (resolvedType == null && !string.IsNullOrEmpty(fullName.ToString()))
                 {
                     context.AddError(typeNode, $"Type {fullName} cannot be found");
+                    return null;
                 }
             }
         }
@@ -136,5 +111,86 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
 
         return resolvedType;
+    }
+
+    private static IType ResolveNullableType(LNode nullableArg, CompilerContext context, QualifiedName modulename)
+    {
+        var tupleType = Utils.ResolveType(context.Binder, $"Nullable`1", "System");
+
+        var innerType = ResolveTypeWithModule(nullableArg, context, modulename);
+        
+        return tupleType.MakeGenericType(new List<IType>() { innerType });
+    }
+
+    private static void ResolveImportedType(LNode typeNode, CompilerContext context, ref QualifiedName fullName, ref IType resolvedType)
+    {
+        var namespaceImport = context.FileScope.ImportetNamespaces[typeNode.Range.Source.FileName];
+
+        foreach (var importedNs in namespaceImport.ImportedNamespaces)
+        {
+            var tmpName = fullName.Qualify(importedNs);
+
+            resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
+
+            if (resolvedType != null) break;
+        }
+    }
+
+    private static IType ResolveArrayType(LNode typeNode, CompilerContext context, QualifiedName modulename)
+    {
+        IType resolvedType;
+        var arrType = ResolveTypeWithModule(typeNode[0], context, modulename);
+        resolvedType = context.Environment.MakeArrayType(arrType, (int)typeNode[1].Value);
+        return resolvedType;
+    }
+
+    private static IType ResolveTupleType(LNode typeNode, CompilerContext context, QualifiedName modulename)
+    {
+        IType resolvedType;
+        var tupleType = Utils.ResolveType(context.Binder, $"Tuple`{typeNode.ArgCount}", "System");
+
+        var tupleArgs = new List<IType>();
+        foreach (var garg in typeNode.Args)
+        {
+            tupleArgs.Add(ResolveTypeWithModule(garg, context, modulename));
+        }
+
+        resolvedType = tupleType.MakeGenericType(tupleArgs);
+        return resolvedType;
+    }
+
+    private static IType ResolveFunctionType(LNode typeNode, CompilerContext context, QualifiedName modulename, string func)
+    {
+        IType resolvedType;
+        var fnType = Utils.ResolveType(context.Binder, func, "System");
+
+        var funcArgs = new List<IType>();
+        foreach (var garg in typeNode.Args[2].Args)
+        {
+            funcArgs.Add(ResolveTypeWithModule(garg, context, modulename));
+        }
+
+        if (func.StartsWith("Func"))
+        {
+            funcArgs.Add(ResolveTypeWithModule(typeNode.Args[0], context, modulename));
+        }
+
+        resolvedType = fnType.MakeGenericType(funcArgs);
+        return resolvedType;
+    }
+
+    private static void ResolveUnitType(CompilerContext context, QualifiedName modulename, ref IType resolvedType, LNode unit)
+    {
+        if (unit is (_, (_, var u)))
+        {
+            var resolvedUnit = ResolveTypeWithModule(u, context, modulename);
+
+            if (!Utils.IsUnitType(context, resolvedUnit))
+            {
+                context.AddError(u, $"{resolvedUnit} is not a unit type");
+            }
+
+            resolvedType = new UnitType(resolvedType, resolvedUnit);
+        }
     }
 }

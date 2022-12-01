@@ -1,8 +1,10 @@
-﻿using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
 using Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 using Backlang.Codeanalysis.Parsing.AST.Statements;
+using Backlang.Codeanalysis.Parsing.AST.Statements.Loops;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
@@ -50,6 +52,7 @@ public sealed partial class Parser
         AddStatementParsePoint<SwitchStatement>(TokenType.Switch);
         AddStatementParsePoint<IfStatement>(TokenType.If);
         AddStatementParsePoint<WhileStatement>(TokenType.While);
+        AddStatementParsePoint<DoWhileStatement>(TokenType.Do);
         AddStatementParsePoint<TryStatement>(TokenType.Try);
         AddStatementParsePoint<ForStatement>(TokenType.For);
         AddStatementParsePoint<MacroBlockStatement>(TokenType.Identifier);
@@ -80,10 +83,11 @@ public sealed partial class Parser
         var body = new LNodeList();
         while (Iterator.Current.Type != terminator)
         {
+            DocComment.TryParse(this, out var docComment);
             Annotation.TryParse(this, out var annotation);
             Modifier.TryParse(this, out var modifiers);
 
-            var item = InvokeParsePoint(parsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers);
+            var item = InvokeParsePoint(parsePoints)?.PlusAttrs(annotation).PlusAttrs(modifiers).PlusAttr(docComment);
 
             if (item != null)
             {
@@ -107,7 +111,7 @@ public sealed partial class Parser
 
         var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
 
-        Messages.Add(Message.Error($"Unexpected '{Iterator.Current.Text}'", range));
+        AddError(new(ErrorID.UnknownExpression, Iterator.Current.Text), range);
 
         Iterator.NextToken();
 

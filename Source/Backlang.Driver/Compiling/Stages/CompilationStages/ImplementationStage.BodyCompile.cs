@@ -4,7 +4,9 @@ using Backlang.Driver.Core.Implementors;
 using Backlang.Driver.Core.Implementors.Expressions;
 using Backlang.Driver.Core.Implementors.Statements;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 
 namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
@@ -16,10 +18,15 @@ public partial class ImplementationStage
         [CodeSymbols.Assign] = new AssignmentImplementor(),
         [CodeSymbols.If] = new IfImplementor(),
         [CodeSymbols.While] = new WhileImplementor(),
+        [CodeSymbols.DoWhile] = new DoWhileImplementor(),
         [CodeSymbols.Return] = new ReturnImplementor(),
+        [CodeSymbols.Continue] = new ContinueStatementImplementor(),
+        [CodeSymbols.Break] = new BreakStatementImplementor(),
         [CodeSymbols.Throw] = new ThrowImplementor(),
         [CodeSymbols.ColonColon] = new StaticCallImplementor(),
         [CodeSymbols.Dot] = new CallImplementor(),
+        [(Symbol)"print"] = new PrintOrPrintlnImplementor(),
+        [(Symbol)"println"] = new PrintOrPrintlnImplementor(),
     }.ToImmutableDictionary();
 
     private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
@@ -28,9 +35,11 @@ public partial class ImplementationStage
         new ArrayExpressionImplementor(),
         new DefaultExpressionImplementor(),
         new TypeOfExpressionImplementor(),
+        new AsExpressionImplementor(),
         new AddressExpressionImplementor(),
         new CtorExpressionImplementor(),
         new UnaryExpressionImplementor(),
+        new MemberExpressionImplementor(),
         new BinaryExpressionImplementor(),
         new IdentifierExpressionImplementor(),
         new PointerExpressionImplementor(),
@@ -45,8 +54,16 @@ public partial class ImplementationStage
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
+        var branchLabels = new BranchLabels();
 
-        AppendBlock(function.Args[3], block, context, method, modulename, scope);
+        var afterBlock = AppendBlock(function.Args[3], block, context, method, modulename, scope, branchLabels);
+
+        SetReturnType((DescribedBodyMethod)method, function, context, scope, modulename.Value);
+
+        if (afterBlock.Flow is NothingFlow && method.ReturnParameter.Type.FullName.ToString() != "System.Void")
+        {
+            afterBlock.Flow = new ReturnFlow();
+        }
 
         return new MethodBody(
             method.ReturnParameter,
@@ -55,8 +72,10 @@ public partial class ImplementationStage
             graph.ToImmutable());
     }
 
-    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope)
+    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels)
     {
+        block.Flow = new NothingFlow();
+
         foreach (var node in blkNode.Args)
         {
             if (!node.IsCall) continue;
@@ -65,67 +84,22 @@ public partial class ImplementationStage
             {
                 if (node.ArgCount == 0) continue;
 
-                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope());
+                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope(), branchLabels);
                 continue;
             }
 
             if (_implementations.ContainsKey(node.Name))
             {
-                block = _implementations[node.Name].Implement(context, method, block, node, modulename, scope);
-
-                if (block == null)
-                    return block;
-            }
-            else if (node.Calls("print"))
-            {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "Write");
-            }
-            else if (node.Calls("println"))
-            {
-                AppendCall(context, block, node, context.writeMethods, scope, modulename.Value, methodName: "WriteLine");
+                block = _implementations[node.Name].Implement(node, block, context, method, modulename, scope, branchLabels);
             }
             else
             {
-                //ToDo: continue implementing static function call in same type
-                var type = (DescribedType)method.ParentType;
-                var calleeName = node.Target;
-                var methods = type.Methods;
-
-                if (!methods.Any(_ => _.Name.ToString() == calleeName.ToString()))
-                {
-                    type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(modulename.Value)).FirstOrDefault();
-
-                    if (type == null)
-                    {
-                        context.AddError(node, $"Cannot find function '{calleeName}'");
-                    }
-                }
-
-                if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
-                {
-                    if (type.IsStatic && !callee.IsStatic)
-                    {
-                        context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
-                        return block;
-                    }
-
-                    //ToDo: add overload AppendCall with known callee
-                    AppendCall(context, block, node, type.Methods, scope, modulename.Value);
-                }
-                else
-                {
-                    var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
-
-                    context.AddError(node, $"Cannot find function '{calleeName.Name.Name}'. Did you mean '{suggestion}'?");
-                }
+                EmitFunctionCall(method, node, block, context, scope, modulename);
             }
         }
 
         //automatic dtor call
-        foreach (var v in block.Parameters)
-        {
-            AppendDtor(context, block, scope, modulename, v.Tag.Name);
-        }
+        AppendAllDtors(block, context, modulename, scope);
 
         return block;
     }
@@ -165,6 +139,11 @@ public partial class ImplementationStage
     {
         if (scope.TryGet<VariableScopeItem>(varname, out var scopeItem))
         {
+            if (!scopeItem.Type.Methods.Any(_ => _.Name.ToString() == "Finalize"))
+            {
+                return null;
+            }
+
             block.AppendInstruction(Instruction.CreateLoadLocal(scopeItem.Parameter));
 
             return AppendCall(context, block, LNode.Missing, scopeItem.Type.Methods, scope, modulename, false, "Finalize");
@@ -230,12 +209,75 @@ public partial class ImplementationStage
                 {
                     var suggestion = LevensteinDistance.Suggest(arg.Name.Name, scope.GetAllScopeNames());
 
-                    context.AddError(arg, $"{arg.Name.Name} cannot be found. Did you mean '{suggestion}'?");
+                    context.AddError(arg, new(ErrorID.CannotBeFoundDidYouMean, arg.Name.Name, suggestion));
                 }
             }
         }
 
         return callTags;
+    }
+
+    public static void AppendAllDtors(BasicBlockBuilder block, CompilerContext context, QualifiedName? modulename, Scope scope)
+    {
+        foreach (var v in block.Parameters)
+        {
+            AppendDtor(context, block, scope, modulename, v.Tag.Name);
+        }
+    }
+
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, Scope scope, QualifiedName modulename)
+    {
+        var retType = function.Args[0];
+
+        if (retType.Name != LNode.Missing.Name)
+        {
+            var rtype = TypeInheritanceStage.ResolveTypeWithModule(retType, context, modulename);
+
+            method.ReturnParameter = new Parameter(rtype);
+        }
+        else
+        {
+            var deducedReturnType = TypeDeducer.DeduceFunctionReturnType(function, context, scope, modulename);
+
+            method.ReturnParameter = deducedReturnType != null ? new Parameter(deducedReturnType) : new Parameter(Utils.ResolveType(context.Binder, typeof(void)));
+        }
+    }
+
+    private static BasicBlockBuilder EmitFunctionCall(IMethod method, LNode node, BasicBlockBuilder block, CompilerContext context, Scope scope, QualifiedName? moduleName)
+    {
+        //ToDo: continue implementing static function call in same type
+        var type = (DescribedType)method.ParentType;
+        var calleeName = node.Target;
+        var methods = type.Methods;
+
+        if (!methods.Any(_ => _.Name.ToString() == calleeName.ToString()))
+        {
+            type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(moduleName.Value)).FirstOrDefault();
+
+            if (type == null)
+            {
+                context.AddError(node, new(ErrorID.CannotFindFunction, calleeName.ToString()));
+            }
+        }
+
+        if (scope.TryGet<FunctionScopeItem>(calleeName.Name.Name, out var callee))
+        {
+            if (type.IsStatic && !callee.IsStatic)
+            {
+                context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
+                return block;
+            }
+
+            AppendCall(context, block, node, type.Methods, scope, moduleName.Value);
+        }
+        else
+        {
+            var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
+
+            context.AddError(node, new(ErrorID.CannotBeFoundDidYouMean, calleeName.Name.Name, suggestion));
+        }
+
+        return block;
     }
 
     private static void ConvertMethodBodies(CompilerContext context)
