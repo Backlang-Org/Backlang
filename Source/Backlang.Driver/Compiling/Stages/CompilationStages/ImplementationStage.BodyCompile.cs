@@ -58,12 +58,12 @@ public partial class ImplementationStage
 
         var afterBlock = AppendBlock(function.Args[3], block, context, method, modulename, scope, branchLabels);
 
-        if (afterBlock.Flow is NothingFlow)
+        SetReturnType((DescribedBodyMethod)method, function, context, scope, modulename.Value);
+
+        if (afterBlock.Flow is NothingFlow && method.ReturnParameter.Type.FullName.ToString() != "System.Void")
         {
             afterBlock.Flow = new ReturnFlow();
         }
-
-        SetReturnType((DescribedBodyMethod)method, function, context, scope, modulename.Value);
 
         return new MethodBody(
             method.ReturnParameter,
