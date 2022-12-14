@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Contracts.ConstraintSystem;
 
-public class ConstraintEvaluator
+public class ConstraintCompiler
 {
     public Dictionary<string, object> Variables = new();
     public Dictionary<string, LNode> Constraints = new();
