@@ -2,7 +2,7 @@
 
 public sealed class Token
 {
-    public static Token Invalid = new(TokenType.Invalid);
+    public static readonly Token Invalid = new(TokenType.Invalid);
 
     public Token(TokenType type, string text, int start, int end, int line, int column)
     {
