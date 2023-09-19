@@ -1,11 +1,4 @@
 
 func main()  {
-	if true {
-		return 1;
-	}
-	else {
-		return 2;
-	}
-
-	print("after");
+	print("hello world");
 }

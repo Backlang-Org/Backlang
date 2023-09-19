@@ -1,5 +1,6 @@
 ﻿using Backlang.Core;
 using Backlang.Driver.Compiling.Targets.Dotnet.RuntimeOptionsModels;
+using Furesoft.Core.CodeDom.Backends.CLR;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
 using LeMP;
 using System.Collections;
@@ -60,7 +61,7 @@ public class DotNetTarget : ICompilationTarget
         ClrTypeEnvironmentBuilder.FillTypes(typeof(Result<>).Assembly, context);
         ClrTypeEnvironmentBuilder.FillTypes(typeof(ArrayList).Assembly, context);
 
-        return new Furesoft.Core.CodeDom.Backends.CLR.CorlibTypeEnvironment(corLib);
+        return new CorlibTypeEnvironment(corLib);
     }
 
     public void InitReferences(CompilerContext context)
@@ -70,11 +71,16 @@ public class DotNetTarget : ICompilationTarget
             AddFromAssembly(context, r);
         }
 
-        if (context.CorLib == null) return;
-
-        foreach (var r in context.CorLib.Split(';'))
+        if (context.CorLib == null)
         {
-            AddFromAssembly(context, r);
+            return;
+        }
+
+        foreach (var r in context.CorLib.Split(new[] {".dll"}, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var rr = r.TrimEnd(';').TrimStart(';') + ".dll";
+
+            AddFromAssembly(context, rr);
         }
 
         static void AddFromAssembly(CompilerContext context, string r)

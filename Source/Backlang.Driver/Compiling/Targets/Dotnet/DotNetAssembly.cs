@@ -49,7 +49,7 @@ public class DotNetAssembly : ITargetAssembly
 
         foreach (var type in _assembly.Types.Cast<DescribedType>())
         {
-            var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
+            var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName,
                type.Name.ToString(), TypeAttributes.Class);
 
             MakeStructReadonly(type, clrType);

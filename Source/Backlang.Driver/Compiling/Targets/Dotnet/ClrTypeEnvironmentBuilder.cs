@@ -5,19 +5,22 @@ using System.Runtime.CompilerServices;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
-public class ClrTypeEnvironmentBuilder
+public static class ClrTypeEnvironmentBuilder
 {
-    private static ConcurrentBag<(MethodBase, DescribedMethod)> toAdjustParameters = new();
+    private static readonly ConcurrentBag<(MethodBase, DescribedMethod)> toAdjustParameters = new();
 
     public static IAssembly CollectTypes(Assembly ass)
     {
-        var assembly = new DescribedAssembly(new QualifiedName(ass.GetName().Name));
+        var assembly = new DescribedAssembly(new(ass.GetName().Name));
 
         var types = ass.GetTypes();
 
         foreach (var type in types)
         {
-            if (!type.IsPublic) continue;
+            if (!type.IsPublic || type.Namespace.StartsWith("Microsoft.VSDesigner"))
+            {
+                continue;
+            }
 
             var ns = ConversionUtils.QualifyNamespace(type.Namespace);
 
@@ -32,8 +35,12 @@ public class ClrTypeEnvironmentBuilder
 
     public static void FillTypes(Assembly ass, CompilerContext context)
     {
-        Parallel.ForEach(ass.GetTypes(), type => {
-            if (!type.IsPublic) return;
+        foreach (var type in ass.GetTypes())
+        {
+            if (!type.IsPublic)
+            {
+                continue;
+            }
 
             var t = Utils.ResolveType(context.Binder, type);
 
@@ -62,14 +69,14 @@ public class ClrTypeEnvironmentBuilder
                     var value = prop.GetValue(attr);
 
                     attribute.ConstructorArguments.Add(
-                        new AttributeArgument(Utils.ResolveType(context.Binder, prop.PropertyType), value));
+                        new(Utils.ResolveType(context.Binder, prop.PropertyType), value));
                 }
 
                 t.AddAttribute(attribute);
             }
 
             AddMembers(type, t, context.Binder);
-        });
+        }
 
         foreach (var toadjust in toAdjustParameters)
         {
@@ -81,7 +88,8 @@ public class ClrTypeEnvironmentBuilder
 
     public static void AddMembers(Type type, DescribedType t, TypeResolver resolver)
     {
-        Parallel.ForEach(type.GetMembers(), member => {
+        foreach (var member in type.GetMembers())
+        {
             if (member is ConstructorInfo ctor && ctor.IsPublic)
             {
                 var method = new DescribedMethod(t,
@@ -93,7 +101,8 @@ public class ClrTypeEnvironmentBuilder
 
                 foreach (DescribedGenericParameter gp in t.GenericParameters)
                 {
-                    method.AddGenericParameter(new DescribedGenericParameter(method, new SimpleName(gp.Name.ToString())));
+                    method.AddGenericParameter(
+                        new DescribedGenericParameter(method, new SimpleName(gp.Name.ToString())));
                 }
 
                 t.AddMethod(method);
@@ -112,11 +121,11 @@ public class ClrTypeEnvironmentBuilder
             else if (member is PropertyInfo prop)
             {
                 var p = new DescribedProperty(new SimpleName(prop.Name),
-                     Utils.ResolveType(resolver, prop.PropertyType), t);
+                    Utils.ResolveType(resolver, prop.PropertyType), t);
 
                 t.AddProperty(p);
             }
-        });
+        }
     }
 
     public static void AddMethod(DescribedType t, TypeResolver resolver, MethodInfo m,
@@ -148,21 +157,25 @@ public class ClrTypeEnvironmentBuilder
 
             if (p.ParameterType.IsByRef)
             {
-                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace)?.MakePointerType(PointerKind.Reference);
+                type = Utils
+                    .ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace)
+                    ?.MakePointerType(PointerKind.Reference);
             }
             else if (p.ParameterType.IsArray)
             {
-                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""), p.ParameterType.Namespace);
+                type = Utils.ResolveType(context.Binder, p.ParameterType.Name.Replace("&", ""),
+                    p.ParameterType.Namespace);
 
                 if (type != null)
+                {
                     type = context.Environment.MakeArrayType(type, p.ParameterType.GetArrayRank());
+                }
             }
 
             if (type != null)
             {
                 var pa = new Parameter(type, p.Name);
                 method.AddParameter(pa);
-                continue;
             }
         }
     }
