@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>Backlang.NET.Sdk</AssemblyName>
 	<LangVersion>preview</LangVersion>
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
@@ -51,8 +51,8 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.4.0" />
-	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.6" />
+	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,6 +84,5 @@
     <WriteLinesToFile File="build\Backlang.Version.props" Overwrite="true" Lines="@(_PropsLine)" />
   </Target>
 
-	<Import Project="$(SolutionDir)\Version.props" />
 
 </Project>
