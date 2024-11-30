@@ -26,11 +26,9 @@ public static class Statement
         {
             return ParseBlock(parser);
         }
-        else
-        {
-            var node = parser.InvokeStatementParsePoint();
 
-            return SyntaxTree.Factory.Braces(node).WithStyle(NodeStyle.StatementBlock).WithRange(node.Range);
-        }
+        var node = parser.InvokeStatementParsePoint();
+
+        return SyntaxTree.Factory.Braces(node).WithStyle(NodeStyle.StatementBlock).WithRange(node.Range);
     }
 }

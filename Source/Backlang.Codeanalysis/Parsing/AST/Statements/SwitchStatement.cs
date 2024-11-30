@@ -1,4 +1,5 @@
-﻿using Loyc;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
@@ -55,7 +56,7 @@ public sealed class SwitchStatement : IParsePoint
             {
                 var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-                parser.AddError(new(Core.ErrorID.UnknownSwitchOption), range);
+                parser.AddError(new LocalizableString(ErrorID.UnknownSwitchOption), range);
                 return LNode.Missing;
             }
         }
@@ -136,12 +137,14 @@ public sealed class SwitchStatement : IParsePoint
             // with element function
             if (!parser.Iterator.IsMatch(TokenType.Identifier))
             {
-                var range = new SourceRange(parser.Document, parser.Iterator.Current.Start, parser.Iterator.Current.Text.Length);
+                var range = new SourceRange(parser.Document, parser.Iterator.Current.Start,
+                    parser.Iterator.Current.Text.Length);
 
-                parser.AddError(new(Core.ErrorID.ExpectedIdentifier, parser.Iterator.Current.Text), range);
+                parser.AddError(new LocalizableString(ErrorID.ExpectedIdentifier, parser.Iterator.Current.Text), range);
 
                 return LNode.Missing;
             }
+
             var name = LNode.Id(parser.Iterator.Current.Text);
             parser.Iterator.Match(TokenType.Identifier);
             parser.Iterator.Match(TokenType.OpenParen);

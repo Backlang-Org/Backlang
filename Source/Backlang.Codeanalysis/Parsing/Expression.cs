@@ -44,7 +44,10 @@ public static class Expression
         }
     }
 
-    public static int GetBinaryOperatorPrecedence(TokenType kind) => BinaryOperators.GetValueOrDefault(kind);
+    public static int GetBinaryOperatorPrecedence(TokenType kind)
+    {
+        return BinaryOperators.GetValueOrDefault(kind);
+    }
 
     public static LNode Parse(Parser parser, ParsePoints parsePoints = null, int parentPrecedence = 0)
     {
@@ -59,7 +62,8 @@ public static class Expression
 
                 var operand = Parse(parser, parsePoints, preUnaryOperatorPrecedence + 1);
 
-                left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand).WithRange(operatorToken.Start, operand.Range.EndIndex).WithStyle(NodeStyle.PrefixNotation);
+                left = SyntaxTree.Unary(GSymbol.Get($"'{operatorToken.Text}"), operand)
+                    .WithRange(operatorToken.Start, operand.Range.EndIndex).WithStyle(NodeStyle.PrefixNotation);
             }
         }
         else
@@ -75,7 +79,8 @@ public static class Expression
                 {
                     var unaryOperatorToken = parser.Iterator.NextToken();
 
-                    left = SyntaxTree.Unary(GSymbol.Get($"'suf{unaryOperatorToken.Text}"), left).WithRange(left.Range.StartIndex, unaryOperatorToken.End).WithStyle(NodeStyle.Operator);
+                    left = SyntaxTree.Unary(GSymbol.Get($"'suf{unaryOperatorToken.Text}"), left)
+                        .WithRange(left.Range.StartIndex, unaryOperatorToken.End).WithStyle(NodeStyle.Operator);
                 }
             }
         }
@@ -91,7 +96,8 @@ public static class Expression
             var operatorToken = parser.Iterator.NextToken();
             var right = Parse(parser, parsePoints, precedence);
 
-            left = SyntaxTree.Binary(GSymbol.Get($"'{operatorToken.Text}"), left, right).WithRange(left.Range.StartIndex, right.Range.StartIndex);
+            left = SyntaxTree.Binary(GSymbol.Get($"'{operatorToken.Text}"), left, right)
+                .WithRange(left.Range.StartIndex, right.Range.StartIndex);
 
             // parsing postunary for: Hello::new()? = false;
             var postUnaryOperatorPrecedence = GetPostUnaryOperatorPrecedence(parser.Iterator.Current.Type);
@@ -102,7 +108,8 @@ public static class Expression
                 {
                     var unaryOperatorToken = parser.Iterator.NextToken();
 
-                    left = SyntaxTree.Unary(GSymbol.Get($"'suf{unaryOperatorToken.Text}"), left).WithRange(left.Range.StartIndex, unaryOperatorToken.End).WithStyle(NodeStyle.Operator);
+                    left = SyntaxTree.Unary(GSymbol.Get($"'suf{unaryOperatorToken.Text}"), left)
+                        .WithRange(left.Range.StartIndex, unaryOperatorToken.End).WithStyle(NodeStyle.Operator);
                 }
             }
         }
@@ -112,14 +119,29 @@ public static class Expression
 
     public static LNodeList ParseList(Parser parser, TokenType terminator, bool consumeTerminator = true)
     {
-        return ParsingHelpers.ParseSeperated<ExpressionParser>(parser, terminator, consumeTerminator: consumeTerminator);
+        return ParsingHelpers.ParseSeperated<ExpressionParser>(parser, terminator,
+            consumeTerminator: consumeTerminator);
     }
 
-    private static int GetPreUnaryOperatorPrecedence(TokenType kind) => PreUnaryOperators.GetValueOrDefault(kind);
-    private static int GetPostUnaryOperatorPrecedence(TokenType kind) => PostUnaryOperators.GetValueOrDefault(kind);
+    private static int GetPreUnaryOperatorPrecedence(TokenType kind)
+    {
+        return PreUnaryOperators.GetValueOrDefault(kind);
+    }
 
-    private static bool IsPreUnary(TokenType kind) => PreUnaryOperators.ContainsKey(kind);
-    private static bool IsPostUnary(TokenType kind) => PostUnaryOperators.ContainsKey(kind);
+    private static int GetPostUnaryOperatorPrecedence(TokenType kind)
+    {
+        return PostUnaryOperators.GetValueOrDefault(kind);
+    }
+
+    private static bool IsPreUnary(TokenType kind)
+    {
+        return PreUnaryOperators.ContainsKey(kind);
+    }
+
+    private static bool IsPostUnary(TokenType kind)
+    {
+        return PostUnaryOperators.ContainsKey(kind);
+    }
 
     private class ExpressionParser : IParsePoint
     {

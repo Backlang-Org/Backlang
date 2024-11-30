@@ -1,88 +1,88 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>Backlang.NET.Sdk</AssemblyName>
-	<LangVersion>preview</LangVersion>
-	<EnablePreviewFeatures>True</EnablePreviewFeatures>
-
-    <PackageOnlyBuild>true</PackageOnlyBuild>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    
-    <PackageId>Backlang.NET.Sdk</PackageId>    
-    <PackageTags>backlang;sdk;back;msbuild</PackageTags>
-    <GeneratePackageOnBuild Condition=" $(GeneratePackageOnBuild)=='' ">True</GeneratePackageOnBuild>    
-    <Description>The MSBuild SDK containing build targets and runtime.</Description>    
-    <AssemblyVersion>$(Version)</AssemblyVersion>    
-    <FileVersion>$(Version)</FileVersion>    
-    <PackageIcon>logo.png</PackageIcon>    
-    <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>    
-    <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackToolsDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)\publish</PackToolsDir>
-    <NuspecFile>$(MSBuildThisFileDirectory)$(MSbuildProjectName).nuspec</NuspecFile>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(PackageOnlyBuild)' == 'true'">
-    <IntermediateAssembly Remove="@(IntermediateAssembly)" />
-    <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
-  </ItemGroup>
-
-  <!-- This property must be overridden to remove a few targets that compile assemblies -->
-  <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
-    <CoreBuildDependsOn>
-      InitializeSourceControlInformation;
-      BuildOnlySettings;
-      PrepareForBuild;
-      PreBuildEvent;
-      ResolveProjectReferences;
-      GetTargetPath;
-      PrepareForRun;
-      IncrementalClean;
-      PostBuildEvent
-    </CoreBuildDependsOn>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.6" />
-	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
-    <ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj" />
-  </ItemGroup>
-
-  <Target Name="PublishAll">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="GeneratePackageOnBuild=false;Version=$(Version)" />
-  </Target>
-
-  <Target Name="SetPackageDependencies" BeforeTargets="GenerateNuspec" DependsOnTargets="PublishAll">
     <PropertyGroup>
-      <NuspecProperties>$(NuspecProperties);id=$(PackageId)</NuspecProperties>
-      <NuspecProperties>$(NuspecProperties);packToolsDir=$(PackToolsDir)</NuspecProperties>
-      <NuspecProperties>$(NuspecProperties);description=$(Description)</NuspecProperties>
-      <NuspecProperties>$(NuspecProperties);version=$(PackageVersion)</NuspecProperties>
-    </PropertyGroup>
-  </Target>
+        <TargetFramework>net9.0</TargetFramework>
+        <AssemblyName>Backlang.NET.Sdk</AssemblyName>
+        <LangVersion>preview</LangVersion>
+        <EnablePreviewFeatures>True</EnablePreviewFeatures>
 
-  <Target Name="WriteBacklangVersionProps" BeforeTargets="GenerateNuspec">
-    <ItemGroup>
-      <_PropsLine Include="&lt;Project xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;&gt;" />
-      <_PropsLine Include="&lt;PropertyGroup&gt;" />
-      <_PropsLine Include="    &lt;BacklangVersion Condition=&quot; '%24(BacklangVersion)'=='' &quot;&gt;$(PackageVersion)&lt;/BacklangVersion&gt;" />
-      <_PropsLine Include="&lt;/PropertyGroup&gt;" />
-      <_PropsLine Include="&lt;/Project&gt;" />
+        <PackageOnlyBuild>true</PackageOnlyBuild>
+        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+
+        <PackageId>Backlang.NET.Sdk</PackageId>
+        <PackageTags>backlang;sdk;back;msbuild</PackageTags>
+        <GeneratePackageOnBuild Condition=" $(GeneratePackageOnBuild)=='' ">True</GeneratePackageOnBuild>
+        <Description>The MSBuild SDK containing build targets and runtime.</Description>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+        <PackageIcon>logo.png</PackageIcon>
+        <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
+        <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackToolsDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)\publish</PackToolsDir>
+        <NuspecFile>$(MSBuildThisFileDirectory)$(MSbuildProjectName).nuspec</NuspecFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(PackageOnlyBuild)' == 'true'">
+        <IntermediateAssembly Remove="@(IntermediateAssembly)"/>
+        <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)"/>
     </ItemGroup>
-    <WriteLinesToFile File="build\Backlang.Version.props" Overwrite="true" Lines="@(_PropsLine)" />
-  </Target>
+
+    <!-- This property must be overridden to remove a few targets that compile assemblies -->
+    <PropertyGroup Condition="'$(PackageOnlyBuild)' == 'true'">
+        <CoreBuildDependsOn>
+            InitializeSourceControlInformation;
+            BuildOnlySettings;
+            PrepareForBuild;
+            PreBuildEvent;
+            ResolveProjectReferences;
+            GetTargetPath;
+            PrepareForRun;
+            IncrementalClean;
+            PostBuildEvent
+        </CoreBuildDependsOn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0"/>
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.6"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj"/>
+        <ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj"/>
+    </ItemGroup>
+
+    <Target Name="PublishAll">
+        <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="GeneratePackageOnBuild=false;Version=$(Version)"/>
+    </Target>
+
+    <Target Name="SetPackageDependencies" BeforeTargets="GenerateNuspec" DependsOnTargets="PublishAll">
+        <PropertyGroup>
+            <NuspecProperties>$(NuspecProperties);id=$(PackageId)</NuspecProperties>
+            <NuspecProperties>$(NuspecProperties);packToolsDir=$(PackToolsDir)</NuspecProperties>
+            <NuspecProperties>$(NuspecProperties);description=$(Description)</NuspecProperties>
+            <NuspecProperties>$(NuspecProperties);version=$(PackageVersion)</NuspecProperties>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="WriteBacklangVersionProps" BeforeTargets="GenerateNuspec">
+        <ItemGroup>
+            <_PropsLine Include="&lt;Project xmlns=&quot;http://schemas.microsoft.com/developer/msbuild/2003&quot;&gt;"/>
+            <_PropsLine Include="&lt;PropertyGroup&gt;"/>
+            <_PropsLine Include="    &lt;BacklangVersion Condition=&quot; '%24(BacklangVersion)'=='' &quot;&gt;$(PackageVersion)&lt;/BacklangVersion&gt;"/>
+            <_PropsLine Include="&lt;/PropertyGroup&gt;"/>
+            <_PropsLine Include="&lt;/Project&gt;"/>
+        </ItemGroup>
+        <WriteLinesToFile File="build\Backlang.Version.props" Overwrite="true" Lines="@(_PropsLine)"/>
+    </Target>
 
 
 </Project>

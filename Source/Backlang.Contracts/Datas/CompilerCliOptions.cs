@@ -26,13 +26,13 @@ public class CompilerCliOptions
     [Option("target", Required = false, HelpText = "For which platform to compile to")]
     public string Target { get; set; }
 
-    [Option('e', longName: "embedd", HelpText = "Embedd files into the assembly as resource")]
+    [Option('e', "embedd", HelpText = "Embedd files into the assembly as resource")]
     public IEnumerable<string> EmbeddedResource { get; set; }
 
-    [Option('v', longName: "version", HelpText = "Set the assembly version")]
+    [Option('v', "version", HelpText = "Set the assembly version")]
     public string Version { get; set; }
 
-    [Option('f', longName: "framework", HelpText = "On which framework should the assembly be runned on")]
+    [Option('f', "framework", HelpText = "On which framework should the assembly be runned on")]
     public string TargetFramework { get; set; }
 
     [Option("debug", HelpText = "Wait for debugger been attached for debugging plugins")]

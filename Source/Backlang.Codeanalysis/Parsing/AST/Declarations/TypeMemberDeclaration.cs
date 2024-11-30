@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Parsing.AST.Statements;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Parsing.AST.Statements;
 using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
@@ -28,7 +29,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
         {
             var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-            parser.AddError(new(Core.ErrorID.UnexpecedTypeMember, iterator.Current.Text), range);
+            parser.AddError(new LocalizableString(ErrorID.UnexpecedTypeMember, iterator.Current.Text), range);
             iterator.NextToken();
         }
 
@@ -85,6 +86,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
             {
                 args.Add(Statement.ParseBlock(parser));
             }
+
             getter = LNode.Call(CodeSymbols.get, args).WithAttrs(modifier);
             needModifier = true;
         }
@@ -106,6 +108,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
             {
                 args.Add(Statement.ParseBlock(parser));
             }
+
             setter = LNode.Call(CodeSymbols.set, args).WithAttrs(modifier);
         }
         else if (iterator.IsMatch(TokenType.Init))
@@ -120,6 +123,7 @@ public sealed class TypeMemberDeclaration : IParsePoint
             {
                 args.Add(Statement.ParseBlock(parser));
             }
+
             setter = LNode.Call(Symbols.Init, args).WithAttrs(modifier);
         }
 

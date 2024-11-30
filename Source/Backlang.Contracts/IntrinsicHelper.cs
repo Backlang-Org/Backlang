@@ -5,8 +5,6 @@ using System.Reflection;
 
 namespace Backlang.Contracts;
 
-#nullable disable
-
 public static class IntrinsicHelper
 {
     public static bool IsIntrinsicType(Type intrinsicType, CallPrototype callPrototype)
@@ -26,7 +24,8 @@ public static class IntrinsicHelper
 
             if (loadInstruction.Prototype is LoadPrototype)
             {
-                var argPrototype = (ConstantPrototype)block.Graph.GetInstruction(loadInstruction.Arguments[0]).Prototype;
+                var argPrototype =
+                    (ConstantPrototype)block.Graph.GetInstruction(loadInstruction.Arguments[0]).Prototype;
                 arguments.Add(GetValue(argPrototype.Value));
             }
         }
@@ -64,43 +63,32 @@ public static class IntrinsicHelper
                         {
                             return ic.ToInt8();
                         }
-                        else
-                        {
-                            return ic.ToUInt8();
-                        }
+
+                        return ic.ToUInt8();
 
                     case 16:
                         if (ic.Spec.IsSigned)
                         {
                             return ic.ToInt16();
                         }
-                        else
-                        {
-                            return ic.ToUInt16();
-                        }
+
+                        return ic.ToUInt16();
 
                     case 32:
                         if (ic.Spec.IsSigned)
                         {
                             return ic.ToInt32();
                         }
-                        else
-                        {
-                            return ic.ToUInt32();
-                        }
+
+                        return ic.ToUInt32();
 
                     case 64:
                         if (ic.Spec.IsSigned)
                         {
                             return ic.ToInt64();
                         }
-                        else
-                        {
-                            return ic.ToUInt64();
-                        }
 
-                    default:
-                        break;
+                        return ic.ToUInt64();
                 }
 
                 return null;
@@ -112,7 +100,7 @@ public static class IntrinsicHelper
     private static MethodInfo GetMatchingIntrinsicMethod(IMethod callee, Type intrinsicType)
     {
         var methods = intrinsicType.GetMethods().Where(_ => _.IsStatic)
-                    .Where(_ => _.Name.Equals(callee.Name.ToString(), StringComparison.OrdinalIgnoreCase));
+            .Where(_ => _.Name.Equals(callee.Name.ToString(), StringComparison.OrdinalIgnoreCase));
 
         foreach (var m in methods)
         {

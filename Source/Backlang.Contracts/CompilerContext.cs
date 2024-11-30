@@ -2,8 +2,6 @@
 
 namespace Backlang.Contracts;
 
-#nullable disable
-
 public sealed class CompilerContext
 {
     public ICompilationTarget CompilationTarget;
@@ -42,7 +40,10 @@ public sealed class CompilerContext
 
     public void AddError(LNode node, LocalizableString msg)
     {
-        if (node.Range.Source is not SourceFile<StreamCharSource>) return;
+        if (node.Range.Source is not SourceFile<StreamCharSource>)
+        {
+            return;
+        }
 
         Messages.Add(Message.Error(msg, node.Range));
     }

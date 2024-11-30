@@ -261,5 +261,5 @@ public enum Register
 
     Flags = R253,
     IP = R254,
-    SP = R255,
+    SP = R255
 }

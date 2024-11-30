@@ -5,7 +5,8 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class ReturnImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
         if (node.ArgCount == 1)
         {

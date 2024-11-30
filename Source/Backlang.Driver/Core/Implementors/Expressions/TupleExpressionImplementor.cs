@@ -2,7 +2,10 @@
 
 public class TupleExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.Calls(CodeSymbols.Tuple);
+    public bool CanHandle(LNode node)
+    {
+        return node.Calls(CodeSymbols.Tuple);
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
@@ -22,13 +25,14 @@ public class TupleExpressionImplementor : IExpressionImplementor
                 genericTypes.Add(argType);
             }
 
-            var ctor = elementType.Methods.FirstOrDefault(_ => _.IsConstructor && _.Parameters.Count == valueTags.Count);
+            var ctor = elementType.Methods.FirstOrDefault(_ =>
+                _.IsConstructor && _.Parameters.Count == valueTags.Count);
 
             if (ctor != null)
             {
                 var directMethodSpecialization = ctor.MakeGenericMethod(gargs);
 
-                GenericTypeMap.Cache.Add(((QualifiedName, IMember))(elementType.FullName, directMethodSpecialization), elementType);
+                GenericTypeMap.Cache.Add((elementType.FullName, directMethodSpecialization), elementType);
                 block.AppendInstruction(Instruction.CreateNewObject(directMethodSpecialization, valueTags));
             }
         }

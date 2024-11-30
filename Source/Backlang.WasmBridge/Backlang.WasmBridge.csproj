@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-	<TargetFramework>net9.0</TargetFramework>
-	<RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-	<WasmMainJSPath>main.mjs</WasmMainJSPath>
-	<OutputType>Exe</OutputType>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<RunAOTCompilation>true</RunAOTCompilation>
-	<LangVersion>preview</LangVersion>
-	<EnablePreviewFeatures>True</EnablePreviewFeatures>
-  </PropertyGroup>
-	
-  <ItemGroup>
-	<ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+        <WasmMainJSPath>main.mjs</WasmMainJSPath>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <LangVersion>preview</LangVersion>
+        <EnablePreviewFeatures>True</EnablePreviewFeatures>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj"/>
+    </ItemGroup>
 </Project>

@@ -13,15 +13,18 @@ internal class InterfaceNameCheck : ISemanticCheck
 
             if (node.Calls(CodeSymbols.Interface))
             {
-                if (node is (_, var typename, _) && typename.Name.Name.Length >= 2)
+                if (node is var (_, typename, _) && typename.Name.Name.Length >= 2)
                 {
                     if (typename.Name.Name[0] != 'I')
                     {
-                        context.Messages.Add(Message.Warning($"Interface '{typename.Name.Name}' should be start with I", node.Range));
+                        context.Messages.Add(Message.Warning($"Interface '{typename.Name.Name}' should be start with I",
+                            node.Range));
                     }
+
                     if (char.IsLower(typename.Name.Name[1]))
                     {
-                        context.Messages.Add(Message.Warning($"The second letter of interface '{typename.Name.Name}' should be uppercase", node.Range));
+                        context.Messages.Add(Message.Warning(
+                            $"The second letter of interface '{typename.Name.Name}' should be uppercase", node.Range));
                     }
                 }
             }

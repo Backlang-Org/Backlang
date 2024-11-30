@@ -14,7 +14,8 @@ public static class ConversionUtils
         return new SimpleName("").Qualify();
     }
 
-    public static void SetAccessModifier(LNode node, DescribedMember type, AccessModifier defaultChoice = AccessModifier.Private)
+    public static void SetAccessModifier(LNode node, DescribedMember type,
+        AccessModifier defaultChoice = AccessModifier.Private)
     {
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Private)))
         {
@@ -61,8 +62,8 @@ public static class ConversionUtils
 
     public static QualifiedName GetQualifiedName(LNode lNode)
     {
-        bool isPointer = false;
-        PointerKind pointerKind = PointerKind.Transient;
+        var isPointer = false;
+        var pointerKind = PointerKind.Transient;
 
 
         if (lNode is ("'suf.*", var ns))
@@ -71,6 +72,7 @@ public static class ConversionUtils
 
             return new SimpleName("*").Qualify(qualifiedNs);
         }
+
         if (lNode is ("#type*", var arg))
         {
             isPointer = true;
@@ -84,21 +86,21 @@ public static class ConversionUtils
             lNode = arg2;
         }
 
-        if (lNode is ("#type", (_, var type)))
+        if (lNode is ("#type", var (_, type)))
         {
             lNode = type;
         }
 
         if (lNode.ArgCount == 3 && lNode is ("#fn", var retType, _, var args))
         {
-            string typename = retType.IsNoneType() ? "Action`" + (args.ArgCount) : "Func`" + (args.ArgCount + 1);
+            var typename = retType.IsNoneType() ? "Action`" + args.ArgCount : "Func`" + (args.ArgCount + 1);
 
             return new SimpleName(typename).Qualify("System");
         }
 
         if (lNode.Calls(CodeSymbols.Dot))
         {
-            QualifiedName qname = GetQualifiedName(lNode.Args[0]);
+            var qname = GetQualifiedName(lNode.Args[0]);
 
             return GetQualifiedName(lNode.Args[1]).Qualify(qname);
         }
@@ -117,7 +119,7 @@ public static class ConversionUtils
     {
         var qualifier = fullname.Slice(0, fullname.PathLength - 1);
 
-        return new SimpleName(fullname.FullyUnqualifiedName.ToString() + "Attribute").Qualify(qualifier);
+        return new SimpleName(fullname.FullyUnqualifiedName + "Attribute").Qualify(qualifier);
     }
 
     private static QualifiedName ShrinkDottedModuleName(LNode lNode)
@@ -126,9 +128,7 @@ public static class ConversionUtils
         {
             return ShrinkDottedModuleName(lNode.Args[1]).Qualify(ShrinkDottedModuleName(lNode.Args[0]));
         }
-        else
-        {
-            return new SimpleName(lNode.Name.Name).Qualify();
-        }
+
+        return new SimpleName(lNode.Name.Name).Qualify();
     }
 }

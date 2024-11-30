@@ -13,7 +13,8 @@ public sealed class ParameterDeclaration : IParsePoint
         var name = iterator.Match(TokenType.Identifier);
 
         var assertNotNull = false;
-        if(iterator.ConsumeIfMatch(TokenType.Exclamation)) {
+        if (iterator.ConsumeIfMatch(TokenType.Exclamation))
+        {
             assertNotNull = true;
         }
 
@@ -30,8 +31,9 @@ public sealed class ParameterDeclaration : IParsePoint
             defaultValue = Expression.Parse(parser);
         }
 
-        if(assertNotNull)  {
-           annotations = annotations.Add(LNode.Id(Symbols.AssertNonNull));
+        if (assertNotNull)
+        {
+            annotations = annotations.Add(LNode.Id(Symbols.AssertNonNull));
         }
 
         return SyntaxTree.Factory.Var(type, name.Text, defaultValue).PlusAttrs(annotations)

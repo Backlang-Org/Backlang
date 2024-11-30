@@ -5,7 +5,7 @@ namespace Backlang.ResourcePreprocessor.Mif.MifFormat;
 
 public class MifParser
 {
-    private static Tokenizer<TokenType> tokenizer;
+    private static readonly Tokenizer<TokenType> tokenizer;
 
     private int _position;
 
@@ -20,7 +20,6 @@ public class MifParser
             .Token(TokenType.ADDRESS_RADIX, @"ADDRESS_RADIX")
             .Token(TokenType.DATA_RADIX, @"DATA_RADIX")
             .Token(TokenType.Radix, string.Join('|', Enum.GetNames<Radix>()))
-
             .Token(TokenType.Number, @"[-]?[0-9A-F]+")
             .Token(TokenType.Colon, @":")
             .Ignore(TokenType.Comment, @"--.+")
@@ -125,7 +124,7 @@ public class MifParser
             Radix.HEX => Convert.ToInt64(token.Value, 16),
             Radix.DEC => Convert.ToInt64(token.Value, 10),
             Radix.UNS => (long)Convert.ToUInt64(token.Value, 10),
-            _ => 0,
+            _ => 0
         };
     }
 
@@ -155,7 +154,9 @@ public class MifParser
         }
 
         if (value != null)
+        {
             file.Options.Add(key, value);
+        }
 
         Match(TokenType.Semicolon);
     }
@@ -176,9 +177,11 @@ public class MifParser
 
         if (int.TryParse(token.Value, out var iR))
 
+        {
             return iR;
-        else
-            return Convert.ToInt32(token.Value, 16);
+        }
+
+        return Convert.ToInt32(token.Value, 16);
     }
 
     private Radix ParseRadix()
@@ -224,7 +227,10 @@ public class MifParser
 
         foreach (var t in types)
         {
-            if (token.Type == t) return true;
+            if (token.Type == t)
+            {
+                return true;
+            }
         }
 
         return false;

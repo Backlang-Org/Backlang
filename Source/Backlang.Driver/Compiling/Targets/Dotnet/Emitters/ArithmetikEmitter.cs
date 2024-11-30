@@ -1,37 +1,37 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Instruction = Furesoft.Core.CodeDom.Compiler.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet.Emitters;
 
 internal class ArithmetikEmitter : IEmitter
 {
-    private readonly ImmutableDictionary<string, OpCode> _stringOPMap = new Dictionary<string, OpCode>()
+    private readonly ImmutableDictionary<string, OpCode> _stringOPMap = new Dictionary<string, OpCode>
     {
         ["arith.+"] = OpCodes.Add,
         ["arith.-"] = OpCodes.Sub,
         ["arith.*"] = OpCodes.Mul,
         ["arith./"] = OpCodes.Div,
-
         ["arith.%"] = OpCodes.Div,
-
         ["arith.&"] = OpCodes.And,
         ["arith.|"] = OpCodes.Or,
         ["arith.^"] = OpCodes.Xor,
-
         ["arith.<"] = OpCodes.Clt,
         ["arith.>"] = OpCodes.Cgt,
-        ["arith.=="] = OpCodes.Ceq,
+        ["arith.=="] = OpCodes.Ceq
     }.ToImmutableDictionary();
 
-    public void Emit(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Furesoft.Core.CodeDom.Compiler.Instruction instruction, BasicBlock block)
+    public void Emit(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor, Instruction instruction,
+        BasicBlock block)
     {
         var arithProtype = (IntrinsicPrototype)instruction.Prototype;
 
         if (_stringOPMap.ContainsKey(arithProtype.Name))
         {
             var op = _stringOPMap[arithProtype.Name];
-            ilProcessor.Emit(op); return;
+            ilProcessor.Emit(op);
+            return;
         }
 
         switch (arithProtype.Name)

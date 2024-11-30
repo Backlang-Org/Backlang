@@ -1,4 +1,5 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Contracts.Scoping.Items;
 using Backlang.Driver.Core.Instructions;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 
@@ -6,16 +7,8 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class CallImplementor : IStatementImplementor
 {
-    public static void AppendDiscardReturnValue(BasicBlockBuilder block, IType type)
-    {
-        if (type.FullName.ToString() != "System.Void")
-        {
-            //Discard value if its not been stored anywhere
-            block.AppendInstruction(new PopInstructionPrototype().Instantiate(new List<ValueTag>()));
-        }
-    }
-
-    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
         if (node is ("'.", var target, var callee) && target is ("this", _))
         {
@@ -34,14 +27,20 @@ public class CallImplementor : IStatementImplementor
             }
             else
             {
-                context.AddError(node, new(Codeanalysis.Core.ErrorID.CannotFindFunction, callee.Name.Name));
+                context.AddError(node, new LocalizableString(ErrorID.CannotFindFunction, callee.Name.Name));
             }
         }
-        else
-        {
-            // ToDo: other things and so on...
-        }
 
+        // ToDo: other things and so on...
         return block;
+    }
+
+    public static void AppendDiscardReturnValue(BasicBlockBuilder block, IType type)
+    {
+        if (type.FullName.ToString() != "System.Void")
+        {
+            //Discard value if its not been stored anywhere
+            block.AppendInstruction(new PopInstructionPrototype().Instantiate(new List<ValueTag>()));
+        }
     }
 }

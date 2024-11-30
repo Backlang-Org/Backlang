@@ -19,7 +19,7 @@ public class NameMangler
             sb.Append(ns);
         }
 
-        sb.Append(method.FullName.FullyUnqualifiedName.ToString());
+        sb.Append(method.FullName.FullyUnqualifiedName);
 
         foreach (var param in method.Parameters)
         {

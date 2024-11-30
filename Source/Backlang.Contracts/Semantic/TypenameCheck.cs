@@ -13,9 +13,10 @@ internal class TypenameCheck : ISemanticCheck
 
             if (node.Calls(CodeSymbols.Class) || node.Calls(CodeSymbols.Struct))
             {
-                if (node is (_, var typename, _) && char.IsLower(typename.Name.Name[0]))
+                if (node is var (_, typename, _) && char.IsLower(typename.Name.Name[0]))
                 {
-                    context.Messages.Add(Message.Warning($"Type '{typename.Name.Name}' should be Uppercase", node.Range));
+                    context.Messages.Add(
+                        Message.Warning($"Type '{typename.Name.Name}' should be Uppercase", node.Range));
                 }
             }
         }

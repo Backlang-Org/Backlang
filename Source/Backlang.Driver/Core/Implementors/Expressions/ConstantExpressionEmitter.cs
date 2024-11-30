@@ -4,7 +4,10 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class ConstantExpressionEmitter : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.ArgCount == 1 && node.Args[0].HasValue;
+    public bool CanHandle(LNode node)
+    {
+        return node.ArgCount == 1 && node.Args[0].HasValue;
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)

@@ -17,7 +17,7 @@ public sealed class Token
     public Token(TokenType type)
     {
         Type = type;
-        Text = String.Empty;
+        Text = string.Empty;
     }
 
     public Token(TokenType type, string text)

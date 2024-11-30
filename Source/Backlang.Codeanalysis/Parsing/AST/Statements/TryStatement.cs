@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Statements;
 
@@ -14,7 +15,7 @@ public sealed class TryStatement : IParsePoint
         {
             var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-            parser.AddError(new(Core.ErrorID.NoCatchBlock), range);
+            parser.AddError(new LocalizableString(ErrorID.NoCatchBlock), range);
         }
 
         while (iterator.Current.Type == TokenType.Catch)
@@ -31,7 +32,8 @@ public sealed class TryStatement : IParsePoint
             finallly = Statement.ParseOneOrBlock(parser);
         }
 
-        return SyntaxTree.Try(body, SyntaxTree.Factory.AltList(catches), finallly).WithRange(keywordToken, iterator.Prev);
+        return SyntaxTree.Try(body, SyntaxTree.Factory.AltList(catches), finallly)
+            .WithRange(keywordToken, iterator.Prev);
     }
 
     private static LNode ParseCatch(Parser parser)

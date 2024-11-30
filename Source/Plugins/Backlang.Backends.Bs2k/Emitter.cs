@@ -12,10 +12,10 @@ namespace Backlang.Backends.Bs2k;
 
 public class Emitter
 {
-    private readonly IMethod _mainMethod;
     private readonly StringBuilder _builder = new();
+    private readonly IMethod _mainMethod;
 
-    private Dictionary<int, string> _stringConstants = new();
+    private readonly Dictionary<int, string> _stringConstants = new();
 
     public Emitter(IMethod mainMethod)
     {
@@ -75,7 +75,10 @@ public class Emitter
         Emit("\n", null, 0);
     }
 
-    public override string ToString() => _builder.ToString();
+    public override string ToString()
+    {
+        return _builder.ToString();
+    }
 
     public void Emit(string instruction, string? comment = null, int indentlevel = 1)
     {
@@ -108,8 +111,6 @@ public class Emitter
             case "arith.<=": Emit("comp_le R1, R2, R3", null, indentlevel); break;
             case "arith.>": Emit("comp_gt R1, R2, R3", null, indentlevel); break;
             case "arith.>=": Emit("comp_ge R1, R2, R3", null, indentlevel); break;
-            default:
-                break;
         }
 
         Emit("push R3", "push result onto stack", indentlevel);
@@ -181,29 +182,30 @@ public class Emitter
         switch (instruction.Prototype)
         {
             case CallPrototype callPrototype:
+            {
+                if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
                 {
-                    if (IntrinsicHelper.IsIntrinsicType(typeof(Intrinsics), callPrototype))
+                    var intrinsic = IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics),
+                        callPrototype.Callee, instruction, block).ToString();
+
+                    Emit("//emited from intrinsic", null, indentlevel);
+                    foreach (var intr in intrinsic.Split("\n"))
                     {
-                        var intrinsic = IntrinsicHelper.InvokeIntrinsic(typeof(Intrinsics),
-                                        callPrototype.Callee, instruction, block).ToString();
-
-                        Emit("//emited from intrinsic", null, indentlevel);
-                        foreach (var intr in intrinsic.Split("\n"))
-                        {
-                            Emit(intr, null, indentlevel);
-                        }
-
-                        return;
+                        Emit(intr, null, indentlevel);
                     }
 
-                    var callee = callPrototype.Callee
-                            .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.FreeFunctions
-                           ? callPrototype.Callee.Name.ToString() : callPrototype.Callee.FullName.ToString();
-
-                    Emit($"// Calling '{callee}'", null, indentlevel);
-                    EmitCall(instruction, block.Graph, indentlevel);
-                    break;
+                    return;
                 }
+
+                var callee = callPrototype.Callee
+                    .ParentType.FullName.FullyUnqualifiedName.ToString() == Names.FreeFunctions
+                    ? callPrototype.Callee.Name.ToString()
+                    : callPrototype.Callee.FullName.ToString();
+
+                Emit($"// Calling '{callee}'", null, indentlevel);
+                EmitCall(instruction, block.Graph, indentlevel);
+                break;
+            }
 
             case NewObjectPrototype newObjectPrototype:
                 break;

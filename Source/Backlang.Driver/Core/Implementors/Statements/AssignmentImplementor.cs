@@ -5,9 +5,10 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class AssignmentImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        if (node is (_, var left, var right))
+        if (node is var (_, left, right))
         {
             var lt = TypeDeducer.Deduce(left, scope, context, modulename.Value);
             var rt = TypeDeducer.Deduce(right, scope, context, modulename.Value);

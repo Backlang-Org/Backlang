@@ -4,7 +4,8 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class ParsingStage : IHandler<CompilerContext, CompilerContext>
 {
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         if (context.Playground.IsPlayground)
         {

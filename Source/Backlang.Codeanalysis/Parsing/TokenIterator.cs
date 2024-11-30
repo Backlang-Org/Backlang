@@ -1,4 +1,5 @@
-﻿using Backlang.Codeanalysis.Core.Attributes;
+﻿using Backlang.Codeanalysis.Core;
+using Backlang.Codeanalysis.Core.Attributes;
 using Loyc.Syntax;
 using System.Reflection;
 
@@ -6,9 +7,9 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public sealed class TokenIterator
 {
-    public readonly List<Message> Messages = new();
     private readonly SourceFile<StreamCharSource> _document;
     private readonly List<Token> _tokens;
+    public readonly List<Message> Messages = new();
 
     public TokenIterator(List<Token> tokens, SourceFile<StreamCharSource> document)
     {
@@ -31,6 +32,7 @@ public sealed class TokenIterator
         {
             return lexeme.Lexeme;
         }
+
         if (keyword is not null)
         {
             return keyword.Keyword;
@@ -47,6 +49,7 @@ public sealed class TokenIterator
             result = true;
             NextToken();
         }
+
         return result;
     }
 
@@ -57,7 +60,7 @@ public sealed class TokenIterator
 
     public bool IsMatch(params TokenType[] kinds)
     {
-        bool result = false;
+        var result = false;
         foreach (var kind in kinds)
         {
             result |= IsMatch(kind);
@@ -69,11 +72,15 @@ public sealed class TokenIterator
     public Token Match(TokenType kind)
     {
         if (Current.Type == kind)
+        {
             return NextToken();
+        }
 
         Messages.Add(
-            Message.Error(new(Core.ErrorID.Expected, GetTokenRepresentation(kind), GetTokenRepresentation(Current.Type)),
-           new SourceRange(_document, Current.Start, Current.Text.Length)));
+            Message.Error(
+                new LocalizableString(ErrorID.Expected, GetTokenRepresentation(kind),
+                    GetTokenRepresentation(Current.Type)),
+                new SourceRange(_document, Current.Start, Current.Text.Length)));
 
         NextToken();
 
@@ -91,7 +98,9 @@ public sealed class TokenIterator
     {
         var index = Position + offset;
         if (index >= _tokens.Count)
+        {
             return _tokens[_tokens.Count - 1];
+        }
 
         return _tokens[index];
     }

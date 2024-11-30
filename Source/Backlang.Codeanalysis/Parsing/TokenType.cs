@@ -14,25 +14,19 @@ public enum TokenType
     BinNumber,
     CharLiteral,
 
-    [Lexeme(".")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Dot)]
+    [Lexeme(".")] [BinaryOperatorInfo(BinaryOpPrecedences.Dot)]
     Dot,
 
-    [Lexeme("::")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
+    [Lexeme("::")] [BinaryOperatorInfo(BinaryOpPrecedences.FunctionCalls)]
     ColonColon,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
-    [Lexeme("+")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)] [Lexeme("+")]
     Plus,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.Range)]
-    [Lexeme("..")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Range)] [Lexeme("..")]
     RangeOperator,
 
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
-    [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)]
-    [Lexeme("-")]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.Negate)] [BinaryOperatorInfo(BinaryOpPrecedences.DashedOps)] [Lexeme("-")]
     Minus,
 
     [Lexeme("&")]
@@ -40,53 +34,37 @@ public enum TokenType
     [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Ampersand,
 
-    [Lexeme("|")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
+    [Lexeme("|")] [BinaryOperatorInfo(BinaryOpPrecedences.Ampersand)]
     Pipe,
 
-    [Lexeme("~")]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.LogicalNot)]
+    [Lexeme("~")] [PreUnaryOperatorInfo(UnaryOpPrecedences.LogicalNot)]
     Tilde,
 
-    [Lexeme("^")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
+    [Lexeme("^")] [BinaryOperatorInfo(BinaryOpPrecedences.Hat)] [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
     Hat,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
-    [Lexeme("/")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)] [Lexeme("/")]
     Slash,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)]
-    [Lexeme("*")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.DottedOps)] [PreUnaryOperatorInfo(UnaryOpPrecedences.Hat)] [Lexeme("*")]
     Star,
 
-    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
-    [Lexeme(".*")]
+    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)] [Lexeme(".*")]
     DotAsterisk, // for namespace imports
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)]
-    [Lexeme("**")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Hat)] [Lexeme("**")]
     StarStar,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.Percent)]
-    [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)]
-    [Lexeme("%")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Percent)] [PostUnaryOperatorInfo(UnaryOpPrecedences.Literals)] [Lexeme("%")]
     Percent,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.And)]
-    [Lexeme("and")]
-    [Lexeme("&&")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.And)] [Lexeme("and")] [Lexeme("&&")]
     And,
 
-    [BinaryOperatorInfo(BinaryOpPrecedences.Or)]
-    [Lexeme("or")]
-    [Lexeme("||")]
+    [BinaryOperatorInfo(BinaryOpPrecedences.Or)] [Lexeme("or")] [Lexeme("||")]
     Or,
 
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.LogicalNot)]
-    [Lexeme("!")]
+    [PreUnaryOperatorInfo(UnaryOpPrecedences.LogicalNot)] [Lexeme("!")]
     Exclamation,
 
     [Lexeme("*=")]
@@ -99,268 +77,184 @@ public enum TokenType
     [BinaryOperatorInfo(BinaryOpPrecedences.OperationShortcuts)]
     EqualsShortcutToken,
 
-    [Lexeme("=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
+    [Lexeme("=")] [BinaryOperatorInfo(BinaryOpPrecedences.Equals)]
     EqualsToken,
 
-    [Lexeme("<=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
+    [Lexeme("<=")] [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThanEqual,
 
-    [Lexeme("<")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
+    [Lexeme("<")] [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     LessThan,
 
-    [Lexeme(">")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
+    [Lexeme(">")] [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThan,
 
-    [Lexeme(">=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
+    [Lexeme(">=")] [BinaryOperatorInfo(BinaryOpPrecedences.Comparisons)]
     GreaterThanEqual,
 
-    [Lexeme(":")]
-    Colon,
+    [Lexeme(":")] Colon,
 
-    [Lexeme("(")]
-    OpenParen,
+    [Lexeme("(")] OpenParen,
 
-    [Lexeme(")")]
-    CloseParen,
+    [Lexeme(")")] CloseParen,
 
-    [Lexeme("{")]
-    OpenCurly,
+    [Lexeme("{")] OpenCurly,
 
-    [Lexeme("}")]
-    CloseCurly,
+    [Lexeme("}")] CloseCurly,
 
-    [Lexeme("->")]
-    Arrow,
+    [Lexeme("->")] Arrow,
 
-    [Lexeme("=>")]
-    GoesTo,
+    [Lexeme("=>")] GoesTo,
 
-    [Lexeme("|>")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.PipeOperator)]
+    [Lexeme("|>")] [BinaryOperatorInfo(BinaryOpPrecedences.PipeOperator)]
     PipeOperator,
 
-    [Lexeme(",")]
-    Comma,
+    [Lexeme(",")] Comma,
 
-    [Lexeme("$")]
-    [PreUnaryOperatorInfo(UnaryOpPrecedences.Dollar)]
+    [Lexeme("$")] [PreUnaryOperatorInfo(UnaryOpPrecedences.Dollar)]
     Dollar,
 
-    [Lexeme("?")]
-    [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
+    [Lexeme("?")] [PostUnaryOperatorInfo(UnaryOpPrecedences.Negate)]
     Questionmark,
 
-    [Lexeme("==")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
+    [Lexeme("==")] [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
     EqualsEquals,
 
-    [Lexeme("!=")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
+    [Lexeme("!=")] [BinaryOperatorInfo(BinaryOpPrecedences.EqualsEquals)]
     NotEquals,
 
-    [Lexeme("<->")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.SwapOperator)]
+    [Lexeme("<->")] [BinaryOperatorInfo(BinaryOpPrecedences.SwapOperator)]
     SwapOperator,
 
-    [Lexeme("_")]
-    Underscore,
+    [Lexeme("_")] Underscore,
 
-    [Lexeme(";")]
-    Semicolon,
+    [Lexeme(";")] Semicolon,
 
-    [Lexeme("[")]
-    OpenSquare,
+    [Lexeme("[")] OpenSquare,
 
-    [Lexeme("]")]
-    CloseSquare,
+    [Lexeme("]")] CloseSquare,
 
-    [Lexeme("@")]
-    At,
+    [Lexeme("@")] At,
 
-    [Lexeme("as")]
-    [BinaryOperatorInfo(BinaryOpPrecedences.Casting)]
+    [Lexeme("as")] [BinaryOperatorInfo(BinaryOpPrecedences.Casting)]
     As,
 
-    [Keyword("true")]
-    TrueLiteral,
+    [Keyword("true")] TrueLiteral,
 
-    [Keyword("false")]
-    FalseLiteral,
+    [Keyword("false")] FalseLiteral,
 
-    [Keyword("type")]
-    Type,
+    [Keyword("type")] Type,
 
-    [Keyword("func")]
-    Function,
+    [Keyword("func")] Function,
 
-    [Keyword("constructor")]
-    Constructor,
+    [Keyword("constructor")] Constructor,
 
-    [Keyword("destructor")]
-    Destructor,
+    [Keyword("destructor")] Destructor,
 
-    [Keyword("macro")]
-    Macro,
+    [Keyword("macro")] Macro,
 
-    [Keyword("let")]
-    Let,
+    [Keyword("let")] Let,
 
-    [Keyword("prop")]
-    Property,
+    [Keyword("prop")] Property,
 
-    [Keyword("mut")]
-    Mutable,
+    [Keyword("mut")] Mutable,
 
-    [Keyword("enum")]
-    Enum,
+    [Keyword("enum")] Enum,
 
-    [Keyword("try")]
-    Try,
+    [Keyword("try")] Try,
 
-    [Keyword("catch")]
-    Catch,
+    [Keyword("catch")] Catch,
 
-    [Keyword("finally")]
-    Finally,
+    [Keyword("finally")] Finally,
 
-    [Keyword("with")]
-    With,
+    [Keyword("with")] With,
 
-    [Keyword("match")]
-    Match,
+    [Keyword("match")] Match,
 
-    [Keyword("struct")]
-    Struct,
+    [Keyword("struct")] Struct,
 
-    [Keyword("class")]
-    Class,
+    [Keyword("class")] Class,
 
-    [Keyword("interface")]
-    Interface,
+    [Keyword("interface")] Interface,
 
-    [Keyword("bitfield")]
-    Bitfield,
+    [Keyword("bitfield")] Bitfield,
 
-    [Keyword("default")]
-    Default,
+    [Keyword("default")] Default,
 
-    [Keyword("sizeof")]
-    SizeOf,
+    [Keyword("sizeof")] SizeOf,
 
-    [Keyword("typeof")]
-    TypeOf,
+    [Keyword("typeof")] TypeOf,
 
-    [Keyword("none")]
-    None,
+    [Keyword("none")] None,
 
-    [Keyword("get")]
-    Get,
+    [Keyword("get")] Get,
 
-    [Keyword("set")]
-    Set,
+    [Keyword("set")] Set,
 
-    [Keyword("init")]
-    Init,
+    [Keyword("init")] Init,
 
-    [Keyword("switch")]
-    Switch,
+    [Keyword("switch")] Switch,
 
-    [Keyword("case")]
-    Case,
+    [Keyword("case")] Case,
 
-    [Keyword("break")]
-    Break,
+    [Keyword("break")] Break,
 
-    [Keyword("continue")]
-    Continue,
+    [Keyword("continue")] Continue,
 
-    [Keyword("return")]
-    Return,
+    [Keyword("return")] Return,
 
-    [Keyword("when")]
-    When,
+    [Keyword("when")] When,
 
-    [Keyword("where")]
-    Where,
+    [Keyword("where")] Where,
 
-    [Keyword("if")]
-    If,
+    [Keyword("if")] If,
 
-    [Keyword("else")]
-    Else,
+    [Keyword("else")] Else,
 
-    [Keyword("while")]
-    While,
+    [Keyword("while")] While,
 
-    [Keyword("do")]
-    Do,
+    [Keyword("do")] Do,
 
-    [Keyword("in")]
-    In,
+    [Keyword("in")] In,
 
-    [Keyword("for")]
-    For,
+    [Keyword("for")] For,
 
-    [Keyword("const")]
-    Const,
+    [Keyword("const")] Const,
 
-    [Keyword("global")]
-    Global,
+    [Keyword("global")] Global,
 
-    [Keyword("static")]
-    Static,
+    [Keyword("static")] Static,
 
-    [Keyword("abstract")]
-    Abstract,
+    [Keyword("abstract")] Abstract,
 
-    [Keyword("extern")]
-    Extern,
+    [Keyword("extern")] Extern,
 
-    [Keyword("override")]
-    Override,
+    [Keyword("override")] Override,
 
-    [Keyword("of")]
-    Of,
+    [Keyword("of")] Of,
 
-    [Keyword("implement")]
-    Implement,
+    [Keyword("implement")] Implement,
 
-    [Keyword("operator")]
-    Operator,
+    [Keyword("operator")] Operator,
 
-    [Keyword("public")]
-    Public,
+    [Keyword("public")] Public,
 
-    [Keyword("internal")]
-    Internal,
+    [Keyword("internal")] Internal,
 
-    [Keyword("protected")]
-    Protected,
+    [Keyword("protected")] Protected,
 
-    [Keyword("private")]
-    Private,
+    [Keyword("private")] Private,
 
-    [Keyword("import")]
-    Import,
+    [Keyword("import")] Import,
 
-    [Keyword("module")]
-    Module,
+    [Keyword("module")] Module,
 
-    [Keyword("using")]
-    Using,
+    [Keyword("using")] Using,
 
-    [Keyword("union")]
-    Union,
+    [Keyword("union")] Union,
 
-    [Keyword("throw")]
-    Throw,
+    [Keyword("throw")] Throw,
 
-    [Keyword("unit")]
-    Unit,
-    DocComment,
+    [Keyword("unit")] Unit,
+    DocComment
 }

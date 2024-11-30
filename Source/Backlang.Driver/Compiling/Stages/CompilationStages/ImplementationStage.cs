@@ -8,7 +8,8 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed partial class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         foreach (var tree in context.Trees)
         {
@@ -28,10 +29,14 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
     private static void ImplementDefaultsForStructs(CompilerContext context, LNode st, QualifiedName modulename)
     {
-        if (!(st.IsCall && st.Name == CodeSymbols.Struct)) return;
+        if (!(st.IsCall && st.Name == CodeSymbols.Struct))
+        {
+            return;
+        }
 
         var name = st.Args[0].Name;
-        var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
+        var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename))
+            .FirstOrDefault();
 
         // toString method
         if (!type.Methods.Any(_ => _.Name.ToString() == "ToString" && _.Parameters.Count == 0))
@@ -55,31 +60,36 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
 
     private static void CollectImplementations(CompilerContext context, LNode st, QualifiedName modulename)
     {
-        if (!(st.IsCall && st.Name == Symbols.Implementation)) return;
+        if (!(st.IsCall && st.Name == Symbols.Implementation))
+        {
+            return;
+        }
 
         var typenode = st.Args[0].Args[0].Args[0].Args[0];
         var fullname = ConversionUtils.GetQualifiedName(typenode);
 
         DescribedType targetType = null;
         Scope typeScope = null;
-        if (context.GlobalScope.TryGet<TypeScopeItem>(fullname.FullName.ToString(), out var typeItem))
+        if (context.GlobalScope.TryGet<TypeScopeItem>(fullname.FullName, out var typeItem))
         {
             targetType = (DescribedType)typeItem.Type;
             typeItem.Deconstruct(out _, out _, out typeScope, out _);
         }
         else
         {
-            targetType = (DescribedType)TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
+            targetType =
+                (DescribedType)TypeInheritanceStage.ResolveTypeWithModule(typenode, context, modulename, fullname);
 
             if (targetType == null)
             {
-                context.AddError(typenode, new(ErrorID.CannotImplementTypeNotFound, fullname.FullName));
+                context.AddError(typenode,
+                    new LocalizableString(ErrorID.CannotImplementTypeNotFound, fullname.FullName));
                 return;
             }
 
             if (Utils.IsUnitType(context, targetType))
             {
-                context.AddError(typenode, new(ErrorID.CannotImplementUnitType, fullname.FullName));
+                context.AddError(typenode, new LocalizableString(ErrorID.CannotImplementUnitType, fullname.FullName));
             }
 
             typeScope = context.GlobalScope.CreateChildScope();
@@ -98,15 +108,16 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
                 }
                 else
                 {
-                    var extensionType = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.Extensions).Qualify(modulename)).FirstOrDefault();
+                    var extensionType = (DescribedType)context.Binder
+                        .ResolveTypes(new SimpleName(Names.Extensions).Qualify(modulename)).FirstOrDefault();
 
                     if (extensionType == null)
                     {
-                        extensionType = new DescribedType(new SimpleName(Names.Extensions).Qualify(modulename), context.Assembly)
-                        {
-                            IsStatic = true,
-                            IsPublic = true
-                        };
+                        extensionType =
+                            new DescribedType(new SimpleName(Names.Extensions).Qualify(modulename), context.Assembly)
+                            {
+                                IsStatic = true, IsPublic = true
+                            };
 
                         Utils.AddCompilerGeneratedAttribute(context.Binder, extensionType);
 

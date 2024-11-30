@@ -1,36 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>Backlang_Compiler</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<LangVersion>preview</LangVersion>
-	<EnablePreviewFeatures>True</EnablePreviewFeatures>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>Backlang_Compiler</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+        <EnablePreviewFeatures>True</EnablePreviewFeatures>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Flo" Version="0.3.0" />
-		<PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.49" />
-		<PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.49" />
-		<PackageReference Include="System.Composition" Version="9.0.0" />
-		<PackageReference Include="System.Composition.Hosting" Version="9.0.0" />
-		<PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+        <PackageReference Include="Flo" Version="0.3.0"/>
+        <PackageReference Include="Furesoft.Core.CodeDom.Backends" Version="1.0.49"/>
+        <PackageReference Include="Furesoft.Core.CodeDom.Compiler" Version="1.0.49"/>
+        <PackageReference Include="System.Composition" Version="9.0.0"/>
+        <PackageReference Include="System.Composition.Hosting" Version="9.0.0"/>
+        <PackageReference Include="System.Runtime.Experimental" Version="7.0.0-preview.2.22152.2"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj" />
-	  <ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Backlang.Codeanalysis\Backlang.Codeanalysis.csproj"/>
+        <ProjectReference Include="..\Backlang.Driver\Backlang.Driver.csproj"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Update="compilation.back">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-		
-	</ItemGroup>
+    <ItemGroup>
+        <None Update="compilation.back">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
 
-	<Import Project="$(SolutionDir)\Version.props" />
+    </ItemGroup>
+
+    <Import Project="$(SolutionDir)\Version.props"/>
 </Project>

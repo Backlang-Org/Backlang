@@ -59,13 +59,13 @@ public sealed partial class Parser
     }
 
     public void AddDeclarationParsePoint<T>(TokenType type)
-                where T : IParsePoint
+        where T : IParsePoint
     {
         DeclarationParsePoints.Add(type, T.Parse);
     }
 
     public void AddExpressionParsePoint<T>(TokenType type)
-            where T : IParsePoint
+        where T : IParsePoint
     {
         ExpressionParsePoints.Add(type, T.Parse);
     }
@@ -78,7 +78,10 @@ public sealed partial class Parser
 
     public LNodeList InvokeDeclarationParsePoints(TokenType terminator = TokenType.EOF, ParsePoints parsePoints = null)
     {
-        if (parsePoints == null) parsePoints = DeclarationParsePoints;
+        if (parsePoints == null)
+        {
+            parsePoints = DeclarationParsePoints;
+        }
 
         var body = new LNodeList();
         while (Iterator.Current.Type != terminator)
@@ -111,7 +114,7 @@ public sealed partial class Parser
 
         var range = new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length);
 
-        AddError(new(ErrorID.UnknownExpression, Iterator.Current.Text), range);
+        AddError(new LocalizableString(ErrorID.UnknownExpression, Iterator.Current.Text), range);
 
         Iterator.NextToken();
 

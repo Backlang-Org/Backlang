@@ -2,6 +2,6 @@
 
 public class BranchLabels
 {
-    public BasicBlockTag continueBranch;
     public BasicBlockTag breakBranch;
+    public BasicBlockTag continueBranch;
 }

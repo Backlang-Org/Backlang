@@ -43,12 +43,13 @@ public static class Utils
     public static bool IsUnitType(CompilerContext context, IType resolvedUnit)
     {
         var attr = resolvedUnit.Attributes.GetAll();
-        var attrType = Utils.ResolveType(context.Binder, typeof(UnitTypeAttribute));
+        var attrType = ResolveType(context.Binder, typeof(UnitTypeAttribute));
 
         return attr.Select(_ => _.AttributeType).Contains(attrType);
     }
 
-    public static void AddCompilerGeneratedAttribute(TypeResolver binder, DescribedType type) {
+    public static void AddCompilerGeneratedAttribute(TypeResolver binder, DescribedType type)
+    {
         var attributeType = ResolveType(binder, typeof(CompilerGeneratedAttribute));
 
         type.AddAttribute(new DescribedAttribute(attributeType));

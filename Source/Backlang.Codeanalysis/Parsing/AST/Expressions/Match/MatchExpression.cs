@@ -5,11 +5,11 @@ namespace Backlang.Codeanalysis.Parsing.AST.Expressions.Match;
 public sealed class MatchExpression : IParsePoint
 {
     /*
-	 * match a with
-		12 => 13,
-		i32 num => num + 2,
-		_ => 0 + 4;
-	*/
+     * match a with
+        12 => 13,
+        i32 num => num + 2,
+        _ => 0 + 4;
+    */
 
     public static LNode Parse(TokenIterator iterator, Parser parser)
     {
@@ -27,10 +27,8 @@ public sealed class MatchExpression : IParsePoint
             {
                 break;
             }
-            else
-            {
-                iterator.Match(TokenType.Comma);
-            }
+
+            iterator.Match(TokenType.Comma);
         }
 
         return SyntaxTree.Factory.Call(LNode.Id(Symbols.Match), matchArgument).WithAttrs(conditions);

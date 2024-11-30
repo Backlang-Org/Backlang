@@ -1,4 +1,5 @@
-﻿using Backlang.Contracts;
+﻿using Backlang.Codeanalysis.Parsing;
+using Backlang.Contracts;
 using Backlang.Driver;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -9,205 +10,201 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Backlang.NET.Sdk
+namespace Backlang.NET.Sdk;
+
+public class BuildTask : Task, ICancelableTask
 {
-    public class BuildTask : Task, ICancelableTask
+    private CancellationTokenSource _cancellation = new();
+
+    [Required] public string[] Compile { get; set; }
+
+    public string DebugType { get; set; }
+
+    public string EntryPoint { get; set; }
+    public bool GenerateFullPaths { get; set; }
+    public string[] MacroReferences { get; set; }
+    public string NetFrameworkPath { get; set; }
+    public string NoWarn { get; set; }
+
+    /// <summary>
+    ///     Optimization level.
+    ///     Can be a boolean value (true/false), an integer specifying the level(0-9), or an optimization name (debug,
+    ///     release).
+    /// </summary>
+    public string Optimization { get; set; } = bool.TrueString;
+
+    [Required] public string OutputName { get; set; }
+
+    [Required] public string OutputPath { get; set; }
+
+    public string OutputTree { get; set; }
+    public string OutputType { get; set; }
+    public string Path { get; set; }
+    public string ProjectFile { get; set; }
+    public string CorLib { get; set; }
+    public string[] Resources { get; set; }
+    public string ResultingOutputPath { get; set; }
+    public string Target { get; set; }
+
+    [Required] public string TargetFramework { get; set; }
+
+    [Required] public string TempOutputPath { get; set; }
+
+    public string Version { get; set; }
+
+    public void Cancel()
     {
-        private CancellationTokenSource _cancellation = new CancellationTokenSource();
+        _cancellation.Cancel();
+    }
 
-        [Required]
-        public string[] Compile { get; set; }
+    public override bool Execute()
+    {
+        _cancellation = new CancellationTokenSource();
 
-        public string DebugType { get; set; }
+        // initiate our assembly resolver within MSBuild process:
+        AssemblyResolver.InitializeSafe();
 
-        public string EntryPoint { get; set; }
-        public bool GenerateFullPaths { get; set; }
-        public string[] MacroReferences { get; set; }
-        public string NetFrameworkPath { get; set; }
-        public string NoWarn { get; set; }
+        var filename = System.IO.Path.GetFileName(Path);
+        Path = Path.Substring(0, Path.Length - filename.Length);
 
-        /// <summary>
-        /// Optimization level.
-        /// Can be a boolean value (true/false), an integer specifying the level(0-9), or an optimization name (debug, release).</summary>
-        public string Optimization { get; set; } = bool.TrueString;
+        Compile = Compile.Select(_ => Path + _).ToArray();
+        Resources = Resources == null ? Array.Empty<string>() : Resources.Select(_ => Path + _).ToArray();
 
-        [Required]
-        public string OutputName { get; set; }
-
-        [Required]
-        public string OutputPath { get; set; }
-
-        public string OutputTree { get; set; }
-        public string OutputType { get; set; }
-        public string Path { get; set; }
-        public string ProjectFile { get; set; }
-        public string CorLib { get; set; }
-        public string[] Resources { get; set; }
-        public string ResultingOutputPath { get; set; }
-        public string Target { get; set; }
-
-        [Required]
-        public string TargetFramework { get; set; }
-
-        [Required]
-        public string TempOutputPath { get; set; }
-
-        public string Version { get; set; }
-
-        public void Cancel()
+        try
         {
-            _cancellation.Cancel();
-        }
-
-        public override bool Execute()
-        {
-            _cancellation = new CancellationTokenSource();
-
-            // initiate our assembly resolver within MSBuild process:
-            AssemblyResolver.InitializeSafe();
-
-            var filename = System.IO.Path.GetFileName(Path);
-            Path = Path.Substring(0, Path.Length - filename.Length);
-
-            Compile = Compile.Select(_ => Path + _).ToArray();
-            Resources = Resources == null ? Array.Empty<string>() : Resources.Select(_ => Path + _).ToArray();
-
-            try
+            if (Compile == null)
             {
-                if (Compile == null)
-                {
-                    Log.LogError("No Source Files specified.");
-                    return false;
-                }
-
-                var context = new CompilerContext();
-                context.Options.InputFiles = Compile;
-                context.Options.OutputFilename = OutputName;
-                context.Options.OutputType = OutputType;
-                context.Options.Version = Version;
-                context.Options.EmbeddedResource = Resources;
-                context.Options.TargetFramework = TargetFramework;
-
-                context.TempOutputPath = TempOutputPath;
-                context.OutputPath = OutputPath;
-                context.MacroReferences = MacroReferences;
-                context.ResultingOutputPath = ResultingOutputPath;
-                context.ProjectFile = ProjectFile;
-                context.CorLib = CorLib;
-
-                if (!string.IsNullOrEmpty(OutputTree))
-                {
-                    context.Options.OutputTree = bool.Parse(OutputTree);
-                }
-
-                CompilerDriver.Compile(context);
-
-                foreach (var msg in context.Messages)
-                {
-                    if (msg.Severity == Codeanalysis.Parsing.MessageSeverity.Error)
-                    {
-                        Log.LogError(msg.ToString());
-                    }
-                    else
-                    {
-                        Log.LogWarning(msg.ToString());
-                    }
-                }
-
-                return !context.Messages.Any();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
+                Log.LogError("No Source Files specified.");
                 return false;
             }
+
+            var context = new CompilerContext();
+            context.Options.InputFiles = Compile;
+            context.Options.OutputFilename = OutputName;
+            context.Options.OutputType = OutputType;
+            context.Options.Version = Version;
+            context.Options.EmbeddedResource = Resources;
+            context.Options.TargetFramework = TargetFramework;
+
+            context.TempOutputPath = TempOutputPath;
+            context.OutputPath = OutputPath;
+            context.MacroReferences = MacroReferences;
+            context.ResultingOutputPath = ResultingOutputPath;
+            context.ProjectFile = ProjectFile;
+            context.CorLib = CorLib;
+
+            if (!string.IsNullOrEmpty(OutputTree))
+            {
+                context.Options.OutputTree = bool.Parse(OutputTree);
+            }
+
+            CompilerDriver.Compile(context);
+
+            foreach (var msg in context.Messages)
+            {
+                if (msg.Severity == MessageSeverity.Error)
+                {
+                    Log.LogError(msg.ToString());
+                }
+                else
+                {
+                    Log.LogWarning(msg.ToString());
+                }
+            }
+
+            return !context.Messages.Any();
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            return false;
+        }
+    }
+
+    public bool IsCanceled()
+    {
+        return _cancellation != null && _cancellation.IsCancellationRequested;
+    }
+
+    private void LogException(Exception ex)
+    {
+        if (ex is AggregateException aex && aex.InnerExceptions != null)
+        {
+            foreach (var innerEx in aex.InnerExceptions)
+            {
+                LogException(innerEx);
+            }
+        }
+        else
+        {
+            Log.LogErrorFromException(ex, true);
+        }
+    }
+
+    // honestly I don't know why msbuild in VS does not handle Console.Output,
+    // so we have our custom TextWriter that we pass to Log
+    private sealed class LogWriter : TextWriter
+    {
+        public LogWriter(TaskLoggingHelper log)
+        {
+            Debug.Assert(log != null);
+
+            Log = log;
+            NewLine = "\n";
         }
 
-        public bool IsCanceled()
+        public override Encoding Encoding => Encoding.UTF8;
+        private StringBuilder Buffer { get; } = new();
+        private TaskLoggingHelper Log { get; }
+
+        public override void Write(char value)
         {
-            return _cancellation != null && _cancellation.IsCancellationRequested;
-        }
-
-        private void LogException(Exception ex)
-        {
-            if (ex is AggregateException aex && aex.InnerExceptions != null)
+            lock (Buffer) // accessed in parallel
             {
-                foreach (var innerEx in aex.InnerExceptions)
-                {
-                    LogException(innerEx);
-                }
-            }
-            else
-            {
-                Log.LogErrorFromException(ex, true);
-            }
-        }
-
-        // honestly I don't know why msbuild in VS does not handle Console.Output,
-        // so we have our custom TextWriter that we pass to Log
-        private sealed class LogWriter : TextWriter
-        {
-            public LogWriter(TaskLoggingHelper log)
-            {
-                Debug.Assert(log != null);
-
-                Log = log;
-                NewLine = "\n";
+                Buffer.Append(value);
             }
 
-            public override Encoding Encoding => Encoding.UTF8;
-            private StringBuilder Buffer { get; } = new StringBuilder();
-            private TaskLoggingHelper Log { get; }
-
-            public override void Write(char value)
+            if (value == '\n')
             {
-                lock (Buffer) // accessed in parallel
-                {
-                    Buffer.Append(value);
-                }
-
-                if (value == '\n')
-                {
-                    TryLogCompleteMessage();
-                }
-            }
-
-            public override void Write(string value)
-            {
-                lock (Buffer)
-                {
-                    Buffer.Append(value);
-                }
-
                 TryLogCompleteMessage();
             }
+        }
 
-            private bool LogCompleteMessage(string line)
+        public override void Write(string value)
+        {
+            lock (Buffer)
             {
-                return Log.LogMessageFromText(line.Trim(), MessageImportance.High);
+                Buffer.Append(value);
             }
 
-            private bool TryLogCompleteMessage()
+            TryLogCompleteMessage();
+        }
+
+        private bool LogCompleteMessage(string line)
+        {
+            return Log.LogMessageFromText(line.Trim(), MessageImportance.High);
+        }
+
+        private bool TryLogCompleteMessage()
+        {
+            string line = null;
+
+            lock (Buffer) // accessed in parallel
             {
-                string line = null;
-
-                lock (Buffer)   // accessed in parallel
+                // get line from the buffer:
+                for (var i = 0; i < Buffer.Length; i++)
                 {
-                    // get line from the buffer:
-                    for (var i = 0; i < Buffer.Length; i++)
+                    if (Buffer[i] == '\n')
                     {
-                        if (Buffer[i] == '\n')
-                        {
-                            line = Buffer.ToString(0, i);
+                        line = Buffer.ToString(0, i);
 
-                            Buffer.Remove(0, i + 1);
-                        }
+                        Buffer.Remove(0, i + 1);
                     }
                 }
-
-                //
-                return line != null && LogCompleteMessage(line);
             }
+
+            //
+            return line != null && LogCompleteMessage(line);
         }
     }
 }

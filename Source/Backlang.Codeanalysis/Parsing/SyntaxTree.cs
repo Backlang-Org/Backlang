@@ -20,19 +20,22 @@ public static class SyntaxTree
 
     public static LNode DiscriminatedType(Token nameToken, LNodeList parameters)
     {
-        return Factory.Call(Symbols.DiscriminatedType, LNode.List(Factory.FromToken(nameToken), Factory.AltList(parameters)));
+        return Factory.Call(Symbols.DiscriminatedType,
+            LNode.List(Factory.FromToken(nameToken), Factory.AltList(parameters)));
     }
 
     public static LNode DiscriminatedUnion(Token nameToken, LNodeList types)
     {
-        return Factory.Call(Symbols.DiscriminatedUnion, LNode.List(Factory.FromToken(nameToken), Factory.AltList(types)));
+        return Factory.Call(Symbols.DiscriminatedUnion,
+            LNode.List(Factory.FromToken(nameToken), Factory.AltList(types)));
     }
 
     public static LNode Property(LNode type, LNode name, LNode getter, LNode setter, LNode value)
     {
         if (value != null)
         {
-            return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
+            return LNode.Call(CodeSymbols.Property,
+                LNode.List(type, getter, setter, LNode.Call(CodeSymbols.Assign, LNode.List(name, value))));
         }
 
         return LNode.Call(CodeSymbols.Property, LNode.List(type, getter, setter, name));
@@ -106,18 +109,18 @@ public static class SyntaxTree
     {
         return Factory.Call(CodeSymbols.Enum, Factory.AltList(name,
             Factory.Call(CodeSymbols.AltList),
-              Factory.Call(CodeSymbols.Braces,
-                  members)));
+            Factory.Call(CodeSymbols.Braces,
+                members)));
     }
 
     public static LNode For(LNode init, LNode arr, LNode body)
     {
         return Factory.Call(
             CodeSymbols.For,
-                Factory.AltList(Factory.AltList(
+            Factory.AltList(Factory.AltList(
                     Factory.AltList(LNode.Call(CodeSymbols.In,
                         Factory.AltList(init, arr)).SetStyle(NodeStyle.Operator))), LNode.Missing,
-                            Factory.AltList(), body));
+                Factory.AltList(), body));
     }
 
     public static LNode If(LNode cond, LNode ifBody, LNode elseBody)
@@ -130,8 +133,8 @@ public static class SyntaxTree
         var attributes = new LNodeList();
 
         return Factory.Call(Symbols.Implementation,
-           Factory.AltList(target, LNode.Call(CodeSymbols.Braces,
-               body).SetStyle(NodeStyle.StatementBlock))).WithAttrs(attributes);
+            Factory.AltList(target, LNode.Call(CodeSymbols.Braces,
+                body).SetStyle(NodeStyle.StatementBlock))).WithAttrs(attributes);
     }
 
     public static LNode Import(LNode expr)
@@ -196,7 +199,8 @@ public static class SyntaxTree
 
     public static LNode Switch(LNode element, LNodeList cases)
     {
-        return Factory.Call(CodeSymbols.SwitchStmt, LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
+        return Factory.Call(CodeSymbols.SwitchStmt,
+            LNode.List(element, LNode.Call(CodeSymbols.Braces, cases).SetStyle(NodeStyle.StatementBlock)));
     }
 
     public static LNode Try(LNode body, LNode catches, LNode finallly)
@@ -209,7 +213,8 @@ public static class SyntaxTree
 
     public static LNode Type(string name, LNodeList arguments)
     {
-        return Factory.Call(Symbols.TypeLiteral, Factory.AltList(Factory.Id(name), Factory.Call(CodeSymbols.Of, arguments)));
+        return Factory.Call(Symbols.TypeLiteral,
+            Factory.AltList(Factory.Id(name), Factory.Call(CodeSymbols.Of, arguments)));
     }
 
     public static LNode Unary(Symbol op, LNode arg)
@@ -241,7 +246,7 @@ public static class SyntaxTree
     {
         return Factory.Call(
             CodeSymbols.While,
-                LNode.List(cond, body));
+            LNode.List(cond, body));
     }
 
     public static LNode Unit(LNode result, string unit)
@@ -263,6 +268,4 @@ public static class SyntaxTree
     {
         return Factory.Call(CodeSymbols.DoWhile, LNode.List(body, cond));
     }
-
-    
 }

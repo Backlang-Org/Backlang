@@ -2,24 +2,24 @@ using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST;
 using Loyc;
 using Loyc.Syntax;
-using System.Globalization;
 
 namespace Backlang.Codeanalysis.Parsing;
 
 public sealed partial class Parser
 {
-    private readonly Dictionary<string, Symbol> _lits = new() {
-        {"ub", CodeSymbols.UInt8},
-        {"us", CodeSymbols.UInt16},
-        {"u", CodeSymbols.UInt32},
-        {"ui", CodeSymbols.UInt32},
-        {"ul", CodeSymbols.UInt64},
-        {"b", CodeSymbols.Int8},
-        {"s", CodeSymbols.Int16},
-        {"l", CodeSymbols.Int64},
-        {"h", Symbols.Float16},
-        {"f", Symbols.Float32},
-        {"d", Symbols.Float64},
+    private readonly Dictionary<string, Symbol> _lits = new()
+    {
+        { "ub", CodeSymbols.UInt8 },
+        { "us", CodeSymbols.UInt16 },
+        { "u", CodeSymbols.UInt32 },
+        { "ui", CodeSymbols.UInt32 },
+        { "ul", CodeSymbols.UInt64 },
+        { "b", CodeSymbols.Int8 },
+        { "s", CodeSymbols.Int16 },
+        { "l", CodeSymbols.Int64 },
+        { "h", Symbols.Float16 },
+        { "f", Symbols.Float32 },
+        { "d", Symbols.Float64 }
     };
 
     public void AddError(LocalizableString message, SourceRange range)
@@ -29,7 +29,8 @@ public sealed partial class Parser
 
     public void AddError(LocalizableString message)
     {
-        Messages.Add(Message.Error(message, new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length)));
+        Messages.Add(Message.Error(message,
+            new SourceRange(Document, Iterator.Current.Start, Iterator.Current.Text.Length)));
     }
 
     internal LNode ParsePrimary(ParsePoints parsePoints = null)
@@ -46,7 +47,7 @@ public sealed partial class Parser
             TokenType.TrueLiteral => ParseBooleanLiteral(true),
             TokenType.FalseLiteral => ParseBooleanLiteral(false),
             TokenType.OpenSquare => ParseArrayLiteral(),
-            _ => InvokeExpressionParsePoint(parsePoints),
+            _ => InvokeExpressionParsePoint(parsePoints)
         };
     }
 
@@ -78,14 +79,13 @@ public sealed partial class Parser
 
             return value(Iterator, this).WithRange(token, Iterator.Prev);
         }
-        else if (type == Token.Invalid.Type)
+
+        if (type == Token.Invalid.Type)
         {
             return LNode.Missing;
         }
-        else
-        {
-            return Invalid(ErrorID.UnknownExpression);
-        }
+
+        return Invalid(ErrorID.UnknownExpression);
     }
 
     private LNode ParseBinNumber()
@@ -99,7 +99,8 @@ public sealed partial class Parser
             return LNode.Missing;
         }
 
-        return SyntaxTree.Factory.Call(CodeSymbols.Int32, LNode.List(SyntaxTree.Factory.Literal(result).WithStyle(NodeStyle.BinaryLiteral)))
+        return SyntaxTree.Factory.Call(CodeSymbols.Int32,
+                LNode.List(SyntaxTree.Factory.Literal(result).WithStyle(NodeStyle.BinaryLiteral)))
             .WithRange(Iterator.Prev);
     }
 
@@ -132,7 +133,7 @@ public sealed partial class Parser
         }
 
         return SyntaxTree.Factory.Call(CodeSymbols.Int32,
-            LNode.List(SyntaxTree.Factory.Literal(result)))
+                LNode.List(SyntaxTree.Factory.Literal(result)))
             .WithRange(Iterator.Prev);
     }
 
@@ -170,7 +171,7 @@ public sealed partial class Parser
             }
             else
             {
-                AddError(new(ErrorID.UnknownLiteral, Iterator.Current.Text));
+                AddError(new LocalizableString(ErrorID.UnknownLiteral, Iterator.Current.Text));
 
                 result = LNode.Missing;
             }
@@ -204,7 +205,7 @@ public sealed partial class Parser
     {
         var valueToken = Iterator.NextToken();
 
-        var unescaped = ParseHelpers.UnescapeCStyle(valueToken.Text).ToString();
+        var unescaped = ParseHelpers.UnescapeCStyle(valueToken.Text);
 
         return SyntaxTree.Factory.Call(CodeSymbols.String, LNode.List(SyntaxTree.Factory.Literal(unescaped)))
             .WithRange(valueToken);

@@ -5,7 +5,10 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class UnaryExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.ArgCount == 1 && !node.Calls(CodeSymbols.ColonColon) && node.Name.Name.StartsWith("'");
+    public bool CanHandle(LNode node)
+    {
+        return node.ArgCount == 1 && !node.Calls(CodeSymbols.ColonColon) && node.Name.Name.StartsWith("'");
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
@@ -25,6 +28,7 @@ public class UnaryExpressionImplementor : IExpressionImplementor
             return block.AppendInstruction(Instruction.CreateLoadIndirect(leftType));
         }
 
-        return block.AppendInstruction(Instruction.CreateArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, new[] { leftType }, new ValueTag[] { lhs }));
+        return block.AppendInstruction(Instruction.CreateArithmeticIntrinsic(node.Name.Name.Substring(1), false,
+            elementType, new[] { leftType }, new ValueTag[] { lhs }));
     }
 }

@@ -6,5 +6,5 @@ public enum Radix
     OCT,
     HEX,
     DEC,
-    UNS,
+    UNS
 }

@@ -15,12 +15,14 @@ public sealed class Annotation
     public static bool TryParse(Parser parser, out LNodeList node)
     {
         var annotations = new LNodeList();
-        var isAnnotation = () => parser.Iterator.IsMatch(TokenType.At) && parser.Iterator.Peek(1).Type == TokenType.Identifier;
+        var isAnnotation = () =>
+            parser.Iterator.IsMatch(TokenType.At) && parser.Iterator.Peek(1).Type == TokenType.Identifier;
 
         while (isAnnotation())
         {
             annotations.Add(Parse(parser.Iterator, parser));
         }
+
         node = annotations;
 
         return annotations.Count > 0;

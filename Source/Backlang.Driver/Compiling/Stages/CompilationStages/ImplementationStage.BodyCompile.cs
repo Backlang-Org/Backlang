@@ -12,24 +12,25 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public partial class ImplementationStage
 {
-    private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementations = new Dictionary<Symbol, IStatementImplementor>()
-    {
-        [CodeSymbols.Var] = new VariableImplementor(),
-        [CodeSymbols.Assign] = new AssignmentImplementor(),
-        [CodeSymbols.If] = new IfImplementor(),
-        [CodeSymbols.While] = new WhileImplementor(),
-        [CodeSymbols.DoWhile] = new DoWhileImplementor(),
-        [CodeSymbols.Return] = new ReturnImplementor(),
-        [CodeSymbols.Continue] = new ContinueStatementImplementor(),
-        [CodeSymbols.Break] = new BreakStatementImplementor(),
-        [CodeSymbols.Throw] = new ThrowImplementor(),
-        [CodeSymbols.ColonColon] = new StaticCallImplementor(),
-        [CodeSymbols.Dot] = new CallImplementor(),
-        [(Symbol)"print"] = new PrintOrPrintlnImplementor(),
-        [(Symbol)"println"] = new PrintOrPrintlnImplementor(),
-    }.ToImmutableDictionary();
+    private static readonly ImmutableDictionary<Symbol, IStatementImplementor> _implementations =
+        new Dictionary<Symbol, IStatementImplementor>
+        {
+            [CodeSymbols.Var] = new VariableImplementor(),
+            [CodeSymbols.Assign] = new AssignmentImplementor(),
+            [CodeSymbols.If] = new IfImplementor(),
+            [CodeSymbols.While] = new WhileImplementor(),
+            [CodeSymbols.DoWhile] = new DoWhileImplementor(),
+            [CodeSymbols.Return] = new ReturnImplementor(),
+            [CodeSymbols.Continue] = new ContinueStatementImplementor(),
+            [CodeSymbols.Break] = new BreakStatementImplementor(),
+            [CodeSymbols.Throw] = new ThrowImplementor(),
+            [CodeSymbols.ColonColon] = new StaticCallImplementor(),
+            [CodeSymbols.Dot] = new CallImplementor(),
+            [(Symbol)"print"] = new PrintOrPrintlnImplementor(),
+            [(Symbol)"println"] = new PrintOrPrintlnImplementor()
+        }.ToImmutableDictionary();
 
-    private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>()
+    private static readonly ImmutableList<IExpressionImplementor> _expressions = new List<IExpressionImplementor>
     {
         new TupleExpressionImplementor(),
         new ArrayExpressionImplementor(),
@@ -45,12 +46,11 @@ public partial class ImplementationStage
         new PointerExpressionImplementor(),
         new ConstantExpressionEmitter(),
         new StaticCallImplementor(),
-
-        new CallExpressionEmitter(), //should be added as last
+        new CallExpressionEmitter() //should be added as last
     }.ToImmutableList();
 
     public static MethodBody CompileBody(LNode function, CompilerContext context, IMethod method,
-                    QualifiedName? modulename, Scope scope)
+        QualifiedName? modulename, Scope scope)
     {
         var graph = Utils.CreateGraphBuilder();
         var block = graph.EntryPoint;
@@ -72,25 +72,34 @@ public partial class ImplementationStage
             graph.ToImmutable());
     }
 
-    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels)
+    public static BasicBlockBuilder AppendBlock(LNode blkNode, BasicBlockBuilder block, CompilerContext context,
+        IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels)
     {
         block.Flow = new NothingFlow();
 
         foreach (var node in blkNode.Args)
         {
-            if (!node.IsCall) continue;
+            if (!node.IsCall)
+            {
+                continue;
+            }
 
             if (node.Calls(CodeSymbols.Braces))
             {
-                if (node.ArgCount == 0) continue;
+                if (node.ArgCount == 0)
+                {
+                    continue;
+                }
 
-                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename, scope.CreateChildScope(), branchLabels);
+                block = AppendBlock(node, block.Graph.AddBasicBlock(), context, method, modulename,
+                    scope.CreateChildScope(), branchLabels);
                 continue;
             }
 
             if (_implementations.ContainsKey(node.Name))
             {
-                block = _implementations[node.Name].Implement(node, block, context, method, modulename, scope, branchLabels);
+                block = _implementations[node.Name]
+                    .Implement(node, block, context, method, modulename, scope, branchLabels);
             }
             else
             {
@@ -113,7 +122,8 @@ public partial class ImplementationStage
     }
 
     public static NamedInstructionBuilder AppendCall(CompilerContext context, BasicBlockBuilder block,
-        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, bool shouldAppendError = true, string methodName = null)
+        LNode node, IEnumerable<IMethod> methods, Scope scope, QualifiedName? modulename, bool shouldAppendError = true,
+        string methodName = null)
     {
         var argTypes = new List<IType>();
 
@@ -122,7 +132,9 @@ public partial class ImplementationStage
             var type = TypeDeducer.Deduce(arg, scope, context, modulename.Value);
 
             if (type != null)
+            {
                 argTypes.Add(type);
+            }
         }
 
         if (methodName == null)
@@ -135,7 +147,8 @@ public partial class ImplementationStage
         return AppendCall(context, block, node, method, scope, modulename.Value);
     }
 
-    public static NamedInstructionBuilder AppendDtor(CompilerContext context, BasicBlockBuilder block, Scope scope, QualifiedName? modulename, string varname)
+    public static NamedInstructionBuilder AppendDtor(CompilerContext context, BasicBlockBuilder block, Scope scope,
+        QualifiedName? modulename, string varname)
     {
         if (scope.TryGet<VariableScopeItem>(varname, out var scopeItem))
         {
@@ -146,7 +159,8 @@ public partial class ImplementationStage
 
             block.AppendInstruction(Instruction.CreateLoadLocal(scopeItem.Parameter));
 
-            return AppendCall(context, block, LNode.Missing, scopeItem.Type.Methods, scope, modulename, false, "Finalize");
+            return AppendCall(context, block, LNode.Missing, scopeItem.Type.Methods, scope, modulename, false,
+                "Finalize");
         }
 
         return null;
@@ -157,19 +171,24 @@ public partial class ImplementationStage
     {
         var callTags = AppendCallArguments(context, block, node, scope, modulename);
 
-        if (method == null) return null;
+        if (method == null)
+        {
+            return null;
+        }
 
         if (!method.IsStatic)
         {
             callTags.Insert(0, block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(method.ParentType))));
         }
 
-        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual, callTags);
+        var call = Instruction.CreateCall(method, method.IsStatic ? MethodLookup.Static : MethodLookup.Virtual,
+            callTags);
 
         return block.AppendInstruction(call);
     }
 
-    public static List<ValueTag> AppendCallArguments(CompilerContext context, BasicBlockBuilder block, LNode node, Scope scope, QualifiedName? modulename)
+    public static List<ValueTag> AppendCallArguments(CompilerContext context, BasicBlockBuilder block, LNode node,
+        Scope scope, QualifiedName? modulename)
     {
         var argTypes = new List<IType>();
         var callTags = new List<ValueTag>();
@@ -209,7 +228,8 @@ public partial class ImplementationStage
                 {
                     var suggestion = LevensteinDistance.Suggest(arg.Name.Name, scope.GetAllScopeNames());
 
-                    context.AddError(arg, new(ErrorID.CannotBeFoundDidYouMean, arg.Name.Name, suggestion));
+                    context.AddError(arg,
+                        new LocalizableString(ErrorID.CannotBeFoundDidYouMean, arg.Name.Name, suggestion));
                 }
             }
         }
@@ -217,7 +237,8 @@ public partial class ImplementationStage
         return callTags;
     }
 
-    public static void AppendAllDtors(BasicBlockBuilder block, CompilerContext context, QualifiedName? modulename, Scope scope)
+    public static void AppendAllDtors(BasicBlockBuilder block, CompilerContext context, QualifiedName? modulename,
+        Scope scope)
     {
         foreach (var v in block.Parameters)
         {
@@ -225,7 +246,8 @@ public partial class ImplementationStage
         }
     }
 
-    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, Scope scope, QualifiedName modulename)
+    private static void SetReturnType(DescribedBodyMethod method, LNode function, CompilerContext context, Scope scope,
+        QualifiedName modulename)
     {
         var retType = function.Args[0];
 
@@ -239,11 +261,14 @@ public partial class ImplementationStage
         {
             var deducedReturnType = TypeDeducer.DeduceFunctionReturnType(function, context, scope, modulename);
 
-            method.ReturnParameter = deducedReturnType != null ? new Parameter(deducedReturnType) : new Parameter(Utils.ResolveType(context.Binder, typeof(void)));
+            method.ReturnParameter = deducedReturnType != null
+                ? new Parameter(deducedReturnType)
+                : new Parameter(Utils.ResolveType(context.Binder, typeof(void)));
         }
     }
 
-    private static BasicBlockBuilder EmitFunctionCall(IMethod method, LNode node, BasicBlockBuilder block, CompilerContext context, Scope scope, QualifiedName? moduleName)
+    private static BasicBlockBuilder EmitFunctionCall(IMethod method, LNode node, BasicBlockBuilder block,
+        CompilerContext context, Scope scope, QualifiedName? moduleName)
     {
         //ToDo: continue implementing static function call in same type
         var type = (DescribedType)method.ParentType;
@@ -252,11 +277,12 @@ public partial class ImplementationStage
 
         if (!methods.Any(_ => _.Name.ToString() == calleeName.ToString()))
         {
-            type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(moduleName.Value)).FirstOrDefault();
+            type = (DescribedType)context.Binder
+                .ResolveTypes(new SimpleName(Names.FreeFunctions).Qualify(moduleName.Value)).FirstOrDefault();
 
             if (type == null)
             {
-                context.AddError(node, new(ErrorID.CannotFindFunction, calleeName.ToString()));
+                context.AddError(node, new LocalizableString(ErrorID.CannotFindFunction, calleeName.ToString()));
             }
         }
 
@@ -264,7 +290,8 @@ public partial class ImplementationStage
         {
             if (type.IsStatic && !callee.IsStatic)
             {
-                context.AddError(node, $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
+                context.AddError(node,
+                    $"A non static function '{calleeName.Name.Name}' cannot be called in a static function.");
                 return block;
             }
 
@@ -272,9 +299,11 @@ public partial class ImplementationStage
         }
         else
         {
-            var suggestion = LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
+            var suggestion =
+                LevensteinDistance.Suggest(calleeName.Name.Name, type.Methods.Select(_ => _.Name.ToString()));
 
-            context.AddError(node, new(ErrorID.CannotBeFoundDidYouMean, calleeName.Name.Name, suggestion));
+            context.AddError(node,
+                new LocalizableString(ErrorID.CannotBeFoundDidYouMean, calleeName.Name.Name, suggestion));
         }
 
         return block;
@@ -286,7 +315,7 @@ public partial class ImplementationStage
         {
             bodyCompilation.Method.Body =
                 CompileBody(bodyCompilation.Function, context,
-                bodyCompilation.Method, bodyCompilation.Modulename, bodyCompilation.Scope);
+                    bodyCompilation.Method, bodyCompilation.Modulename, bodyCompilation.Scope);
         }
     }
 }

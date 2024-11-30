@@ -19,7 +19,8 @@ public class Bs2kAssembly : ITargetAssembly
 
         var types = Contents.Assembly.Types;
 
-        foreach (var er in Contents.Assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>())
+        foreach (var er in Contents.Assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute)
+                     .Cast<EmbeddedResourceAttribute>())
         {
             var rawStrm = new MemoryStream();
             er.Strm.CopyTo(rawStrm);

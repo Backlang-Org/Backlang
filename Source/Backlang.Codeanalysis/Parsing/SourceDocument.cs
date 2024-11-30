@@ -9,19 +9,19 @@ public sealed class SourceDocument
 
     public SourceDocument(string filename)
     {
-        _document = new SourceFile<StreamCharSource>(new(File.OpenRead(filename)), filename);
+        _document = new SourceFile<StreamCharSource>(new StreamCharSource(File.OpenRead(filename)), filename);
     }
 
     public SourceDocument(string filename, string content)
     {
         var filebody = Encoding.Default.GetBytes(content);
 
-        _document = new SourceFile<StreamCharSource>(new(new MemoryStream(filebody)), filename);
+        _document = new SourceFile<StreamCharSource>(new StreamCharSource(new MemoryStream(filebody)), filename);
     }
 
     public static implicit operator SourceFile<StreamCharSource>(SourceDocument doc)
     {
-        SyntaxTree.Factory = new(doc._document);
+        SyntaxTree.Factory = new LNodeFactory(doc._document);
 
         return doc._document;
     }

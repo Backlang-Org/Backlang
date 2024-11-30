@@ -1,38 +1,38 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
-		<MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-		<Language>Backlang</Language>
-		<TargetRuntime>Managed</TargetRuntime>
-		<AlwaysUseNumericalSuffixInItemNames>true</AlwaysUseNumericalSuffixInItemNames>
-		<DefineCommonItemSchemas Condition=" '$(DefineCommonItemSchemas)' == '' ">true</DefineCommonItemSchemas>
-		<DefineCommonReferenceSchemas Condition=" '$(DefineCommonReferenceSchemas)' == '' ">true</DefineCommonReferenceSchemas>
-		<DefineCommonCapabilities Condition=" '$(DefineCommonCapabilities)' == '' ">true</DefineCommonCapabilities>
-	</PropertyGroup>
+    <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <Language>Backlang</Language>
+        <TargetRuntime>Managed</TargetRuntime>
+        <AlwaysUseNumericalSuffixInItemNames>true</AlwaysUseNumericalSuffixInItemNames>
+        <DefineCommonItemSchemas Condition=" '$(DefineCommonItemSchemas)' == '' ">true</DefineCommonItemSchemas>
+        <DefineCommonReferenceSchemas Condition=" '$(DefineCommonReferenceSchemas)' == '' ">true</DefineCommonReferenceSchemas>
+        <DefineCommonCapabilities Condition=" '$(DefineCommonCapabilities)' == '' ">true</DefineCommonCapabilities>
+    </PropertyGroup>
 
-	<UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.BuildTask" />
+    <UsingTask AssemblyFile="$(BacklangToolFullPath)" TaskName="Backlang.NET.Sdk.BuildTask"/>
 
-	<ItemGroup>
-		<!-- well-known items -->
-		<Compile Remove="$(DefaultItemExcludes)" />
-	</ItemGroup>
+    <ItemGroup>
+        <!-- well-known items -->
+        <Compile Remove="$(DefaultItemExcludes)"/>
+    </ItemGroup>
 
-	<ItemGroup Condition="'$(_DebugSymbolsProduced)' == 'true' and '$(PdbFile)' != ''">
-		<_DebugSymbolsIntermediatePathTemporary Include="$(PdbFile)" />
-		<!-- Add any missing .pdb extension, as the compiler does -->
-		<_DebugSymbolsIntermediatePath Include="@(_DebugSymbolsIntermediatePathTemporary->'%(RootDir)%(Directory)%(Filename).pdb')" />
-	</ItemGroup>
+    <ItemGroup Condition="'$(_DebugSymbolsProduced)' == 'true' and '$(PdbFile)' != ''">
+        <_DebugSymbolsIntermediatePathTemporary Include="$(PdbFile)"/>
+        <!-- Add any missing .pdb extension, as the compiler does -->
+        <_DebugSymbolsIntermediatePath Include="@(_DebugSymbolsIntermediatePathTemporary->'%(RootDir)%(Directory)%(Filename).pdb')"/>
+    </ItemGroup>
 
-	<PropertyGroup>
-		<CoreCompileDependsOn>_ComputeNonExistentFileProperty</CoreCompileDependsOn>
-	</PropertyGroup>
+    <PropertyGroup>
+        <CoreCompileDependsOn>_ComputeNonExistentFileProperty</CoreCompileDependsOn>
+    </PropertyGroup>
 
-	<!-- Locate and add mscorlib, unless NoStdLib is set -->
-	<ItemGroup Condition=" '$(NoStdLib)' != 'true' ">
-		<_ExplicitReference Include="$(FrameworkPathOverride)\mscorlib.dll" />
-	</ItemGroup>
+    <!-- Locate and add mscorlib, unless NoStdLib is set -->
+    <ItemGroup Condition=" '$(NoStdLib)' != 'true' ">
+        <_ExplicitReference Include="$(FrameworkPathOverride)\mscorlib.dll"/>
+    </ItemGroup>
 
-	<!--
+    <!--
       The CreateManifestResourceNames target create the manifest resource names from the .RESX
       files.
 
@@ -49,49 +49,49 @@
         Resources1.fr.resx => RootNamespace.Resources1.fr => Build into satellite assembly
         Resources1.notaculture.resx => RootNamespace.Resources1.notaculture => Build into main assembly
       -->
-	<!-- target CreateManifestResourceNames is required by .Common.target-->
-	<PropertyGroup>
-		<CreateManifestResourceNamesDependsOn></CreateManifestResourceNamesDependsOn>
-	</PropertyGroup>
-	<Target
-		Name="CreateManifestResourceNames"
-		Condition=" '@(EmbeddedResource)' != '' "
-		DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
+    <!-- target CreateManifestResourceNames is required by .Common.target-->
+    <PropertyGroup>
+        <CreateManifestResourceNamesDependsOn></CreateManifestResourceNamesDependsOn>
+    </PropertyGroup>
+    <Target
+            Name="CreateManifestResourceNames"
+            Condition=" '@(EmbeddedResource)' != '' "
+            DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
 
-		<ItemGroup>
-			<_Temporary Remove="@(_Temporary)" />
-		</ItemGroup>
+        <ItemGroup>
+            <_Temporary Remove="@(_Temporary)"/>
+        </ItemGroup>
 
-		<!-- Create manifest names for culture and non-culture Resx files, and for non-culture Non-Resx resources -->
-		<CreateCSharpManifestResourceName
-			  ResourceFiles="@(EmbeddedResource)"
-			  RootNamespace="$(RootNamespace)"
-			  Condition="'%(EmbeddedResource.ManifestResourceName)' == '' and ('%(EmbeddedResource.WithCulture)' == 'false' or '%(EmbeddedResource.Type)' == 'Resx')">
+        <!-- Create manifest names for culture and non-culture Resx files, and for non-culture Non-Resx resources -->
+        <CreateCSharpManifestResourceName
+                ResourceFiles="@(EmbeddedResource)"
+                RootNamespace="$(RootNamespace)"
+                Condition="'%(EmbeddedResource.ManifestResourceName)' == '' and ('%(EmbeddedResource.WithCulture)' == 'false' or '%(EmbeddedResource.Type)' == 'Resx')">
 
-			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_Temporary" />
-		</CreateCSharpManifestResourceName>
+            <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_Temporary"/>
+        </CreateCSharpManifestResourceName>
 
-		<!-- Create manifest names for all culture non-resx resources -->
-		<CreateCSharpManifestResourceName
-			  ResourceFiles="@(EmbeddedResource)"
-			  RootNamespace="$(RootNamespace)"
-			  PrependCultureAsDirectory="false"
-			  Condition="'%(EmbeddedResource.ManifestResourceName)' == '' and '%(EmbeddedResource.WithCulture)' == 'true' and '%(EmbeddedResource.Type)' == 'Non-Resx'">
+        <!-- Create manifest names for all culture non-resx resources -->
+        <CreateCSharpManifestResourceName
+                ResourceFiles="@(EmbeddedResource)"
+                RootNamespace="$(RootNamespace)"
+                PrependCultureAsDirectory="false"
+                Condition="'%(EmbeddedResource.ManifestResourceName)' == '' and '%(EmbeddedResource.WithCulture)' == 'true' and '%(EmbeddedResource.Type)' == 'Non-Resx'">
 
-			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_Temporary" />
-		</CreateCSharpManifestResourceName>
+            <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_Temporary"/>
+        </CreateCSharpManifestResourceName>
 
-		<ItemGroup>
-			<EmbeddedResource Remove="@(EmbeddedResource)" Condition="'%(EmbeddedResource.ManifestResourceName)' == ''" />
-			<EmbeddedResource Include="@(_Temporary)" />
-			<_Temporary Remove="@(_Temporary)" />
-		</ItemGroup>
-	</Target>
+        <ItemGroup>
+            <EmbeddedResource Remove="@(EmbeddedResource)" Condition="'%(EmbeddedResource.ManifestResourceName)' == ''"/>
+            <EmbeddedResource Include="@(_Temporary)"/>
+            <_Temporary Remove="@(_Temporary)"/>
+        </ItemGroup>
+    </Target>
 
-	<!-- performs compilation -->
-	<Target
-			Name="CoreCompile"
-			Inputs="$(MSBuildAllProjects);
+    <!-- performs compilation -->
+    <Target
+            Name="CoreCompile"
+            Inputs="$(MSBuildAllProjects);
                 @(Compile);
                 @(_CoreCompileResourceInputs);
                 $(ApplicationIcon);
@@ -105,110 +105,110 @@
                 $(ResolvedCodeAnalysisRuleSet);
                 @(AdditionalFiles);
                 @(EmbeddedFiles)"
-			Outputs="@(IntermediateAssembly);
+            Outputs="@(IntermediateAssembly);
                 @(_DebugSymbolsIntermediatePath);
                 $(NonExistentFile);
                 @(CustomAdditionalCompileOutputs)"
-			Returns="@(BacklangCommandLineArgs)"
-			DependsOnTargets="$(CoreCompileDependsOn)">
+            Returns="@(BacklangCommandLineArgs)"
+            DependsOnTargets="$(CoreCompileDependsOn)">
 
-		<PropertyGroup>
-			<TargetProfile Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " >mscorlib</TargetProfile>
-			<TargetProfile Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' " >netcore</TargetProfile>
+        <PropertyGroup>
+            <TargetProfile Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">mscorlib</TargetProfile>
+            <TargetProfile Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">netcore</TargetProfile>
 
-			<!-- ref https://github.com/Microsoft/msbuild/issues/1669
+            <!-- ref https://github.com/Microsoft/msbuild/issues/1669
                  the dotnet in PATH can be different from the dotnet who run msbuild,
                  so i need to specify the full path. -->
-			<_DotNetHostExecutableName>dotnet</_DotNetHostExecutableName>
-			<_DotNetHostExecutableName Condition=" '$(OS)' == 'Windows_NT' ">$(_DotNetHostExecutableName).exe</_DotNetHostExecutableName>
-			<_DotNetHostExecutableDirectory>$(MSBuildSDKsPath)/../../..</_DotNetHostExecutableDirectory>
-			<_DotNetHostExecutablePath>$(_DotNetHostExecutableDirectory)/$(_DotNetHostExecutableName)</_DotNetHostExecutablePath>
-		</PropertyGroup>
+            <_DotNetHostExecutableName>dotnet</_DotNetHostExecutableName>
+            <_DotNetHostExecutableName Condition=" '$(OS)' == 'Windows_NT' ">$(_DotNetHostExecutableName).exe</_DotNetHostExecutableName>
+            <_DotNetHostExecutableDirectory>$(MSBuildSDKsPath)/../../..</_DotNetHostExecutableDirectory>
+            <_DotNetHostExecutablePath>$(_DotNetHostExecutableDirectory)/$(_DotNetHostExecutableName)</_DotNetHostExecutablePath>
+        </PropertyGroup>
 
-		<PropertyGroup Condition=" '$(DontRunBacklangCompileWithDotnet)' == '' ">
-			<!-- default: -->
-			<_FscTask_FscToolExe>$(_DotNetHostExecutableName)</_FscTask_FscToolExe>
-			<_FscTask_FscToolPath>$(_DotNetHostExecutableDirectory)</_FscTask_FscToolPath>
-			<_FscTask_DotnetFscCompilerPath> "$(FscToolPath)/$(FscToolExe)"</_FscTask_DotnetFscCompilerPath>
-		</PropertyGroup>
+        <PropertyGroup Condition=" '$(DontRunBacklangCompileWithDotnet)' == '' ">
+            <!-- default: -->
+            <_FscTask_FscToolExe>$(_DotNetHostExecutableName)</_FscTask_FscToolExe>
+            <_FscTask_FscToolPath>$(_DotNetHostExecutableDirectory)</_FscTask_FscToolPath>
+            <_FscTask_DotnetFscCompilerPath>"$(FscToolPath)/$(FscToolExe)"</_FscTask_DotnetFscCompilerPath>
+        </PropertyGroup>
 
-		<PropertyGroup Condition=" '$(DontRunBacklangCompileWithDotnet)' != '' ">
-			<_FscTask_FscToolExe>$(FscToolExe)</_FscTask_FscToolExe>
-			<_FscTask_FscToolPath>$(FscToolPath)</_FscTask_FscToolPath>
-			<_FscTask_DotnetFscCompilerPath></_FscTask_DotnetFscCompilerPath>
-		</PropertyGroup>
+        <PropertyGroup Condition=" '$(DontRunBacklangCompileWithDotnet)' != '' ">
+            <_FscTask_FscToolExe>$(FscToolExe)</_FscTask_FscToolExe>
+            <_FscTask_FscToolPath>$(FscToolPath)</_FscTask_FscToolPath>
+            <_FscTask_DotnetFscCompilerPath></_FscTask_DotnetFscCompilerPath>
+        </PropertyGroup>
 
-		<PropertyGroup>
-			<TempOutputDir>%(IntermediateAssembly.RelativeDir)</TempOutputDir>
-			<OutputType Condition=" '$(OutputType)' == '' ">library</OutputType>
-		</PropertyGroup>
+        <PropertyGroup>
+            <TempOutputDir>%(IntermediateAssembly.RelativeDir)</TempOutputDir>
+            <OutputType Condition=" '$(OutputType)' == '' ">library</OutputType>
+        </PropertyGroup>
 
-		<!-- If compiling for full .NET, MSBuild is expected to run on it (e.g. in Visual Studio) so that it can obtain the runtime directory -->
-		<GetFrameworkPath>
-			<Output TaskParameter="Path" PropertyName="NetFrameworkPath" />
-		</GetFrameworkPath>
+        <!-- If compiling for full .NET, MSBuild is expected to run on it (e.g. in Visual Studio) so that it can obtain the runtime directory -->
+        <GetFrameworkPath>
+            <Output TaskParameter="Path" PropertyName="NetFrameworkPath"/>
+        </GetFrameworkPath>
 
-		<ItemGroup>
-			<!-- convert DefineConstants to item list -->
-			<DefineConstants Include="$(DefineConstants)" />
-			<DefineConstants Include="DEBUG" Condition=" '$(Configuration)' == 'Debug' " />
-		</ItemGroup>
+        <ItemGroup>
+            <!-- convert DefineConstants to item list -->
+            <DefineConstants Include="$(DefineConstants)"/>
+            <DefineConstants Include="DEBUG" Condition=" '$(Configuration)' == 'Debug' "/>
+        </ItemGroup>
 
-		<ItemGroup>
-			<CoreLibReference Include="@(ReferencePath)" Condition=" '%(Filename)' == 'System.Runtime' OR
+        <ItemGroup>
+            <CoreLibReference Include="@(ReferencePath)" Condition=" '%(Filename)' == 'System.Runtime' OR
                                                                  '%(Filename)' == 'netstandard' OR
                                                                  '%(Filename)' == 'System.Diagnostics.Debug' OR
-                                                                 '%(Filename)' == 'mscorlib' " />
-			<StandardReference Include="@(ReferencePath)" Exclude="@(CoreLibReference)" />
-		</ItemGroup>
+                                                                 '%(Filename)' == 'mscorlib' "/>
+            <StandardReference Include="@(ReferencePath)" Exclude="@(CoreLibReference)"/>
+        </ItemGroup>
 
-		<PropertyGroup>
-			<CorLib>@(CoreLibReference)@(StandardReference)</CorLib>
-		</PropertyGroup>
+        <PropertyGroup>
+            <CorLib>@(CoreLibReference)@(StandardReference)</CorLib>
+        </PropertyGroup>
 
-		<Error Condition=" '$(BacklangToolFullPath)'=='' " Text="Path to Backlang.NET.Sdk.dll was not set." />
+        <Error Condition=" '$(BacklangToolFullPath)'=='' " Text="Path to Backlang.NET.Sdk.dll was not set."/>
 
-		<BuildTask Condition=" Exists('$(BacklangToolFullPath)') "
-				   OutputPath="$(TempOutputDir)%(IntermediateAssembly.Filename)%(IntermediateAssembly.Extension)"
-				   OutputName="%(IntermediateAssembly.Filename)"
-				   TempOutputPath="$(TempOutputDir)"
-				   TargetFramework="$(TargetFrameworkMoniker)"
-				   NetFrameworkPath="$(NetFrameworkPath)"
-				   Optimization="$(Optimize)"
-				   Version="$(Version)"
-				   OutputType="$(OutputType)"
-				   Path="$(MSBuildProjectFullPath)"
-				   EntryPoint="$(StartupObject)"
-				   CorLib="$(CorLib)"
-				   OutputTree="$(OutputTree)"
-				   Target="$(CompileTo)"
-				   ResultingOutputPath="$(OutputPath)"
-				   Compile="@(Compile)"
-				   ProjectFile="$(MSBuildProjectFullPath)"
-				   MacroReferences="@(MacroReference)"
-				   Resources="@(EmbeddedResource)"
-				   GenerateFullPaths="$(GenerateFullPaths)" />
+        <BuildTask Condition=" Exists('$(BacklangToolFullPath)') "
+                   OutputPath="$(TempOutputDir)%(IntermediateAssembly.Filename)%(IntermediateAssembly.Extension)"
+                   OutputName="%(IntermediateAssembly.Filename)"
+                   TempOutputPath="$(TempOutputDir)"
+                   TargetFramework="$(TargetFrameworkMoniker)"
+                   NetFrameworkPath="$(NetFrameworkPath)"
+                   Optimization="$(Optimize)"
+                   Version="$(Version)"
+                   OutputType="$(OutputType)"
+                   Path="$(MSBuildProjectFullPath)"
+                   EntryPoint="$(StartupObject)"
+                   CorLib="$(CorLib)"
+                   OutputTree="$(OutputTree)"
+                   Target="$(CompileTo)"
+                   ResultingOutputPath="$(OutputPath)"
+                   Compile="@(Compile)"
+                   ProjectFile="$(MSBuildProjectFullPath)"
+                   MacroReferences="@(MacroReference)"
+                   Resources="@(EmbeddedResource)"
+                   GenerateFullPaths="$(GenerateFullPaths)"/>
 
-		<Copy SourceFiles="$(TempOutputDir)%(IntermediateAssembly.Filename).runtimeconfig.json" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
-	</Target>
+        <Copy SourceFiles="$(TempOutputDir)%(IntermediateAssembly.Filename).runtimeconfig.json" DestinationFolder="$(OutputPath)" ContinueOnError="true"/>
+    </Target>
 
-	<!--End Required Task by .Common.target-->
+    <!--End Required Task by .Common.target-->
 
-	<!-- Helper target for outputing references to the outer build in multitargeting projects -->
-	<!-- TODO: use CollectResolvedCompilationReferencesDesignTime -->
-	<Target
-	  Name="ReturnReferences"
-	  DependsOnTargets="ResolveReferences"
-	  Returns="@(ReferencePath)">
-		<!-- The output of all the frameworks is merged; therefore, we add metadata to distinguish them -->
-		<ItemGroup>
-			<ReferencePath>
-				<TargetFramework>$(TargetFramework)</TargetFramework>
-			</ReferencePath>
-		</ItemGroup>
-	</Target>
+    <!-- Helper target for outputing references to the outer build in multitargeting projects -->
+    <!-- TODO: use CollectResolvedCompilationReferencesDesignTime -->
+    <Target
+            Name="ReturnReferences"
+            DependsOnTargets="ResolveReferences"
+            Returns="@(ReferencePath)">
+        <!-- The output of all the frameworks is merged; therefore, we add metadata to distinguish them -->
+        <ItemGroup>
+            <ReferencePath>
+                <TargetFramework>$(TargetFramework)</TargetFramework>
+            </ReferencePath>
+        </ItemGroup>
+    </Target>
 
-	<PropertyGroup Condition="'$(PackProjectInputFile)' == ''">
-		<PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(PackProjectInputFile)' == ''">
+        <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
+    </PropertyGroup>
 </Project>

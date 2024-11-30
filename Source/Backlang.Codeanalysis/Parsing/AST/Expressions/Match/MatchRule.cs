@@ -17,7 +17,8 @@ public sealed class MatchRule
 
             return SyntaxTree.Factory.Tuple(LNode.Literal((Symbol)"_"), result);
         }
-        else if (iterator.Peek(1).Type == TokenType.GoesTo) //12 => 13
+
+        if (iterator.Peek(1).Type == TokenType.GoesTo) //12 => 13
         {
             var matcher = Expression.Parse(parser);
 
@@ -27,7 +28,8 @@ public sealed class MatchRule
 
             return SyntaxTree.Factory.Tuple(matcher, result);
         }
-        else if (iterator.Current.IsOperator()) // > 12 => false
+
+        if (iterator.Current.IsOperator()) // > 12 => false
         {
             var operatorToken = iterator.Current;
             iterator.NextToken();
@@ -40,7 +42,9 @@ public sealed class MatchRule
 
             return SyntaxTree.Factory.Tuple(SyntaxTree.Unary((Symbol)operatorToken.Text, condition), result);
         }
-        else if (iterator.Current.Type == TokenType.Identifier && iterator.Peek(1).Type == TokenType.Identifier) //i32 num => num + 2
+
+        if (iterator.Current.Type == TokenType.Identifier &&
+            iterator.Peek(1).Type == TokenType.Identifier) //i32 num => num + 2
         {
             var type = TypeLiteral.Parse(iterator, parser);
             var name = iterator.NextToken().Text;
@@ -51,7 +55,8 @@ public sealed class MatchRule
 
             return SyntaxTree.Factory.Tuple(SyntaxTree.Factory.Var(type, name), result);
         }
-        else if (iterator.Current.Type == TokenType.Identifier) //i32 => 32
+
+        if (iterator.Current.Type == TokenType.Identifier) //i32 => 32
         {
             var type = TypeLiteral.Parse(iterator, parser);
 

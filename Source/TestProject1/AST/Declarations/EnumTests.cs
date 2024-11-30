@@ -35,7 +35,8 @@ public class EnumTests : ParserTestBase
     [TestMethod]
     public void Enum_With_Strings_Should_Pass()
     {
-        var src = "enum Colors { White = \"white\", Red = \"red\", Green = \"green\", Blue = \"blue\", Black = \"black\" }";
+        var src =
+            "enum Colors { White = \"white\", Red = \"red\", Green = \"green\", Blue = \"blue\", Black = \"black\" }";
         var result = ParseAndGetNodes(src);
 
         Assert.AreEqual(0, result.errors.Count);

@@ -6,7 +6,7 @@ public sealed class CompilationUnit
 {
     public LNodeList Body { get; set; } = new();
     public SourceFile<StreamCharSource> Document { get; internal set; }
-    public List<Message> Messages { get; set; } = new List<Message>();
+    public List<Message> Messages { get; set; } = new();
 
     public static CompilationUnit FromFile(string filename)
     {

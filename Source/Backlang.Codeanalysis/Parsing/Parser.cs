@@ -11,7 +11,7 @@ public sealed partial class Parser
     public Parser(SourceFile<StreamCharSource> document, List<Token> tokens, List<Message> messages)
     {
         Document = document;
-        Iterator = new(tokens, document);
+        Iterator = new TokenIterator(tokens, document);
         Messages = messages;
 
         InitParsePoints();
@@ -30,7 +30,7 @@ public sealed partial class Parser
             return new CompilationUnit
             {
                 Body = LNode.List(LNode.Missing),
-                Messages = new() { Message.Error(ErrorID.EmptyFile, SourceRange.Synthetic) },
+                Messages = new List<Message> { Message.Error(ErrorID.EmptyFile, SourceRange.Synthetic) },
                 Document = document
             };
         }

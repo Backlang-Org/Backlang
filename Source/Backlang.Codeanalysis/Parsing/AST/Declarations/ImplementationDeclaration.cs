@@ -45,7 +45,8 @@ public class ImplementationDeclaration : IParsePoint
             _ = Annotation.TryParse(parser, out var annotations);
             _ = Modifier.TryParse(parser, out var modifiers);
 
-            body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints).PlusAttrs(annotations).PlusAttrs(modifiers));
+            body.Add(parser.InvokeParsePoint(parser.DeclarationParsePoints).PlusAttrs(annotations)
+                .PlusAttrs(modifiers));
         }
 
         iterator.Match(TokenType.CloseCurly);

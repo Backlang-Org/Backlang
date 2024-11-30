@@ -5,9 +5,10 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class IfImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        if (node is (_, (_, var condition, var body, var elseBody)))
+        if (node is var (_, (_, condition, body, elseBody)))
         {
             TypeDeducer.ExpectType(condition, scope, context, modulename.Value,
                 context.Environment.Boolean);
@@ -16,7 +17,8 @@ public class IfImplementor : IStatementImplementor
 
             if (elseBody.Name != LNode.Missing.Name)
             {
-                if_after = ImplementIf(if_after, context, method, modulename, scope, branchLabels, condition, elseBody, true);
+                if_after = ImplementIf(if_after, context, method, modulename, scope, branchLabels, condition, elseBody,
+                    true);
             }
 
             return if_after;
@@ -25,8 +27,9 @@ public class IfImplementor : IStatementImplementor
         return null;
     }
 
-    private static BasicBlockBuilder ImplementIf(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
-     Scope scope, BranchLabels branchLabels, LNode condition, LNode body, bool negate = false)
+    private static BasicBlockBuilder ImplementIf(BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename,
+        Scope scope, BranchLabels branchLabels, LNode condition, LNode body, bool negate = false)
     {
         var if_start = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_start"));
         var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
@@ -36,7 +39,8 @@ public class IfImplementor : IStatementImplementor
 
         AppendExpression(if_condition, condition, context.Environment.Boolean, context, scope, modulename);
 
-        if_condition.Flow = new JumpConditionalFlow(if_start, negate ? ConditionalJumpKind.False : ConditionalJumpKind.True);
+        if_condition.Flow =
+            new JumpConditionalFlow(if_start, negate ? ConditionalJumpKind.False : ConditionalJumpKind.True);
 
         block.Flow = new JumpFlow(if_condition);
 
@@ -48,8 +52,9 @@ public class IfImplementor : IStatementImplementor
         return if_after;
     }
 
-    private static BasicBlockBuilder ImplementIfElse(BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename,
-                                                    Scope scope, BranchLabels branchLabels, LNode condition, LNode body, LNode elseBody)
+    private static BasicBlockBuilder ImplementIfElse(BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename,
+        Scope scope, BranchLabels branchLabels, LNode condition, LNode body, LNode elseBody)
     {
         var if_condition = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_condition"));
         var if_body = block.Graph.AddBasicBlock(LabelGenerator.NewLabel("if_start"));
@@ -68,6 +73,7 @@ public class IfImplementor : IStatementImplementor
         {
             if_body.Flow = new JumpFlow(else_end);
         }
+
         if (else_body.Flow is NothingFlow)
         {
             else_body.Flow = new JumpFlow(else_end);

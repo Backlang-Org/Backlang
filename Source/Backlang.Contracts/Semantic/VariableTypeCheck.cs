@@ -11,7 +11,7 @@ internal class VariableTypeCheck : ISemanticCheck
 
         foreach (var node in letNodes)
         {
-            if (node is (_, (_, (_, var type)), (_, _, var value)))
+            if (node is var (_, (_, (_, type)), (_, _, value)))
             {
                 if (type.Name.Name == "" && value.Calls(CodeSymbols.Void))
                 {

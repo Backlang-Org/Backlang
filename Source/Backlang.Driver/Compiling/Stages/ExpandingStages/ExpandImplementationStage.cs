@@ -4,24 +4,23 @@ namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
 
 public sealed class ExpandImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
-    private static readonly ImmutableList<Symbol> _primitiveTypes = new List<Symbol>()
+    private static readonly ImmutableList<Symbol> _primitiveTypes = new List<Symbol>
     {
         (Symbol)"u8",
         (Symbol)"u16",
         (Symbol)"u32",
         (Symbol)"u64",
-
         (Symbol)"i8",
         (Symbol)"i16",
         (Symbol)"i32",
         (Symbol)"i64",
-
         (Symbol)"f16",
         (Symbol)"f32",
-        (Symbol)"f64",
+        (Symbol)"f64"
     }.ToImmutableList();
 
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         foreach (var tree in context.Trees)
         {
@@ -40,7 +39,9 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
         var maxIndex = _primitiveTypes.IndexOf(max);
         var difference = maxIndex - minIndex;
 
-        return LNode.Call(Symbols.ToExpand, LNode.List(Enumerable.Range(minIndex, difference + 1).Select(i => SyntaxTree.Type(_primitiveTypes[i].Name, LNode.List())).ToArray()));
+        return LNode.Call(Symbols.ToExpand,
+            LNode.List(Enumerable.Range(minIndex, difference + 1)
+                .Select(i => SyntaxTree.Type(_primitiveTypes[i].Name, LNode.List())).ToArray()));
     }
 
     private static LNode GetTargets(LNode targets)
@@ -49,7 +50,8 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
         {
             return GenerateRangeTargets(targets);
         }
-        else if (targets.Calls(Symbols.ToExpand))
+
+        if (targets.Calls(Symbols.ToExpand))
         {
             var newTargets = new LNodeList();
             foreach (var arg in targets.Args)
@@ -99,7 +101,7 @@ public sealed class ExpandImplementationStage : IHandler<CompilerContext, Compil
                     var impl = node.Clone();
                     impl = impl.WithArgChanged(0, target);
 
-                    impl = impl.WithArgs(impl.RecursiveReplace((node) => {
+                    impl = impl.WithArgs(impl.RecursiveReplace(node => {
                         var body = node.Args[1];
 
                         if (body.Name != CodeSymbols.Fn)

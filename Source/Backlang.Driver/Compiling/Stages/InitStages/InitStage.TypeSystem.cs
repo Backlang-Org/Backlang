@@ -50,8 +50,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         }
         else
         {
-            context.Messages.Add(Message.Error(new(ErrorID.TargetNotFound, context.Options.Target)));
-            return;
+            context.Messages.Add(Message.Error(new LocalizableString(ErrorID.TargetNotFound, context.Options.Target)));
         }
     }
 
@@ -62,10 +61,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
         var instrinsicsType = new DescribedType(
             new SimpleName(type.Name).Qualify(
-                qualifier), intrinsicAssembly)
-        {
-            IsStatic = true
-        };
+                qualifier), intrinsicAssembly) { IsStatic = true };
 
         context.Binder.AddAssembly(context.Environment.Void.Parent.Assembly);
 
@@ -83,7 +79,8 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
         foreach (var method in methods)
         {
-            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, context.Binder, method, toAdjustParameters, method.Name.ToLower());
+            ClrTypeEnvironmentBuilder.AddMethod(instrinsicsType, context.Binder, method, toAdjustParameters,
+                method.Name.ToLower());
         }
 
         foreach (var toadjust in toAdjustParameters)
@@ -92,9 +89,13 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
         }
     }
 
-    private static void AddIntrinsicEnum(CompilerContext context, Type fieldType, QualifiedName qualifier, DescribedAssembly intrinsicAssembly)
+    private static void AddIntrinsicEnum(CompilerContext context, Type fieldType, QualifiedName qualifier,
+        DescribedAssembly intrinsicAssembly)
     {
-        if (!fieldType.IsAssignableTo(typeof(Enum))) return;
+        if (!fieldType.IsAssignableTo(typeof(Enum)))
+        {
+            return;
+        }
 
         var type = new DescribedType(new SimpleName(fieldType.Name).Qualify(qualifier), intrinsicAssembly);
 
@@ -114,7 +115,10 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
 
     private void InitPluginTargets(PluginContainer plugins)
     {
-        if (plugins == null) return;
+        if (plugins == null)
+        {
+            return;
+        }
 
         foreach (var target in plugins?.Targets)
         {
@@ -123,7 +127,7 @@ public sealed partial class InitStage : IHandler<CompilerContext, CompilerContex
     }
 
     private void AddTarget<T>()
-                    where T : ICompilationTarget, new()
+        where T : ICompilationTarget, new()
     {
         var target = new T();
         _targets.Add(target.Name, target);

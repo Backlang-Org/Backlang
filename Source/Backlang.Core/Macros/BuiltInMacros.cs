@@ -8,7 +8,7 @@ namespace Backlang.Core.Macros;
 [ContainsMacros]
 public static partial class BuiltInMacros
 {
-    private static LNodeFactory F = new LNodeFactory(EmptySourceFile.Synthetic);
+    private static readonly LNodeFactory F = new(EmptySourceFile.Synthetic);
 
     [LexicalMacro("todo", "Add hint to do something", "todo")]
     public static LNode Todo(LNode node, IMacroContext context)
@@ -39,11 +39,14 @@ public static partial class BuiltInMacros
     }
 
     [LexicalMacro(@"nameof(id_or_expr)",
-        @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")", "nameof", Mode = MacroMode.MatchIdentifierOrCall)]
-    public static LNode @Nameof(LNode nameof, IMacroContext context)
+        @"Converts the 'key' name component of an expression to a string (e.g. nameof(A.B<C>(D)) == ""B"")", "nameof",
+        Mode = MacroMode.MatchIdentifierOrCall)]
+    public static LNode Nameof(LNode nameof, IMacroContext context)
     {
         if (nameof.ArgCount != 1)
+        {
             return null;
+        }
 
         var arg = nameof.Args[0];
         if (arg.IsCall)
@@ -57,6 +60,7 @@ public static partial class BuiltInMacros
 
                 return arg.Args[1];
             }
+
             if (arg.Name == (Symbol)"::")
             {
                 if (arg.Args[1].IsCall)
@@ -66,7 +70,8 @@ public static partial class BuiltInMacros
 
                 return arg.Args[1];
             }
-            else if (arg.Target.IsId)
+
+            if (arg.Target.IsId)
             {
                 return arg.Target;
             }
@@ -75,11 +80,14 @@ public static partial class BuiltInMacros
         return arg;
     }
 
-    [LexicalMacro("concatId(id, id)", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)", "concatId", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("concatId(id, id)", "Concats 2 Ids to a new Id (eg. concatId(a, b) == ab)", "concatId",
+        Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode concatId(LNode concatID, IMacroContext context)
     {
         if (concatID.ArgCount < 2)
+        {
             return null;
+        }
 
         var sb = new StringBuilder();
 
@@ -99,8 +107,8 @@ public static partial class BuiltInMacros
     }
 
     [LexicalMacro("$variableName",
-            "Expands a variable (scoped property) assigned by a macro such as `static deconstruct()` or `static tryDeconstruct()`.",
-            "'$", Mode = MacroMode.Passive)]
+        "Expands a variable (scoped property) assigned by a macro such as `static deconstruct()` or `static tryDeconstruct()`.",
+        "'$", Mode = MacroMode.Passive)]
     public static LNode DollarSignVariable(LNode node, IMacroContext context)
     {
         LNode id;
@@ -110,20 +118,24 @@ public static partial class BuiltInMacros
             if (context.ScopedProperties.TryGetValue("$" + id.Name.Name, out value))
             {
                 if (value is LNode)
+                {
                     return ((LNode)value).WithRange(id.Range);
-                else
-                    context.Sink.Warning(id, "The specified scoped property is not a syntax tree. " +
-                        "Use `#getScopedProperty({0})` to insert it as a literal.", id.Name);
+                }
+
+                context.Sink.Warning(id, "The specified scoped property is not a syntax tree. " +
+                                         "Use `#getScopedProperty({0})` to insert it as a literal.", id.Name);
             }
             else
             {
                 context.Sink.Error(id, "There is no macro property in scope named `{0}`", id.Name);
             }
         }
+
         return null;
     }
 
-    [LexicalMacro("left <-> right", "Swaps the values of the two variables", "'<->", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("left <-> right", "Swaps the values of the two variables", "'<->",
+        Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode Swap(LNode node, IMacroContext context)
     {
         var left = node.Args[0];
@@ -131,13 +143,15 @@ public static partial class BuiltInMacros
         var temp = GenerateId(null, context);
 
         return LNode.Call(CodeSymbols.Braces, LNode.List(
-            LNode.Call(CodeSymbols.Var, LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(temp, left)))),
+            LNode.Call(CodeSymbols.Var,
+                LNode.List(LNode.Missing, LNode.Call(CodeSymbols.Assign, LNode.List(temp, left)))),
             LNode.Call(CodeSymbols.Assign, LNode.List(left, right)),
             LNode.Call(CodeSymbols.Assign, LNode.List(right, temp))
-            )).SetStyle(NodeStyle.StatementBlock);
+        )).SetStyle(NodeStyle.StatementBlock);
     }
 
-    [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)", "generateId", Mode = MacroMode.MatchIdentifierOrCall)]
+    [LexicalMacro("generateId()", "Generates a new Id (eg. generateId() == a0)", "generateId",
+        Mode = MacroMode.MatchIdentifierOrCall)]
     public static LNode GenerateId(LNode generateID, IMacroContext context)
     {
         var alphabet = "abcdefghijklmnopqrstuvwxyz_";
@@ -148,6 +162,6 @@ public static partial class BuiltInMacros
             sb.Append(Random.Shared.Next(0, alphabet.Length));
         }
 
-        return F.Id("_" + sb.ToString() + context.IncrementTempCounter());
+        return F.Id("_" + sb + context.IncrementTempCounter());
     }
 }

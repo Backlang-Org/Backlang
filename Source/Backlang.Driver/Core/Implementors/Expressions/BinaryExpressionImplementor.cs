@@ -8,9 +8,9 @@ public class BinaryExpressionImplementor : IExpressionImplementor
     public bool CanHandle(LNode node)
     {
         return node.ArgCount == 2
-            && !node.Calls(CodeSymbols.ColonColon)
-            && !node.Calls(CodeSymbols.Tuple)
-            && node.Name.Name.StartsWith("'");
+               && !node.Calls(CodeSymbols.ColonColon)
+               && !node.Calls(CodeSymbols.Tuple)
+               && node.Name.Name.StartsWith("'");
     }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
@@ -24,14 +24,18 @@ public class BinaryExpressionImplementor : IExpressionImplementor
 
         if (leftType.TryGetOperator(node.Name.Name, out var opMethod, leftType, rightType))
         {
-            return block.AppendInstruction(Instruction.CreateCall(opMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs }));
+            return block.AppendInstruction(Instruction.CreateCall(opMethod, MethodLookup.Static,
+                new ValueTag[] { lhs, rhs }));
         }
-        else if (node.Calls(CodeSymbols.Add) && (leftType == context.Environment.String || rightType == context.Environment.String))
+
+        if (node.Calls(CodeSymbols.Add) &&
+            (leftType == context.Environment.String || rightType == context.Environment.String))
         {
             var concatMethods = context.Environment.String.Methods
                 .Where(_ => _.Name.ToString() == "Concat" && _.Parameters.Count == 2);
 
-            var matchingConcatMethod = concatMethods.FirstOrDefault(_ => _.Parameters[0].Type == leftType && _.Parameters[1].Type == rightType);
+            var matchingConcatMethod = concatMethods.FirstOrDefault(_ =>
+                _.Parameters[0].Type == leftType && _.Parameters[1].Type == rightType);
 
             var call = Instruction.CreateCall(matchingConcatMethod, MethodLookup.Static, new ValueTag[] { lhs, rhs });
 
@@ -39,6 +43,7 @@ public class BinaryExpressionImplementor : IExpressionImplementor
         }
         //ToDo: add check for unittype and no unitype. then unpack unit type
 
-        return block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
+        return block.AppendInstruction(
+            Instruction.CreateBinaryArithmeticIntrinsic(node.Name.Name.Substring(1), false, elementType, lhs, rhs));
     }
 }

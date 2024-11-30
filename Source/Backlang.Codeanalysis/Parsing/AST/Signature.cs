@@ -1,3 +1,4 @@
+using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Parsing.AST.Declarations;
 using Loyc.Syntax;
 
@@ -13,7 +14,7 @@ public sealed class Signature
         {
             var range = new SourceRange(parser.Document, iterator.Current.Start, iterator.Current.Text.Length);
 
-            parser.AddError(new(Core.ErrorID.ExpectedTypeLiteral, iterator.Current.Text), range);
+            parser.AddError(new LocalizableString(ErrorID.ExpectedTypeLiteral, iterator.Current.Text), range);
         }
 
         LNode returnType = LNode.Missing;

@@ -4,7 +4,8 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed class EmitTreeStage : IHandler<CompilerContext, CompilerContext>
 {
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         var sb = new StringBuilder();
         var tree = context.Trees.FirstOrDefault();

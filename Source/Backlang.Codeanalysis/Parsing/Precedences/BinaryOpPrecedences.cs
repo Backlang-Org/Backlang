@@ -25,5 +25,5 @@ public enum BinaryOpPrecedences
 
     Dot = 8,
     OperationShortcuts = 2, // += -= *= /=
-    Equals = OperationShortcuts,
+    Equals = OperationShortcuts
 }

@@ -2,7 +2,6 @@ using Backlang.Contracts;
 using Backlang.Driver;
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 
@@ -12,7 +11,7 @@ public partial class Bridge
     public static string CompileAndRun(string src)
     {
         var context = new CompilerContext();
-        context.Playground = new() { IsPlayground = true, Source = src };
+        context.Playground = new PlaygroundData { IsPlayground = true, Source = src };
 
         var assemblyStream = new MemoryStream();
 

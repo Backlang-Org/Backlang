@@ -6,7 +6,8 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class VariableImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
         var decl = node.Args[1];
 
@@ -22,12 +23,12 @@ public class VariableImplementor : IStatementImplementor
         {
             elementType = deducedValueType;
 
-            if (elementType == context.Environment.Void && !scope.TryGet<TypeScopeItem>(node.Args[0].Name.Name, out var _))
+            if (elementType == context.Environment.Void && !scope.TryGet<TypeScopeItem>(node.Args[0].Name.Name, out _))
             {
-                if (node.Args[0] is (_, (_, var tp))) //ToDo: Implement Helper function To Get Typename
+                if (node.Args[0] is var (_, (_, tp))) //ToDo: Implement Helper function To Get Typename
                 {
                     context.AddError(node,
-                        new(ErrorID.CannotBeResolved, tp.Name.ToString()));
+                        new LocalizableString(ErrorID.CannotBeResolved, tp.Name.ToString()));
                 }
             }
         }
@@ -41,13 +42,15 @@ public class VariableImplementor : IStatementImplementor
                     if (ut != deducedValueType)
                     {
                         context.AddError(node,
-                            new(ErrorID.UnitTypeMismatch, elementType.ToString(), deducedValueType.ToString()));
+                            new LocalizableString(ErrorID.UnitTypeMismatch, elementType.ToString(),
+                                deducedValueType.ToString()));
                     }
+
                     return block;
                 }
 
                 context.AddError(node,
-                    new(ErrorID.TypeMismatch, elementType.ToString(), deducedValueType.ToString()));
+                    new LocalizableString(ErrorID.TypeMismatch, elementType.ToString(), deducedValueType.ToString()));
             }
         }
 
@@ -55,20 +58,21 @@ public class VariableImplementor : IStatementImplementor
         var isMutable = node.Attrs.Contains(LNode.Id(Symbols.Mutable));
 
         if (scope.Add(new VariableScopeItem
-        {
-            Name = varname,
-            IsMutable = isMutable,
-            Parameter = new Parameter(elementType, varname)
-        }))
+            {
+                Name = varname, IsMutable = isMutable, Parameter = new Parameter(elementType, varname)
+            }))
         {
             block.AppendParameter(new BlockParameter(elementType, varname, !isMutable));
         }
         else
         {
-            context.AddError(decl.Args[0], new(ErrorID.AlreadyDeclared, varname));
+            context.AddError(decl.Args[0], new LocalizableString(ErrorID.AlreadyDeclared, varname));
         }
 
-        if (deducedValueType == null) return block;
+        if (deducedValueType == null)
+        {
+            return block;
+        }
 
         ImplementationStage.AppendExpression(block, decl.Args[1], elementType, context,
             scope, modulename);

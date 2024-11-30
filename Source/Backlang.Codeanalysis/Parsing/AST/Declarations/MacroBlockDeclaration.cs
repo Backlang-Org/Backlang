@@ -39,14 +39,13 @@ public sealed class MacroBlockDeclaration : IParsePoint
                 return SyntaxTree.Factory.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
                     .SetStyle(NodeStyle.Special).WithRange(nameExpression.Range.StartIndex, iterator.Prev.End);
             }
-            else
-            {
-                parser.Iterator.Match(TokenType.Semicolon);
-            }
+
+            parser.Iterator.Match(TokenType.Semicolon);
 
             return LNode.Call(nameExpression, arguments);
         }
-        else if (iterator.Current.Type == TokenType.OpenCurly)
+
+        if (iterator.Current.Type == TokenType.OpenCurly)
         {
             iterator.NextToken();
 

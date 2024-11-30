@@ -5,9 +5,10 @@ namespace Backlang.Driver.Core.Implementors.Statements;
 
 public class DoWhileImplementor : IStatementImplementor
 {
-    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method, QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
+    public BasicBlockBuilder Implement(LNode node, BasicBlockBuilder block, CompilerContext context, IMethod method,
+        QualifiedName? modulename, Scope scope, BranchLabels branchLabels = null)
     {
-        if (node is (_, var body, var condition))
+        if (node is var (_, body, condition))
         {
             TypeDeducer.ExpectType(condition, scope, context,
                 modulename.Value, context.Environment.Boolean);

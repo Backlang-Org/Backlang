@@ -7,7 +7,7 @@ public static class BinderExtensions
     private static readonly ConcurrentDictionary<string, IMethod> _functionCache = new();
 
     /// <summary>
-    /// Finds a method based on a selector
+    ///     Finds a method based on a selector
     /// </summary>
     /// <param name="binder"></param>
     /// <param name="selector">System.StringBuilder::AppendLine(System.String)</param>
@@ -22,18 +22,19 @@ public static class BinderExtensions
         var convertedSelector = GetSelector(selector);
 
         var type = binder.ResolveTypes(convertedSelector.Typename)?.FirstOrDefault();
-        
-        if(type == null) {
+
+        if (type == null)
+        {
             throw new Exception($"Type '{type.FullName}' not found");
         }
-        
+
         var methods = type.Methods
             .Where(_ => _.Name.ToString() == convertedSelector.FunctionName)
             .Where(_ => _.Parameters.Count == convertedSelector.ParameterTypes.Length);
 
         foreach (var method in methods)
         {
-            for (int i = 0; i < method.Parameters.Count; i++)
+            for (var i = 0; i < method.Parameters.Count; i++)
             {
                 if (method.Parameters[i].Type.FullName.ToString() == convertedSelector.ParameterTypes[i])
                 {

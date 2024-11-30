@@ -19,8 +19,10 @@ internal class ModifierCheck : ISemanticCheck
     {
         var attrs = node.Attrs;
         var condition = (attrs.Contains(LNode.Id(CodeSymbols.Public)) && attrs.Contains(LNode.Id(CodeSymbols.Private)))
-             || (attrs.Contains(LNode.Id(CodeSymbols.Public)) && attrs.Contains(LNode.Id(CodeSymbols.Internal)))
-             || (attrs.Contains(LNode.Id(CodeSymbols.Private)) && attrs.Contains(LNode.Id(CodeSymbols.Internal)));
+                        || (attrs.Contains(LNode.Id(CodeSymbols.Public)) &&
+                            attrs.Contains(LNode.Id(CodeSymbols.Internal)))
+                        || (attrs.Contains(LNode.Id(CodeSymbols.Private)) &&
+                            attrs.Contains(LNode.Id(CodeSymbols.Internal)));
 
         if (condition)
         {
@@ -30,6 +32,7 @@ internal class ModifierCheck : ISemanticCheck
 
     private bool IsModifiableNode(LNode arg)
     {
-        return arg.Calls(CodeSymbols.Class) || arg.Calls(CodeSymbols.Struct) || arg.Calls(CodeSymbols.Fn) || arg.Calls(Symbols.Bitfield);
+        return arg.Calls(CodeSymbols.Class) || arg.Calls(CodeSymbols.Struct) || arg.Calls(CodeSymbols.Fn) ||
+               arg.Calls(Symbols.Bitfield);
     }
 }

@@ -8,8 +8,8 @@ public class VariableStatement : IParsePoint
     {
         var keywordToken = iterator.Prev;
 
-        bool isMutable = false;
-        LNode type = SyntaxTree.Type("", LNode.List());
+        var isMutable = false;
+        var type = SyntaxTree.Type("", LNode.List());
         LNode value = LNode.Missing;
 
         Token mutableToken = null;

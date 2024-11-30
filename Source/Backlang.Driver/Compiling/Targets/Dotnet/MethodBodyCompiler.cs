@@ -6,7 +6,7 @@ using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
+using Mono.Collections.Generic;
 using static Backlang.Driver.Compiling.Stages.CompilationStages.ImplementationStage;
 using Instruction = Mono.Cecil.Cil.Instruction;
 using LoadFieldPrototype = Furesoft.Core.CodeDom.Compiler.Instructions.LoadFieldPrototype;
@@ -26,10 +26,11 @@ public static class MethodBodyCompiler
         [typeof(IntrinsicPrototype)] = new ArithmetikEmitter(),
         [typeof(AllocaArrayPrototype)] = new NewArrayEmitter(),
         [typeof(LoadPrototype)] = new LoadEmitter(),
-        [typeof(CopyPrototype)] = new CopyEmitter(),
+        [typeof(CopyPrototype)] = new CopyEmitter()
     };
 
-    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod, AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
+    public static Dictionary<string, VariableDefinition> Compile(DescribedBodyMethod m, MethodDefinition clrMethod,
+        AssemblyDefinition assemblyDefinition, TypeDefinition parentType)
     {
         var ilProcessor = clrMethod.Body.GetILProcessor();
 
@@ -58,7 +59,7 @@ public static class MethodBodyCompiler
         var parentType = assemblyDefinition.ImportType(method.ParentType).Resolve();
 
         foreach (var m in parentType.Methods
-            .Where(_ => _.Name == method.Name.ToString()))
+                     .Where(_ => _.Name == method.Name.ToString()))
         {
             var parameters = m.Parameters;
 
@@ -69,7 +70,8 @@ public static class MethodBodyCompiler
                     if (method.IsConstructor)
                     {
                         var dts = (DirectTypeSpecialization)GenericTypeMap.Cache[(method.FullName, method)];
-                        var args = dts.GetRecursiveGenericArguments().Select(_ => assemblyDefinition.ImportType(_)).ToArray();
+                        var args = dts.GetRecursiveGenericArguments().Select(_ => assemblyDefinition.ImportType(_))
+                            .ToArray();
                         var genericType = assemblyDefinition.ImportType(dts);
                         var gctor = genericType.Resolve().Methods.FirstOrDefault(_ => _.Name == method.Name.ToString());
 
@@ -82,7 +84,9 @@ public static class MethodBodyCompiler
                 }
 
                 if (MatchesParameters(parameters, method))
+                {
                     return assemblyDefinition.MainModule.ImportReference(m);
+                }
             }
         }
 
@@ -115,7 +119,8 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static void FixJumps(ILProcessor ilProcessor, Dictionary<BasicBlockTag, int> labels, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
+    private static void FixJumps(ILProcessor ilProcessor, Dictionary<BasicBlockTag, int> labels,
+        List<(int InstructionIndex, BasicBlockTag Target)> fixups)
     {
         foreach (var fixup in fixups)
         {
@@ -129,8 +134,8 @@ public static class MethodBodyCompiler
 
     private static void CompileBlock(BasicBlock block, AssemblyDefinition assemblyDefinition,
         ILProcessor ilProcessor, MethodDefinition clrMethod, TypeDefinition parentType,
-         Dictionary<string, VariableDefinition> variables,
-         List<(int InstructionIndex, BasicBlockTag Target)> fixups, Dictionary<BasicBlockTag, int> labels)
+        Dictionary<string, VariableDefinition> variables,
+        List<(int InstructionIndex, BasicBlockTag Target)> fixups, Dictionary<BasicBlockTag, int> labels)
     {
         labels.Add(block.Tag, ilProcessor.Body.Instructions.Count);
 
@@ -225,7 +230,8 @@ public static class MethodBodyCompiler
         EmitBlockFlow(block, ilProcessor, clrMethod, fixups);
     }
 
-    private static void EmitBlockFlow(BasicBlock block, ILProcessor ilProcessor, MethodDefinition clrMethod, List<(int InstructionIndex, BasicBlockTag Target)> fixups)
+    private static void EmitBlockFlow(BasicBlock block, ILProcessor ilProcessor, MethodDefinition clrMethod,
+        List<(int InstructionIndex, BasicBlockTag Target)> fixups)
     {
         if (block.Flow is ReturnFlow rf)
         {
@@ -275,13 +281,15 @@ public static class MethodBodyCompiler
         }
     }
 
-    private static void EmitLoadLocal(ILProcessor ilProcessor, LoadLocalPrototype lloc, Dictionary<string, VariableDefinition> variables)
+    private static void EmitLoadLocal(ILProcessor ilProcessor, LoadLocalPrototype lloc,
+        Dictionary<string, VariableDefinition> variables)
     {
         var definition = variables[lloc.Parameter.Name.ToString()];
         ilProcessor.Emit(OpCodes.Ldloc, definition);
     }
 
-    private static void EmitStoreField(TypeDefinition parentType, ILProcessor ilProcessor, StoreFieldPointerPrototype fp)
+    private static void EmitStoreField(TypeDefinition parentType, ILProcessor ilProcessor,
+        StoreFieldPointerPrototype fp)
     {
         var field = parentType.Fields.FirstOrDefault(_ => _.Name == fp.Field.Name.ToString());
 
@@ -302,7 +310,8 @@ public static class MethodBodyCompiler
         ilProcessor.Emit(OpCodes.Ldflda, field);
     }
 
-    private static void EmitLoadArg(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeReference parentType, LoadArgPrototype larg)
+    private static void EmitLoadArg(MethodDefinition clrMethod, ILProcessor ilProcessor, TypeReference parentType,
+        LoadArgPrototype larg)
     {
         var param = clrMethod.Parameters.FirstOrDefault(_ => _.Name == larg.Parameter.Name.ToString());
 
@@ -310,7 +319,10 @@ public static class MethodBodyCompiler
         {
             var index = clrMethod.Parameters.IndexOf(param);
 
-            if (!clrMethod.IsStatic) index++;
+            if (!clrMethod.IsStatic)
+            {
+                index++;
+            }
 
             ilProcessor.Emit(OpCodes.Ldarg, index);
         }
@@ -340,6 +352,7 @@ public static class MethodBodyCompiler
                 {
                     ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt8());
                 }
+
                 break;
 
             case 16:
@@ -351,6 +364,7 @@ public static class MethodBodyCompiler
                 {
                     ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt16());
                 }
+
                 break;
 
             case 32:
@@ -362,6 +376,7 @@ public static class MethodBodyCompiler
                 {
                     ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt32());
                 }
+
                 break;
 
             case 64:
@@ -373,9 +388,7 @@ public static class MethodBodyCompiler
                 {
                     ilProcessor.Emit(OpCodes.Ldc_I4, ic.ToUInt64());
                 }
-                break;
 
-            default:
                 break;
         }
     }
@@ -401,10 +414,11 @@ public static class MethodBodyCompiler
         return variable;
     }
 
-    private static bool MatchesParameters(Mono.Collections.Generic.Collection<ParameterDefinition> parameters, IMethod method)
+    private static bool MatchesParameters(Collection<ParameterDefinition> parameters, IMethod method)
     {
         //ToDo: refactor to improve code
-        var methodParams = string.Join(',', method.Parameters.Select(_ => NormalizeTypename(_.Type?.FullName.ToString())));
+        var methodParams =
+            string.Join(',', method.Parameters.Select(_ => NormalizeTypename(_.Type?.FullName.ToString())));
         var monocecilParams = string.Join(',', parameters.Select(_ => _.ParameterType.FullName.ToString()));
 
         return methodParams.Equals(monocecilParams, StringComparison.Ordinal);

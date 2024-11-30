@@ -1,13 +1,14 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Instruction = Furesoft.Core.CodeDom.Compiler.Instruction;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet.Emitters;
 
 internal class CallEmitter : IEmitter
 {
     public void Emit(AssemblyDefinition assemblyDefinition, ILProcessor ilProcessor,
-        Furesoft.Core.CodeDom.Compiler.Instruction instruction, BasicBlock block)
+        Instruction instruction, BasicBlock block)
     {
         var callPrototype = (CallPrototype)instruction.Prototype;
 
@@ -28,7 +29,7 @@ internal class CallEmitter : IEmitter
             var arg = method.Parameters[i];
 
             //ToDo: move to IR
-            if (arg.ParameterType.FullName.ToString() == "System.Object")
+            if (arg.ParameterType.FullName == "System.Object")
             {
                 ilProcessor.Emit(OpCodes.Box, assemblyDefinition.ImportType(valueType));
             }
@@ -44,7 +45,7 @@ internal class CallEmitter : IEmitter
         ilProcessor.Emit(op,
             assemblyDefinition.MainModule.ImportReference(
                 method
-                )
-            );
+            )
+        );
     }
 }

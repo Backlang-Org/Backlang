@@ -9,14 +9,17 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerContext>
 {
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Trees = null;
 
         var description = GetDescription(context);
 
         if (context.Options.Version != null)
-            context.Assembly.AddAttribute(new VersionAttribute() { Version = Version.Parse(context.Options.Version) });
+        {
+            context.Assembly.AddAttribute(new VersionAttribute { Version = Version.Parse(context.Options.Version) });
+        }
 
         context.CompilationTarget.BeforeCompiling(context);
 
@@ -25,7 +28,7 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
         if (!context.Playground.IsPlayground)
         {
             var resultPath = Path.Combine(context.TempOutputPath,
-                            context.Options.OutputFilename);
+                context.Options.OutputFilename);
 
             if (File.Exists(resultPath))
             {
@@ -48,14 +51,15 @@ public sealed class CompileTargetStage : IHandler<CompilerContext, CompilerConte
 
         if (context.Options.OutputType == "MacroLib")
         {
-            attributes = new AttributeMap(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(MacroLibAttribute))));
+            attributes =
+                new AttributeMap(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(MacroLibAttribute))));
         }
 
         var entryPoint = GetEntryPoint(context);
 
         context.Assembly.IsLibrary = entryPoint == null && context.Options.OutputType == "Library";
 
-        return new(context.Assembly.Name.Qualify(),
+        return new AssemblyContentDescription(context.Assembly.Name.Qualify(),
             attributes, context.Assembly, entryPoint, context.Environment);
     }
 

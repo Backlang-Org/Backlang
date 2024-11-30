@@ -1,43 +1,40 @@
 using Backlang.Contracts.TypeSystem;
 using Flo;
-using Loyc.Geometry;
 
 namespace Backlang.Driver.Compiling.Stages;
 
 public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>()
+    public static readonly ImmutableDictionary<string, Type> TypenameTable = new Dictionary<string, Type>
     {
         ["obj"] = typeof(object),
         ["none"] = typeof(void),
-
         ["bool"] = typeof(bool),
-
         ["u8"] = typeof(byte),
         ["u16"] = typeof(ushort),
         ["u32"] = typeof(uint),
         ["u64"] = typeof(ulong),
-
         ["i8"] = typeof(sbyte),
         ["i16"] = typeof(short),
         ["i32"] = typeof(int),
         ["i64"] = typeof(long),
-
         ["f16"] = typeof(Half),
         ["f32"] = typeof(float),
         ["f64"] = typeof(double),
-
         ["char"] = typeof(char),
-        ["string"] = typeof(string),
+        ["string"] = typeof(string)
     }.ToImmutableDictionary();
 
     public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename)
-        => ResolveTypeWithModule(typeNode, context, modulename, ConversionUtils.GetQualifiedName(typeNode));
+    {
+        return ResolveTypeWithModule(typeNode, context, modulename, ConversionUtils.GetQualifiedName(typeNode));
+    }
 
-    public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename, QualifiedName fullName)
+    public static IType ResolveTypeWithModule(LNode typeNode, CompilerContext context, QualifiedName modulename,
+        QualifiedName fullName)
     {
         bool isPointer;
-        PointerKind pointerKind = PointerKind.Transient;
+        var pointerKind = PointerKind.Transient;
 
         if (fullName.FullyUnqualifiedName is PointerName pName)
         {
@@ -60,7 +57,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         {
             resolvedType = Utils.ResolveType(context.Binder, TypenameTable[fullName.FullName]);
 
-            if (typeNode is (_, (_, _, (_, var unit))) && unit != LNode.Missing)
+            if (typeNode is var (_, (_, _, (_, unit))) && unit != LNode.Missing)
             {
                 ResolveUnitType(context, modulename, ref resolvedType, unit);
             }
@@ -92,7 +89,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             if (resolvedType == null)
             {
-                if (context.FileScope.ImportetNamespaces.TryGetValue(typeNode.Range.Source.FileName, out var importedNamespaces))
+                if (context.FileScope.ImportetNamespaces.TryGetValue(typeNode.Range.Source.FileName,
+                        out var importedNamespaces))
                 {
                     ResolveImportedType(typeNode, context, ref fullName, ref resolvedType);
                 }
@@ -115,14 +113,15 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
     private static IType ResolveNullableType(LNode nullableArg, CompilerContext context, QualifiedName modulename)
     {
-        var tupleType = Utils.ResolveType(context.Binder, $"Nullable`1", "System");
+        var tupleType = Utils.ResolveType(context.Binder, "Nullable`1", "System");
 
         var innerType = ResolveTypeWithModule(nullableArg, context, modulename);
-        
-        return tupleType.MakeGenericType(new List<IType>() { innerType });
+
+        return tupleType.MakeGenericType(new List<IType> { innerType });
     }
 
-    private static void ResolveImportedType(LNode typeNode, CompilerContext context, ref QualifiedName fullName, ref IType resolvedType)
+    private static void ResolveImportedType(LNode typeNode, CompilerContext context, ref QualifiedName fullName,
+        ref IType resolvedType)
     {
         var namespaceImport = context.FileScope.ImportetNamespaces[typeNode.Range.Source.FileName];
 
@@ -132,7 +131,10 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
             resolvedType = context.Binder.ResolveTypes(tmpName).FirstOrDefault();
 
-            if (resolvedType != null) break;
+            if (resolvedType != null)
+            {
+                break;
+            }
         }
     }
 
@@ -159,7 +161,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         return resolvedType;
     }
 
-    private static IType ResolveFunctionType(LNode typeNode, CompilerContext context, QualifiedName modulename, string func)
+    private static IType ResolveFunctionType(LNode typeNode, CompilerContext context, QualifiedName modulename,
+        string func)
     {
         IType resolvedType;
         var fnType = Utils.ResolveType(context.Binder, func, "System");
@@ -179,9 +182,10 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         return resolvedType;
     }
 
-    private static void ResolveUnitType(CompilerContext context, QualifiedName modulename, ref IType resolvedType, LNode unit)
+    private static void ResolveUnitType(CompilerContext context, QualifiedName modulename, ref IType resolvedType,
+        LNode unit)
     {
-        if (unit is (_, (_, var u)))
+        if (unit is var (_, (_, u)))
         {
             var resolvedUnit = ResolveTypeWithModule(u, context, modulename);
 

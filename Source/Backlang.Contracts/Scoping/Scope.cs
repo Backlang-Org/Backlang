@@ -11,7 +11,7 @@ public class Scope
     public Scope(Scope parent)
     {
         Parent = parent;
-        TypeAliases = new();
+        TypeAliases = new Dictionary<string, IType>();
     }
 
     public Dictionary<string, IType> TypeAliases { get; set; }
@@ -25,16 +25,20 @@ public class Scope
             fsi.Overloads.AddRange(isI.Overloads);
             return true;
         }
-        else
-        {
-            if (Contains(item.Name)) return false;
 
-            _items.Add(item);
-            return true;
+        if (Contains(item.Name))
+        {
+            return false;
         }
+
+        _items.Add(item);
+        return true;
     }
 
-    public bool Contains(string name) => _items.Any(_ => _.Name == name);
+    public bool Contains(string name)
+    {
+        return _items.Any(_ => _.Name == name);
+    }
 
     public Scope CreateChildScope()
     {
@@ -43,7 +47,7 @@ public class Scope
 
     public IEnumerable<string> GetAllScopeNames()
     {
-        Scope scope = this;
+        var scope = this;
         while (scope != null)
         {
             foreach (var item in scope._items)

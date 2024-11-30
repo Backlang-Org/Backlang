@@ -13,9 +13,11 @@ public sealed class NameExpression : IParsePoint
         {
             iterator.NextToken();
 
-            return SyntaxTree.ArrayInstantiation(nameExpression, Expression.ParseList(parser, TokenType.CloseSquare)).WithRange(nameToken, iterator.Prev);
+            return SyntaxTree.ArrayInstantiation(nameExpression, Expression.ParseList(parser, TokenType.CloseSquare))
+                .WithRange(nameToken, iterator.Prev);
         }
-        else if (iterator.Current.Type == TokenType.OpenParen)
+
+        if (iterator.Current.Type == TokenType.OpenParen)
         {
             iterator.NextToken();
 

@@ -21,7 +21,8 @@ public static class TypeUtils
             {
                 return new PointerType(ptrType);
             }
-            else if (pn.Kind == PointerKind.Reference)
+
+            if (pn.Kind == PointerKind.Reference)
             {
                 return new ByReferenceType(ptrType);
             }
@@ -32,20 +33,19 @@ public static class TypeUtils
             {
                 return ImportArrayType(_assemblyDefinition, gn);
             }
-            else
-            {
-                return ImportGenericType(_assemblyDefinition, gn);
-            }
+
+            return ImportGenericType(_assemblyDefinition, gn);
         }
 
-        return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName.ToString(), type.FullyUnqualifiedName.ToString());
+        return ImportType(_assemblyDefinition, type.Slice(0, type.PathLength - 1).FullName,
+            type.FullyUnqualifiedName.ToString());
     }
 
     public static TypeReference ImportType(this AssemblyDefinition _assemblyDefinition, string ns, string type)
     {
         foreach (var ar in _assemblyDefinition.MainModule.AssemblyReferences)
         {
-            var ass = _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar, new ReaderParameters() { });
+            var ass = _assemblyDefinition.MainModule.AssemblyResolver.Resolve(ar, new ReaderParameters());
 
             var tr = new TypeReference(ns, type, ass.MainModule, ass.MainModule);
 
@@ -63,7 +63,8 @@ public static class TypeUtils
     private static TypeReference ImportArrayType(AssemblyDefinition _assemblyDefinition, GenericName gn)
     {
         var declName = gn.DeclarationName.ToString();
-        var rankStr = declName.Substring(declName.IndexOf("!") + 1, declName.IndexOf("`") - (declName.LastIndexOf("!") + 1));
+        var rankStr = declName.Substring(declName.IndexOf("!") + 1,
+            declName.IndexOf("`") - (declName.LastIndexOf("!") + 1));
         var rank = int.Parse(rankStr);
 
         var elType = _assemblyDefinition.ImportType(gn.TypeArgumentNames[0]);

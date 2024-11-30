@@ -9,13 +9,10 @@ public static class Program
     public static void Main(string[] args)
     {
         Parser.Default.ParseArguments<CompilerCliOptions>(args)
-              .WithParsed(options => {
-                  var context = new CompilerContext
-                  {
-                      Options = options
-                  };
+            .WithParsed(options => {
+                var context = new CompilerContext { Options = options };
 
-                  CompilerDriver.Compile(context);
-              });
+                CompilerDriver.Compile(context);
+            });
     }
 }

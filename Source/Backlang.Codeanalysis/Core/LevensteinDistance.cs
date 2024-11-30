@@ -38,11 +38,12 @@ public static class LevensteinDistance
             {
                 var cost = target[j - 1] == source[i - 1] ? 0 : 1;
                 distance[currentRow, j] = Math.Min(Math.Min(
-                            distance[previousRow, j] + 1,
-                            distance[currentRow, j - 1] + 1),
-                            distance[previousRow, j - 1] + cost);
+                        distance[previousRow, j] + 1,
+                        distance[currentRow, j - 1] + 1),
+                    distance[previousRow, j - 1] + cost);
             }
         }
+
         return distance[currentRow, m];
     }
 

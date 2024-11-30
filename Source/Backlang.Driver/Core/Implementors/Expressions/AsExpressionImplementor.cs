@@ -4,7 +4,10 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class AsExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.ArgCount == 2 && node.Calls(CodeSymbols.As);
+    public bool CanHandle(LNode node)
+    {
+        return node.ArgCount == 2 && node.Calls(CodeSymbols.As);
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)

@@ -8,7 +8,40 @@ namespace Backlang.Driver.Compiling.Stages;
 
 public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, CompilerContext>
 {
-    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context, QualifiedName modulename, Scope scope)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
+    {
+        foreach (var tree in context.Trees)
+        {
+            var modulename = ConversionUtils.GetModuleName(tree);
+
+            foreach (var node in tree.Body)
+            {
+                if (node.Calls(CodeSymbols.Struct) || node.Calls(CodeSymbols.Class) ||
+                    node.Calls(CodeSymbols.Interface))
+                {
+                    ConvertTypeOrInterface(context, node, modulename, context.GlobalScope);
+                }
+                else if (node.Calls(CodeSymbols.Fn))
+                {
+                    ConvertFreeFunction(context, node, modulename, context.GlobalScope);
+                }
+                else if (node.Calls(CodeSymbols.Enum))
+                {
+                    ConvertEnum(context, node, modulename);
+                }
+                else if (node.Calls(Symbols.Union))
+                {
+                    ConvertUnion(context, node, modulename);
+                }
+            }
+        }
+
+        return await next.Invoke(context);
+    }
+
+    public static void ConvertTypeMembers(LNode members, DescribedType type, CompilerContext context,
+        QualifiedName modulename, Scope scope)
     {
         foreach (var member in members.Args)
         {
@@ -38,7 +71,10 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             {
                 annotation = annotation.Attrs[0];
 
-                if (annotation.Name == LNode.Missing.Name) continue;
+                if (annotation.Name == LNode.Missing.Name)
+                {
+                    continue;
+                }
 
                 var fullname = ConversionUtils.GetQualifiedName(annotation.Target);
 
@@ -61,7 +97,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
                 var attrUsage = (DescribedAttribute)resolvedType.Attributes
                     .GetAll()
-                    .FirstOrDefault(_ => _.AttributeType.FullName.ToString() == typeof(AttributeUsageAttribute).FullName);
+                    .FirstOrDefault(
+                        _ => _.AttributeType.FullName.ToString() == typeof(AttributeUsageAttribute).FullName);
 
                 if (attrUsage != null)
                 {
@@ -81,9 +118,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
     }
 
-    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member, QualifiedName modulename)
+    public static DescribedProperty ConvertProperty(CompilerContext context, DescribedType type, LNode member,
+        QualifiedName modulename)
     {
-        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name), ResolveTypeWithModule(member.Args[0], context, modulename), type);
+        var property = new DescribedProperty(new SimpleName(member.Args[3].Args[0].Name.Name),
+            ResolveTypeWithModule(member.Args[0], context, modulename), type);
 
         ConversionUtils.SetAccessModifier(member, property);
 
@@ -118,44 +157,15 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         return property;
     }
 
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
-    {
-        foreach (var tree in context.Trees)
-        {
-            var modulename = ConversionUtils.GetModuleName(tree);
-
-            foreach (var node in tree.Body)
-            {
-                if (node.Calls(CodeSymbols.Struct) || node.Calls(CodeSymbols.Class) || node.Calls(CodeSymbols.Interface))
-                {
-                    ConvertTypeOrInterface(context, node, modulename, context.GlobalScope);
-                }
-                else if (node.Calls(CodeSymbols.Fn))
-                {
-                    ConvertFreeFunction(context, node, modulename, context.GlobalScope);
-                }
-                else if (node.Calls(CodeSymbols.Enum))
-                {
-                    ConvertEnum(context, node, modulename);
-                }
-                else if (node.Calls(Symbols.Union))
-                {
-                    ConvertUnion(context, node, modulename);
-                }
-            }
-        }
-
-        return await next.Invoke(context);
-    }
-
     private static void ConvertEnum(CompilerContext context, LNode node, QualifiedName modulename)
     {
-        if (node is (_, (_, var nameNode, var typeNode, var membersNode)))
+        if (node is var (_, (_, nameNode, typeNode, membersNode)))
         {
             var name = nameNode.Name;
             var members = membersNode;
 
-            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename)).FirstOrDefault();
+            var type = (DescribedType)context.Binder.ResolveTypes(new SimpleName(name.Name).Qualify(modulename))
+                .FirstOrDefault();
 
             var i = -1;
             foreach (var member in members.Args)
@@ -172,7 +182,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                         mtype = ResolveTypeWithModule(member.Args[0], context, modulename);
                     }
 
-                    if (member is (_, var mt, (_, var mname, var mvalue)))
+                    if (member is var (_, mt, (_, mname, mvalue)))
                     {
                         if (mvalue == LNode.Missing)
                         {
@@ -192,13 +202,15 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             }
 
             var valueField = new DescribedField(type, new SimpleName("value__"), false, context.Environment.Int32);
-            valueField.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+            valueField.AddAttribute(
+                new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
 
             type.AddField(valueField);
         }
     }
 
-    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member, QualifiedName modulename, Scope scope)
+    private static void ConvertFields(DescribedType type, CompilerContext context, LNode member,
+        QualifiedName modulename, Scope scope)
     {
         var ftype = member.Args[0].Args[0].Args[0];
 
@@ -214,10 +226,18 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         {
             field.InitialValue = mvalue.Args[0].Value;
         }
+
         var isMutable = member.Attrs.Any(_ => _.Name == Symbols.Mutable);
-        if (isMutable) field.AddAttribute(Attributes.Mutable);
+        if (isMutable)
+        {
+            field.AddAttribute(Attributes.Mutable);
+        }
+
         var isStatic = member.Attrs.Any(_ => _.Name == CodeSymbols.Static);
-        if (isStatic) field.IsStatic = true;
+        if (isStatic)
+        {
+            field.IsStatic = true;
+        }
 
         if (scope.Add(new FieldScopeItem { Name = mname.Name, Field = field }))
         {
@@ -229,13 +249,14 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         }
     }
 
-    private static void ConvertTypeOrInterface(CompilerContext context, LNode node, QualifiedName modulename, Scope scope)
+    private static void ConvertTypeOrInterface(CompilerContext context, LNode node, QualifiedName modulename,
+        Scope scope)
     {
         var name = ConversionUtils.GetQualifiedName(node.Args[0]);
         var inheritances = node.Args[1];
         var members = node.Args[2];
 
-        if (!scope.TryGet<TypeScopeItem>(name.FullName.ToString(), out var typeItem))
+        if (!scope.TryGet<TypeScopeItem>(name.FullName, out var typeItem))
         {
             context.AddError(node, $"Type {typeItem.Name} is not found");
             return;
@@ -280,7 +301,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             new AttributeArgument(
                 Utils.ResolveType(context.Binder, typeof(LayoutKind)),
                 LayoutKind.Explicit)
-            );
+        );
 
         type.AddAttribute(attribute);
 
@@ -307,7 +328,7 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
                     new AttributeArgument(
                         mtype,
                         mvalue.Args[0].Value)
-                    );
+                );
 
                 field.AddAttribute(attribute);
 

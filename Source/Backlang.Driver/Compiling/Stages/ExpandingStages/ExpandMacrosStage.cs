@@ -2,6 +2,7 @@
 using Backlang.Driver.InternalMacros;
 using Flo;
 using LeMP;
+using LeMP.Prelude;
 using Loyc.Collections;
 using System.Runtime.Loader;
 
@@ -9,11 +10,11 @@ namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
 
 public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContext>
 {
-    private MacroProcessor _macroProcessor;
+    private readonly MacroProcessor _macroProcessor;
 
     public ExpandMacrosStage()
     {
-        _macroProcessor = new MacroProcessor(new MessageHolder(), typeof(LeMP.Prelude.BuiltinMacros));
+        _macroProcessor = new MacroProcessor(new MessageHolder(), typeof(BuiltinMacros));
 
         //_macroProcessor.AddMacros(typeof(StandardMacros).Assembly, false);
         _macroProcessor.AddMacros(typeof(BuiltInMacros).Assembly, false);
@@ -22,7 +23,8 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
         _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(SyntacticMacros).Namespace);
     }
 
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.CompilationTarget.BeforeExpandMacros(_macroProcessor); //Only calls once
 
@@ -78,7 +80,7 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
             Severity.Info => MessageSeverity.Info,
             Severity.Warning => MessageSeverity.Warning,
             Severity.Error => MessageSeverity.Error,
-            _ => MessageSeverity.Error,
+            _ => MessageSeverity.Error
         };
     }
 }

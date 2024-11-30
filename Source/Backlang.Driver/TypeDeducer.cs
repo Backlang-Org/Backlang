@@ -1,34 +1,28 @@
 ﻿using Backlang.Codeanalysis.Core;
 using Backlang.Contracts.TypeSystem;
-using System.Linq.Expressions;
 
 namespace Backlang.Driver;
 
 public static class TypeDeducer
 {
-    public static readonly ImmutableDictionary<string, Symbol> TypenameTable = new Dictionary<string, Symbol>()
+    public static readonly ImmutableDictionary<string, Symbol> TypenameTable = new Dictionary<string, Symbol>
     {
         ["obj"] = CodeSymbols.Object,
         ["none"] = CodeSymbols.Void,
-
         ["bool"] = CodeSymbols.Bool,
-
         ["u8"] = CodeSymbols.UInt8,
         ["u16"] = CodeSymbols.UInt16,
         ["u32"] = CodeSymbols.UInt32,
         ["u64"] = CodeSymbols.UInt64,
-
         ["i8"] = CodeSymbols.Int8,
         ["i16"] = CodeSymbols.Int16,
         ["i32"] = CodeSymbols.Int32,
         ["i64"] = CodeSymbols.Int64,
-
         ["f16"] = Symbols.Float16,
         ["f32"] = Symbols.Float32,
         ["f64"] = Symbols.Float64,
-
         ["char"] = CodeSymbols.Char,
-        ["string"] = CodeSymbols.String,
+        ["string"] = CodeSymbols.String
     }.ToImmutableDictionary();
 
     //ToDo: check for implicit cast
@@ -38,32 +32,37 @@ public static class TypeDeducer
         {
             return ImplementationStage.GetLiteralType(node, context, scope, modulename);
         }
+
         if (TypenameTable.ContainsKey(node.Name.Name))
         {
             return Deduce(LNode.Id(TypenameTable[node.Name.Name]), scope, context, modulename);
         }
-        else if (node.Calls(CodeSymbols.Typeof))
+
+        if (node.Calls(CodeSymbols.Typeof))
         {
             return Utils.ResolveType(context.Binder, typeof(Type));
         }
-        else if (node.Calls(Symbols.Unit) && node is (_, var value, var unit))
+
+        if (node.Calls(Symbols.Unit) && node is var (_, value, unit))
         {
             return DeduceUnitType(scope, context, modulename, value, unit);
         }
-        else if (node.Calls(CodeSymbols.As) && node is (_, var expr, var castType))
+
+        if (node.Calls(CodeSymbols.As) && node is var (_, expr, castType))
         {
             return Deduce(castType, scope, context, modulename);
         }
-        else if (node.ArgCount == 1 && node.Calls(CodeSymbols.Default))
+
+        if (node.ArgCount == 1 && node.Calls(CodeSymbols.Default))
         {
-            if (node is (_, (_, (_, var type))))
+            if (node is var (_, (_, (_, type))))
             {
                 return Deduce(type, scope, context, modulename);
             }
         }
         else if (node.Calls(CodeSymbols.New))
         {
-            if (node is (_, var call))
+            if (node is var (_, call))
             {
                 return Deduce(call.Target, scope, context, modulename);
             }
@@ -90,25 +89,24 @@ public static class TypeDeducer
             {
                 return item?.Type;
             }
-            else
+
+            var type = TypeInheritanceStage.ResolveTypeWithModule(node, context, modulename);
+
+            if (type != null)
             {
-                var type = TypeInheritanceStage.ResolveTypeWithModule(node, context, modulename);
-
-                if (type != null)
-                {
-                    return type;
-                }
-
-                var suggestion = LevensteinDistance.Suggest(node.Name.Name, scope.GetAllScopeNames());
-
-                context.AddError(node, $"{node.Name} cannot be resolved. Did you mean '{suggestion}'?");
+                return type;
             }
+
+            var suggestion = LevensteinDistance.Suggest(node.Name.Name, scope.GetAllScopeNames());
+
+            context.AddError(node, $"{node.Name} cannot be resolved. Did you mean '{suggestion}'?");
         }
 
         return null;
     }
 
-    public static IType DeduceFunctionReturnType(LNode funcDefinition, CompilerContext context, Scope scope, QualifiedName modulename)
+    public static IType DeduceFunctionReturnType(LNode funcDefinition, CompilerContext context, Scope scope,
+        QualifiedName modulename)
     {
         var returnNodes = funcDefinition.Descendants().Where(_ => _.Calls(CodeSymbols.Return)).ToArray();
 
@@ -147,11 +145,12 @@ public static class TypeDeducer
             return first;
         }
 
-        if (ImplicitTypeCastTable.IsAssignableTo(first, second))
+        if (first.IsAssignableTo(second))
         {
             return first;
         }
-        if (ImplicitTypeCastTable.IsAssignableTo(second, first))
+
+        if (second.IsAssignableTo(first))
         {
             return second;
         }
@@ -168,12 +167,14 @@ public static class TypeDeducer
 
         if (first.BaseTypes.Count > 0 && second.BaseTypes.Count > 0)
         {
-            if (first.BaseTypes[0].FullName.ToString() == "System.ValueType" || second.BaseTypes[0].FullName.ToString() == "System.ValueType")
+            if (first.BaseTypes[0].FullName.ToString() == "System.ValueType" ||
+                second.BaseTypes[0].FullName.ToString() == "System.ValueType")
             {
                 return null;
             }
 
-            if (first.BaseTypes[0].FullName.ToString() == "System.Object" || second.BaseTypes[0].FullName.ToString() == "System.Object")
+            if (first.BaseTypes[0].FullName.ToString() == "System.Object" ||
+                second.BaseTypes[0].FullName.ToString() == "System.Object")
             {
                 return null;
             }
@@ -189,7 +190,8 @@ public static class TypeDeducer
         return null;
     }
 
-    public static void ExpectType(LNode node, Scope scope, CompilerContext context, QualifiedName modulename, IType expectedType)
+    public static void ExpectType(LNode node, Scope scope, CompilerContext context, QualifiedName modulename,
+        IType expectedType)
     {
         var deducedType = Deduce(node, scope, context, modulename);
 
@@ -199,7 +201,8 @@ public static class TypeDeducer
         }
     }
 
-    public static IType NotExpectType(LNode node, Scope scope, CompilerContext context, QualifiedName modulename, IType expectedType)
+    public static IType NotExpectType(LNode node, Scope scope, CompilerContext context, QualifiedName modulename,
+        IType expectedType)
     {
         var deducedType = Deduce(node, scope, context, modulename);
 
@@ -211,7 +214,8 @@ public static class TypeDeducer
         return deducedType;
     }
 
-    private static IType DeduceUnitType(Scope scope, CompilerContext context, QualifiedName modulename, LNode value, LNode unit)
+    private static IType DeduceUnitType(Scope scope, CompilerContext context, QualifiedName modulename, LNode value,
+        LNode unit)
     {
         var resolvedUnit = TypeInheritanceStage.ResolveTypeWithModule(unit, context, modulename);
 
@@ -226,7 +230,7 @@ public static class TypeDeducer
     private static IType DeduceArray(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)
     {
         //ToDo: Make deducing array type better
-        int rank = GetArrayRank(node);
+        var rank = GetArrayRank(node);
 
         while (node.ArgCount > 0 && node[0].Calls(CodeSymbols.Array))
         {
@@ -238,14 +242,16 @@ public static class TypeDeducer
 
     private static int GetArrayRank(LNode node)
     {
-        int rank = 0;
+        var rank = 0;
 
         while (node.Calls(CodeSymbols.Array))
         {
             rank++;
 
             if (node.ArgCount > 0)
+            {
                 node = node[0];
+            }
         }
 
         return rank;
@@ -253,7 +259,8 @@ public static class TypeDeducer
 
     private static IType DeduceTuple(LNode node, Scope scope, CompilerContext context, QualifiedName modulename)
     {
-        var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + node.ArgCount).Qualify("System")).FirstOrDefault();
+        var tupleType = context.Binder.ResolveTypes(new SimpleName("Tuple`" + node.ArgCount).Qualify("System"))
+            .FirstOrDefault();
 
         if (tupleType == null)
         {
@@ -273,12 +280,15 @@ public static class TypeDeducer
     private static IType DeduceBinary(LNode node, Scope scope, CompilerContext context, QualifiedName moduleName)
     {
         if (node.Calls(CodeSymbols.Add) || node.Calls(CodeSymbols.Mul)
-                || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) || node.Calls(CodeSymbols.AndBits)
-                || node.Calls(CodeSymbols.OrBits) || node.Calls((Symbol)"'^") || node.Calls(CodeSymbols.Mod))
+                                        || node.Calls(CodeSymbols.Div) || node.Calls(CodeSymbols.Sub) ||
+                                        node.Calls(CodeSymbols.AndBits)
+                                        || node.Calls(CodeSymbols.OrBits) || node.Calls((Symbol)"'^") ||
+                                        node.Calls(CodeSymbols.Mod))
         {
             return DeduceBinaryHelper(node, scope, context, moduleName);
         }
-        else if (node.Calls(CodeSymbols.LT)
+
+        if (node.Calls(CodeSymbols.LT)
             || node.Calls(CodeSymbols.GT) || node.Calls(CodeSymbols.LE)
             || node.Calls(CodeSymbols.GE))
         {
@@ -287,19 +297,23 @@ public static class TypeDeducer
 
             return context.Environment.Boolean;
         }
-        else if (node.Calls(CodeSymbols.Eq) || node.Calls(CodeSymbols.NotEq))
+
+        if (node.Calls(CodeSymbols.Eq) || node.Calls(CodeSymbols.NotEq))
         {
             return context.Environment.Boolean;
         }
-        else if (node.Calls(CodeSymbols.As))
+
+        if (node.Calls(CodeSymbols.As))
         {
             return DeduceExplicitCast(node, scope, context, moduleName);
         }
-        else if (node.Calls(CodeSymbols.Dot))
+
+        if (node.Calls(CodeSymbols.Dot))
         {
             return DeduceMember(node, scope, context, moduleName);
         }
-        else if (node.Calls(CodeSymbols.ColonColon))
+
+        if (node.Calls(CodeSymbols.ColonColon))
         {
             return DeduceStaticMethod(node, scope, context, moduleName);
         }
@@ -336,7 +350,7 @@ public static class TypeDeducer
         }
         else
         {
-            context.AddError(node, $"Mismatching Parameter count: {type.FullName.ToString() + "::" + fnName}()");
+            context.AddError(node, $"Mismatching Parameter count: {type.FullName + "::" + fnName}()");
         }
 
         return null;
@@ -358,7 +372,8 @@ public static class TypeDeducer
             }
 
             var funcArgs = node[1].Args.Select(_ => Deduce(_, scope, context, modulename));
-            var func = context.Binder.FindFunction(left.ToString() + "::" + qualified.Name + "(" + string.Join(',', funcArgs) + ")");
+            var func = context.Binder.FindFunction(
+                left + "::" + qualified.Name + "(" + string.Join(',', funcArgs) + ")");
 
             return func.ReturnParameter.Type;
         }
@@ -390,7 +405,8 @@ public static class TypeDeducer
         {
             return left.MakePointerType(PointerKind.Transient);
         }
-        else if (node.Calls(CodeSymbols._Dereference))
+
+        if (node.Calls(CodeSymbols._Dereference))
         {
             if (left is PointerType pt)
             {
@@ -433,7 +449,8 @@ public static class TypeDeducer
             {
                 return left;
             }
-            else if (right is UnitType && left is not UnitType)
+
+            if (right is UnitType && left is not UnitType)
             {
                 return right;
             }
@@ -444,7 +461,8 @@ public static class TypeDeducer
 
                 return left;
             }
-            else if (right.IsPointerType())
+
+            if (right.IsPointerType())
             {
                 ExpectType(node.Args[0], scope, context, modulename, context.Environment.Int32);
 

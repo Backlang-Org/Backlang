@@ -5,7 +5,10 @@ namespace Backlang.Driver.Core.Implementors.Expressions;
 
 public class TypeOfExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.ArgCount == 1 && node is ("'typeof", _);
+    public bool CanHandle(LNode node)
+    {
+        return node.ArgCount == 1 && node is ("'typeof", _);
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)
@@ -17,6 +20,7 @@ public class TypeOfExpressionImplementor : IExpressionImplementor
         var typeRef = Utils.ResolveType(context.Binder, typeof(Type));
         var method = typeRef.Methods.FirstOrDefault(_ => _.Name.ToString() == "GetTypeFromHandle");
 
-        return block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static, new List<ValueTag> { ldtoken }));
+        return block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Static,
+            new List<ValueTag> { ldtoken }));
     }
 }

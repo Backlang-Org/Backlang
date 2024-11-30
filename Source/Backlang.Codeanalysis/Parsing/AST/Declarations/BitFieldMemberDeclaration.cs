@@ -1,4 +1,5 @@
-﻿using Loyc.Syntax;
+﻿using Backlang.Codeanalysis.Core;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing.AST.Declarations;
 
@@ -24,7 +25,7 @@ public sealed class BitFieldMemberDeclaration : IParsePoint
 
         if (!value[0].HasValue)
         {
-            parser.AddError(Core.ErrorID.BitfieldNotLiteral, value.Range);
+            parser.AddError(ErrorID.BitfieldNotLiteral, value.Range);
         }
 
         return SyntaxTree.Factory.Tuple(SyntaxTree.Factory.Id(nameToken.Text).WithRange(nameToken), value);

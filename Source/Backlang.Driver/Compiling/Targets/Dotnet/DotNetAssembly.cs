@@ -6,22 +6,31 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
+using ManifestResourceAttributes = Mono.Cecil.ManifestResourceAttributes;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
+using ParameterAttributes = Mono.Cecil.ParameterAttributes;
+using PropertyAttributes = Mono.Cecil.PropertyAttributes;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Backlang.Driver.Compiling.Targets.Dotnet;
 
-public record struct MethodBodyCompilation(DescribedBodyMethod DescribedMethod,
-    MethodDefinition ClrMethod, TypeDefinition ClrType);
+public record struct MethodBodyCompilation(
+    DescribedBodyMethod DescribedMethod,
+    MethodDefinition ClrMethod,
+    TypeDefinition ClrType);
 
 public class DotNetAssembly : ITargetAssembly
 {
     private static readonly ConcurrentBag<MethodBodyCompilation> _methodBodyCompilations = new();
     private readonly IAssembly _assembly;
+    private readonly AssemblyDefinition _assemblyDefinition;
     private readonly AssemblyContentDescription _description;
     private readonly List<(TypeDefinition definition, QualifiedName name)> _needToAdjust = new();
-    private readonly AssemblyDefinition _assemblyDefinition;
 
     public DotNetAssembly(AssemblyContentDescription description)
     {
@@ -31,7 +40,8 @@ public class DotNetAssembly : ITargetAssembly
         var name = new AssemblyNameDefinition(_assembly.FullName.ToString(),
             va == null ? new Version(1, 0) : va.Version);
 
-        _assemblyDefinition = AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
+        _assemblyDefinition =
+            AssemblyDefinition.CreateAssembly(name, description.Assembly.Name.ToString(), ModuleKind.Dll);
 
         _description = description;
 
@@ -49,14 +59,14 @@ public class DotNetAssembly : ITargetAssembly
 
         foreach (var type in _assembly.Types.Cast<DescribedType>())
         {
-            var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName.ToString(),
-               type.Name.ToString(), TypeAttributes.Class);
+            var clrType = new TypeDefinition(type.FullName.Slice(0, type.FullName.PathLength - 1).FullName,
+                type.Name.ToString(), TypeAttributes.Class);
 
             MakeStructReadonly(type, clrType);
 
             _assemblyDefinition.MainModule.Types.Add(clrType);
 
-            typeMap.AddOrUpdate(type, (_) => clrType, (_, __) => clrType);
+            typeMap.AddOrUpdate(type, _ => clrType, (_, __) => clrType);
         }
 
         Parallel.ForEachAsync(typeMap.AsParallel(), (typePair, ct) => {
@@ -74,11 +84,13 @@ public class DotNetAssembly : ITargetAssembly
 
         CompileBodys();
 
-        Parallel.ForEach(_assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>(), (er) => {
-            var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, er.Strm);
+        Parallel.ForEach(
+            _assembly.Attributes.GetAll().Where(_ => _ is EmbeddedResourceAttribute).Cast<EmbeddedResourceAttribute>(),
+            er => {
+                var err = new EmbeddedResource(er.Name, ManifestResourceAttributes.Public, er.Strm);
 
-            _assemblyDefinition.MainModule.Resources.Add(err);
-        });
+                _assemblyDefinition.MainModule.Resources.Add(err);
+            });
 
         _assemblyDefinition.EntryPoint.IsPublic = true;
 
@@ -101,10 +113,8 @@ public class DotNetAssembly : ITargetAssembly
         {
             clrType.Attributes |= TypeAttributes.Public;
         }
-        else
-        {
-            // here also 'internal' is used, because 'internal' doesnt need any attribute.
-        }
+
+        // here also 'internal' is used, because 'internal' doesnt need any attribute.
         if (type.IsStatic)
         {
             clrType.Attributes |= TypeAttributes.Abstract;
@@ -158,9 +168,6 @@ public class DotNetAssembly : ITargetAssembly
             case LayoutKind.Explicit:
                 clrType.IsExplicitLayout = true;
                 break;
-
-            default:
-                break;
         }
     }
 
@@ -174,7 +181,8 @@ public class DotNetAssembly : ITargetAssembly
 
             var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(readonlyCtor));
 
-            ca.ConstructorArguments.Add(new(_assemblyDefinition.MainModule.ImportReference(typeof(bool)), true));
+            ca.ConstructorArguments.Add(
+                new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(bool)), true));
 
             clrType.CustomAttributes.Add(ca);
         }
@@ -182,7 +190,8 @@ public class DotNetAssembly : ITargetAssembly
 
     private FieldDefinition GeneratePropertyField(DescribedProperty property)
     {
-        var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private, Resolve(property.PropertyType.FullName));
+        var clrField = new FieldDefinition(@$"<{property.Name}>k__BackingField", FieldAttributes.Private,
+            Resolve(property.PropertyType.FullName));
 
         clrField.CustomAttributes.Add(GetCompilerGeneratedAttribute());
 
@@ -192,8 +201,8 @@ public class DotNetAssembly : ITargetAssembly
     private MethodDefinition GeneratePropertyGetter(DescribedProperty property, FieldReference reference)
     {
         var clrMethod = new MethodDefinition(property.Getter.Name.ToString(),
-                                GetMethodAttributes(property.Getter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
-                                Resolve(property.PropertyType.FullName));
+            GetMethodAttributes(property.Getter) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+            Resolve(property.PropertyType.FullName));
 
         clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
 
@@ -215,17 +224,20 @@ public class DotNetAssembly : ITargetAssembly
         return attr;
     }
 
-    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference, DescribedPropertyMethod propMethod, bool isInitOnly)
+    private MethodDefinition GeneratePropertySetter(DescribedProperty property, FieldReference reference,
+        DescribedPropertyMethod propMethod, bool isInitOnly)
     {
         var clrMethod = new MethodDefinition(propMethod.Name.ToString(),
-                                GetMethodAttributes(propMethod) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
-                                Resolve(new SimpleName("Void").Qualify("System")));
+            GetMethodAttributes(propMethod) | MethodAttributes.HideBySig | MethodAttributes.SpecialName,
+            Resolve(new SimpleName("Void").Qualify("System")));
 
         clrMethod.CustomAttributes.Add(GetCompilerGeneratedAttribute());
 
         if (isInitOnly)
         {
-            clrMethod.ReturnType = new RequiredModifierType(_assemblyDefinition.MainModule.ImportReference(typeof(System.Runtime.CompilerServices.IsExternalInit)), clrMethod.ReturnType);
+            clrMethod.ReturnType =
+                new RequiredModifierType(_assemblyDefinition.MainModule.ImportReference(typeof(IsExternalInit)),
+                    clrMethod.ReturnType);
         }
 
         var param = new ParameterDefinition("value", ParameterAttributes.None, Resolve(property.PropertyType.FullName));
@@ -259,6 +271,7 @@ public class DotNetAssembly : ITargetAssembly
                 clrType.Methods.Add(getter);
                 clrProp.GetMethod = getter;
             }
+
             if (property.HasSetter)
             {
                 var setter = GeneratePropertySetter(property, field, property.Setter, false);
@@ -326,7 +339,8 @@ public class DotNetAssembly : ITargetAssembly
             }
             else if (m.IsDestructor)
             {
-                clrMethod.Overrides.Add(_assemblyDefinition.MainModule.ImportReference(typeof(object).GetMethod("Finalize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)));
+                clrMethod.Overrides.Add(_assemblyDefinition.MainModule.ImportReference(
+                    typeof(object).GetMethod("Finalize", BindingFlags.NonPublic | BindingFlags.Instance)));
                 clrMethod.Name = "Finalize";
                 clrMethod.IsVirtual = true;
                 clrMethod.IsFamily = true;
@@ -335,7 +349,7 @@ public class DotNetAssembly : ITargetAssembly
 
             if (m.Body != null)
             {
-                _methodBodyCompilations.Add(new(m, clrMethod, clrType));
+                _methodBodyCompilations.Add(new MethodBodyCompilation(m, clrMethod, clrType));
             }
 
             ConvertCustomAttributes(clrType, m, clrMethod);
@@ -348,7 +362,8 @@ public class DotNetAssembly : ITargetAssembly
     {
         foreach (var bodyCompilation in _methodBodyCompilations)
         {
-            var variables = MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod, _assemblyDefinition, bodyCompilation.ClrType);
+            var variables = MethodBodyCompiler.Compile(bodyCompilation.DescribedMethod, bodyCompilation.ClrMethod,
+                _assemblyDefinition, bodyCompilation.ClrType);
 
             bodyCompilation.ClrMethod.DebugInformation.Scope =
                 new ScopeDebugInformation(bodyCompilation.ClrMethod.Body.Instructions[0],
@@ -356,7 +371,8 @@ public class DotNetAssembly : ITargetAssembly
 
             foreach (var variable in variables)
             {
-                bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(new VariableDebugInformation(variable.Value, variable.Key));
+                bodyCompilation.ClrMethod.DebugInformation.Scope.Variables.Add(
+                    new VariableDebugInformation(variable.Value, variable.Key));
             }
         }
     }
@@ -381,7 +397,8 @@ public class DotNetAssembly : ITargetAssembly
     private void ConvertCustomAttribute(TypeDefinition clrType, MethodDefinition clrMethod, DescribedAttribute attr)
     {
         var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
-        var attrCtor = attrType.Methods.FirstOrDefault(_ => _.IsConstructor && attr.ConstructorArguments.Count == _.Parameters.Count);
+        var attrCtor = attrType.Methods.FirstOrDefault(_ =>
+            _.IsConstructor && attr.ConstructorArguments.Count == _.Parameters.Count);
 
         var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(attrCtor));
         clrType.IsBeforeFieldInit = false;
@@ -477,9 +494,9 @@ public class DotNetAssembly : ITargetAssembly
     {
         var attrType = _assemblyDefinition.ImportType(attr.AttributeType).Resolve();
         var attrCtor = attrType.Methods
-                                        .FirstOrDefault(_ =>
-                                            _.IsConstructor
-                                            && attr.ConstructorArguments.Count == _.Parameters.Count);
+            .FirstOrDefault(_ =>
+                _.IsConstructor
+                && attr.ConstructorArguments.Count == _.Parameters.Count);
 
         var ca = new CustomAttribute(_assemblyDefinition.MainModule.ImportReference(attrCtor));
         clrType.IsBeforeFieldInit = false;
@@ -502,7 +519,8 @@ public class DotNetAssembly : ITargetAssembly
                 clrField.Offset = (int)attr.ConstructorArguments[0].Value;
                 continue;
             }
-            else if (attr.AttributeType.Name.ToString() == "SpecialNameAttribute")
+
+            if (attr.AttributeType.Name.ToString() == "SpecialNameAttribute")
             {
                 clrField.IsRuntimeSpecialName = true;
                 clrField.IsSpecialName = true;
@@ -516,7 +534,8 @@ public class DotNetAssembly : ITargetAssembly
 
             foreach (var arg in attr.ConstructorArguments)
             {
-                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type), arg.Value));
+                ca.ConstructorArguments.Add(new CustomAttributeArgument(_assemblyDefinition.ImportType(arg.Type),
+                    arg.Value));
             }
 
             clrField.CustomAttributes.Add(ca);
@@ -526,8 +545,8 @@ public class DotNetAssembly : ITargetAssembly
     private MethodDefinition GetMethodDefinition(DescribedBodyMethod m, IType returnType)
     {
         var clrMethod = new MethodDefinition(m.Name.ToString(),
-                                GetMethodAttributes(m),
-                               Resolve(returnType == null ? new SimpleName("Void").Qualify("System") : returnType.FullName));
+            GetMethodAttributes(m),
+            Resolve(returnType == null ? new SimpleName("Void").Qualify("System") : returnType.FullName));
 
         if (m == _description.EntryPoint)
         {
@@ -542,6 +561,7 @@ public class DotNetAssembly : ITargetAssembly
                 param.Constant = p.DefaultValue;
                 param.IsOptional = true;
             }
+
             clrMethod.Parameters.Add(param);
         }
 
@@ -553,6 +573,7 @@ public class DotNetAssembly : ITargetAssembly
             clrMethod.Name = ".ctor";
             clrMethod.IsStatic = false;
         }
+
         return clrMethod;
     }
 
@@ -566,7 +587,10 @@ public class DotNetAssembly : ITargetAssembly
             foreach (var gp in dtype.GenericParameters)
             {
                 if (gp.Name.ToString() == "#" || gp.Name.ToString().StartsWith("T")
-                    || gp.Name.ToString().StartsWith("TResult")) continue;
+                                              || gp.Name.ToString().StartsWith("TResult"))
+                {
+                    continue;
+                }
 
                 var resolvedGeneric = Resolve(gp.Name.Qualify("System"));
                 genericType.GenericArguments.Add(resolvedGeneric);
@@ -590,12 +614,13 @@ public class DotNetAssembly : ITargetAssembly
 
     private void SetTargetFramework(string moniker)
     {
-        var tf = _assemblyDefinition.MainModule.ImportReference(typeof(TargetFrameworkAttribute).GetConstructors().First());
+        var tf = _assemblyDefinition.MainModule.ImportReference(typeof(TargetFrameworkAttribute).GetConstructors()
+            .First());
 
         var item = new CustomAttribute(tf);
         item.ConstructorArguments.Add(
             new CustomAttributeArgument(_assemblyDefinition.MainModule.ImportReference(typeof(string)),
-            $".NETCoreApp,Version=v{RuntimeConfig.GetVersion(moniker)}"));
+                $".NETCoreApp,Version=v{RuntimeConfig.GetVersion(moniker)}"));
 
         _assemblyDefinition.CustomAttributes.Add(item);
     }

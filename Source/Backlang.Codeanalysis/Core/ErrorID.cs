@@ -1,6 +1,6 @@
 ﻿namespace Backlang.Codeanalysis.Core;
 
-public enum ErrorID : int
+public enum ErrorID
 {
     UnexpecedType = 0001,
     InvalidModifierCombination = 0002,
@@ -33,5 +33,5 @@ public enum ErrorID : int
     TargetNotFound = 0029,
     NotDefined = 0030,
     CannotDeduceType = 31,
-    DeducingTypeNotPossible = 32,
+    DeducingTypeNotPossible = 32
 }

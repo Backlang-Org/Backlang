@@ -5,12 +5,11 @@ namespace Backlang.Codeanalysis.Core;
 
 public abstract class BaseLexer
 {
-    public List<Message> Messages = new();
-
     protected int _column = 1;
     protected SourceFile<StreamCharSource> _document;
     protected int _line = 1;
-    protected int _position = 0;
+    protected int _position;
+    public List<Message> Messages = new();
 
     public List<Token> Tokenize(SourceFile<StreamCharSource> document)
     {

@@ -10,7 +10,7 @@ public sealed class InitializerListExpression : IParsePoint
 
         do
         {
-            if (iterator.Current.Type == (TokenType.CloseSquare))
+            if (iterator.Current.Type == TokenType.CloseSquare)
             {
                 break;
             }
@@ -21,7 +21,7 @@ public sealed class InitializerListExpression : IParsePoint
             {
                 iterator.Match(TokenType.Comma);
             }
-        } while (iterator.Current.Type != (TokenType.CloseSquare));
+        } while (iterator.Current.Type != TokenType.CloseSquare);
 
         iterator.Match(TokenType.CloseSquare);
 

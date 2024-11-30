@@ -4,8 +4,7 @@ namespace Backlang.Driver.Compiling.Targets.Dotnet.RuntimeOptionsModels;
 
 public class RuntimeConfig
 {
-    [JsonProperty("runtimeOptions")]
-    public RuntimeOptions RuntimeOptions { get; set; } = new();
+    [JsonProperty("runtimeOptions")] public RuntimeOptions RuntimeOptions { get; set; } = new();
 
     public static void Save(string path, string name, CompilerCliOptions options)
     {

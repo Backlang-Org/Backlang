@@ -167,8 +167,8 @@ public class FunctionTests : ParserTestBase
         Assert.AreEqual(0, result.errors.Count);
 
         var array = statement.Attrs.ToVList().ToArray();
-        Assert.IsTrue(array.Any(_ => _.IsId && (_.Name == CodeSymbols.Public)));
-        Assert.IsTrue(array.Any(_ => _.IsId && (_.Name == CodeSymbols.Static)));
+        Assert.IsTrue(array.Any(_ => _.IsId && _.Name == CodeSymbols.Public));
+        Assert.IsTrue(array.Any(_ => _.IsId && _.Name == CodeSymbols.Static));
 
         Assert.AreEqual("i32", retType.Args[0].Args[0].Name.Name);
         Assert.AreEqual("test", name.Args[0].Args[0].Name.Name);

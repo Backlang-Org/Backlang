@@ -18,5 +18,5 @@ public enum Constants
     TERMINAL_BUFFER_SIZE = 8000,
     FRAMEBUFFER_SIZE = 691200,
 
-    STACK_SIZE = 524288,
+    STACK_SIZE = 524288
 }

@@ -2,7 +2,10 @@
 
 public class CtorExpressionImplementor : IExpressionImplementor
 {
-    public bool CanHandle(LNode node) => node.Calls(CodeSymbols.New);
+    public bool CanHandle(LNode node)
+    {
+        return node.Calls(CodeSymbols.New);
+    }
 
     public NamedInstructionBuilder Handle(LNode node, BasicBlockBuilder block,
         IType elementType, CompilerContext context, Scope scope, QualifiedName? modulename)

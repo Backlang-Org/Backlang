@@ -1,16 +1,16 @@
 {
-    "wasmHostProperties": {
-        "perHostConfig": [
-            {
-                "name": "node",
-                "js-path": "main.mjs",
-                "Host": "nodejs"
-            },
-            {
-                "name": "v8",
-                "js-path": "main.mjs",
-                "Host": "v8"
-            }
-        ]
-    }
+  "wasmHostProperties": {
+    "perHostConfig": [
+      {
+        "name": "node",
+        "js-path": "main.mjs",
+        "Host": "nodejs"
+      },
+      {
+        "name": "v8",
+        "js-path": "main.mjs",
+        "Host": "v8"
+      }
+    ]
+  }
 }

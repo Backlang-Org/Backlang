@@ -10,13 +10,17 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
     public static DescribedBodyMethod ConvertFunction(CompilerContext context, DescribedType type,
         LNode function, QualifiedName modulename, Scope parentScope, string methodName = null, bool hasBody = true)
     {
-        if (methodName == null) methodName = ConversionUtils.GetMethodName(function);
+        if (methodName == null)
+        {
+            methodName = ConversionUtils.GetMethodName(function);
+        }
 
         var returnType = Utils.ResolveType(context.Binder, typeof(void));
 
         var method = new DescribedBodyMethod(type,
             new QualifiedName(methodName).FullyUnqualifiedName,
-            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)) || type.Name.ToString() == Names.FreeFunctions, returnType);
+            function.Attrs.Contains(LNode.Id(CodeSymbols.Static)) || type.Name.ToString() == Names.FreeFunctions,
+            returnType);
 
         ConversionUtils.SetAccessModifier(function, method);
 
@@ -25,16 +29,20 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Operator)))
         {
-            method.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
+            method.AddAttribute(
+                new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(SpecialNameAttribute))));
         }
+
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Override)))
         {
             method.IsOverride = true;
         }
+
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Extern)))
         {
             method.IsExtern = true;
         }
+
         if (function.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {
             method.AddAttribute(FlagAttribute.Abstract);
@@ -55,14 +63,12 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
 
         var functionItem = new FunctionScopeItem
         {
-            Name = methodName,
-            SubScope = scope,
-            Overloads = new() { method }
+            Name = methodName, SubScope = scope, Overloads = new List<IMethod> { method }
         };
 
         if (hasBody)
         {
-            context.BodyCompilations.Add(new(function, context, method, modulename, scope));
+            context.BodyCompilations.Add(new MethodBodyCompilation(function, context, method, modulename, scope));
         }
 
         if (parentScope.Add(functionItem))
@@ -74,7 +80,8 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         return null;
     }
 
-    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context, QualifiedName modulename, Scope scope)
+    private static void AddParameters(DescribedBodyMethod method, LNode function, CompilerContext context,
+        QualifiedName modulename, Scope scope)
     {
         var param = function.Args[2];
 
@@ -97,12 +104,11 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
         DescribedType type;
 
         if (!context.Assembly.Types.Any(_ =>
-            _.FullName.ToString() == new SimpleName(Names.FreeFunctions).Qualify(modulename).ToString()))
+                _.FullName.ToString() == new SimpleName(Names.FreeFunctions).Qualify(modulename).ToString()))
         {
             type = new DescribedType(new SimpleName(Names.FreeFunctions).Qualify(modulename), context.Assembly)
             {
-                IsStatic = true,
-                IsPublic = true
+                IsStatic = true, IsPublic = true
             };
 
             context.Assembly.AddType(type);
@@ -120,12 +126,18 @@ public sealed partial class TypeInheritanceStage : IHandler<CompilerContext, Com
             type = (DescribedType)context.Assembly.Types.First(_ => _.Name.ToString() == Names.FreeFunctions);
         }
 
-        string methodName = ConversionUtils.GetMethodName(node);
-        if (methodName == "main") methodName = "Main";
+        var methodName = ConversionUtils.GetMethodName(node);
+        if (methodName == "main")
+        {
+            methodName = "Main";
+        }
 
-        var method = ConvertFunction(context, type, node, modulename, scope, methodName: methodName);
+        var method = ConvertFunction(context, type, node, modulename, scope, methodName);
 
-        if (method != null) type.AddMethod(method);
+        if (method != null)
+        {
+            type.AddMethod(method);
+        }
     }
 
     private static Parameter ConvertParameter(LNode p, CompilerContext context, QualifiedName modulename)

@@ -5,7 +5,8 @@ namespace Backlang.Contracts;
 
 public static class SemanticChecker
 {
-    private static readonly List<ISemanticCheck> _semanticChecks = new() {
+    private static readonly List<ISemanticCheck> _semanticChecks = new()
+    {
         new ModuleDefinitionCheck(),
         new ImportCheck(),
         new TypenameCheck(),

@@ -1,4 +1,5 @@
 ﻿namespace Backlang.Codeanalysis.Parsing.Precedences;
+
 public enum UnaryOpPrecedences
 {
     Literals = 3, // u ui ub us ul b s l
@@ -9,5 +10,5 @@ public enum UnaryOpPrecedences
     Ampersand = 9,
     Hat = Ampersand,
 
-    Dollar = 10,
+    Dollar = 10
 }

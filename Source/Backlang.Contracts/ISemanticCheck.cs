@@ -1,6 +1,8 @@
-﻿namespace Backlang.Codeanalysis.Core;
+﻿using Backlang.Contracts;
+
+namespace Backlang.Codeanalysis.Core;
 
 public interface ISemanticCheck
 {
-    void Check(CompilationUnit tree, Contracts.CompilerContext context);
+    void Check(CompilationUnit tree, CompilerContext context);
 }

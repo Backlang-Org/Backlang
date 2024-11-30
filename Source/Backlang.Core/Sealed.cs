@@ -24,6 +24,7 @@ public struct Sealed<T>
         {
             throw new InvalidOperationException("Object is freezed");
         }
+
         _value = value;
     }
 

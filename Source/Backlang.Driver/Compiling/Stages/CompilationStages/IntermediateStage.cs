@@ -1,4 +1,5 @@
 ﻿using Backlang.Contracts.Scoping.Items;
+using Backlang.Core.CompilerService;
 using Flo;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System.Globalization;
@@ -7,7 +8,8 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContext>
 {
-    public async Task<CompilerContext> HandleAsync(CompilerContext context, Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<CompilerContext> HandleAsync(CompilerContext context,
+        Func<CompilerContext, Task<CompilerContext>> next)
     {
         context.Assembly = new DescribedAssembly(new QualifiedName(context.Options.OutputFilename.Replace(".dll", "")));
 
@@ -56,7 +58,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
 
     private static void ConvertEnum(CompilerContext context, LNode @enum, QualifiedName modulename)
     {
-        if (@enum is (_, (_, var nameNode, var typeNode, var membersNode)))
+        if (@enum is var (_, (_, nameNode, typeNode, membersNode)))
         {
             var name = nameNode.Name;
 
@@ -76,7 +78,8 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         var type = new DescribedType(new SimpleName(name.Name).Qualify(modulename), context.Assembly);
         if (st.Name == CodeSymbols.Struct)
         {
-            type.AddBaseType(context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System"))[0]); // make it a struct
+            type.AddBaseType(
+                context.Binder.ResolveTypes(new SimpleName("ValueType").Qualify("System"))[0]); // make it a struct
         }
         else if (st.Name == CodeSymbols.Interface)
         {
@@ -102,6 +105,7 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         {
             type.IsStatic = true;
         }
+
         if (node.Attrs.Contains(LNode.Id(CodeSymbols.Abstract)))
         {
             type.IsAbstract = true;
@@ -140,11 +144,10 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
         var unitType = new DescribedType(
             new SimpleName(st[0].Name.ToString()).Qualify(modulename), context.Assembly)
         {
-            IsStatic = true,
-            IsPublic = true
+            IsStatic = true, IsPublic = true
         };
 
-        unitType.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(Backlang.Core.CompilerService.UnitTypeAttribute))));
+        unitType.AddAttribute(new DescribedAttribute(Utils.ResolveType(context.Binder, typeof(UnitTypeAttribute))));
 
         context.Assembly.AddType(unitType);
     }
@@ -173,9 +176,9 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                     field.Args[1].Args[0].Name.Name);
                 var fieldTypename = ConversionUtils.GetQualifiedName(field.Args[0].Args[0].Args[0]);
                 var fieldActualType = TypeInheritanceStage.ResolveTypeWithModule(
-                                        field.Args[0].Args[0].Args[0], context,
-                                        modulename, fieldTypename
-                                        );
+                    field.Args[0].Args[0].Args[0], context,
+                    modulename, fieldTypename
+                );
                 if (baseType.Name.ToString() == fieldTypename.ToString())
                 {
                     fieldActualType = baseType;
@@ -184,12 +187,13 @@ public sealed class IntermediateStage : IHandler<CompilerContext, CompilerContex
                 var fieldType = new DescribedField(discType, new SimpleName(fieldName),
                     false,
                     fieldActualType
-                    );
+                );
 
                 if (field.Attrs.Any(_ => _.Name == Symbols.Mutable))
                 {
                     fieldType.AddAttribute(Attributes.Mutable);
                 }
+
                 fieldType.IsPublic = true;
                 discType.AddField(fieldType);
             }

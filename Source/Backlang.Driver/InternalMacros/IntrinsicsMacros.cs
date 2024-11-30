@@ -1,5 +1,4 @@
 ﻿using LeMP;
-using Loyc.Syntax;
 using System.Reflection;
 
 namespace Backlang.Driver.InternalMacros;
@@ -61,7 +60,8 @@ public static class IntrinsicsMacros
         return LNode.Call((Symbol)"'{}", newBodyArgs).WithStyle(NodeStyle.Operator);
     }
 
-    private static LNode ConvertCall(LNode calls, CompilerContext context, Dictionary<string, object> availableConstants)
+    private static LNode ConvertCall(LNode calls, CompilerContext context,
+        Dictionary<string, object> availableConstants)
     {
         var newArgs = new LNodeList();
 
@@ -86,7 +86,8 @@ public static class IntrinsicsMacros
                 }
                 else
                 {
-                    newArgs.Add(LNode.Call((Symbol)$"#{constantValue.GetType().Name}", LNode.List(LNode.Literal(constantValue))));
+                    newArgs.Add(LNode.Call((Symbol)$"#{constantValue.GetType().Name}",
+                        LNode.List(LNode.Literal(constantValue))));
                 }
             }
             else

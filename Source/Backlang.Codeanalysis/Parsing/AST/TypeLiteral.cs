@@ -15,7 +15,7 @@ public sealed class TypeLiteral
             var typename = iterator.Match(TokenType.Identifier).Text;
             var args = new LNodeList();
 
-            typeNode = SyntaxTree.Type(typename, new()).WithRange(typeToken);
+            typeNode = SyntaxTree.Type(typename, new LNodeList()).WithRange(typeToken);
 
             if (iterator.IsMatch(TokenType.Star))
             {
@@ -23,13 +23,15 @@ public sealed class TypeLiteral
 
                 typeNode = SyntaxTree.Pointer(typeNode).WithRange(typeToken, iterator.Prev);
             }
+
             if (iterator.IsMatch(TokenType.Ampersand))
             {
                 iterator.NextToken();
 
                 typeNode = SyntaxTree.RefType(typeNode).WithRange(typeToken, iterator.Prev);
             }
-            else if(iterator.IsMatch(TokenType.Questionmark)) {
+            else if (iterator.IsMatch(TokenType.Questionmark))
+            {
                 iterator.NextToken();
 
                 typeNode = SyntaxTree.NullableType(typeNode).WithRange(typeToken, iterator.Prev);
@@ -54,7 +56,8 @@ public sealed class TypeLiteral
         }
         else
         {
-            parser.AddError(new(ErrorID.UnexpecedType, TokenIterator.GetTokenRepresentation(iterator.Current.Type))); //ToDo: Add Range
+            parser.AddError(new LocalizableString(ErrorID.UnexpecedType,
+                TokenIterator.GetTokenRepresentation(iterator.Current.Type))); //ToDo: Add Range
 
             typeNode = LNode.Missing;
             iterator.NextToken();
@@ -85,7 +88,7 @@ public sealed class TypeLiteral
         var parameters = new LNodeList();
         while (parser.Iterator.Current.Type != TokenType.CloseParen)
         {
-            parameters.Add(TypeLiteral.Parse(iterator, parser));
+            parameters.Add(Parse(iterator, parser));
 
             if (parser.Iterator.Current.Type != TokenType.CloseParen)
             {
@@ -102,7 +105,8 @@ public sealed class TypeLiteral
             var returnType = Parse(iterator, parser);
 
             typeNode = SyntaxTree.Factory.Call(CodeSymbols.Fn,
-                LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters))).WithRange(typeToken, iterator.Prev);
+                    LNode.List(returnType, LNode.Missing, LNode.Call(CodeSymbols.AltList, parameters)))
+                .WithRange(typeToken, iterator.Prev);
         }
         else
         {
@@ -112,7 +116,8 @@ public sealed class TypeLiteral
         return typeNode;
     }
 
-    private static LNode ParseGenericType(TokenIterator iterator, Parser parser, Token typeToken, string typename, LNodeList args)
+    private static LNode ParseGenericType(TokenIterator iterator, Parser parser, Token typeToken, string typename,
+        LNodeList args)
     {
         LNode typeNode;
         iterator.NextToken();

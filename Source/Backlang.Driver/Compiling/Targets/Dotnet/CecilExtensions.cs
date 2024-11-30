@@ -7,12 +7,11 @@ public static class CecilExtensions
 {
     public static MethodReference MakeHostInstanceGeneric(this MethodReference self, params TypeReference[] arguments)
     {
-        var reference = new MethodReference(self.Name, self.ReturnType, self.DeclaringType.MakeGenericInstanceType(arguments))
-        {
-            HasThis = self.HasThis,
-            ExplicitThis = self.ExplicitThis,
-            CallingConvention = self.CallingConvention
-        };
+        var reference =
+            new MethodReference(self.Name, self.ReturnType, self.DeclaringType.MakeGenericInstanceType(arguments))
+            {
+                HasThis = self.HasThis, ExplicitThis = self.ExplicitThis, CallingConvention = self.CallingConvention
+            };
 
         foreach (var generic_parameter in self.GenericParameters)
         {

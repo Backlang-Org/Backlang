@@ -5,7 +5,7 @@ namespace Backlang.Codeanalysis.Parsing;
 
 public enum MessageSeverity
 {
-    Error, Warning, Info, Hint,
+    Error, Warning, Info, Hint
 }
 
 public sealed class Message
@@ -51,7 +51,11 @@ public sealed class Message
 
     public override string ToString()
     {
-        if (Document == null) return Text;
+        if (Document == null)
+        {
+            return Text;
+        }
+
         return $"{Document.FileName}:{Range.Start.Line}:{Range.Start.Column} {Text}";
     }
 }

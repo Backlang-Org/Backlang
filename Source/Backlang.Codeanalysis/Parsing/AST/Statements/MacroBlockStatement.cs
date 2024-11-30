@@ -25,14 +25,13 @@ public sealed class MacroBlockStatement : IParsePoint
                 return SyntaxTree.Factory.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
                     .WithRange(nameToken, iterator.Prev);
             }
-            else
-            {
-                iterator.Match(TokenType.Semicolon);
 
-                return SyntaxTree.Factory.Call(nameExpression, arguments).WithRange(nameToken, iterator.Prev);
-            }
+            iterator.Match(TokenType.Semicolon);
+
+            return SyntaxTree.Factory.Call(nameExpression, arguments).WithRange(nameToken, iterator.Prev);
         }
-        else if (iterator.Current.Type == TokenType.OpenCurly)
+
+        if (iterator.Current.Type == TokenType.OpenCurly)
         {
             //custom code block without arguments
             var body = Statement.ParseBlock(parser);
@@ -41,11 +40,9 @@ public sealed class MacroBlockStatement : IParsePoint
             return SyntaxTree.Factory.Call(nameExpression, arguments).SetStyle(NodeStyle.StatementBlock)
                 .WithRange(nameToken, iterator.Prev);
         }
-        else
-        {
-            iterator.Position = currPos;
 
-            return ExpressionStatement.Parse(iterator, parser);
-        }
+        iterator.Position = currPos;
+
+        return ExpressionStatement.Parse(iterator, parser);
     }
 }

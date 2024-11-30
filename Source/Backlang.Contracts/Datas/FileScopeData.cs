@@ -4,7 +4,7 @@ public struct FileScopeData
 {
     public FileScopeData()
     {
-        ImportetNamespaces = new();
+        ImportetNamespaces = new Dictionary<string, NamespaceImports>();
     }
 
     public Dictionary<string, NamespaceImports> ImportetNamespaces { get; set; }

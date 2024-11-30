@@ -3,13 +3,12 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.TypeSystem;
-using System.Numerics;
 
 namespace Backlang.Driver.Compiling;
 
 public static class IRGenerator
 {
-    private static readonly int[] _primes = new[] { 2, 3, 5, 7,  11, 13, 17, 19, 23, 29, 31, 37, 41};
+    private static readonly int[] _primes = new[] { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41 };
 
     public static void GenerateGetHashCode(CompilerContext context, DescribedType type)
     {
@@ -49,20 +48,24 @@ public static class IRGenerator
                     )
                 );
 
-                var multiplication = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, c));
+                var multiplication = block.AppendInstruction(
+                    Instruction.CreateBinaryArithmeticIntrinsic("*", false, context.Environment.Int32, hash, c));
 
                 block.AppendInstruction(Instruction.CreateLoadArg(new Parameter(type)));
                 var instruction = Instruction.CreateLoadField(field);
 
-                if (field.FieldType.BaseTypes.Count() > 0 && field.FieldType.BaseTypes[0].FullName.ToString() == "System.ValueType")
+                if (field.FieldType.BaseTypes.Count() > 0 &&
+                    field.FieldType.BaseTypes[0].FullName.ToString() == "System.ValueType")
                 {
                     instruction = Instruction.CreateGetFieldPointer(field, null);
                 }
 
                 var ldField = block.AppendInstruction(instruction);
-                var call = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual, new List<ValueTag>() { ldField }));
+                var call = block.AppendInstruction(Instruction.CreateCall(method, MethodLookup.Virtual,
+                    new List<ValueTag> { ldField }));
 
-                var addition = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false, context.Environment.Int32, ldField, multiplication));
+                var addition = block.AppendInstruction(Instruction.CreateBinaryArithmeticIntrinsic("+", false,
+                    context.Environment.Int32, ldField, multiplication));
 
                 block.AppendInstruction(Instruction.CreateStore(context.Environment.Int32, hash, addition));
             }
@@ -71,7 +74,8 @@ public static class IRGenerator
         block.AppendInstruction(Instruction.CreateLoadLocal(new Parameter(context.Environment.Int32, "hash")));
         block.Flow = new ReturnFlow();
 
-        gethashcodeMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        gethashcodeMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value,
+            graph.ToImmutable());
         type.AddMethod(gethashcodeMethod);
     }
 
@@ -82,7 +86,8 @@ public static class IRGenerator
 
     public static void GenerateToString(CompilerContext context, DescribedType type)
     {
-        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false, Utils.ResolveType(context.Binder, typeof(string)));
+        var toStringMethod = new DescribedBodyMethod(type, new SimpleName("ToString"), false,
+            Utils.ResolveType(context.Binder, typeof(string)));
         toStringMethod.IsPublic = true;
         toStringMethod.IsOverride = true;
 
@@ -114,29 +119,31 @@ public static class IRGenerator
             AppendLine(context, block, appendLineMethod, loadSbf, field.Name + " = ");
             var value = AppendLoadField(block, field);
 
-            var appendMethod = context.Binder.FindFunction($"System.Text.StringBuilder::Append({field.FieldType.FullName})");
+            var appendMethod =
+                context.Binder.FindFunction($"System.Text.StringBuilder::Append({field.FieldType.FullName})");
 
             appendMethod ??= context.Binder.FindFunction("System.Text.StringBuilder::Append(System.Object)");
 
-            block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual, new List<ValueTag> { loadSbf, value }));
+            block.AppendInstruction(Instruction.CreateCall(appendMethod, MethodLookup.Virtual,
+                new List<ValueTag> { loadSbf, value }));
         }
 
-        var tsM = context.Binder.FindFunction($"System.Text.StringBuilder::ToString()");
+        var tsM = context.Binder.FindFunction("System.Text.StringBuilder::ToString()");
         block.AppendInstruction(Instruction.CreateCall(tsM, MethodLookup.Virtual, new List<ValueTag> { loadSb }));
 
         block.Flow = new ReturnFlow();
 
-        toStringMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        toStringMethod.Body = new MethodBody(new Parameter(), new Parameter(type), EmptyArray<Parameter>.Value,
+            graph.ToImmutable());
 
         type.AddMethod(toStringMethod);
     }
 
     public static void GenerateEmptyCtor(CompilerContext context, DescribedType type)
     {
-        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
-        {
-            IsConstructor = true
-        };
+        var ctorMethod =
+            new DescribedBodyMethod(type, new SimpleName(".ctor"), false,
+                Utils.ResolveType(context.Binder, typeof(void))) { IsConstructor = true };
 
         ctorMethod.IsPublic = true;
 
@@ -146,17 +153,17 @@ public static class IRGenerator
 
         block.Flow = new ReturnFlow();
 
-        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type),
+            EmptyArray<Parameter>.Value, graph.ToImmutable());
 
         type.AddMethod(ctorMethod);
     }
 
     public static void GenerateDefaultCtor(CompilerContext context, DescribedType type)
     {
-        var ctorMethod = new DescribedBodyMethod(type, new SimpleName(".ctor"), false, Utils.ResolveType(context.Binder, typeof(void)))
-        {
-            IsConstructor = true
-        };
+        var ctorMethod =
+            new DescribedBodyMethod(type, new SimpleName(".ctor"), false,
+                Utils.ResolveType(context.Binder, typeof(void))) { IsConstructor = true };
 
         ctorMethod.IsPublic = true;
 
@@ -182,7 +189,8 @@ public static class IRGenerator
 
         block.Flow = new ReturnFlow();
 
-        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type), EmptyArray<Parameter>.Value, graph.ToImmutable());
+        ctorMethod.Body = new MethodBody(new Parameter(), Parameter.CreateThisParameter(type),
+            EmptyArray<Parameter>.Value, graph.ToImmutable());
 
         type.AddMethod(ctorMethod);
     }
@@ -199,12 +207,14 @@ public static class IRGenerator
         return value;
     }
 
-    private static void AppendLine(CompilerContext context, BasicBlockBuilder block, IMethod appendLineMethod, NamedInstructionBuilder argLoad, string valueStr)
+    private static void AppendLine(CompilerContext context, BasicBlockBuilder block, IMethod appendLineMethod,
+        NamedInstructionBuilder argLoad, string valueStr)
     {
         var va = block.AppendInstruction(
-                        Instruction.CreateConstant(new StringConstant(valueStr), context.Environment.String));
+            Instruction.CreateConstant(new StringConstant(valueStr), context.Environment.String));
         var value = block.AppendInstruction(Instruction.CreateLoad(context.Environment.String, va));
 
-        block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual, new List<ValueTag> { argLoad, value }));
+        block.AppendInstruction(Instruction.CreateCall(appendLineMethod, MethodLookup.Virtual,
+            new List<ValueTag> { argLoad, value }));
     }
 }

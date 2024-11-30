@@ -17,5 +17,5 @@ public enum TokenType
     Width,
     DEPTH,
     ADDRESS_RADIX,
-    DATA_RADIX,
+    DATA_RADIX
 }

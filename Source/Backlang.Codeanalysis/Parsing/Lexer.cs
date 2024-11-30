@@ -1,10 +1,8 @@
 using Backlang.Codeanalysis.Core;
 using Backlang.Codeanalysis.Core.Attributes;
-using Loyc.Collections.Impl;
 using Loyc.Syntax;
 using System.Reflection;
 using System.Text;
-using System.Transactions;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -19,7 +17,7 @@ public sealed class Lexer : BaseLexer
         foreach (var op in typeValues)
         {
             var attributes = op.GetType()
-                        .GetField(Enum.GetName(op)).GetCustomAttributes<LexemeAttribute>(true);
+                .GetField(Enum.GetName(op)).GetCustomAttributes<LexemeAttribute>(true);
 
             if (attributes != null && attributes.Any())
             {
@@ -30,7 +28,7 @@ public sealed class Lexer : BaseLexer
             }
         }
 
-        _symbolTokens = new(_symbolTokens.OrderByDescending(_ => _.Key.Length));
+        _symbolTokens = new Dictionary<string, TokenType>(_symbolTokens.OrderByDescending(_ => _.Key.Length));
     }
 
     protected override Token NextToken()
@@ -52,23 +50,28 @@ public sealed class Lexer : BaseLexer
         {
             return LexCharLiteral();
         }
-        else if (Current() == '"')
+
+        if (Current() == '"')
         {
             return LexDoubleQuoteString();
         }
-        else if (IsMatch("0x"))
+
+        if (IsMatch("0x"))
         {
             return LexHexNumber();
         }
-        else if (IsMatch("0b"))
+
+        if (IsMatch("0b"))
         {
             return LexBinaryNumber();
         }
-        else if (char.IsDigit(Current()))
+
+        if (char.IsDigit(Current()))
         {
             return LexDecimalNumber();
         }
-        else if (IsIdentifierStartDigit())
+
+        if (IsIdentifierStartDigit())
         {
             var identifier = LexIdentifier();
 
@@ -79,18 +82,16 @@ public sealed class Lexer : BaseLexer
 
             return identifier;
         }
-        else
-        {
-            foreach (var symbol in _symbolTokens)
-            {
-                if (IsMatch(symbol.Key))
-                {
-                    return LexSymbol(symbol);
-                }
-            }
 
-            ReportError();
+        foreach (var symbol in _symbolTokens)
+        {
+            if (IsMatch(symbol.Key))
+            {
+                return LexSymbol(symbol);
+            }
         }
+
+        ReportError();
 
         return Token.Invalid;
     }
@@ -118,6 +119,7 @@ public sealed class Lexer : BaseLexer
             Advance();
             _column++;
         }
+
         Advance();
         _column = 0;
         _line++;
@@ -160,9 +162,9 @@ public sealed class Lexer : BaseLexer
 
     private bool IsMatch(string token)
     {
-        bool result = Current() == token[0];
+        var result = Current() == token[0];
 
-        for (int i = 1; i < token.Length; i++)
+        for (var i = 1; i < token.Length; i++)
         {
             if (result)
             {
@@ -192,7 +194,9 @@ public sealed class Lexer : BaseLexer
             _column++;
         }
 
-        return new Token(TokenType.BinNumber, _document.Text.Slice(oldpos, _position - oldpos).ToString().Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+        return new Token(TokenType.BinNumber,
+            _document.Text.Slice(oldpos, _position - oldpos).ToString().Replace("_", string.Empty), oldpos, _position,
+            _line, oldcolumn);
     }
 
     private Token LexCharLiteral()
@@ -216,7 +220,8 @@ public sealed class Lexer : BaseLexer
 
         _column += 2;
 
-        return new Token(TokenType.CharLiteral, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos - 1, ++_position, _line, oldColumn);
+        return new Token(TokenType.CharLiteral, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos - 1,
+            ++_position, _line, oldColumn);
     }
 
     private Token LexDecimalNumber()
@@ -242,7 +247,8 @@ public sealed class Lexer : BaseLexer
             }
         }
 
-        return new Token(TokenType.Number, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos, _position, _line, oldcolumn);
+        return new Token(TokenType.Number, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos,
+            _position, _line, oldcolumn);
     }
 
     private Token LexDoubleQuoteString()
@@ -257,7 +263,9 @@ public sealed class Lexer : BaseLexer
                 var range = new SourceRange(_document, _position, 1);
                 Messages.Add(Message.Error(ErrorID.UnterminatedStringLiteral, range));
 
-                return new Token(TokenType.StringLiteral, _document.Text.Slice(oldpos, _position - oldpos - 1).ToString(), oldpos - 1, _position, _line, oldColumn);
+                return new Token(TokenType.StringLiteral,
+                    _document.Text.Slice(oldpos, _position - oldpos - 1).ToString(), oldpos - 1, _position, _line,
+                    oldColumn);
             }
 
             Advance();
@@ -266,7 +274,8 @@ public sealed class Lexer : BaseLexer
 
         _column += 2;
 
-        return new Token(TokenType.StringLiteral, _document.Text.Slice(oldpos, _position - oldpos).ToString(), oldpos - 1, ++_position, _line, oldColumn);
+        return new Token(TokenType.StringLiteral, _document.Text.Slice(oldpos, _position - oldpos).ToString(),
+            oldpos - 1, ++_position, _line, oldColumn);
     }
 
     private Token LexHexNumber()
@@ -283,7 +292,9 @@ public sealed class Lexer : BaseLexer
             _column++;
         }
 
-        return new Token(TokenType.HexNumber, _document.Text.Slice(oldpos, _position - oldpos).ToString().Replace("_", string.Empty), oldpos, _position, _line, oldcolumn);
+        return new Token(TokenType.HexNumber,
+            _document.Text.Slice(oldpos, _position - oldpos).ToString().Replace("_", string.Empty), oldpos, _position,
+            _line, oldcolumn);
     }
 
     private Token LexIdentifier()
@@ -341,7 +352,7 @@ public sealed class Lexer : BaseLexer
             }
             else if (IsMatch("/*"))
             {
-                int oldpos = _position;
+                var oldpos = _position;
 
                 Advance();
                 Advance();
@@ -354,6 +365,7 @@ public sealed class Lexer : BaseLexer
                     {
                         break;
                     }
+
                     Advance();
                     _column++;
                 }

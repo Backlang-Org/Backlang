@@ -17,15 +17,20 @@ public readonly struct Token<TType>
 
 public class Tokenizer<TType>
 {
-    private readonly IList<TokenType> tokenTypes = new List<TokenType>();
     private readonly TType defaultTokenType;
+    private readonly IList<TokenType> tokenTypes = new List<TokenType>();
 
-    public Tokenizer(TType defaultTokenType) => this.defaultTokenType = defaultTokenType;
+    public Tokenizer(TType defaultTokenType)
+    {
+        this.defaultTokenType = defaultTokenType;
+    }
 
     public Tokenizer<TType> Token(TType type, params string[] matchingRegexs)
     {
         foreach (var matchingRegex in matchingRegexs)
+        {
             tokenTypes.Add(new TokenType(type, matchingRegex, false));
+        }
 
         return this;
     }
@@ -33,7 +38,9 @@ public class Tokenizer<TType>
     public Tokenizer<TType> Ignore(TType type, params string[] matchingRegexs)
     {
         foreach (var matchingRegex in matchingRegexs)
+        {
             tokenTypes.Add(new TokenType(type, matchingRegex, true));
+        }
 
         return this;
     }
@@ -42,7 +49,9 @@ public class Tokenizer<TType>
     {
         IEnumerable<Token<TType>> tokens = new[] { new Token<TType>(defaultTokenType, input) };
         foreach (var type in tokenTypes)
+        {
             tokens = ExtractTokenType(tokens, type);
+        }
 
         return tokens.ToList();
     }
@@ -71,7 +80,10 @@ public class Tokenizer<TType>
             var currentIndex = 0;
             foreach (Match match in matches)
             {
-                if (toExtract.Ignore) continue;
+                if (toExtract.Ignore)
+                {
+                    continue;
+                }
 
                 if (currentIndex < match.Index)
                 {

@@ -5,14 +5,20 @@ namespace Backlang.Driver.Compiling.Stages.CompilationStages;
 
 public sealed partial class ImplementationStage : IHandler<CompilerContext, CompilerContext>
 {
+    public enum ConditionalJumpKind
+    {
+        NotEquals,
+        Equals,
+        True,
+        False
+    }
+
     public static ImmutableDictionary<Symbol, Type> LiteralTypeMap = new Dictionary<Symbol, Type>
     {
         [CodeSymbols.Object] = typeof(object),
         [CodeSymbols.Bool] = typeof(bool),
-
         [CodeSymbols.String] = typeof(string),
         [CodeSymbols.Char] = typeof(char),
-
         [CodeSymbols.Int8] = typeof(byte),
         [CodeSymbols.Int16] = typeof(short),
         [CodeSymbols.UInt16] = typeof(ushort),
@@ -20,21 +26,11 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         [CodeSymbols.UInt32] = typeof(uint),
         [CodeSymbols.Int64] = typeof(long),
         [CodeSymbols.UInt64] = typeof(ulong),
-
         [Symbols.Float16] = typeof(Half),
         [Symbols.Float32] = typeof(float),
         [Symbols.Float64] = typeof(double),
-
-        [CodeSymbols.Void] = typeof(void),
+        [CodeSymbols.Void] = typeof(void)
     }.ToImmutableDictionary();
-
-    public enum ConditionalJumpKind
-    {
-        NotEquals,
-        Equals,
-        True,
-        False,
-    }
 
     public static IType GetLiteralType(LNode value, CompilerContext context, Scope scope, QualifiedName? modulename)
     {
@@ -42,7 +38,8 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         {
             return Utils.ResolveType(context.Binder, LiteralTypeMap[value.Name]);
         }
-        else if (value.IsId)
+
+        if (value.IsId)
         {
             return TypeDeducer.Deduce(value, scope, context, modulename.Value);
         }
@@ -124,29 +121,30 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
         }
 
         return Instruction.CreateConstant(constant,
-                                           elementType);
+            elementType);
     }
 
     public static bool MatchesParameters(IMethod method, List<IType> argTypes)
     {
         //ToDo: fix matches parameter (implicit casting is currently not working)
 
-        bool matchesAllParameters = method.Parameters.Count == argTypes.Count;
-        for (int i = 0; i < argTypes.Count; i++)
+        var matchesAllParameters = method.Parameters.Count == argTypes.Count;
+        for (var i = 0; i < argTypes.Count; i++)
         {
             if (i == 0)
             {
-                matchesAllParameters = ImplicitTypeCastTable.IsAssignableTo(argTypes[i], method.Parameters[i].Type);
+                matchesAllParameters = argTypes[i].IsAssignableTo(method.Parameters[i].Type);
                 continue;
             }
 
-            matchesAllParameters &= ImplicitTypeCastTable.IsAssignableTo(argTypes[i], method.Parameters[i].Type);
+            matchesAllParameters &= argTypes[i].IsAssignableTo(method.Parameters[i].Type);
         }
 
         return matchesAllParameters;
     }
 
-    public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods, string methodname, bool shouldAppendError = true)
+    public static IMethod GetMatchingMethod(CompilerContext context, List<IType> argTypes, IEnumerable<IMethod> methods,
+        string methodname, bool shouldAppendError = true)
     {
         var candiates = new List<IMethod>();
         foreach (var m in methods.Where(_ => _.Name.ToString() == methodname))
@@ -154,18 +152,22 @@ public sealed partial class ImplementationStage : IHandler<CompilerContext, Comp
             if (m.Parameters.Count == argTypes.Count)
             {
                 if (MatchesParameters(m, argTypes))
+                {
                     candiates.Add(m);
+                }
             }
         }
 
         if (shouldAppendError && candiates.Count == 0)
         {
-            context.Messages.Add(Message.Error($"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
+            context.Messages.Add(Message.Error(
+                $"Cannot find matching function '{methodname}({string.Join(", ", argTypes.Select(_ => _.FullName.ToString()))})'"));
             return null;
         }
 
         //ToDo: refactor getting best candidate
-        var orderedCandidates = candiates.OrderByDescending(_ => _.Parameters.Select(__ => _.FullName.ToString()).Contains("System.Object"));
+        var orderedCandidates = candiates.OrderByDescending(_ =>
+            _.Parameters.Select(__ => _.FullName.ToString()).Contains("System.Object"));
         return orderedCandidates.FirstOrDefault();
     }
 }

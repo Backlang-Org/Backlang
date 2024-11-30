@@ -1,5 +1,5 @@
-﻿using Loyc.Syntax;
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Loyc.Syntax;
 
 namespace Backlang.Codeanalysis.Parsing;
 
@@ -27,6 +27,7 @@ public static class LNodeExtensions
 
     public static bool IsNoneType(this LNode node)
     {
-        return node.Name == Symbols.TypeLiteral && node.Args[0].Args[0].Name.Name == "none" && node.Args[0].Args[0].IsId;
+        return node.Name == Symbols.TypeLiteral && node.Args[0].Args[0].Name.Name == "none" &&
+               node.Args[0].Args[0].IsId;
     }
 }
