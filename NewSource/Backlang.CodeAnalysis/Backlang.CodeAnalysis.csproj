@@ -1,18 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <LangVersion>preview</LangVersion>
-        <EnablePreviewFeatures>True</EnablePreviewFeatures>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <AssemblyVersion>$(Version)</AssemblyVersion>
-        <Description>The Parser For Backlang</Description>
-        <PackageIcon>logo.png</PackageIcon>
-        <PackageProjectUrl>https://www.backlang.org</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/Backlang-Org/Backlang</RepositoryUrl>
-        <PackageTags>backlang,dotnet</PackageTags>
-        <IncludeSymbols>True</IncludeSymbols>
         <RootNamespace>Backlang.CodeAnalysis</RootNamespace>
     </PropertyGroup>
 
