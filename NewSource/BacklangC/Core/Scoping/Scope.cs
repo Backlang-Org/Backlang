@@ -1,6 +1,7 @@
-﻿using Backlang.Contracts.Scoping.Items;
+﻿using BacklangC.Core.Scoping.Items;
+using DistIL.AsmIO;
 
-namespace Backlang.Contracts.Scoping;
+namespace BacklangC.Core.Scoping;
 
 #nullable enable
 
@@ -11,10 +12,10 @@ public class Scope
     public Scope(Scope parent)
     {
         Parent = parent;
-        TypeAliases = new Dictionary<string, IType>();
+        TypeAliases = new Dictionary<string, TypeDesc>();
     }
 
-    public Dictionary<string, IType> TypeAliases { get; set; }
+    public Dictionary<string, TypeDesc> TypeAliases { get; set; }
     public Scope Parent { get; set; }
 
     public bool Add(ScopeItem item)
