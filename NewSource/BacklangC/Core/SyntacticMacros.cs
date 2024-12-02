@@ -1,7 +1,12 @@
-﻿using LeMP;
+﻿using System.Text;
 using System.Text.RegularExpressions;
+using Backlang.Codeanalysis.Parsing;
+using Backlang.Codeanalysis.Parsing.AST;
+using LeMP;
+using Loyc;
+using Loyc.Syntax;
 
-namespace Backlang.Driver.InternalMacros;
+namespace BacklangC.Core;
 
 [ContainsMacros]
 public static class SyntacticMacros
@@ -126,7 +131,7 @@ public static class SyntacticMacros
             };
             var modChanged = @operator.WithAttrs(newAttrs);
             var fnName = @operator.Args[1];
-            var compContext = (CompilerContext)context.ScopedProperties["Context"];
+            var compContext = (Driver)context.ScopedProperties["Context"];
 
             if (fnName is var (_, (_, name)) && OpMap.ContainsKey(name.Name.Name))
             {
@@ -134,8 +139,8 @@ public static class SyntacticMacros
 
                 if (@operator[2].ArgCount != op.ArgumentCount)
                 {
-                    compContext.AddError(@operator,
-                        $"Cannot overload operator, parameter count mismatch. {op.ArgumentCount} parameters expected");
+                   // compContext.AddError(@operator,
+                     //   $"Cannot overload operator, parameter count mismatch. {op.ArgumentCount} parameters expected");
                 }
 
                 var newTarget = SyntaxTree.Type("op_" + op.OperatorName, LNode.List()).WithRange(fnName.Range);

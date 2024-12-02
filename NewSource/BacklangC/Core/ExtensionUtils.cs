@@ -1,4 +1,7 @@
-﻿namespace Backlang.Driver;
+﻿using Backlang.Codeanalysis.Parsing.AST;
+using Loyc.Syntax;
+
+namespace BacklangC.Core;
 
 public static class ExtensionUtils
 {

@@ -1,14 +1,17 @@
-﻿using Backlang.Core.Macros;
-using Backlang.Driver.InternalMacros;
+﻿using System.Runtime.Loader;
+using Backlang.Codeanalysis.Parsing;
+using Backlang.Core.Macros;
+using BacklangC.Core;
 using Flo;
 using LeMP;
 using LeMP.Prelude;
+using Loyc;
 using Loyc.Collections;
-using System.Runtime.Loader;
+using Loyc.Syntax;
 
-namespace Backlang.Driver.Compiling.Stages.ExpandingStages;
+namespace BacklangC.Stages;
 
-public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContext>
+public sealed class ExpandMacrosStage : IHandler<Driver, Driver>
 {
     private readonly MacroProcessor _macroProcessor;
 
@@ -23,19 +26,16 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
         _macroProcessor.PreOpenedNamespaces.Add((Symbol)typeof(SyntacticMacros).Namespace);
     }
 
-    public async Task<CompilerContext> HandleAsync(CompilerContext context,
-        Func<CompilerContext, Task<CompilerContext>> next)
+    public async Task<Driver> HandleAsync(Driver context,
+        Func<Driver, Task<Driver>> next)
     {
-        context.CompilationTarget.BeforeExpandMacros(_macroProcessor); //Only calls once
-
-        if (context.MacroReferences != null)
+        if (context.Settings.MacroReferences != null)
         {
             var loadContext = new AssemblyLoadContext("Macros");
-            foreach (var ml in context.MacroReferences)
+            foreach (var ml in context.Settings.MacroReferences)
             {
-                var basePath = new FileInfo(context.ProjectFile).Directory.FullName;
-                var directory = new FileInfo(context.ResultingOutputPath).Directory.FullName;
-                var assembly = loadContext.LoadFromAssemblyPath(Path.Combine(basePath, directory, ml));
+                var directory = new FileInfo(context.Settings.OutputPath).Directory?.FullName;
+                var assembly = loadContext.LoadFromAssemblyPath(Path.Combine(directory, ml));
 
                 if (assembly == null)
                 {
@@ -48,7 +48,6 @@ public sealed class ExpandMacrosStage : IHandler<CompilerContext, CompilerContex
             }
         }
 
-        _macroProcessor.DefaultScopedProperties.Add("Target", context.Options.Target);
         _macroProcessor.DefaultScopedProperties.Add("Context", context);
 
         foreach (var tree in context.Trees)
