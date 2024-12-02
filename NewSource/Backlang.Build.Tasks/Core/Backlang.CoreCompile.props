@@ -1,0 +1,15 @@
+<Project>
+
+    <PropertyGroup>
+        <RootNamespace Condition="'$(RootNamespace)' == ''">$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(Configuration) == 'Release'">
+        <OptimizeLevel>O2</OptimizeLevel>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+
+</Project>

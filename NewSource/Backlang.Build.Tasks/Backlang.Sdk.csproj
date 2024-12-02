@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsTool>true</IsTool>
+    <AssemblyName>Backlang.Build.Tasks</AssemblyName>
+    <RootNamespace>Backlang.Build.Tasks</RootNamespace>
+    <EnableDefaultBuildItems>true</EnableDefaultBuildItems>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Label="BuildInfo">
+    <IsPublishable>false</IsPublishable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <BuildOutputTargetFolder>Tasks</BuildOutputTargetFolder>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <PropertyGroup Label="PackageInfo">
+    <PackageId>Backlang.Sdk</PackageId>
+    <Version>0.1.5</Version>
+    <PackageType>MSBuildSdk</PackageType>
+    <PackageTags>msbuild sdk Backlang</PackageTags>
+    <Description>MSBuild SDK for Backlang</Description>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <RepositoryUrl>https://github.com/furesoft/compiler-test</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Project Rule Definitions -->
+    <Content Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+    <None Include=".\core\**" Pack="true" PackagePath="core\"/>
+    <None Include=".\Tasks\**" Pack="true" PackagePath="Tasks\"/>
+    <None Include=".\Sdk\**" Pack="true" PackagePath="Sdk\"/>
+    <None Include="bin\$(Configuration)\*.dll" Pack="true" PackagePath="Tasks\bin\"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DistIL.Core" Version="0.10.0-preview" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.12.6"/>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.12.6"/>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.6"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BacklangC\BacklangC.csproj" />
+  </ItemGroup>
+
+</Project>

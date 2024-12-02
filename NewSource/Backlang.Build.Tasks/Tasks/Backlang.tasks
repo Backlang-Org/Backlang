@@ -1,0 +1,18 @@
+<Project>
+
+    <!-- This file lists all the tasks that ship with Backlang.Sdk -->
+
+    <!--
+      NOTE: Listing a <UsingTask> tag in a *.tasks file like this one rather than in a project or targets file
+            can give a significant performance advantage in a large build, because every time a <UsingTask> tag
+            is encountered, it will cause the task to be rediscovered next time the task is used.
+    -->
+
+    <!-- NOTE: Using the fully qualified class name in a <UsingTask> tag is faster than using a partially qualified name. -->
+
+    <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)bin\Backlang.Build.Tasks.dll" TaskName="Backlang.Build.Tasks.BuildTask"/>
+
+    <PropertyGroup>
+
+    </PropertyGroup>
+</Project>

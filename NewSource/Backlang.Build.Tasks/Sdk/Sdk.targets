@@ -1,0 +1,9 @@
+<Project>
+
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.backproj'">
+        <LanguageTargets>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..\Core\Backlang.Runtime.targets'))</LanguageTargets>
+    </PropertyGroup>
+
+    <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets"/>
+
+</Project>
