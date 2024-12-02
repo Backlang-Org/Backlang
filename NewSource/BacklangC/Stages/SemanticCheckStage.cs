@@ -1,4 +1,4 @@
-﻿using BacklangC.Semantic;
+﻿using BacklangC.Core.Semantic;
 using Flo;
 
 namespace BacklangC.Stages;

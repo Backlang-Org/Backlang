@@ -1,7 +1,7 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
-using BacklangC.Semantic.Checks;
+using BacklangC.Core.Semantic.Checks;
 
-namespace BacklangC.Semantic;
+namespace BacklangC.Core.Semantic;
 
 public static class SemanticChecker
 {

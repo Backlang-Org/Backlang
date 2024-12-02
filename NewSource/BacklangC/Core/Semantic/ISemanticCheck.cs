@@ -1,6 +1,6 @@
 ﻿using Backlang.Codeanalysis.Parsing.AST;
 
-namespace BacklangC.Semantic;
+namespace BacklangC.Core.Semantic;
 
 public interface ISemanticCheck
 {

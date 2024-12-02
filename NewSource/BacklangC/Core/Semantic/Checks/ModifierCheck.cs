@@ -1,8 +1,7 @@
-﻿using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Loyc.Syntax;
 
-namespace BacklangC.Semantic.Checks;
+namespace BacklangC.Core.Semantic.Checks;
 
 internal class ModifierCheck : ISemanticCheck
 {

@@ -1,9 +1,8 @@
 ﻿using Backlang.Codeanalysis.Parsing;
 using Backlang.Codeanalysis.Parsing.AST;
-using BacklangC.Core;
 using Loyc.Syntax;
 
-namespace BacklangC.Semantic.Checks;
+namespace BacklangC.Core.Semantic.Checks;
 
 internal class InterfaceNameCheck : ISemanticCheck
 {

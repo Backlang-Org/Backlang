@@ -2,7 +2,7 @@
 using Backlang.Codeanalysis.Parsing.AST;
 using Loyc.Syntax;
 
-namespace BacklangC.Semantic.Checks;
+namespace BacklangC.Core.Semantic.Checks;
 
 internal class ModuleDefinitionCheck : ISemanticCheck
 {
