@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlang.CodeAnalysis", "Ba
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backlang.Runtime", "Backlang.Runtime\Backlang.Runtime.csproj", "{9DA0B4F1-029B-4481-A28F-4205159BD39B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "SdkSample\Sample.backproj", "{C8344E96-E4C4-4FB2-BAF3-CC4A83373435}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

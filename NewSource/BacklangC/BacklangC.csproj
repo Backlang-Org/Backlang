@@ -10,11 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="DistIL.Core" Version="0.10.0-preview" />
+    <PackageReference Include="DistIL.Core" Version="0.11.1-preview" />
     <PackageReference Include="Flo" Version="0.3.0"/>
-    <PackageReference Include="CommandLineParser" Version="2.9.1"/>
     <PackageReference Include="LeMP" Version="30.1.3"/>
     <PackageReference Include="Loyc.Syntax" Version="30.1.3"/>
+    <PackageReference Include="LanguageSdk.Templates.Core" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>

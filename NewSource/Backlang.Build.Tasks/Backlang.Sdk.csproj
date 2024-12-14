@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DistIL.Core" Version="0.10.0-preview" />
+    <PackageReference Include="DistIL.Core" Version="0.11.1-preview" />
     <PackageReference Include="Microsoft.Build.Framework" Version="17.12.6"/>
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.12.6"/>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.6"/>
@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BacklangC\BacklangC.csproj" />
+    <PackageReference Include="LanguageSdk.Templates.Core" Version="1.5.0" />
   </ItemGroup>
 
 </Project>

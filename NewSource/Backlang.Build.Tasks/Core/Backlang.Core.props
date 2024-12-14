@@ -1,9 +1,0 @@
-<Project>
-
-    <PropertyGroup>
-        <DefaultLanguageSourceExtension>.back</DefaultLanguageSourceExtension>
-    </PropertyGroup>
-
-    <Import Project="Backlang.ProjectSystem.props"/>
-
-</Project>
